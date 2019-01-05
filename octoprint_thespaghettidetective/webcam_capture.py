@@ -23,7 +23,7 @@ def capture_jpeg(settings):
 
         with closing(urllib2.urlopen(snapshot_url)) as res:
             jpg = res.read()
-            return "--boundarydonotcross\r\nContent-Type: image/jpeg\r\nContent-Length: {0}\r\n\r\n{1}\r\n".format(len(jpg), jpg)
+            return jpg
 
     else:
         stream_url = settings.get("stream", "/webcam/?action=stream").strip()
@@ -38,7 +38,11 @@ def capture_jpeg(settings):
                 mjpg = chunker.findMjpegChunk(data)
                 if mjpg:
                     res.close()
-                    return mjpg
+                    mjpeg_headers_index = mjpg.find('\r\n'*2)
+                    if mjpeg_headers_index > 0:
+                        return mjpg[mjpeg_headers_index+4:]
+                    else:
+                        raise Exception('Wrong mjpeg data format')
 
 
 class MjpegStreamChunker:

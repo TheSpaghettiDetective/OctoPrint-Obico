@@ -108,10 +108,9 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
         if endpoint_prefix.endswith('/'):
             endpoint_prefix = endpoint_prefix[:-1]
 
-        endpoint = endpoint_prefix + '/dev/predict'
+        endpoint = endpoint_prefix + '/dev/pic'
 
-        files = {'image': capture_jpeg(self._settings.global_get(["webcam"]))}
-
+        files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
         resp = requests.post( endpoint, files=files)
         resp.raise_for_status()
         for command in resp.json():
