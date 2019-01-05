@@ -1,18 +1,18 @@
 ---
 layout: plugin
 
-id: TheSpaghettiDetective
+id: thespaghettidetective
 title: TheSpaghettiDetective
-description: OctoPrint plugin for The Spaghetti Detective
-author: Kenneth Jiang
+description: TODO
+author: The Spaghetti Detective
 license: AGPLv3
 
 # TODO
 date: today's date in format YYYY-MM-DD, e.g. 2015-04-21
 
-homepage: https://github.com/TheSpaghettiDetective/OctoPrint-TheSpaghettiDetective
-source: https://github.com/TheSpaghettiDetective/OctoPrint-TheSpaghettiDetective
-archive: https://github.com/TheSpaghettiDetective/OctoPrint-TheSpaghettiDetective/archive/master.zip
+homepage: https://github.com/TheSpaghettiDetective/TheSpaghettiDetective
+source: https://github.com/TheSpaghettiDetective/TheSpaghettiDetective
+archive: https://github.com/TheSpaghettiDetective/TheSpaghettiDetective/archive/master.zip
 
 # TODO
 # Set this to true if your plugin uses the dependency_links setup parameter to include
@@ -86,4 +86,4 @@ compatibility:
 ---
 
 **TODO**: Longer description of your plugin, configuration examples etc. This part will be visible on the page at
-http://plugins.octoprint.org/plugin/TheSpaghettiDetective/
+http://plugins.octoprint.org/plugin/thespaghettidetective/

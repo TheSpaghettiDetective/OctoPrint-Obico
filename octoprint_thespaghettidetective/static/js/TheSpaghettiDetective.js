@@ -1,7 +1,7 @@
 /*
  * View model for TheSpaghettiDetective
  *
- * Author: Kenneth Jiang
+ * Author: The Spaghetti Detective
  * License: AGPLv3
  */
 $(function() {
@@ -23,7 +23,7 @@ $(function() {
         construct: ThespaghettidetectiveViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
         dependencies: [ /* "loginStateViewModel", "settingsViewModel" */ ],
-        // Elements to bind to, e.g. #settings_plugin_TheSpaghettiDetective, #tab_plugin_TheSpaghettiDetective, ...
+        // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
         elements: [ /* ... */ ]
     });
 });

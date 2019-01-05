@@ -1,9 +1,14 @@
 <form class="form-horizontal">
     <div class="control-group">
-        <label class="control-label">{{ _('GoFab Token') }}</label>
+        <label class="control-label">{{ _('Server Address') }}</label>
         <div class="controls">
-            <input type="text" class="input-block-level" data-bind="value: settings.plugins.TheSpaghettiDetective.auth_token">
+            <input type="text" class="input-block-level" data-bind="value: settings.plugins.thespaghettidetective.endpoint_prefix">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">{{ _('Auth Token') }}</label>
+        <div class="controls">
+            <input type="text" class="input-block-level" data-bind="value: settings.plugins.thespaghettidetective.auth_token">
         </div>
     </div>
 </form>
-
