@@ -1,5 +1,9 @@
 # coding=utf-8
 from __future__ import absolute_import
+import logging
+import threading
+import os, sys, time
+import requests
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -11,15 +15,25 @@ from __future__ import absolute_import
 
 import octoprint.plugin
 
-class ThespaghettidetectivePlugin(octoprint.plugin.SettingsPlugin,
-                                  octoprint.plugin.AssetPlugin,
-                                  octoprint.plugin.TemplatePlugin):
+_logger = logging.getLogger(__name__)
+
+
+class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
+			octoprint.plugin.StartupPlugin,
+			octoprint.plugin.EventHandlerPlugin,
+			octoprint.plugin.AssetPlugin,
+			octoprint.plugin.TemplatePlugin):
+
+	def get_template_configs(self):
+		return [
+		    dict(type="settings", custom_bindings=False)
+		]
 
 	##~~ SettingsPlugin mixin
 
 	def get_settings_defaults(self):
 		return dict(
-			# put your plugin's default settings here
+                        endpoint_prefix="https://app.gofab.xyz/"
 		)
 
 	##~~ AssetPlugin mixin
@@ -41,17 +55,17 @@ class ThespaghettidetectivePlugin(octoprint.plugin.SettingsPlugin,
 		# for details.
 		return dict(
 			TheSpaghettiDetective=dict(
-				displayName="Thespaghettidetective Plugin",
+				displayName="TheSpaghettiDetective Plugin",
 				displayVersion=self._plugin_version,
 
 				# version check: github repository
 				type="github_release",
 				user="kennethjiang",
-				repo="TheSpaghettiDetective",
+				repo="OctoPrint-TheSpaghettiDetective",
 				current=self._plugin_version,
 
 				# update method: pip
-				pip="https://github.com/kennethjiang/TheSpaghettiDetective/archive/{target_version}.zip"
+				pip="https://github.com/TheSpaghettiDetective/OctoPrint-TheSpaghettiDetective/archive/{target_version}.zip"
 			)
 		)
 
@@ -59,11 +73,11 @@ class ThespaghettidetectivePlugin(octoprint.plugin.SettingsPlugin,
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
-__plugin_name__ = "Thespaghettidetective Plugin"
+__plugin_name__ = "TheSpaghettiDetective Plugin"
 
 def __plugin_load__():
 	global __plugin_implementation__
-	__plugin_implementation__ = ThespaghettidetectivePlugin()
+	__plugin_implementation__ = TheSpaghettiDetectivePlugin()
 
 	global __plugin_hooks__
 	__plugin_hooks__ = {

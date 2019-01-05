@@ -1,0 +1,174 @@
+accessControl:
+  enabled: false
+api:
+  key: 6CDB7AD1ED944C18B1FF82E6AACC7105
+webcam:
+  ffmpeg: /usr/bin/avconv
+  snapshot: http://192.168.134.30:8080/?action=snapshot
+  stream: http://192.168.134.30:8080/?action=stream
+plugins:
+  announcements:
+    _config_version: 1
+    channels:
+      _blog:
+        read_until: 1529054100
+      _important:
+        read_until: 1521111600
+      _octopi:
+        read_until: 1527588900
+      _plugins:
+        read_until: 1531785600
+      _releases:
+        read_until: 1532527200
+  cura:
+    cura_engine: /usr/bin/CuraEngine
+  discovery:
+    upnpUuid: 17f58ec6-03a1-4594-98dc-435676ebf2ca
+  softwareupdate:
+    _config_version: 6
+    check_providers:
+      anywhere: anywhere
+server:
+  firstRun: false
+  onlineCheck:
+    enabled: false
+  pluginBlacklist:
+    enabled: false
+  secretKey: x66O1rtsIf0m7oERjbLb0PY4wy1ghD4u
+  seenWizards:
+    corewizard: 3
+    cura: null
+    softwareupdate: null
+# Settings only relevant for development
+devel:
+  # Settings for OctoPrint's internal caching
+  cache:
+    # Whether to enable caching. Defaults to true. Setting it to false will cause the UI to always
+    # be fully rerendered on request to / on the server.
+    enabled: false
+
+    # Whether to enable the preemptive cache
+    preemptive: false
+
+  # Settings for stylesheet preference. OctoPrint will prefer to use the stylesheet type
+  # specified here. Usually (on a production install) that will be the compiled css (default).
+  # Developers may specify less here too.
+  stylesheet: css
+
+  # Settings for OctoPrint's web asset merging and minifying
+  webassets:
+    # If set to true, OctoPrint will merge all JS, all CSS and all Less files into one file per type
+    # to reduce request count. Setting it to false will load all assets individually. Note: if this is set to
+    # false, no minification will take place regardless of the minify setting below.
+    bundle: false
+
+    # If set to true, OctoPrint will minify its viewmodels (that includes those of plugins). Note: if bundle is
+    # set to false, no minification will take place either.
+    minify: true
+
+    # Whether to delete generated web assets on server startup (forcing a regeneration)
+    clean_on_startup: true
+
+  # Settings for the virtual printer
+  virtualPrinter:
+
+    # Whether to enable the virtual printer and include it in the list of available serial connections.
+    # Defaults to false.
+    enabled: true
+
+    # Whether to send an additional "ok" after a resend request (like Repetier)
+    okAfterResend: false
+
+    # Whether to force checksums and line number in the communication (like Repetier), if set to true
+    # printer will only accept commands that come with linenumber and checksum and throw an error for
+    # lines that don't. Defaults to false
+    forceChecksum: false
+
+    # Whether to send "ok" responses with the line number that gets acknowledged by the "ok". Defaults
+    # to false.
+    okWithLinenumber: false
+
+    # Number of extruders to simulate on the virtual printer.
+    numExtruders: 1
+
+    # Whether to include the current tool temperature in the M105 output as separate T segment or not.
+    #
+    # True:  > M105
+    #        < ok T:23.5/0.0 T0:34.3/0.0 T1:23.5/0.0 B:43.2/0.0
+    # False: > M105
+    #        < ok T0:34.3/0.0 T1:23.5/0.0 B:43.2/0.0
+    includeCurrentToolInTemps: true
+
+    # Whether to include the selected filename in the M23 File opened response.
+    #
+    # True:  > M23 filename.gcode
+    #        < File opened: filename.gcode  Size: 27
+    # False: > M23 filename.gcode
+    #        > File opened
+    includeFilenameInOpened: true
+
+    # The maximum movement speeds of the simulated printer's axes, in mm/s
+    movementSpeed:
+      x: 6000
+      y: 6000
+      z: 200
+      e: 300
+
+    # Whether the simulated printer should also simulate a heated bed or not
+    hasBed: true
+
+    # If enabled, reports the set target temperatures as separate messages from the firmware
+    #
+    # True:  > M109 S220.0
+    #        < TargetExtr0:220.0
+    #        < ok
+    #        > M105
+    #        < ok T0:34.3 T1:23.5 B:43.2
+    # False: > M109 S220.0
+    #        < ok
+    #        > M105
+    #        < ok T0:34.3/220.0 T1:23.5/0.0 B:43.2/0.0
+    repetierStyleTargetTemperature: false
+
+    # If enabled, uses repetier style resends, sending multiple resends for the same line
+    # to make sure nothing gets lost on the line
+    repetierStyleResends: false
+
+    # If enabled, reports the first extruder in M105 responses as T instead of T0
+    #
+    # True:  > M105
+    #        < ok T:34.3/0.0 T1:23.5/0.0 B:43.2/0.0
+    # False: > M105
+    #        < ok T0:34.3/0.0 T1:23.5/0.0 B:43.2/0.0
+    smoothieTemperatureReporting: false
+
+    # Whether M20 responses will include filesize or not
+    #
+    # True:  <filename> <filesize in bytes>
+    # False: <filename>
+    extendedSdFileList: false
+
+    # Forced pause for retrieving from the outgoing buffer
+    throttle: 0.01
+
+    # Whether to send "wait" responses every "waitInterval" seconds when serial rx buffer is empty
+    sendWait: false
+
+    # Interval in which to send "wait" lines when rx buffer is empty
+    waitInterval: 1
+
+    # Size of the simulated RX buffer in bytes, when it's full a send from OctoPrint's
+    # side will block
+    rxBuffer: 64
+
+    # Size of simulated command buffer
+    commandBuffer: 4
+
+    # Whether to support the M112 command with simulated kill
+    supportM112: true
+
+    # Whether to send messages received via M117 back as "echo:" lines
+    echoOnM117: true
+
+    # Whether to simulate broken M29 behaviour (missing ok after response)
+    brokenM29: true
