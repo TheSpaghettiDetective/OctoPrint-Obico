@@ -1,0 +1,16 @@
+*.pyc
+*.swp
+.idea
+*.iml
+*.log
+build
+dist
+*.egg*
+.DS_Store
+*.zip
+/.vagrant
+/data
+/python3
+/node_modules
+npm-debug.log
+.config*
