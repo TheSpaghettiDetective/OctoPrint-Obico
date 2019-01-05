@@ -4,9 +4,12 @@ api:
   key: 6CDB7AD1ED944C18B1FF82E6AACC7105
 webcam:
   ffmpeg: /usr/bin/avconv
-  snapshot: http://192.168.134.30:8080/?action=snapshot
-  stream: http://192.168.134.30:8080/?action=stream
+  snapshot: http://192.168.134.40:8080/?action=snapshot
+  stream: http://192.168.134.40:8080/?action=stream
 plugins:
+  TheSpaghettiDetective:
+    auth_token: supersecret
+    endpoint_prefix: http://10.0.2.2:3334
   announcements:
     _config_version: 1
     channels:
@@ -27,7 +30,7 @@ plugins:
   softwareupdate:
     _config_version: 6
     check_providers:
-      anywhere: anywhere
+      thespaghettidetective: thespaghettidetective
 server:
   firstRun: false
   onlineCheck:

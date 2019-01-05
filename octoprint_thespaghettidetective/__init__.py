@@ -20,7 +20,7 @@ import octoprint.plugin
 
 _logger = logging.getLogger(__name__)
 
-POLL_INTERVAL_SECONDS = 30
+POLL_INTERVAL_SECONDS = 5
 
 class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
             octoprint.plugin.StartupPlugin,
@@ -93,15 +93,12 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
     def main_loop(self):
         last_poll = 0
         while True:
-            print(self._settings)
-            print(self._settings.get(["endpoint_prefix"]))
             if not self._settings.get(["endpoint_prefix"]) or not self._settings.get(["auth_token"]):
                 next
 
             if last_poll < time.time() - POLL_INTERVAL_SECONDS:
                 last_poll = time.time()
-                print("here!")
-                #self.post_jpg_to_endpoint()
+                self.post_jpg_to_endpoint()
 
             time.sleep(1)
 
