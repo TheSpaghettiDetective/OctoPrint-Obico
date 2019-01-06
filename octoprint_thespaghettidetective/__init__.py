@@ -113,6 +113,7 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
         files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
         resp = requests.post( endpoint, files=files)
         resp.raise_for_status()
+        return
         for command in resp.json():
             if command["command"] == "print":
                 self.download_and_print(command["data"]["file_url"], command["data"]["file_name"])
