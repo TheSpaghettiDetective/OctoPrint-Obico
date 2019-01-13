@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 import logging
 import threading
+import json
 import os, sys, time
 import requests
 import backoff
@@ -20,7 +21,8 @@ import octoprint.plugin
 
 _logger = logging.getLogger(__name__)
 
-POLL_INTERVAL_SECONDS = 5
+POST_PIC_INTERVAL_SECONDS = 5
+POST_STATUS_INTERVAL_SECONDS = 30
 
 class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
             octoprint.plugin.StartupPlugin,
@@ -37,7 +39,7 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
 
     def get_settings_defaults(self):
         return dict(
-			endpoint_prefix=''
+            endpoint_prefix=''
         )
 
     ##~~ AssetPlugin mixin
@@ -73,6 +75,19 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
             )
         )
 
+    ##~~ Eventhandler mixin
+
+    def on_event(self, event, payload):
+        #if event.startswith("Print"):
+            self.post_printer_status({
+                "octoprint_event": {
+                    "event_type": event,
+                    "data": payload
+                    },
+                "octoprint_data": self.octoprint_data()
+                })
+
+
     ##~~Startup Plugin
 
     def on_after_startup(self):
@@ -83,35 +98,37 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
 
     ## Private methods
 
-    def octoprint_data(self):
-        data = self._printer.get_current_data()
-        data['temperatures'] = self._printer.get_current_temperatures()
-        data['octoprint_port'] = self._octoprint_port
-        data['octoprint_ip'] = self._octoprint_ip
-        return data
+    def auth_headers(self):
+        return {"Authorization": "Token " + self._settings.get(["auth_token"])}
 
+    def octoprint_data(self):
+        return self._printer.get_current_data()
+
+    @backoff.on_exception(backoff.expo, Exception, max_value=240)
     def main_loop(self):
-        last_poll = 0
+        last_post_pic = 0
+        last_post_status = 0
         while True:
             if not self._settings.get(["endpoint_prefix"]) or not self._settings.get(["auth_token"]):
                 next
 
-            if last_poll < time.time() - POLL_INTERVAL_SECONDS:
-                last_poll = time.time()
-                self.post_jpg_to_endpoint()
+            if last_post_pic < time.time() - POST_PIC_INTERVAL_SECONDS:
+                last_post_pic = time.time()
+                self.post_jpg()
+
+            if last_post_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
+                last_post_status = time.time()
+                self.post_printer_status({
+                    "octoprint_data": self.octoprint_data()
+                })
 
             time.sleep(1)
 
-    @backoff.on_exception(backoff.expo, Exception, max_value=240)
-    def post_jpg_to_endpoint(self):
-        endpoint_prefix = self._settings.get(["endpoint_prefix"]).strip()
-        if endpoint_prefix.endswith('/'):
-            endpoint_prefix = endpoint_prefix[:-1]
-
-        endpoint = endpoint_prefix + '/dev/pic'
+    def post_jpg(self):
+        endpoint = self.canonical_endpoint_prefix() + '/api/printer/pic'
 
         files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
-        resp = requests.post( endpoint, files=files)
+        resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
         resp.raise_for_status()
         return
         for command in resp.json():
@@ -124,6 +141,25 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
             if command["command"] == "resume":
                 self._printer.resume_print()
 
+
+    def post_printer_status(self, json_data):
+        endpoint = self.canonical_endpoint_prefix() + '/api/printer/status'
+        _logger.debug(json.dumps(json_data))
+        resp = requests.post(
+            endpoint,
+            json=json_data,
+            headers = self.auth_headers(),
+            )
+        resp.raise_for_status()
+
+    def canonical_endpoint_prefix(self):
+        if not self._settings.get(["endpoint_prefix"]):
+            return None
+
+        endpoint_prefix = self._settings.get(["endpoint_prefix"]).strip()
+        if endpoint_prefix.endswith('/'):
+            endpoint_prefix = endpoint_prefix[:-1]
+        return endpoint_prefix
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
