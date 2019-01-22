@@ -130,17 +130,7 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
         files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
         resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
         resp.raise_for_status()
-        return
-        for command in resp.json():
-            if command["command"] == "print":
-                self.download_and_print(command["data"]["file_url"], command["data"]["file_name"])
-            if command["command"] == "cancel":
-                self._printer.cancel_print()
-            if command["command"] == "pause":
-                self._printer.pause_print()
-            if command["command"] == "resume":
-                self._printer.resume_print()
-
+        self.process_response(resp)
 
     def post_printer_status(self, json_data):
         endpoint = self.canonical_endpoint_prefix() + '/api/printer/status'
@@ -151,6 +141,17 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
             headers = self.auth_headers(),
             )
         resp.raise_for_status()
+        self.process_response(resp)
+
+    def process_response(self, resp):
+        print(resp.json())
+        for command in resp.json().get('commands', []):
+            if command["cmd"] == "pause":
+                self._printer.pause_print()
+            if command["cmd"] == 'cancel':
+                self._printer.cancel_print()
+            if command["cmd"] == 'resume':
+                self._printer.resume_print()
 
     def canonical_endpoint_prefix(self):
         if not self._settings.get(["endpoint_prefix"]):
