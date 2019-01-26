@@ -24,11 +24,13 @@ _logger = logging.getLogger(__name__)
 POST_PIC_INTERVAL_SECONDS = 5
 POST_STATUS_INTERVAL_SECONDS = 30
 
-class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
+class TheSpaghettiDetectivePlugin(
+            octoprint.plugin.SettingsPlugin,
             octoprint.plugin.StartupPlugin,
             octoprint.plugin.EventHandlerPlugin,
             octoprint.plugin.AssetPlugin,
-            octoprint.plugin.TemplatePlugin):
+            octoprint.plugin.TemplatePlugin,):
+
 
     def get_template_configs(self):
         return [
@@ -39,7 +41,7 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
 
     def get_settings_defaults(self):
         return dict(
-            endpoint_prefix=''
+            endpoint_prefix='https://app.thespaghettidetective.com/'
         )
 
     ##~~ AssetPlugin mixin
@@ -125,7 +127,7 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
             time.sleep(1)
 
     def post_jpg(self):
-        endpoint = self.canonical_endpoint_prefix() + '/api/printer/pic'
+        endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic'
 
         files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
         resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
@@ -133,7 +135,7 @@ class TheSpaghettiDetectivePlugin(octoprint.plugin.SettingsPlugin,
         self.process_response(resp)
 
     def post_printer_status(self, json_data):
-        endpoint = self.canonical_endpoint_prefix() + '/api/printer/status'
+        endpoint = self.canonical_endpoint_prefix() + '/api/octo/status'
         _logger.debug(json.dumps(json_data))
         resp = requests.post(
             endpoint,

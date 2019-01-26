@@ -7,6 +7,13 @@
 $(function() {
     function ThespaghettidetectiveViewModel(parameters) {
         var self = this;
+        $('#custom-server').change( function(e) {
+            if($(this).is(':checked')) {
+                $('input#endpoint-prefix').prop('disabled', false);
+            } else {
+                $('input#endpoint-prefix').prop('disabled', true);
+            }
+        });
 
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
