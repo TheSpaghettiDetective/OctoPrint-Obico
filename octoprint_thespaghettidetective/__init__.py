@@ -111,7 +111,8 @@ class TheSpaghettiDetectivePlugin(
         last_post_pic = 0
         last_post_status = 0
         while True:
-            if not self._settings.get(["endpoint_prefix"]) or not self._settings.get(["auth_token"]):
+            if not self.is_configured():
+                time.sleep(1)
                 next
 
             if last_post_pic < time.time() - POST_PIC_INTERVAL_SECONDS:
@@ -127,6 +128,9 @@ class TheSpaghettiDetectivePlugin(
             time.sleep(1)
 
     def post_jpg(self):
+        if not self.is_configured():
+            return
+
         endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic'
 
         files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
@@ -135,6 +139,9 @@ class TheSpaghettiDetectivePlugin(
         self.process_response(resp)
 
     def post_printer_status(self, json_data):
+        if not self.is_configured():
+            return
+
         endpoint = self.canonical_endpoint_prefix() + '/api/octo/status'
         _logger.debug(json.dumps(json_data))
         resp = requests.post(
@@ -163,6 +170,9 @@ class TheSpaghettiDetectivePlugin(
         if endpoint_prefix.endswith('/'):
             endpoint_prefix = endpoint_prefix[:-1]
         return endpoint_prefix
+
+    def is_configured(self):
+        return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
