@@ -131,7 +131,7 @@ class TheSpaghettiDetectivePlugin(
         if not self.is_configured():
             return
 
-        endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic'
+        endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
 
         files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
         resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
@@ -142,7 +142,7 @@ class TheSpaghettiDetectivePlugin(
         if not self.is_configured():
             return
 
-        endpoint = self.canonical_endpoint_prefix() + '/api/octo/status'
+        endpoint = self.canonical_endpoint_prefix() + '/api/octo/status/'
         _logger.debug(json.dumps(json_data))
         resp = requests.post(
             endpoint,
