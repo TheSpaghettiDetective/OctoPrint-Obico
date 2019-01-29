@@ -21,7 +21,7 @@ import octoprint.plugin
 
 _logger = logging.getLogger(__name__)
 
-POST_PIC_INTERVAL_SECONDS = 5
+POST_PIC_INTERVAL_SECONDS = 10
 POST_STATUS_INTERVAL_SECONDS = 30
 
 class TheSpaghettiDetectivePlugin(
