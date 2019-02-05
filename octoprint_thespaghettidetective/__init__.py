@@ -156,11 +156,34 @@ class TheSpaghettiDetectivePlugin(
         print(resp.json())
         for command in resp.json().get('commands', []):
             if command["cmd"] == "pause":
-                self._printer.pause_print()
+                self.pause_current_print()
             if command["cmd"] == 'cancel':
                 self._printer.cancel_print()
             if command["cmd"] == 'resume':
-                self._printer.resume_print()
+                self.resume_current_print()
+
+    def pause_current_print(self):
+        self.saved_temps = self._printer.get_current_temperatures()
+        for heater in self._printer.get_current_temperatures().keys():
+            self._printer.set_temperature(heater, 0)
+
+        self._printer.pause_print()
+
+    def resume_current_print(self):
+        for heater in self.saved_temps.keys():
+            self._printer.set_temperature(heater, self.saved_temps[heater]['target'] + self.saved_temps[heater]['offset'])
+
+        time.sleep(10)
+        while True:
+            temps = self._printer.get_current_temperatures()
+            not_reached = [k for k,v in self._printer.get_current_temperatures().items() if v['target'] - 2.0 > v['actual'] + v['offset'] ]
+
+            if len(not_reached) == 0:
+                break
+
+            time.sleep(5)
+
+        self._printer.resume_print()
 
     def canonical_endpoint_prefix(self):
         if not self._settings.get(["endpoint_prefix"]):
