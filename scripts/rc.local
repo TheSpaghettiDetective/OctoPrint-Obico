@@ -11,5 +11,5 @@
 #
 # By default this script does nothing.
 
-/mjpg-streamer/mjpg_streamer -o "/mjpg-streamer/output_http.so -w /mjpg-streamer/www" -i "/mjpg-streamer/input_file.so -f /mjpg-streamer/jpgs -e -d 0.3" & 
+/mjpg-streamer/mjpg_streamer -o "/mjpg-streamer/output_http.so -w /mjpg-streamer/www" -i "/mjpg-streamer/input_file.so -f /mjpg-streamer/jpgs -e -d 2" &
 exit 0
