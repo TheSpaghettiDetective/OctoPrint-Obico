@@ -24,6 +24,10 @@ _logger = logging.getLogger(__name__)
 POST_PIC_INTERVAL_SECONDS = 10
 POST_STATUS_INTERVAL_SECONDS = 30
 
+if os.environ.get('DEBUG'):
+    POST_PIC_INTERVAL_SECONDS = 1
+    POST_STATUS_INTERVAL_SECONDS = 3
+
 class TheSpaghettiDetectivePlugin(
             octoprint.plugin.SettingsPlugin,
             octoprint.plugin.StartupPlugin,
@@ -31,6 +35,8 @@ class TheSpaghettiDetectivePlugin(
             octoprint.plugin.AssetPlugin,
             octoprint.plugin.TemplatePlugin,):
 
+    def __init__(self):
+        self.saved_temps = {}
 
     def get_template_configs(self):
         return [
@@ -156,20 +162,17 @@ class TheSpaghettiDetectivePlugin(
         print(resp.json())
         for command in resp.json().get('commands', []):
             if command["cmd"] == "pause":
-                self.pause_current_print()
+                self._printer.pause_print()
             if command["cmd"] == 'cancel':
                 self._printer.cancel_print()
             if command["cmd"] == 'resume':
-                self.resume_current_print()
+                self._printer.resume_print()
+            if command["cmd"] == 'set_temps':
+                self.set_temps(**command.get('args'))
+            if command["cmd"] == 'restore_temps':
+                self.restore_temps()
 
-    def pause_current_print(self):
-        self.saved_temps = self._printer.get_current_temperatures()
-        for heater in self._printer.get_current_temperatures().keys():
-            self._printer.set_temperature(heater, 0)
-
-        self._printer.pause_print()
-
-    def resume_current_print(self):
+    def restore_temps(self):
         for heater in self.saved_temps.keys():
             self._printer.set_temperature(heater, self.saved_temps[heater]['target'] + self.saved_temps[heater]['offset'])
 
@@ -183,7 +186,21 @@ class TheSpaghettiDetectivePlugin(
 
             time.sleep(5)
 
-        self._printer.resume_print()
+        self.saved_temps = {}
+
+    def set_temps(self, heater=None, target=None, save=False):
+        current_temps = self._printer.get_current_temperatures()
+
+        if heater == 'tools':
+            for tool_heater in [h for h in current_temps.keys() if h.startswith('tool')]:
+                if save:
+                    self.saved_temps[tool_heater] = current_temps[tool_heater]
+                self._printer.set_temperature(tool_heater, target)
+
+        elif heater == 'bed' and current_temps.get('bed'):
+            if save:
+                self.saved_temps['bed'] = current_temps.get('bed')
+            self._printer.set_temperature('bed', target)
 
     def canonical_endpoint_prefix(self):
         if not self._settings.get(["endpoint_prefix"]):
