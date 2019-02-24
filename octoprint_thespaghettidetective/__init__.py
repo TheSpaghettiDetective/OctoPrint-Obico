@@ -149,7 +149,6 @@ class TheSpaghettiDetectivePlugin(
             return
 
         endpoint = self.canonical_endpoint_prefix() + '/api/octo/status/'
-        _logger.debug(json.dumps(json_data))
         resp = requests.post(
             endpoint,
             json=json_data,
@@ -159,7 +158,7 @@ class TheSpaghettiDetectivePlugin(
         self.process_response(resp)
 
     def process_response(self, resp):
-        print(resp.json())
+        _logger.debug(json.dumps(resp.json()))
         for command in resp.json().get('commands', []):
             if command["cmd"] == "pause":
                 self._printer.pause_print()
