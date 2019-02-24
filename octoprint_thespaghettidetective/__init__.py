@@ -158,7 +158,13 @@ class TheSpaghettiDetectivePlugin(
         self.process_response(resp)
 
     def process_response(self, resp):
-        _logger.debug(json.dumps(resp.json()))
+        resp_json = resp.json()
+
+        if resp_json.get('commands'):
+            _logger.info('Received: ' + json.dumps(resp_json))
+        else:
+            _logger.debug('Received: ' + json.dumps(resp_json))
+
         for command in resp.json().get('commands', []):
             if command["cmd"] == "pause":
                 self._printer.pause_print()
