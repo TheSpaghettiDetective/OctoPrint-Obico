@@ -21,12 +21,12 @@ import octoprint.plugin
 
 _logger = logging.getLogger(__name__)
 
-POST_PIC_INTERVAL_SECONDS = 10
-POST_STATUS_INTERVAL_SECONDS = 30
+POST_PIC_INTERVAL_SECONDS = 50.0
+POST_STATUS_INTERVAL_SECONDS = 150.0
 
 if os.environ.get('DEBUG'):
-    POST_PIC_INTERVAL_SECONDS = 1
-    POST_STATUS_INTERVAL_SECONDS = 3
+    POST_PIC_INTERVAL_SECONDS = 5.0
+    POST_STATUS_INTERVAL_SECONDS = 15.0
 
 class TheSpaghettiDetectivePlugin(
             octoprint.plugin.SettingsPlugin,
@@ -121,11 +121,12 @@ class TheSpaghettiDetectivePlugin(
                 time.sleep(1)
                 next
 
-            if last_post_pic < time.time() - POST_PIC_INTERVAL_SECONDS:
+            speed_up = 5.0 if self.is_actively_printing() else 1.0
+            if last_post_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
                 last_post_pic = time.time()
                 self.post_jpg()
 
-            if last_post_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
+            if last_post_status < time.time() - POST_STATUS_INTERVAL_SECONDS / speed_up:
                 last_post_status = time.time()
                 self.post_printer_status({
                     "octoprint_data": self.octoprint_data()
@@ -215,6 +216,9 @@ class TheSpaghettiDetectivePlugin(
         if endpoint_prefix.endswith('/'):
             endpoint_prefix = endpoint_prefix[:-1]
         return endpoint_prefix
+
+    def is_actively_printing(self):
+        return self._printer.is_operational() and not self._printer.is_ready()
 
     def is_configured(self):
         return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])
