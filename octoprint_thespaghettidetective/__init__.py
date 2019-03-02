@@ -86,14 +86,13 @@ class TheSpaghettiDetectivePlugin(
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
-        #if event.startswith("Print"):
-            self.post_printer_status({
-                "octoprint_event": {
-                    "event_type": event,
-                    "data": payload
-                    },
-                "octoprint_data": self.octoprint_data()
-                })
+        self.post_printer_status({
+            "octoprint_event": {
+                "event_type": event,
+                "data": payload
+                },
+            "octoprint_data": self.octoprint_data()
+            })
 
 
     ##~~Startup Plugin
