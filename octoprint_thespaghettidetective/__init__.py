@@ -22,7 +22,7 @@ import octoprint.plugin
 _logger = logging.getLogger(__name__)
 
 POST_PIC_INTERVAL_SECONDS = 50.0
-POST_STATUS_INTERVAL_SECONDS = 150.0
+POST_STATUS_INTERVAL_SECONDS = 15.0
 
 if os.environ.get('DEBUG'):
     POST_PIC_INTERVAL_SECONDS = 5.0
@@ -37,6 +37,8 @@ class TheSpaghettiDetectivePlugin(
 
     def __init__(self):
         self.saved_temps = {}
+        self.last_post_pic = 0
+        self.last_post_status = 0
 
     def get_template_configs(self):
         return [
@@ -113,20 +115,16 @@ class TheSpaghettiDetectivePlugin(
 
     @backoff.on_exception(backoff.expo, Exception, max_value=240)
     def main_loop(self):
-        last_post_pic = 0
-        last_post_status = 0
         while True:
             if not self.is_configured():
                 time.sleep(1)
                 next
 
             speed_up = 5.0 if self.is_actively_printing() else 1.0
-            if last_post_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
-                last_post_pic = time.time()
+            if self.last_post_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
                 self.post_jpg()
 
-            if last_post_status < time.time() - POST_STATUS_INTERVAL_SECONDS / speed_up:
-                last_post_status = time.time()
+            if self.last_post_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
                 self.post_printer_status({
                     "octoprint_data": self.octoprint_data()
                 })
@@ -136,6 +134,8 @@ class TheSpaghettiDetectivePlugin(
     def post_jpg(self):
         if not self.is_configured():
             return
+
+        self.last_post_pic = time.time()
 
         endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
 
@@ -147,6 +147,8 @@ class TheSpaghettiDetectivePlugin(
     def post_printer_status(self, json_data):
         if not self.is_configured():
             return
+
+        self.last_post_status = time.time()
 
         endpoint = self.canonical_endpoint_prefix() + '/api/octo/status/'
         resp = requests.post(
