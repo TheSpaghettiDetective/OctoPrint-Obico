@@ -9,7 +9,7 @@ This plugin requires The Spaghetti Detective server to work. You can grab the se
 Install via the bundled [Plugin Manager](https://github.com/foosel/OctoPrint/wiki/Plugin:-Plugin-Manager)
 or manually using this URL:
 
-    https://github.com/TheSpaghettiDetective/TheSpaghettiDetective/archive/master.zip
+    https://github.com/TheSpaghettiDetective/OctoPrint-TheSpaghettiDetective/archive/master.zip
 
 ## Configuration
 
