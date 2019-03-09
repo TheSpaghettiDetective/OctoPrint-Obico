@@ -116,6 +116,10 @@ class TheSpaghettiDetectivePlugin(
     def octoprint_data(self):
         return self._printer.get_current_data()
 
+    def octoprint_settings(self):
+        webcam = dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90'))
+        return dict(webcam=webcam)
+
     @backoff.on_exception(backoff.expo, Exception, max_value=240)
     def main_loop(self):
         while True:
@@ -125,7 +129,8 @@ class TheSpaghettiDetectivePlugin(
 
             if self.last_post_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
                 self.post_printer_status({
-                    "octoprint_data": self.octoprint_data()
+                    "octoprint_data": self.octoprint_data(),
+                    "octoprint_settings": self.octoprint_settings()
                 })
 
             speed_up = 5.0 if self.is_actively_printing() else 1.0
