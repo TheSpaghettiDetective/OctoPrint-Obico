@@ -3,11 +3,13 @@ from __future__ import absolute_import
 import logging
 import threading
 import json
+import re
 import os, sys, time
 import requests
 import backoff
 
 from .webcam_capture import capture_jpeg
+from .ws import ServerSocket
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -36,6 +38,7 @@ class TheSpaghettiDetectivePlugin(
             octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
+        self.ss = None
         self.saved_temps = {}
         self.last_post_pic = 0
         self.last_post_status = 0
@@ -120,14 +123,14 @@ class TheSpaghettiDetectivePlugin(
                 time.sleep(1)
                 next
 
-            speed_up = 5.0 if self.is_actively_printing() else 1.0
-            if self.last_post_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
-                self.post_jpg()
-
             if self.last_post_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
                 self.post_printer_status({
                     "octoprint_data": self.octoprint_data()
                 })
+
+            speed_up = 5.0 if self.is_actively_printing() else 1.0
+            if self.last_post_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
+                self.post_jpg()
 
             time.sleep(1)
 
@@ -142,32 +145,39 @@ class TheSpaghettiDetectivePlugin(
         files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
         resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
         resp.raise_for_status()
-        self.process_response(resp)
 
-    def post_printer_status(self, json_data):
+    def post_printer_status(self, data):
         if not self.is_configured():
             return
 
         self.last_post_status = time.time()
+        if not self.ss:
+            self.connect_ws()
 
-        endpoint = self.canonical_endpoint_prefix() + '/api/octo/status/'
-        resp = requests.post(
-            endpoint,
-            json=json_data,
-            headers = self.auth_headers(),
-            )
-        resp.raise_for_status()
-        self.process_response(resp)
+        if not self.ss.connected():
+            return
 
-    def process_response(self, resp):
-        resp_json = resp.json()
+        self.ss.send_text(json.dumps(data))
 
-        if resp_json.get('commands'):
-            _logger.info('Received: ' + json.dumps(resp_json))
+    def connect_ws(self):
+        self.ss = ServerSocket(self.canonical_ws_prefix() + "/ws/dev/", self._settings.get(["auth_token"]), on_message=self.process_server_msg, on_close=self.on_ws_close)
+        wst = threading.Thread(target=self.ss.run)
+        wst.daemon = True
+        wst.start()
+
+    def on_ws_close(self, ws):
+        print("closing")
+        self.ss = None
+
+    def process_server_msg(self, ws, msg_json):
+        print(msg_json)
+        msg = json.loads(msg_json)
+        if msg.get('commands'):
+            _logger.info('Received: ' + msg_json)
         else:
-            _logger.debug('Received: ' + json.dumps(resp_json))
+            _logger.debug('Received: ' + msg_json)
 
-        for command in resp.json().get('commands', []):
+        for command in msg.get('commands', []):
             if command["cmd"] == "pause":
                 self._printer.pause_print()
             if command["cmd"] == 'cancel':
@@ -217,6 +227,9 @@ class TheSpaghettiDetectivePlugin(
         if endpoint_prefix.endswith('/'):
             endpoint_prefix = endpoint_prefix[:-1]
         return endpoint_prefix
+
+    def canonical_ws_prefix(self):
+        return re.sub(r'^http', 'ws', self.canonical_endpoint_prefix())
 
     def is_actively_printing(self):
         return self._printer.is_operational() and not self._printer.is_ready()
