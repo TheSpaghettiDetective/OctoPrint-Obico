@@ -15,6 +15,20 @@ $(function() {
             }
         });
 
+        $('#test-auth-token').click( function(event) {
+            var token = $('#auth-token-input').val();
+            $.ajax('/api/plugin/thespaghettidetective', {
+               method: "POST",
+               contentType: 'application/json',
+               data: JSON.stringify({'command': 'test_auth_token', 'auth_token': token}),
+               success: function(apiStatus) {
+                   $("#std-api-status").text(apiStatus.text);
+                   $("#std-api-status").removeClass('text-success').removeClass('text-error');
+                   $("#std-api-status").addClass( apiStatus.succeeded ? 'text-success' : 'text-error' );
+               }
+           });
+        });
+
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
         // self.settingsViewModel = parameters[1];

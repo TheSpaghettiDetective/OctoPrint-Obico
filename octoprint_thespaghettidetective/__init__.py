@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 import logging
 import threading
+import flask
 import json
 import re
 import os, sys, time
@@ -35,13 +36,14 @@ class TheSpaghettiDetectivePlugin(
             octoprint.plugin.StartupPlugin,
             octoprint.plugin.EventHandlerPlugin,
             octoprint.plugin.AssetPlugin,
+            octoprint.plugin.SimpleApiPlugin,
             octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
         self.ss = None
         self.saved_temps = {}
-        self.last_post_pic = 0
-        self.last_post_status = 0
+        self.last_pic = 0
+        self.last_status = 0
 
     def get_template_configs(self):
         return [
@@ -88,10 +90,26 @@ class TheSpaghettiDetectivePlugin(
             )
         )
 
+    ##~~ plugin APIs
+
+    def get_api_commands(self):
+        return dict(
+            test_auth_token=["auth_token"],
+        )
+
+    def is_api_adminonly(self):
+        return True
+
+    def on_api_command(self, command, data):
+        if command == "test_auth_token":
+            auth_token = data["auth_token"]
+            succeeded, status_text = self.tsd_api_status(auth_token=auth_token)
+            return flask.jsonify({'succeeded': succeeded, 'text': status_text})
+
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
-        self.post_printer_status({
+        self.printer_status({
             "octoprint_event": {
                 "event_type": event,
                 "data": payload
@@ -110,8 +128,8 @@ class TheSpaghettiDetectivePlugin(
 
     ## Private methods
 
-    def auth_headers(self):
-        return {"Authorization": "Token " + self._settings.get(["auth_token"])}
+    def auth_headers(self, auth_token=None):
+        return {"Authorization": "Token " + self.auth_token(auth_token)}
 
     def octoprint_data(self):
         return self._printer.get_current_data()
@@ -127,23 +145,23 @@ class TheSpaghettiDetectivePlugin(
                 time.sleep(1)
                 next
 
-            if self.last_post_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
-                self.post_printer_status({
+            if self.last_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
+                self.printer_status({
                     "octoprint_data": self.octoprint_data(),
                     "octoprint_settings": self.octoprint_settings()
                 })
 
             speed_up = 5.0 if self.is_actively_printing() else 1.0
-            if self.last_post_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
-                self.post_jpg()
+            if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
+                self.jpg()
 
             time.sleep(1)
 
-    def post_jpg(self):
+    def jpg(self):
         if not self.is_configured():
             return
 
-        self.last_post_pic = time.time()
+        self.last_pic = time.time()
 
         endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
 
@@ -151,11 +169,11 @@ class TheSpaghettiDetectivePlugin(
         resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
         resp.raise_for_status()
 
-    def post_printer_status(self, data):
+    def printer_status(self, data):
         if not self.is_configured():
             return
 
-        self.last_post_status = time.time()
+        self.last_status = time.time()
         if not self.ss:
             self.connect_ws()
 
@@ -165,7 +183,7 @@ class TheSpaghettiDetectivePlugin(
         self.ss.send_text(json.dumps(data))
 
     def connect_ws(self):
-        self.ss = ServerSocket(self.canonical_ws_prefix() + "/ws/dev/", self._settings.get(["auth_token"]), on_message=self.process_server_msg, on_close=self.on_ws_close)
+        self.ss = ServerSocket(self.canonical_ws_prefix() + "/ws/dev/", self.auth_token(), on_message=self.process_server_msg, on_close=self.on_ws_close)
         wst = threading.Thread(target=self.ss.run)
         wst.daemon = True
         wst.start()
@@ -236,11 +254,30 @@ class TheSpaghettiDetectivePlugin(
     def canonical_ws_prefix(self):
         return re.sub(r'^http', 'ws', self.canonical_endpoint_prefix())
 
+    def auth_token(self, token=None):
+        return token.strip() if token else self._settings.get(["auth_token"]).strip()
+
     def is_actively_printing(self):
         return self._printer.is_operational() and not self._printer.is_ready()
 
     def is_configured(self):
         return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])
+
+    def tsd_api_status(self, auth_token=None):
+        endpoint = self.canonical_endpoint_prefix() + '/api/octo/ping/'
+        succeeded = False
+        status_text = 'Unknown error.'
+        try:
+            resp = requests.get( endpoint, headers=self.auth_headers(auth_token=self.auth_token(auth_token)) )
+            succeeded = resp.ok
+            if resp.status_code == 200:
+                status_text = 'Secret token is valid. Do not forget to press the "Save" button.'
+            elif resp.status_code == 401:
+                status_text = 'Invalid secret token.'
+        except:
+            status_text = 'Connection error. Please check OctoPrint\'s internet connection'
+
+        return succeeded, status_text
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that

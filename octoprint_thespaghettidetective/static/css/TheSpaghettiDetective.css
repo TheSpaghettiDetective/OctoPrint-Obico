@@ -1,1 +1,25 @@
-/* TODO: Have your plugin's CSS files generated to here. */
+#settings_plugin_thespaghettidetective .header {
+  margin-bottom: 16px;
+}
+#settings_plugin_thespaghettidetective .header img.logo {
+  width: 40px;
+  margin-right: 12px;
+}
+#settings_plugin_thespaghettidetective .header h3 {
+  border-bottom: gray thin solid;
+}
+#settings_plugin_thespaghettidetective .token-input {
+  width: calc(100% - 120px);
+  margin: 8px 0px 2px;
+}
+#settings_plugin_thespaghettidetective .token-input button {
+  width: 120px;
+}
+#settings_plugin_thespaghettidetective .advanced-header {
+  margin: 8px 0px;
+}
+#settings_plugin_thespaghettidetective .settings-video {
+  text-align: center;
+}
+
+/*# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlRoZVNwYWdoZXR0aURldGVjdGl2ZS5sZXNzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUNBLHNDQUNJO0VBQ0ksbUJBQUE7O0FBRlIsc0NBQ0ksUUFHSSxJQUFHO0VBQ0MsV0FBQTtFQUNBLGtCQUFBOztBQU5aLHNDQUNJLFFBT0k7RUFDSSw4QkFBQTs7QUFUWixzQ0FhSTtFQUNJLE9BQU8sa0JBQVA7RUFDQSxtQkFBQTs7QUFmUixzQ0FhSSxhQUlJO0VBQ0ksWUFBQTs7QUFsQlosc0NBc0JJO0VBQ0ksZUFBQTs7QUF2QlIsc0NBMEJJO0VBQ0ksa0JBQUEiLCJzb3VyY2VzQ29udGVudCI6WyIvLyBUT0RPOiBQdXQgeW91ciBwbHVnaW4ncyBMRVNTIGhlcmUsIGhhdmUgaXQgZ2VuZXJhdGVkIHRvIC4uL2Nzcy5cbiNzZXR0aW5nc19wbHVnaW5fdGhlc3BhZ2hldHRpZGV0ZWN0aXZlIHtcbiAgICAuaGVhZGVyIHtcbiAgICAgICAgbWFyZ2luLWJvdHRvbTogMTZweDtcblxuICAgICAgICBpbWcubG9nbyB7XG4gICAgICAgICAgICB3aWR0aDogNDBweDtcbiAgICAgICAgICAgIG1hcmdpbi1yaWdodDogMTJweDtcbiAgICAgICAgfVxuICAgICAgICBoMyB7XG4gICAgICAgICAgICBib3JkZXItYm90dG9tOiBncmF5IHRoaW4gc29saWQ7XG4gICAgICAgIH1cbiAgICB9XG5cbiAgICAudG9rZW4taW5wdXQge1xuICAgICAgICB3aWR0aDogY2FsYygxMDAlIC0gMTIwcHgpO1xuICAgICAgICBtYXJnaW46IDhweCAwcHggMnB4O1xuXG4gICAgICAgIGJ1dHRvbiB7XG4gICAgICAgICAgICB3aWR0aDogMTIwcHg7XG4gICAgICAgIH1cbiAgICB9XG5cbiAgICAuYWR2YW5jZWQtaGVhZGVyIHtcbiAgICAgICAgbWFyZ2luOiA4cHggMHB4O1xuICAgIH1cblxuICAgIC5zZXR0aW5ncy12aWRlbyB7XG4gICAgICAgIHRleHQtYWxpZ246IGNlbnRlcjtcbiAgICB9XG59XG4iXSwiZmlsZSI6IlRoZVNwYWdoZXR0aURldGVjdGl2ZS5jc3MifQ== */

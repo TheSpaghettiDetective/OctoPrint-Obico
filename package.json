@@ -1,0 +1,20 @@
+{
+  "name": "OctoPrint-TheSpaghettiDetective",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "gulp less",
+    "watch": "yarn build && gulp watch"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-less": "^4.0.1",
+    "gulp-sourcemaps": "^2.6.4",
+    "merge-stream": "^1.0.1"
+  },
+  "dependencies": {
+    "bootstrap": "^4.2.1"
+  }
+}
