@@ -298,6 +298,10 @@ class TheSpaghettiDetectivePlugin(
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
 __plugin_name__ = "The Spaghetti Detective (Beta)"
+__plugin_author__ = "The Spaghetti Detective Team"
+__plugin_url__ = "https://thespaghettidetective.com"
+__plugin_description__ = "AI-based open source project for 3D printing failure detection."
+__plugin_license__ = "AGPLv3"
 
 def __plugin_load__():
     global __plugin_implementation__
