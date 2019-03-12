@@ -1,33 +1,43 @@
 <div class="header">
     <img class="logo pull-left" src="/plugin/thespaghettidetective/static/img/logo-square.png" /> <h3>The Spaghetti Detective (Beta)</h3>
+    <p><a href="https://thespaghettidetective.com/" target="_blank">The Spaghetti Detective</a> is an AI-based <strong>open source project</strong> for 3D printing failure detection.</p>
 </div>
-<h5><a href="https://thespaghettidetective.com/">The Spaghetti Detective</a> is an AI-based failure detection for 3D printer.</h5>
-<p>Check out the <a href="https://thespaghettidetective.com/guide.html">Setup Guide</a>. Also our <a href="https://thespaghettidetective.com/privacy.html">Privacy Policy</a> and <a href="https://thespaghettidetective.com/terms.html">Terms of Use</a>.</p>
-<p>The Spaghetti Detective is currently in beta testing. You can sign up a free beta testing account <strong>before March 31st</strong>.
-If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server.</p>
-<hr />
+<h4>Step 1: <a href="https://app.thespaghettidetective.com/accounts/signup/" target="_blank">Sign up</a> a beta testing account.</h4>
+<p>The Spaghetti Detective is currently in beta testing and is free to all beta accounts. Be sure to check our <a href="https://thespaghettidetective.com/privacy.html" target="_blank">Privacy Policy</a> and <a href="https://thespaghettidetective.com/terms.html" target="_blank">Terms of Use</a>.</p>
+<p>Beta account signup will be <strong> closed on March 31st</strong>.</p>
+<h4>Step 2: Obtain and set the secret token</h4>
 <form class="form-horizontal">
-    <h4>Secret token</h4>
-    <div>Secret token is the key to make sure only you can access data in your account, not anyone else. Click <a href="#">here</a> to find the secrete token and copy it to the box below.</div>
+    <div>Secret token is the key that makes sure only you can access data in your account, not anyone else.</div>
+    <div><a href="#" target="_blank">Click here to find your secrete token</a> and copy it to the box below.</div>
     <div class="input-append token-input">
-        <input id="auth-token-input" type="text" class="input-block-level" data-bind="value: settings.plugins.thespaghettidetective.auth_token">
-        <button id="test-auth-token" class="btn" type="button"><i class="fa fa-spinner fa-spin" data-bind="visible: testWebcamStreamUrlBusy" style="display: none;"></i> Test</button>
+        <input type="text" class="input-block-level auth-token-input" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.auth_token">
+        <button class="btn test-auth-token" type="button"><i class="fa fa-spinner fa-spin" style="display: none;"></i> Test</button>
     </div>
-    <div id="std-api-status">&nbsp; </div>
-    <div class="advanced-header"><a href="#" class="muted" onclick="$(this).children().toggleClass('icon-caret-right icon-caret-down').parent().parent().next().slideToggle('fast')"><i class="icon-caret-right"></i>Adavanced</a></div>
+    <div class="std-api-status">&nbsp; </div>
+    <div class="advanced-header"><a href="#" class="muted" onclick="$(this).children().toggleClass('icon-caret-right icon-caret-down').parent().parent().next().slideToggle('fast')"><i class="icon-caret-right"></i>&nbsp;Adavanced</a></div>
     <div class="hide">
         <div class="control-group">
+            <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
             <label class="control-label">{{ _('Server Address') }}</label>
             <div class="controls">
-                <input type="text" class="input-block-level" id="endpoint-prefix" disabled data-bind="value: settings.plugins.thespaghettidetective.endpoint_prefix">
+                <input type="text" class="input-block-level endpoint-prefix" disabled data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix">
                 <div class="form-check" style="margin-top: 8px;">
-                  <input class="form-check-input" type="checkbox" value="" id="custom-server" style="margin-top: 0px;">
+                  <input class="form-check-input custom-server" type="checkbox" value="" style="margin-top: 0px;">
                   <label class="form-check-label" for="custom-server" style="display: inline">
                     I have my own TSD server (don't check this unless you know what you are doing).
                   </label>
                 </div>
             </div>
         </div>
+    </div>
+    <div><a href="#" class="muted" onclick="$(this).children().toggleClass('icon-caret-right icon-caret-down').parent().parent().next().slideToggle('fast')"><i class="icon-caret-right"></i>&nbsp;Having problems?</a></div>
+    <div class="hide">
+        Here are a few things you can try in case you run into problems:
+        <ul>
+            <li>Check out the <a href="https://thespaghettidetective.com/guide.html" target="_blank">Setup Guide</a> and be sure to follow the steps there.</li>
+            <li>Hard-refresh this page and try again. Here is <a href="https://en.scratch-wiki.info/wiki/Help:Hard_Refresh">how you hard-refresh a page</a>.</li>
+            <li><a href="mailto:support@thespaghettidetective.com">Send us an email</a> for help!</li>
+        </ul>
     </div>
 </form>
 <hr />

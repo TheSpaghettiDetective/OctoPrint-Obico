@@ -5,33 +5,51 @@
  * License: AGPLv3
  */
 $(function() {
+
+    function testAuthToken(token, container) {
+        $.ajax('/api/plugin/thespaghettidetective', {
+           method: "POST",
+           contentType: 'application/json',
+           data: JSON.stringify({'command': 'test_auth_token', 'auth_token': container.find('input.auth-token-input').val()}),
+           success: function(apiStatus) {
+               var statusDiv = container.parent().find('.std-api-status');
+               statusDiv.text(apiStatus.text);
+               statusDiv.removeClass('text-success').removeClass('text-error');
+               statusDiv.addClass( apiStatus.succeeded ? 'text-success' : 'text-error' );
+           }
+       });
+    }
+
+    $('input.custom-server').change( function(e) {
+        var container = $(this).parent().parent();
+        if($(this).is(':checked')) {
+            container.find('input.endpoint-prefix').prop('disabled', false);
+        } else {
+            container.find('input.endpoint-prefix').prop('disabled', true);
+        }
+    });
+
+    var authTokenInputTimeout = null;
+    $('input.auth-token-input').keyup( function(e) {
+        var container = $(this).parent();
+        var token = $(this).val();
+        clearTimeout(authTokenInputTimeout);
+        authTokenInputTimeout = setTimeout(function () {
+            testAuthToken(token, container);
+        }, 500);
+    });
+
+    $('button.test-auth-token').click( function(event) {
+        var container = $(this).parent();
+        var token = $(this).parent().find('input.auth-token-input').val();
+        testAuthToken(token, container);
+    });
+
     function ThespaghettidetectiveViewModel(parameters) {
         var self = this;
-        $('#custom-server').change( function(e) {
-            if($(this).is(':checked')) {
-                $('input#endpoint-prefix').prop('disabled', false);
-            } else {
-                $('input#endpoint-prefix').prop('disabled', true);
-            }
-        });
-
-        $('#test-auth-token').click( function(event) {
-            var token = $('#auth-token-input').val();
-            $.ajax('/api/plugin/thespaghettidetective', {
-               method: "POST",
-               contentType: 'application/json',
-               data: JSON.stringify({'command': 'test_auth_token', 'auth_token': token}),
-               success: function(apiStatus) {
-                   $("#std-api-status").text(apiStatus.text);
-                   $("#std-api-status").removeClass('text-success').removeClass('text-error');
-                   $("#std-api-status").addClass( apiStatus.succeeded ? 'text-success' : 'text-error' );
-               }
-           });
-        });
-
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
-        // self.settingsViewModel = parameters[1];
+        self.settingsViewModel = parameters[0];
 
         // TODO: Implement your plugin's view model here.
     }
@@ -43,8 +61,8 @@ $(function() {
     OCTOPRINT_VIEWMODELS.push({
         construct: ThespaghettidetectiveViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
-        dependencies: [ /* "loginStateViewModel", "settingsViewModel" */ ],
+        dependencies: [ "settingsViewModel" ],
         // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
-        elements: [ /* ... */ ]
+        elements: [ '#wizard_plugin_thespaghettidetective', '#settings_plugin_thespaghettidetective' ]
     });
 });

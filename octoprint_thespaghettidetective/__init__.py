@@ -37,6 +37,7 @@ class TheSpaghettiDetectivePlugin(
             octoprint.plugin.EventHandlerPlugin,
             octoprint.plugin.AssetPlugin,
             octoprint.plugin.SimpleApiPlugin,
+            octoprint.plugin.WizardPlugin,
             octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
@@ -45,10 +46,13 @@ class TheSpaghettiDetectivePlugin(
         self.last_pic = 0
         self.last_status = 0
 
-    def get_template_configs(self):
-        return [
-            dict(type="settings", custom_bindings=False)
-        ]
+	##~~ Wizard plugin mix
+
+    def is_wizard_required(self):
+        return not self._settings.get(["auth_token"])
+
+    def get_wizard_version(self):
+        return 1
 
     ##~~ SettingsPlugin mixin
 
@@ -255,7 +259,8 @@ class TheSpaghettiDetectivePlugin(
         return re.sub(r'^http', 'ws', self.canonical_endpoint_prefix())
 
     def auth_token(self, token=None):
-        return token.strip() if token else self._settings.get(["auth_token"]).strip()
+        t = token if token is not None else self._settings.get(["auth_token"])
+        return t.strip() if t else ''
 
     def is_actively_printing(self):
         return self._printer.is_operational() and not self._printer.is_ready()
@@ -271,7 +276,7 @@ class TheSpaghettiDetectivePlugin(
             resp = requests.get( endpoint, headers=self.auth_headers(auth_token=self.auth_token(auth_token)) )
             succeeded = resp.ok
             if resp.status_code == 200:
-                status_text = 'Secret token is valid. Do not forget to press the "Save" button.'
+                status_text = 'Secret token is valid. You still need to press the "Save" button to save the settings.'
             elif resp.status_code == 401:
                 status_text = 'Invalid secret token.'
         except:
