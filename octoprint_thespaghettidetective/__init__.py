@@ -58,7 +58,7 @@ class TheSpaghettiDetectivePlugin(
 
     def get_settings_defaults(self):
         return dict(
-            endpoint_prefix='https://app.thespaghettidetective.com/'
+            endpoint_prefix='https://app.thespaghettidetective.com'
         )
 
     ##~~ AssetPlugin mixin
