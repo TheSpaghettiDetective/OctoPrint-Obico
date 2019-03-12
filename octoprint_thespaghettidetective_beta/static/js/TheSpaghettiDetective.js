@@ -7,7 +7,7 @@
 $(function() {
 
     function testAuthToken(token, container) {
-        $.ajax('/api/plugin/thespaghettidetective', {
+        $.ajax('/api/plugin/thespaghettidetective_beta', {
            method: "POST",
            contentType: 'application/json',
            data: JSON.stringify({'command': 'test_auth_token', 'auth_token': container.find('input.auth-token-input').val()}),
@@ -63,6 +63,6 @@ $(function() {
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
         dependencies: [ "settingsViewModel" ],
         // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
-        elements: [ '#wizard_plugin_thespaghettidetective', '#settings_plugin_thespaghettidetective' ]
+        elements: [ '#wizard_plugin_thespaghettidetective_beta', '#settings_plugin_thespaghettidetective_beta' ]
     });
 });

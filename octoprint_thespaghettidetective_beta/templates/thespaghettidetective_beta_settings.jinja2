@@ -1,5 +1,5 @@
 <div class="header">
-    <img class="logo pull-left" src="/plugin/thespaghettidetective/static/img/logo-square.png" /> <h3>The Spaghetti Detective (Beta)</h3>
+    <img class="logo pull-left" src="/plugin/thespaghettidetective_beta/static/img/logo-square.png" /> <h3>The Spaghetti Detective (Beta)</h3>
     <p><a href="https://thespaghettidetective.com/" target="_blank">The Spaghetti Detective</a> is an AI-based <strong>open source project</strong> for 3D printing failure detection.</p>
 </div>
 <h4>Step 1: <a href="https://app.thespaghettidetective.com/accounts/signup/" target="_blank">Sign up</a> a beta testing account.</h4>
@@ -8,9 +8,9 @@
 <h4>Step 2: Obtain and set the secret token</h4>
 <form class="form-horizontal">
     <div>Secret token is the key that makes sure only you can access data in your account, not anyone else.</div>
-    <div><a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/printer_auth_token/0/' }" target="_blank">Click here to find your secrete token</a> and copy it to the box below.</div>
+    <div><a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective_beta.endpoint_prefix() + '/printer_auth_token/0/' }" target="_blank">Click here to find your secrete token</a> and copy it to the box below.</div>
     <div class="input-append token-input">
-        <input type="text" class="input-block-level auth-token-input" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.auth_token">
+        <input type="text" class="input-block-level auth-token-input" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective_beta.auth_token">
         <button class="btn test-auth-token" type="button"><i class="fa fa-spinner fa-spin" style="display: none;"></i> Test</button>
     </div>
     <div class="std-api-status">&nbsp; </div>
@@ -20,7 +20,7 @@
             <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
             <label class="control-label">{{ _('Server Address') }}</label>
             <div class="controls">
-                <input type="text" class="input-block-level endpoint-prefix" disabled data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix">
+                <input type="text" class="input-block-level endpoint-prefix" disabled data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective_beta.endpoint_prefix">
                 <div class="form-check" style="margin-top: 8px;">
                   <input class="form-check-input custom-server" type="checkbox" value="" style="margin-top: 0px;">
                   <label class="form-check-label" for="custom-server" style="display: inline">

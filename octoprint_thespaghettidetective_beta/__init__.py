@@ -79,8 +79,8 @@ class TheSpaghettiDetectivePlugin(
         # Plugin here. See https://github.com/foosel/OctoPrint/wiki/Plugin:-Software-Update
         # for details.
         return dict(
-            TheSpaghettiDetective=dict(
-                displayName="TheSpaghettiDetective Plugin",
+            TheSpaghettiDetectiveBeta=dict(
+                displayName="TheSpaghettiDetective Plugin (Beta)",
                 displayVersion=self._plugin_version,
 
                 # version check: github repository
@@ -287,7 +287,7 @@ class TheSpaghettiDetectivePlugin(
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
-__plugin_name__ = "The Spaghetti Detective"
+__plugin_name__ = "The Spaghetti Detective (Beta)"
 
 def __plugin_load__():
     global __plugin_implementation__
