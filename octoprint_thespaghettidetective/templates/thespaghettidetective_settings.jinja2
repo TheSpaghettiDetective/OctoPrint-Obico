@@ -8,7 +8,7 @@
 <h4>Step 2: Obtain and set the secret token</h4>
 <form class="form-horizontal">
     <div>Secret token is the key that makes sure only you can access data in your account, not anyone else.</div>
-    <div><a href="#" target="_blank">Click here to find your secrete token</a> and copy it to the box below.</div>
+    <div><a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/printer_auth_token/0/' }" target="_blank">Click here to find your secrete token</a> and copy it to the box below.</div>
     <div class="input-append token-input">
         <input type="text" class="input-block-level auth-token-input" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.auth_token">
         <button class="btn test-auth-token" type="button"><i class="fa fa-spinner fa-spin" style="display: none;"></i> Test</button>
