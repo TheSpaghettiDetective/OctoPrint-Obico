@@ -45,7 +45,7 @@ $(function() {
         testAuthToken(token, container);
     });
 
-    function ThespaghettidetectiveViewModel(parameters) {
+    function ThespaghettidetectiveBetaViewModel(parameters) {
         var self = this;
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
@@ -59,7 +59,7 @@ $(function() {
      * and a full list of the available options.
      */
     OCTOPRINT_VIEWMODELS.push({
-        construct: ThespaghettidetectiveViewModel,
+        construct: ThespaghettidetectiveBetaViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
         dependencies: [ "settingsViewModel" ],
         // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
