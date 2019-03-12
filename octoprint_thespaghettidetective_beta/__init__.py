@@ -49,6 +49,16 @@ class TheSpaghettiDetectivePlugin(
 	##~~ Wizard plugin mix
 
     def is_wizard_required(self):
+        alpha_settings = self._settings.effective.get('plugins', {}).get('thespaghettidetective')
+        if alpha_settings:  # Alpha testers
+            alpha_migrated = os.path.join(self.get_plugin_data_folder(), '.alpah_migrated')
+            if not os.path.isfile(alpha_migrated):
+                with open(alpha_migrated, 'a'):  # touch alpha_migrated
+                    pass
+                self._settings.set(["auth_token"],alpha_settings.get('auth_token'), force=True)
+                self._settings.set(["endpoint_prefix"],alpha_settings.get('endpoint_prefix'), force=True)
+                self._settings.save(force=True)
+
         return not self._settings.get(["auth_token"])
 
     def get_wizard_version(self):
