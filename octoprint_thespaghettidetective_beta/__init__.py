@@ -55,8 +55,10 @@ class TheSpaghettiDetectivePlugin(
             if not os.path.isfile(alpha_migrated):
                 with open(alpha_migrated, 'a'):  # touch alpha_migrated
                     pass
-                self._settings.set(["auth_token"],alpha_settings.get('auth_token'), force=True)
-                self._settings.set(["endpoint_prefix"],alpha_settings.get('endpoint_prefix'), force=True)
+                if alpha_settings.get('auth_token'):
+                    self._settings.set(["auth_token"],alpha_settings.get('auth_token'), force=True)
+                if alpha_settings.get('endpoint_prefix'):
+                    self._settings.set(["endpoint_prefix"],alpha_settings.get('endpoint_prefix'), force=True)
                 self._settings.save(force=True)
 
         return not self._settings.get(["auth_token"])
