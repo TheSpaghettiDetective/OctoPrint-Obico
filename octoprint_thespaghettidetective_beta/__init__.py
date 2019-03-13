@@ -120,6 +120,10 @@ class TheSpaghettiDetectivePlugin(
         if command == "test_auth_token":
             auth_token = data["auth_token"]
             succeeded, status_text = self.tsd_api_status(auth_token=auth_token)
+            if succeeded:
+                self._settings.set(["auth_token"],auth_token, force=True)
+                self._settings.save(force=True)
+
             return flask.jsonify({'succeeded': succeeded, 'text': status_text})
 
     ##~~ Eventhandler mixin
@@ -288,9 +292,9 @@ class TheSpaghettiDetectivePlugin(
             resp = requests.get( endpoint, headers=self.auth_headers(auth_token=self.auth_token(auth_token)) )
             succeeded = resp.ok
             if resp.status_code == 200:
-                status_text = 'Secret token is valid. You still need to press the "Save" button to save the settings.'
+                status_text = 'Secret token is valid. You are awesome!'
             elif resp.status_code == 401:
-                status_text = 'Invalid secret token.'
+                status_text = 'Meh~~~. Invalid secret token.'
         except:
             status_text = 'Connection error. Please check OctoPrint\'s internet connection'
 

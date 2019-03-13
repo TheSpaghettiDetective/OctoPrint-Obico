@@ -2,13 +2,14 @@
     <img class="logo pull-left" src="/plugin/thespaghettidetective_beta/static/img/logo-square.png" /> <h3>The Spaghetti Detective (Beta)</h3>
     <p><a href="https://thespaghettidetective.com/" target="_blank">The Spaghetti Detective</a> is an AI-based <strong>open source project</strong> for 3D printing failure detection.</p>
 </div>
-<h4>Step 1: <a href="https://app.thespaghettidetective.com/accounts/signup/" target="_blank">Sign up</a> a beta testing account. Add a printer.</h4>
+<h4>Step 1: <a href="https://app.thespaghettidetective.com/accounts/signup/" target="_blank">Sign up</a> a beta testing account.</h4>
 <p>The Spaghetti Detective is currently in beta testing and is free to all beta accounts. Be sure to check our <a href="https://thespaghettidetective.com/privacy.html" target="_blank">Privacy Policy</a> and <a href="https://thespaghettidetective.com/terms.html" target="_blank">Terms of Use</a>.</p>
 <p>Beta account signup will be <strong> closed on March 31st</strong>.</p>
-<h4>Step 2: Obtain and set the secret token.</h4>
+<h4>Step 2: Add a printer in The Spaghetti Detective and obtain its secret token.</h4>
+<div>Secret token is the key that makes sure only you can access data in your account, not anyone else.</div>
+<h4>Step 3: Copy the secret token to the box below.</h4>
 <form class="form-horizontal">
-    <div>Secret token is the key that makes sure only you can access data in your account, not anyone else.</div>
-    <div><a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective_beta.endpoint_prefix() + '/printer_auth_token/0/' }" target="_blank">Click here to find your secrete token</a> and copy it to the box below.</div>
+    <div>If you have problem locating the secret token, click <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective_beta.endpoint_prefix() + '/printer_auth_token/0/' }" target="_blank">here</a>.</div>
     <div class="input-append token-input">
         <input type="text" class="input-block-level auth-token-input" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective_beta.auth_token">
         <button class="btn test-auth-token" type="button"><i class="fa fa-spinner fa-spin" style="display: none;"></i> Test</button>
