@@ -227,6 +227,7 @@ class TheSpaghettiDetectivePlugin(
         for command in msg.get('commands', []):
             if command["cmd"] == "pause":
                 self.commander.put_on_hold(self._printer)
+                self._printer.pause_print()
             if command["cmd"] == 'cancel':
                 self._printer.cancel_print()
             if command["cmd"] == 'resume':
@@ -292,5 +293,6 @@ def __plugin_load__():
     __plugin_hooks__ = {
         "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.commander.track_gcode,
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
+        "octoprint.comm.protocol.scripts": __plugin_implementation__.commander.pause_and_resume,
     }
 

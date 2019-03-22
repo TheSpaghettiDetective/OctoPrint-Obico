@@ -9,6 +9,8 @@ class Commander:
         self.last_g9x = 'G90'
         self.last_m8x = 'M82'
         self.job_is_on_hold = False
+        self.pause_scripts = []
+        self.resume_scripts = []
 
     def track_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         if 'TSD' in tags:
@@ -22,31 +24,46 @@ class Commander:
                 self.last_m8x = cmd
                 print('commander setting: {}'.format(self.last_m8x))
 
+    def pause_and_resume(self, comm, script_type, script_name, *args, **kwargs):
+        if script_type == "gcode" and script_name == "afterPrintPaused":
+            pause_scripts = self.pause_scripts
+            self.pause_scripts = []
+            print(pause_scripts)
+            return None, pause_scripts
+        if script_type == "gcode" and script_name == "beforePrintResumed":
+            resume_scripts = self.resume_scripts
+            self.resume_scripts = []
+            print(resume_scripts)
+            return resume_scripts, None
+
     def put_on_hold(self, printer):
         with self.mutex:
-            printer.set_job_on_hold(True)
+            #printer.set_job_on_hold(True)
             self.job_is_on_hold = True
 
-        self.commands(printer, [
+        self.pause_scripts = [
             'G91',
             'M83',
-            'G1 E-5.0',
-            'G1 Z5.0',
-            ])
+            'G1 E-5',
+            'G1 Z5',
+            self.last_g9x,
+            self.last_m8x,
+            ]
+
+        self.set_temps(printer, heater='bed', target=0, save=True)
+        self.set_temps(printer, heater='tools', target=0, save=True)
+        self.resume_scripts.extend(self.restore_temps(printer))
+        self.resume_scripts.extend(self.resume_from_hold(printer))
 
     def resume_from_hold(self, printer):
-        self.commands(printer, [
+        return [
             'G91',
             'M83',
             'G1 Z-5.0',
             'G1 E5.0',
             self.last_g9x,
             self.last_m8x,
-            ])
-
-        with self.mutex:
-            printer.set_job_on_hold(False)
-            self.job_is_on_hold = False
+            ]
 
 
     def release_hold_if_needed(self, printer):
@@ -96,12 +113,7 @@ class Commander:
                     target_temp = self.saved_temps[heater]['target'] + self.saved_temps[heater]['offset']
                     cmds.append('M109 S%d' % (target_temp))
 
-            self.saved_temps = {}
-
-        if len(cmds) == 0:
-            return
-
-        self.commands(printer, cmds)
+        return cmds
 
 
     # private methods
