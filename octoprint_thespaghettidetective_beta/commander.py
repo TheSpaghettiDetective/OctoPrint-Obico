@@ -5,17 +5,13 @@ class Commander:
 
     def __init__(self):
         self.mutex = threading.RLock()
-        self.saved_temps = {}
-        self.last_g9x = 'G90'
-        self.last_m8x = 'M82'
-        self.job_is_on_hold = False
         self.pause_scripts = []
         self.resume_scripts = []
 
-    def track_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
-        if 'TSD' in tags:
-            return
+        self.last_g9x = 'G90'
+        self.last_m8x = 'M82'
 
+    def track_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         with self.mutex:
             if re.match('G9[01]', cmd, flags=re.IGNORECASE):
                 self.last_g9x = cmd
@@ -24,100 +20,91 @@ class Commander:
                 self.last_m8x = cmd
                 print('commander setting: {}'.format(self.last_m8x))
 
-    def pause_and_resume(self, comm, script_type, script_name, *args, **kwargs):
+    def script_hook(self, comm, script_type, script_name, *args, **kwargs):
         if script_type == "gcode" and script_name == "afterPrintPaused":
             pause_scripts = self.pause_scripts
             self.pause_scripts = []
-            print(pause_scripts)
-            return pause_scripts, None
+            return None, pause_scripts
+
         if script_type == "gcode" and script_name == "beforePrintResumed":
             resume_scripts = self.resume_scripts
             self.resume_scripts = []
-            print(resume_scripts)
-            return None, resume_scripts
+            return resume_scripts, None
 
-    def put_on_hold(self, printer):
+        return None
+
+    def prepare_to_pause(self, printer, retract=0, lift_z=0, tools_off=False, bed_off=False):
         with self.mutex:
-            #printer.set_job_on_hold(True)
-            self.job_is_on_hold = True
+            self.pause_scripts = []
+            self.resume_scripts = []
 
-        self.pause_scripts = [
-            'G91',
-            'M83',
-            'G1 E-5',
-            'G1 Z5',
-            self.last_g9x,
-            self.last_m8x,
-            ]
+            if retract > 0 or lift_z > 0:
 
-        self.set_temps(printer, heater='bed', target=0, save=True)
-        self.set_temps(printer, heater='tools', target=0, save=True)
-        self.resume_scripts.extend(self.restore_temps(printer))
-        self.resume_scripts.extend(self.resume_from_hold(printer))
+                # Scripts for retract and lift to be returned from afterPrintPaused
+                self.pause_scripts.extend([    # Set to relative mode
+                    'G91',
+                    'M83',
+               ])
 
-    def resume_from_hold(self, printer):
-        return [
-            'G91',
-            'M83',
-            'G1 Z-5.0',
-            'G1 E5.0',
-            self.last_g9x,
-            self.last_m8x,
-            ]
+                if retract > 0:    # Retract before lift on pause
+                    self.pause_scripts.extend([
+                        'G1 E-%g' % retract,
+                    ])
 
+                if lift_z > 0:
+                    self.pause_scripts.extend([
+                        'G1 Z%g' % lift_z,
+                    ])
 
-    def release_hold_if_needed(self, printer):
-        with self.mutex:
-            if self.job_is_on_hold:
-                self.commands(printer, [
+                self.pause_scripts.extend([     # restore previous mode
                     self.last_g9x,
                     self.last_m8x,
+                 ])
+
+                # Scripts for retract and lift to be returned from beforePrintResumed
+                self.resume_scripts.extend([
+                    'G91',
+                    'M83',
+                ])
+
+                if lift_z > 0:     # Drop before de-reract on resume
+                    self.resume_scripts.extend([
+                        'G1 Z-%g' % lift_z,
                     ])
-                printer.set_job_on_hold(False)
-                self.job_is_on_hold = False
+
+                if retract > 0:
+                    self.resume_scripts.extend([
+                        'G1 E%g' % retract,
+                    ])
+
+                self.resume_scripts.extend([     # restore previous mode
+                    self.last_g9x,
+                    self.last_m8x,
+                ])
 
 
-    def set_temps(self, printer, heater=None, target=None, save=False):
-        current_temps = printer.get_current_temperatures()
+            current_temps = printer.get_current_temperatures()
 
-        if heater == 'tools':
-            for tool_heater in [h for h in current_temps.keys() if h.startswith('tool')]:
-                if save:
-                    with self.mutex:
-                        self.saved_temps[tool_heater] = current_temps[tool_heater]
-                printer.set_temperature(tool_heater, target)
+            if tools_off:
 
-        elif heater == 'bed' and current_temps.get('bed'):
-            if save:
-                with self.mutex:
-                    self.saved_temps['bed'] = current_temps.get('bed')
-            printer.set_temperature('bed', target)
+                if 'tool1' in current_temps:  # Multiple hotends
+                    for tool_num in range(3):  # most 3 hotends, I guess?
+                        heater = 'tool%d' % tool_num
+                        if heater in current_temps:
+                            target_temp = current_temps[heater]['target'] + current_temps[heater]['offset']
+                            self.pause_scripts.append('M104 T%d S0' % (tool_num))     # On pause, temp should come after retract and lift
+                            self.resume_scripts.insert(0, 'M109 T%d S%d' % (tool_num, target_temp))  # on resume, temp should come before de-retract and drop
+                else:
+                    heater = 'tool0'
+                    if heater in current_temps:
+                        target_temp = current_temps[heater]['target'] + current_temps[heater]['offset']
+                        self.pause_scripts.append('M104 S0')
+                        self.resume_scripts.insert(0, 'M109 S%d' % (target_temp))
 
-    def restore_temps(self, printer):
-        cmds = []
+            if bed_off:
 
-        with self.mutex:
-            if 'bed' in self.saved_temps:
-                target_temp = int(self.saved_temps['bed']['target'] + self.saved_temps['bed']['offset'])
-                cmds.append('M190 S%d' % (target_temp))
-
-            if 'tool1' in self.saved_temps:  # Multiple hotends
-                for tool_num in range(3):  # most 3 hotends, I guess?
-                    heater = 'tool%d' % tool_num
-                    if heater in self.saved_temps:
-                        target_temp = self.saved_temps[heater]['target'] + self.saved_temps[heater]['offset']
-                        cmds.append('M109 T%d S%d' % (tool_num, target_temp))
-            else:
-                heater = 'tool0'
-                if heater in self.saved_temps:
-                    target_temp = self.saved_temps[heater]['target'] + self.saved_temps[heater]['offset']
-                    cmds.append('M109 S%d' % (target_temp))
-
-        return cmds
-
-
-    # private methods
-
-    def commands(self, printer, cmds):
-        printer.commands(cmds, tags=set(['TSD']))
-
+                heater = 'bed'
+                if heater in current_temps:
+                    target_temp = current_temps[heater]['target'] + current_temps[heater]['offset']
+                    self.pause_scripts.append('M140 S0')
+                    self.resume_scripts.insert(0, 'M190 S%d' % (target_temp))
