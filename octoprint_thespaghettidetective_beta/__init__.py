@@ -227,10 +227,8 @@ class TheSpaghettiDetectivePlugin(
         for command in msg.get('commands', []):
             if command["cmd"] == "pause":
                 self.commander.put_on_hold(self._printer)
-                #self._printer.pause_print()
             if command["cmd"] == 'cancel':
-                self.commander.resume_from_hold(self._printer)
-                #self._printer.cancel_print()
+                self._printer.cancel_print()
             if command["cmd"] == 'resume':
                 self.commander.resume_from_hold(self._printer)
             if command["cmd"] == 'set_temps':
