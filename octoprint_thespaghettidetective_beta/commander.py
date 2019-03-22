@@ -5,6 +5,7 @@ class Commander:
 
     def __init__(self):
         self.mutex = threading.RLock()
+        self.saved_temps = {}
         self.last_g9x = 'G90'
         self.last_m8x = 'M82'
         self.job_is_on_hold = False
@@ -57,6 +58,50 @@ class Commander:
                     ])
                 printer.set_job_on_hold(False)
                 self.job_is_on_hold = False
+
+
+    def set_temps(self, printer, heater=None, target=None, save=False):
+        current_temps = printer.get_current_temperatures()
+
+        if heater == 'tools':
+            for tool_heater in [h for h in current_temps.keys() if h.startswith('tool')]:
+                if save:
+                    with self.mutex:
+                        self.saved_temps[tool_heater] = current_temps[tool_heater]
+                printer.set_temperature(tool_heater, target)
+
+        elif heater == 'bed' and current_temps.get('bed'):
+            if save:
+                with self.mutex:
+                    self.saved_temps['bed'] = current_temps.get('bed')
+            printer.set_temperature('bed', target)
+
+    def restore_temps(self, printer):
+        cmds = []
+
+        with self.mutex:
+            if 'bed' in self.saved_temps:
+                target_temp = int(self.saved_temps['bed']['target'] + self.saved_temps['bed']['offset'])
+                cmds.append('M190 S%d' % (target_temp))
+
+            if 'tool1' in self.saved_temps:  # Multiple hotends
+                for tool_num in range(3):  # most 3 hotends, I guess?
+                    heater = 'tool%d' % tool_num
+                    if heater in self.saved_temps:
+                        target_temp = self.saved_temps[heater]['target'] + self.saved_temps[heater]['offset']
+                        cmds.append('M109 T%d S%d' % (tool_num, target_temp))
+            else:
+                heater = 'tool0'
+                if heater in self.saved_temps:
+                    target_temp = self.saved_temps[heater]['target'] + self.saved_temps[heater]['offset']
+                    cmds.append('M109 S%d' % (target_temp))
+
+            self.saved_temps = {}
+
+        if len(cmds) == 0:
+            return
+
+        self.commands(printer, cmds)
 
 
     # private methods

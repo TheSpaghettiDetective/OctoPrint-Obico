@@ -43,7 +43,6 @@ class TheSpaghettiDetectivePlugin(
 
     def __init__(self):
         self.ss = None
-        self.saved_temps = {}
         self.last_pic = 0
         self.last_status = 0
         self.commander = Commander()
@@ -233,41 +232,11 @@ class TheSpaghettiDetectivePlugin(
                 self.commander.resume_from_hold(self._printer)
                 #self._printer.cancel_print()
             if command["cmd"] == 'resume':
-                self._printer.resume_print()
+                self.commander.resume_from_hold(self._printer)
             if command["cmd"] == 'set_temps':
-                self.set_temps(**command.get('args'))
+                self.commander.set_temps(self._printer, **command.get('args'))
             if command["cmd"] == 'restore_temps':
-                self.restore_temps()
-
-    def restore_temps(self):
-        for heater in self.saved_temps.keys():
-            self._printer.set_temperature(heater, self.saved_temps[heater]['target'] + self.saved_temps[heater]['offset'])
-
-        time.sleep(10)
-        while True:
-            temps = self._printer.get_current_temperatures()
-            not_reached = [k for k,v in self._printer.get_current_temperatures().items() if v['target'] - 2.0 > v['actual'] + v['offset'] ]
-
-            if len(not_reached) == 0:
-                break
-
-            time.sleep(5)
-
-        self.saved_temps = {}
-
-    def set_temps(self, heater=None, target=None, save=False):
-        current_temps = self._printer.get_current_temperatures()
-
-        if heater == 'tools':
-            for tool_heater in [h for h in current_temps.keys() if h.startswith('tool')]:
-                if save:
-                    self.saved_temps[tool_heater] = current_temps[tool_heater]
-                self._printer.set_temperature(tool_heater, target)
-
-        elif heater == 'bed' and current_temps.get('bed'):
-            if save:
-                self.saved_temps['bed'] = current_temps.get('bed')
-            self._printer.set_temperature('bed', target)
+                self.commander.restore_temps(self._printer)
 
     def canonical_endpoint_prefix(self):
         if not self._settings.get(["endpoint_prefix"]):
