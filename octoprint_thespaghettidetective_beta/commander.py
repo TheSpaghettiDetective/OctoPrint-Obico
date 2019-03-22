@@ -29,12 +29,12 @@ class Commander:
             pause_scripts = self.pause_scripts
             self.pause_scripts = []
             print(pause_scripts)
-            return None, pause_scripts
+            return pause_scripts, None
         if script_type == "gcode" and script_name == "beforePrintResumed":
             resume_scripts = self.resume_scripts
             self.resume_scripts = []
             print(resume_scripts)
-            return resume_scripts, None
+            return None, resume_scripts
 
     def put_on_hold(self, printer):
         with self.mutex:

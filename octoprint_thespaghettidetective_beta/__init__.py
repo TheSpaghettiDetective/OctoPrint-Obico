@@ -231,11 +231,7 @@ class TheSpaghettiDetectivePlugin(
             if command["cmd"] == 'cancel':
                 self._printer.cancel_print()
             if command["cmd"] == 'resume':
-                self.commander.resume_from_hold(self._printer)
-            if command["cmd"] == 'set_temps':
-                self.commander.set_temps(self._printer, **command.get('args'))
-            if command["cmd"] == 'restore_temps':
-                self.commander.restore_temps(self._printer)
+                self._printer.resume_print()
 
     def canonical_endpoint_prefix(self):
         if not self._settings.get(["endpoint_prefix"]):
@@ -293,6 +289,6 @@ def __plugin_load__():
     __plugin_hooks__ = {
         "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.commander.track_gcode,
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
-        "octoprint.comm.protocol.scripts": __plugin_implementation__.commander.pause_and_resume,
+        "octoprint.comm.protocol.scripts": (__plugin_implementation__.commander.pause_and_resume, 100000),
     }
 
