@@ -11,6 +11,7 @@ import backoff
 
 from .webcam_capture import capture_jpeg
 from .ws import ServerSocket
+from .commander import Commander
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -45,6 +46,7 @@ class TheSpaghettiDetectivePlugin(
         self.saved_temps = {}
         self.last_pic = 0
         self.last_status = 0
+        self.commander = Commander()
 
 	##~~ Wizard plugin mix
 
@@ -129,6 +131,9 @@ class TheSpaghettiDetectivePlugin(
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
+        if event == 'PrintCancelling':
+            self.commander.release_hold_if_needed(self._printer)
+
         self.printer_status({
             "octoprint_event": {
                 "event_type": event,
@@ -222,9 +227,11 @@ class TheSpaghettiDetectivePlugin(
 
         for command in msg.get('commands', []):
             if command["cmd"] == "pause":
-                self._printer.pause_print()
+                self.commander.put_on_hold(self._printer)
+                #self._printer.pause_print()
             if command["cmd"] == 'cancel':
-                self._printer.cancel_print()
+                self.commander.resume_from_hold(self._printer)
+                #self._printer.cancel_print()
             if command["cmd"] == 'resume':
                 self._printer.resume_print()
             if command["cmd"] == 'set_temps':
@@ -300,6 +307,7 @@ class TheSpaghettiDetectivePlugin(
 
         return succeeded, status_text
 
+
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
@@ -315,6 +323,7 @@ def __plugin_load__():
 
     global __plugin_hooks__
     __plugin_hooks__ = {
-        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
+        "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.commander.track_gcode,
+        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
     }
 
