@@ -98,7 +98,7 @@ class TheSpaghettiDetectivePlugin(
 
                 # version check: github repository
                 type="github_release",
-                user="kennethjiang",
+                user="TheSpaghettiDetective",
                 repo="OctoPrint-TheSpaghettiDetective",
                 current=self._plugin_version,
 
