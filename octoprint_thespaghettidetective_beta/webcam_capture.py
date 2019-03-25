@@ -10,6 +10,7 @@ from urlparse import urlparse
 from contextlib import closing
 import requests
 import backoff
+import requests
 
 _logger = logging.getLogger(__name__)
 
@@ -17,13 +18,16 @@ _logger = logging.getLogger(__name__)
 @backoff.on_predicate(backoff.expo, max_value=1200)
 def capture_jpeg(settings):
     snapshot_url = settings.get("snapshot", '').strip()
+    snapshot_timeout = int(settings.get("snapshotTimeout", '5'))
+    snapshot_validate_ssl = bool(settings.get("snapshotSslValidation", 'False'))
     if snapshot_url:
         if not urlparse(snapshot_url).scheme:
             snapshot_url = "http://localhost/" + re.sub(r"^\/", "", snapshot_url)
 
-        with closing(urllib2.urlopen(snapshot_url)) as res:
-            jpg = res.read()
-            return jpg
+        r = requests.get(snapshot_url, stream=True, timeout=snapshot_timeout, verify=snapshot_validate_ssl ) 
+        r.raise_for_status()
+        jpg = r.content
+        return jpg
 
     else:
         stream_url = settings.get("stream", "/webcam/?action=stream").strip()
