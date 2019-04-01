@@ -7,11 +7,12 @@ import json
 import re
 import os, sys, time
 import requests
-import backoff
+import raven
 
 from .webcam_capture import capture_jpeg
 from .ws import ServerSocket
 from .commander import Commander
+from .utils import ExpoBackoff
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -47,6 +48,7 @@ class TheSpaghettiDetectivePlugin(
         self.last_status = 0
         self.commander = Commander()
 
+
 	##~~ Wizard plugin mix
 
     def is_wizard_required(self):
@@ -70,6 +72,12 @@ class TheSpaghettiDetectivePlugin(
     ##~~ SettingsPlugin mixin
 
     def get_settings_defaults(self):
+        # Initialize sentry the first opportunity when `self._plugin_version` is available. Is there a better place for it?
+        self.sentry = raven.Client(
+            'https://45064d46913d4a9e98e7155ecb18321c:054f538fa0b64ee88af283639b415e24@sentry.getanywhere.io/3?verify_ssl=0',
+            release=self._plugin_version
+            )
+
         return dict(
             endpoint_prefix='https://app.thespaghettidetective.com'
         )
@@ -130,7 +138,7 @@ class TheSpaghettiDetectivePlugin(
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
-        self.printer_status({
+        self.post_printer_status({
             "octoprint_event": {
                 "event_type": event,
                 "data": payload
@@ -159,30 +167,37 @@ class TheSpaghettiDetectivePlugin(
         webcam = dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90'))
         return dict(webcam=webcam)
 
-    @backoff.on_exception(backoff.expo, Exception, max_value=240)
     def main_loop(self):
+        backoff = ExpoBackoff(240)
         while True:
-            if not self.is_configured():
+            try:
+                if not self.is_configured():
+                    time.sleep(1)
+                    next
+
+                if self.last_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
+                    if self.post_printer_status({
+                        "octoprint_data": self.octoprint_data(),
+                        "octoprint_settings": self.octoprint_settings()
+                    }):
+                        backoff.reset()
+
+                speed_up = 5.0 if self.is_actively_printing() else 1.0
+                if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
+                    self.post_jpg()
+                    backoff.reset()
+
                 time.sleep(1)
-                next
 
-            if self.last_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
-                self.printer_status({
-                    "octoprint_data": self.octoprint_data(),
-                    "octoprint_settings": self.octoprint_settings()
-                })
+            except Exception as e:
+                self.sentry.captureException()
+                backoff.more(e)
 
-            speed_up = 5.0 if self.is_actively_printing() else 1.0
-            if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
-                self.jpg()
-
-            time.sleep(1)
-
-    def jpg(self):
+    def post_jpg(self):
         if not self.is_configured():
             return
 
-        self.last_pic = time.time()
+        self._plugin_manager.send_plugin_message(self._identifier, dict(type="popup", msg='asdf'))
 
         endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
 
@@ -190,18 +205,24 @@ class TheSpaghettiDetectivePlugin(
         resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
         resp.raise_for_status()
 
-    def printer_status(self, data):
-        if not self.is_configured():
-            return
+        self.last_pic = time.time()
 
-        self.last_status = time.time()
+
+    def post_printer_status(self, data):
+        if not self.is_configured():
+            return False
+
         if not self.ss:
             self.connect_ws()
 
-        if not self.ss.connected():
-            return
+        time.sleep(0.5)    # Wait for websocket to connect
+        if not self.ss or not self.ss.connected():
+            return False
 
         self.ss.send_text(json.dumps(data))
+
+        self.last_status = time.time()
+        return True
 
     def connect_ws(self):
         self.ss = ServerSocket(self.canonical_ws_prefix() + "/ws/dev/", self.auth_token(), on_message=self.process_server_msg, on_close=self.on_ws_close)

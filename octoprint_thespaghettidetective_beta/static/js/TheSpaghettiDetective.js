@@ -5,19 +5,23 @@
  * License: AGPLv3
  */
 $(function() {
-
     function testAuthToken(token, container) {
-        $.ajax('/api/plugin/thespaghettidetective_beta', {
-           method: "POST",
-           contentType: 'application/json',
-           data: JSON.stringify({'command': 'test_auth_token', 'auth_token': container.find('input.auth-token-input').val()}),
-           success: function(apiStatus) {
-               var statusDiv = container.parent().find('.std-api-status');
-               statusDiv.text(apiStatus.text);
-               statusDiv.removeClass('text-success').removeClass('text-error');
-               statusDiv.addClass( apiStatus.succeeded ? 'text-success' : 'text-error' );
-           }
-       });
+        $.ajax("/api/plugin/thespaghettidetective_beta", {
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                command: "test_auth_token",
+                auth_token: container.find("input.auth-token-input").val()
+            }),
+            success: function(apiStatus) {
+                var statusDiv = container.parent().find(".std-api-status");
+                statusDiv.text(apiStatus.text);
+                statusDiv.removeClass("text-success").removeClass("text-error");
+                statusDiv.addClass(
+                    apiStatus.succeeded ? "text-success" : "text-error"
+                );
+            }
+        });
     }
 
     $('input.custom-server').change( function(e) {
@@ -30,16 +34,16 @@ $(function() {
     });
 
     var authTokenInputTimeout = null;
-    $('input.auth-token-input').keyup( function(e) {
+    $("input.auth-token-input").keyup(function(e) {
         var container = $(this).parent();
         var token = $(this).val();
         clearTimeout(authTokenInputTimeout);
-        authTokenInputTimeout = setTimeout(function () {
+        authTokenInputTimeout = setTimeout(function() {
             testAuthToken(token, container);
         }, 500);
     });
 
-    $('button.test-auth-token').click( function(event) {
+    $("button.test-auth-token").click(function(event) {
         var container = $(this).parent();
         var token = $(this).parent().find('input.auth-token-input').val();
         testAuthToken(token, container);

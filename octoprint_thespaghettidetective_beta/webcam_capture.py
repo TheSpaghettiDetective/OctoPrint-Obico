@@ -24,7 +24,7 @@ def capture_jpeg(settings):
         if not urlparse(snapshot_url).scheme:
             snapshot_url = "http://localhost/" + re.sub(r"^\/", "", snapshot_url)
 
-        r = requests.get(snapshot_url, stream=True, timeout=snapshot_timeout, verify=snapshot_validate_ssl ) 
+        r = requests.get(snapshot_url, stream=True, timeout=snapshot_timeout, verify=snapshot_validate_ssl )
         r.raise_for_status()
         jpg = r.content
         return jpg
