@@ -54,6 +54,26 @@ $(function() {
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
+        self.onDataUpdaterPluginMessage = function(plugin, data) {
+            console.log(plugin, data);
+            new PNotify({
+                title: "M117 Pop Up Message",
+                text: data.msg,
+                hide: false,
+                confirm: {
+                    confirm: true,
+                    buttons: [
+                        {
+                            text: "Fries",
+                            addClass: "btn-primary",
+                            click: function(notice) {
+                                $("#myModal").modal();
+                            }
+                        }
+                    ]
+                }
+            });
+        };
 
         // TODO: Implement your plugin's view model here.
     }
