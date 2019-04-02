@@ -29,12 +29,18 @@ class ExpoBackoff:
 
 class ConnectionErrorTracker:
 
-    def __init__(self):
+    def __init__(self, plugin):
+        self.plugin = plugin
         self.errors = dict()
 
     def add_connection_error(self, error_type):
         existing = self.errors.get(error_type, [])
         self.errors[error_type] = existing + [datetime.utcnow()]
+        self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_error': error_type})
+
+    def notify_client_if_needed(self):
+        for k in self.errors:
+            self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_error': k})
 
     def as_dict(self):
         return self.errors

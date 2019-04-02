@@ -47,7 +47,7 @@ class TheSpaghettiDetectivePlugin(
         self.last_pic = 0
         self.last_status = 0
         self.commander = Commander()
-        self.error_tracker = ConnectionErrorTracker()
+        self.error_tracker = ConnectionErrorTracker(self)
 
 
 	##~~ Wizard plugin mix
@@ -142,6 +142,9 @@ class TheSpaghettiDetectivePlugin(
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
+        if event == 'ClientOpened':
+            self.error_tracker.notify_client_if_needed()
+
         self.post_printer_status({
             "octoprint_event": {
                 "event_type": event,
@@ -188,21 +191,20 @@ class TheSpaghettiDetectivePlugin(
 
                 speed_up = 5.0 if self.is_actively_printing() else 1.0
                 if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
-                    self.post_jpg()
-                    backoff.reset()
+                    if self.post_jpg():
+                        backoff.reset()
 
                 time.sleep(1)
 
             except Exception as e:
                 self.sentry.captureException()
                 self.error_tracker.add_connection_error('server')
-                self._plugin_manager.send_plugin_message(self._identifier, {'new_error': 'server'})
 
                 backoff.more(e)
 
     def post_jpg(self):
         if not self.is_configured():
-            return
+            return True
 
         endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
 
@@ -210,14 +212,14 @@ class TheSpaghettiDetectivePlugin(
             files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
         except:
             self.sentry.captureException()
-            self.error_tracker.add_connnection_error('webcam')
-            self._plugin_manager.send_plugin_message(self._identifier, {'new_error': 'webcam'})
-            return
+            self.error_tracker.add_connection_error('webcam')
+            return False
 
         resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
         resp.raise_for_status()
 
         self.last_pic = time.time()
+        return True
 
 
     def post_printer_status(self, data, throwing=False):

@@ -64,13 +64,16 @@ $(function() {
         }
     };
 
-    function ThespaghettidetectiveBetaErrorTrackerViewModel(parameters) {
+    function ThespaghettidetectiveBetaViewModel(parameters) {
         var self = this;
 
-        self.connectionErrors = ko.observable({server: [], webcam: []});
+        // assign the injected parameters, e.g.:
+        // self.loginStateViewModel = parameters[0];
+        self.settingsViewModel = parameters[0];
+
+        self.connectionErrors = {server: [], webcam: []};
         self.hasShownServerError = false;
         self.hasShownWebcamError = false;
-        self.trackerModalVisible = ko.observable(false);
 
         self.onDataUpdaterPluginMessage = function(plugin, data) {
             if (plugin != "thespaghettidetective_beta") {
@@ -121,7 +124,6 @@ $(function() {
         };
 
         self.showTrackerModal = function() {
-            self.trackerModalVisible(true);
             $.ajax("/api/plugin/thespaghettidetective_beta", {
                 method: "POST",
                 contentType: "application/json",
@@ -129,39 +131,48 @@ $(function() {
                     command: "get_connection_errors",
                 }),
                 success: function(connectionErrors) {
-                    var errors = {};
                     for (var k in connectionErrors) {
                         var occurences = [];
                         for (var i in connectionErrors[k]) {
                             occurences.push(new Date(connectionErrors[k][i]));
                         }
-                        errors[k] = occurences;
+                        self.connectionErrors[k] = occurences;
                     }
-                    self.connectionErrors(errors);
+                    showMessageDialog({
+                        title: 'The Spaghetti Detective Trouble-shooting',
+                        message: trackerModalBody(),
+			        });
                 }
             });
         }
-    }
-
-    function ThespaghettidetectiveBetaViewModel(parameters) {
-        var self = this;
-
-        // assign the injected parameters, e.g.:
-        // self.loginStateViewModel = parameters[0];
-        self.settingsViewModel = parameters[0];
-        self.errorTrackerViewModel = parameters[1];
 
         self.openErrorTrackerModal = function() {
-            showMessageDialog({
-                title: gettext("Stream test"),
-                message: trackerModalBody(self.errorTrackerViewModel.connectionErrors),
-			});
-            //self.errorTrackerViewModel.showTrackerModal();
+            self.showTrackerModal();
         }
 
-		function trackerModalBody(connectionErrors) {
-            var errorBody = '<p class="error">The Spaghetti Detective failed to connect to the server ' + connectionErrors.length + ' times since OctoPrint rebooted.</p>';
+		function trackerModalBody() {
+            var errorBody = '<b>This window is to diagnose connection problems with The Spaghetti Detecitive server. It is not a diagnosis for your print failures.</b>';
+
+            if ((self.connectionErrors.server.length + self.connectionErrors.webcam.length) == 0) {
+                errorBody += '<p>There has been no connection errors since OctoPrint rebooted.</p>';
+            }
+
+
+            if (self.connectionErrors.server.length > 0) {
+                errorBody += '<hr /><p class="text-error">The Spaghetti Detective failed to connect to the server <b>' + self.connectionErrors.server.length + '</b> times since OctoPrint rebooted.</p>';
+                errorBody += '<ul><li>The first error occurred at: <b>' + self.connectionErrors.server[0] + '</b>.</li>';
+                errorBody += '<li>The most recent error occurred at: <b>' + self.connectionErrors.server[self.connectionErrors.server.length-1] + '</b>.</li></ul>';
+                errorBody += '<p>Please check your OctoPrint\'s internet connection to make sure it has reliable connection to the internet.<p>';
+            }
+
+            if (self.connectionErrors.webcam.length > 0) {
+                errorBody += '<hr /><p class="text-error">The Spaghetti Detective failed to connect to the webcam <b>' + self.connectionErrors.webcam.length + '</b> times since OctoPrint rebooted.</p>';
+                errorBody += '<ul><li>The first error occurred at: <b>' + self.connectionErrors.webcam[0] + '</b>.</li>';
+                errorBody += '<li>The most recent error occurred at: <b>' + self.connectionErrors.webcam[self.connectionErrors.webcam.length-1] + '</b>.</li></ul>';
+                errorBody += "<p>Please go to \"Settings\" -> \"Webcam & Timelapse\" and make sure the stream URL and snapshot URL are set correctly. Also make sure these URLs can be accessed from within the OctoPrint (not just from your browser).</p>";
+            }
             return errorBody;
+
 		}
     }
 
@@ -170,14 +181,9 @@ $(function() {
      * and a full list of the available options.
      */
     OCTOPRINT_VIEWMODELS.push({
-        construct: ThespaghettidetectiveBetaErrorTrackerViewModel,
-        dependencies: [],
-        elements: [ '#thespaghettidetective_error_tracker_modal']
-    });
-    OCTOPRINT_VIEWMODELS.push({
         construct: ThespaghettidetectiveBetaViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
-        dependencies: [ "settingsViewModel", "thespaghettidetectiveBetaErrorTrackerViewModel" ],
+        dependencies: [ "settingsViewModel" ],
         // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
         elements: [ '#wizard_plugin_thespaghettidetective_beta', '#settings_plugin_thespaghettidetective_beta' ]
     });
