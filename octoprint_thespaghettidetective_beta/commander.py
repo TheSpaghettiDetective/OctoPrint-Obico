@@ -1,5 +1,8 @@
 import threading
+import logging
 import re
+
+_logger = logging.getLogger(__name__)
 
 class Commander:
 
@@ -15,18 +18,20 @@ class Commander:
         with self.mutex:
             if re.match('G9[01]', cmd, flags=re.IGNORECASE):
                 self.last_g9x = cmd
-                print('commander setting: {}'.format(self.last_g9x))
             if re.match('M8[23]', cmd, flags=re.IGNORECASE):
                 self.last_m8x = cmd
-                print('commander setting: {}'.format(self.last_m8x))
 
     def script_hook(self, comm, script_type, script_name, *args, **kwargs):
         if script_type == "gcode" and script_name == "afterPrintPaused":
+            _logger.debug('afterPrintPaused hook called. Returning scripts %s' % self.pause_scripts )
+
             pause_scripts = self.pause_scripts
             self.pause_scripts = []
             return None, pause_scripts
 
         if script_type == "gcode" and script_name == "beforePrintResumed":
+            _logger.debug('beforePrintResumed hook called. Returning scripts %s' % self.resume_scripts)
+
             resume_scripts = self.resume_scripts
             self.resume_scripts = []
             return resume_scripts, None
@@ -108,3 +113,8 @@ class Commander:
                     target_temp = current_temps[heater]['target'] + current_temps[heater]['offset']
                     self.pause_scripts.append('M140 S0')
                     self.resume_scripts.insert(0, 'M190 S%d' % (target_temp))
+
+        _logger.debug('prepare_to_pause called.')
+        _logger.debug('pause_scripts: {}' % self.pause_scripts)
+        _logger.debug('resume_scripts: {}' % self.resume_scripts)
+
