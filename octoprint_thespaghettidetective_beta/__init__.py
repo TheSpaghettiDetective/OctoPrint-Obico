@@ -24,7 +24,7 @@ from .utils import ExpoBackoff, ConnectionErrorTracker
 
 import octoprint.plugin
 
-_logger = logging.getLogger(__name__)
+_logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
 
 POST_PIC_INTERVAL_SECONDS = 50.0
 POST_STATUS_INTERVAL_SECONDS = 15.0
@@ -227,6 +227,7 @@ class TheSpaghettiDetectivePlugin(
             return
 
         if not self.ss:
+            _logger.debug("Establishing WS connection...")
             self.connect_ws()
             if throwing:
                 time.sleep(2.0)    # Wait for websocket to connect
