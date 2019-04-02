@@ -139,7 +139,7 @@ $(function() {
                         self.connectionErrors[k] = occurences;
                     }
                     showMessageDialog({
-                        title: 'The Spaghetti Detective Trouble-shooting',
+                        title: 'The Spaghetti Detective Diagnostic Report',
                         message: trackerModalBody(),
 			        });
                 }
@@ -154,7 +154,7 @@ $(function() {
             var errorBody = '<b>This window is to diagnose connection problems with The Spaghetti Detecitive server. It is not a diagnosis for your print failures.</b>';
 
             if ((self.connectionErrors.server.length + self.connectionErrors.webcam.length) == 0) {
-                errorBody += '<p>There has been no connection errors since OctoPrint rebooted.</p>';
+                errorBody += '<p class="text-success">There have been no connection errors since OctoPrint rebooted.</p>';
             }
 
 
