@@ -14,8 +14,8 @@ import requests
 
 _logger = logging.getLogger(__name__)
 
-@backoff.on_exception(backoff.expo, Exception, max_value=1200)
-@backoff.on_predicate(backoff.expo, max_value=1200)
+@backoff.on_exception(backoff.expo, Exception, max_tries=3)
+@backoff.on_predicate(backoff.expo, max_tries=3)
 def capture_jpeg(settings):
     snapshot_url = settings.get("snapshot", '').strip()
     snapshot_timeout = int(settings.get("snapshotTimeout", '5'))

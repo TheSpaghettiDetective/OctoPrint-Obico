@@ -12,7 +12,7 @@ import raven
 from .webcam_capture import capture_jpeg
 from .ws import ServerSocket
 from .commander import Commander
-from .utils import ExpoBackoff
+from .utils import ExpoBackoff, ConnectionErrorTracker
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -47,6 +47,7 @@ class TheSpaghettiDetectivePlugin(
         self.last_pic = 0
         self.last_status = 0
         self.commander = Commander()
+        self.error_tracker = ConnectionErrorTracker()
 
 
 	##~~ Wizard plugin mix
@@ -120,6 +121,7 @@ class TheSpaghettiDetectivePlugin(
     def get_api_commands(self):
         return dict(
             test_auth_token=["auth_token"],
+            get_connection_errors=[],
         )
 
     def is_api_adminonly(self):
@@ -134,6 +136,8 @@ class TheSpaghettiDetectivePlugin(
                 self._settings.save(force=True)
 
             return flask.jsonify({'succeeded': succeeded, 'text': status_text})
+        if command == "get_connection_errors":
+            return flask.jsonify(self.error_tracker.as_dict())
 
     ##~~ Eventhandler mixin
 
@@ -176,11 +180,11 @@ class TheSpaghettiDetectivePlugin(
                     next
 
                 if self.last_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
-                    if self.post_printer_status({
+                    self.post_printer_status({
                         "octoprint_data": self.octoprint_data(),
                         "octoprint_settings": self.octoprint_settings()
-                    }):
-                        backoff.reset()
+                    }, throwing=True)
+                    backoff.reset()
 
                 speed_up = 5.0 if self.is_actively_printing() else 1.0
                 if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
@@ -191,38 +195,48 @@ class TheSpaghettiDetectivePlugin(
 
             except Exception as e:
                 self.sentry.captureException()
+                self.error_tracker.add_connection_error('server')
+                self._plugin_manager.send_plugin_message(self._identifier, {'new_error': 'server'})
+
                 backoff.more(e)
 
     def post_jpg(self):
         if not self.is_configured():
             return
 
-        self._plugin_manager.send_plugin_message(self._identifier, dict(type="popup", msg='asdf'))
-
         endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
 
-        files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
+        try:
+            files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
+        except:
+            self.sentry.captureException()
+            self.error_tracker.add_connnection_error('webcam')
+            self._plugin_manager.send_plugin_message(self._identifier, {'new_error': 'webcam'})
+            return
+
         resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
         resp.raise_for_status()
 
         self.last_pic = time.time()
 
 
-    def post_printer_status(self, data):
+    def post_printer_status(self, data, throwing=False):
         if not self.is_configured():
-            return False
+            return
 
         if not self.ss:
             self.connect_ws()
+            if throwing:
+                time.sleep(2.0)    # Wait for websocket to connect
 
-        time.sleep(0.5)    # Wait for websocket to connect
-        if not self.ss or not self.ss.connected():
-            return False
+        if not self.ss or not self.ss.connected():  # Check self.ss again as it could already be set to None now.
+            if throwing:
+                raise Exception('Failed to connect to websocket server')
+            else:
+                return
 
         self.ss.send_text(json.dumps(data))
-
         self.last_status = time.time()
-        return True
 
     def connect_ws(self):
         self.ss = ServerSocket(self.canonical_ws_prefix() + "/ws/dev/", self.auth_token(), on_message=self.process_server_msg, on_close=self.on_ws_close)

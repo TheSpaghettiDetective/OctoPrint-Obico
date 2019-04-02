@@ -1,4 +1,5 @@
 # coding=utf-8
+from datetime import datetime
 import time
 import random
 import logging
@@ -24,3 +25,16 @@ class ExpoBackoff:
         _logger.error('Backing off %f seconds: %s' % (delay, e))
 
         time.sleep(delay)
+
+
+class ConnectionErrorTracker:
+
+    def __init__(self):
+        self.errors = dict()
+
+    def add_connection_error(self, error_type):
+        existing = self.errors.get(error_type, [])
+        self.errors[error_type] = existing + [datetime.utcnow()]
+
+    def as_dict(self):
+        return self.errors
