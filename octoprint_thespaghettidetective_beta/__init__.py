@@ -142,9 +142,6 @@ class TheSpaghettiDetectivePlugin(
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
-        if event == 'ClientOpened':
-            self.error_tracker.notify_client_if_needed()
-
         self.post_printer_status({
             "octoprint_event": {
                 "event_type": event,
@@ -175,12 +172,14 @@ class TheSpaghettiDetectivePlugin(
         return dict(webcam=webcam)
 
     def main_loop(self):
-        backoff = ExpoBackoff(240)
+        backoff = ExpoBackoff(120)
         while True:
             try:
                 if not self.is_configured():
                     time.sleep(1)
                     next
+
+                self.error_tracker.attempt('server')
 
                 if self.last_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
                     self.post_printer_status({
@@ -209,6 +208,7 @@ class TheSpaghettiDetectivePlugin(
         endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
 
         try:
+            self.error_tracker.attempt('webcam')
             files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
         except:
             self.sentry.captureException()

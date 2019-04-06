@@ -31,16 +31,36 @@ class ConnectionErrorTracker:
 
     def __init__(self, plugin):
         self.plugin = plugin
+        self.attempts = dict()
         self.errors = dict()
+
+    def attempt(self, error_type):
+        attempts = self.attempts.get(error_type, 0)
+        self.attempts[error_type] = attempts + 1
 
     def add_connection_error(self, error_type):
         existing = self.errors.get(error_type, [])
         self.errors[error_type] = existing + [datetime.utcnow()]
+        self.notify_client_if_needed_for_error(error_type)
+
+    def notify_client_if_needed_for_error(self, error_type):
+        attempts = self.attempts.get(error_type, 0)
+        errors = self.errors.get(error_type, [])
+
+        if attempts < 2:
+            return
+
+        if attempts < 4 and len(errors) < attempts * 0.5:
+            return
+
+        if len(errors) < attempts * 0.25:
+            return
+
         self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_error': error_type})
 
     def notify_client_if_needed(self):
         for k in self.errors:
-            self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_error': k})
+            self.notify_client_if_needed_for_error(k)
 
     def as_dict(self):
         return self.errors
