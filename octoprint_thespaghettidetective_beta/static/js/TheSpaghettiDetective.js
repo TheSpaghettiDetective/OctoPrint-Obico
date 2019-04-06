@@ -161,8 +161,9 @@ $(function() {
 
             if ((self.connectionErrors.server.length + self.connectionErrors.webcam.length) == 0) {
                 errorBody += '<p class="text-success">There have been no connection errors since OctoPrint rebooted.</p>';
+            } else {
+                errorBody += '<p class="text-error">The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/no-pics/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/support/">reach out to us</a> for help.</p>'
             }
-
 
             if (self.connectionErrors.server.length > 0) {
                 errorBody += '<hr /><p class="text-error">The Spaghetti Detective failed to connect to the server <b>' + self.connectionErrors.server.length + '</b> times since OctoPrint rebooted.</p>';
