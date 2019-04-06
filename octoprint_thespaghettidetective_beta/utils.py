@@ -47,10 +47,10 @@ class ConnectionErrorTracker:
         attempts = self.attempts.get(error_type, 0)
         errors = self.errors.get(error_type, [])
 
-        if attempts < 2:
+        f attempts < 8:
             return
 
-        if attempts < 4 and len(errors) < attempts * 0.5:
+        if attempts < 10 and len(errors) < attempts * 0.5:
             return
 
         if len(errors) < attempts * 0.25:

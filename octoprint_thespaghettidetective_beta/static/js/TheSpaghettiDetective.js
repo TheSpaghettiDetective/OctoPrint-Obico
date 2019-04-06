@@ -112,9 +112,15 @@ $(function() {
                             text: "Error Details",
                             click: function(notice) {
                                 self.showTrackerModal();
-                                notice.update({hide: true});
+                                notice.remove();
                             }
-                        }
+                        },
+                        {
+                            text: "Got It!",
+                            click: function(notice) {
+                                notice.remove();
+                            }
+                        },
                     ]
                 },
     			history: {
