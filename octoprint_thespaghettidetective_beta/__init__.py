@@ -211,7 +211,6 @@ class TheSpaghettiDetectivePlugin(
             self.error_tracker.attempt('webcam')
             files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
         except:
-            self.sentry.captureException()
             self.error_tracker.add_connection_error('webcam')
             return False
 
