@@ -241,7 +241,7 @@ class TheSpaghettiDetectivePlugin(
         self.last_status = time.time()
 
     def connect_ws(self):
-        self.ss = ServerSocket(self.canonical_ws_prefix() + "/ws/dev/", self.auth_token(), on_message=self.process_server_msg, on_close=self.on_ws_close)
+        self.ss = ServerSocket(self.canonical_ws_prefix() + "/ws/dev/", self.auth_token(), on_server_ws_msg=self.process_server_msg, on_server_ws_close=self.on_ws_close)
         wst = threading.Thread(target=self.ss.run)
         wst.daemon = True
         wst.start()
