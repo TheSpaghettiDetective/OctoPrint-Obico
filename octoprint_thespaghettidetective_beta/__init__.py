@@ -13,6 +13,7 @@ from .webcam_capture import capture_jpeg
 from .ws import ServerSocket
 from .commander import Commander
 from .utils import ExpoBackoff, ConnectionErrorTracker
+from .print_event import PrintEventTracker
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -48,6 +49,7 @@ class TheSpaghettiDetectivePlugin(
         self.last_status = 0
         self.commander = Commander()
         self.error_tracker = ConnectionErrorTracker(self)
+        self.print_event_tracker = PrintEventTracker()
 
 
 	##~~ Wizard plugin mix
@@ -142,14 +144,9 @@ class TheSpaghettiDetectivePlugin(
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
-        self.post_printer_status({
-            "octoprint_event": {
-                "event_type": event,
-                "data": payload
-                },
-            "octoprint_data": self.octoprint_data()
-            })
-
+        event_payload = self.print_event_tracker.on_event(self, event, payload)
+        if event_payload:
+            self.post_printer_status(event_payload)
 
     ##~~Startup Plugin
 
