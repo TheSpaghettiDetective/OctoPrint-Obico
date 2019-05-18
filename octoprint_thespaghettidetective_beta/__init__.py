@@ -179,10 +179,8 @@ class TheSpaghettiDetectivePlugin(
                 self.error_tracker.attempt('server')
 
                 if self.last_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
-                    self.post_printer_status({
-                        "octoprint_data": self.octoprint_data(),
-                        "octoprint_settings": self.octoprint_settings()
-                    }, throwing=True)
+                    payload = self.print_event_tracker.octoprint_data(self)
+                    self.post_printer_status(payload, throwing=True)
                     backoff.reset()
 
                 speed_up = 5.0 if self.is_actively_printing() else 1.0
