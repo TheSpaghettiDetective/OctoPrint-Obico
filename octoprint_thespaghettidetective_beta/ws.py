@@ -3,6 +3,9 @@
 import time
 import websocket
 
+class ServerSocketException(Exception):
+    pass
+
 class ServerSocket:
     def on_error(self, ws, error):
         pass

@@ -10,7 +10,7 @@ import requests
 import raven
 
 from .webcam_capture import capture_jpeg
-from .ws import ServerSocket
+from .ws import ServerSocket, ServerSocketException
 from .commander import Commander
 from .utils import ExpoBackoff, ConnectionErrorTracker
 from .print_event import PrintEventTracker
@@ -190,10 +190,12 @@ class TheSpaghettiDetectivePlugin(
 
                 time.sleep(1)
 
+            except ServerSocketException as e:
+                self.error_tracker.add_connection_error('server')
+                backoff.more(e)
             except Exception as e:
                 self.sentry.captureException()
                 self.error_tracker.add_connection_error('server')
-
                 backoff.more(e)
 
     def post_jpg(self):
@@ -228,7 +230,7 @@ class TheSpaghettiDetectivePlugin(
 
         if not self.ss or not self.ss.connected():  # Check self.ss again as it could already be set to None now.
             if throwing:
-                raise Exception('Failed to connect to websocket server')
+                raise ServerSocketException('Failed to connect to websocket server')
             else:
                 return
 
