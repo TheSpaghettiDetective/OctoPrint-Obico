@@ -30,7 +30,7 @@ class PrintEventTracker:
         return {
             'current_print_ts': self.current_print_ts,
             'octoprint_data': plugin.octoprint_data(),
-            'octoprint_temps': plugin._printer.get_current_temperatures(),
+            'octoprint_temperatures': plugin._printer.get_current_temperatures(),
             'octoprint_settings': plugin.octoprint_settings(),
             }
 
