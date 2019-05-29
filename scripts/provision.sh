@@ -25,7 +25,7 @@ sudo cp -r $WD/jpgs /mjpg-streamer/
 
 sudo cp $WD/scripts/rc.local /etc/
 
-version=1.3.10
+version=1.3.11
 sudo mkdir /octoprint && cd /octoprint
 sudo curl -o octoprint.tar.gz -L https://github.com/foosel/OctoPrint/archive/${version}.tar.gz
 sudo tar -xvf octoprint.tar.gz --strip 1
