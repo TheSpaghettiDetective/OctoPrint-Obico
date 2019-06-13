@@ -7,11 +7,12 @@ class ServerSocketException(Exception):
     pass
 
 class ServerSocket:
-    def on_error(self, ws, error):
-        pass
 
     def __init__(self, url, token, on_server_ws_msg, on_server_ws_close):
         #websocket.enableTrace(True)
+
+        def on_error(ws, error):
+            print(error)
 
         def on_message(ws, msg):
             on_server_ws_msg(ws, msg)
@@ -22,7 +23,7 @@ class ServerSocket:
         self.ws = websocket.WebSocketApp(url,
                                   on_message = on_message,
                                   on_close = on_close,
-                                  on_error = self.on_error,
+                                  on_error = on_error,
                                   header = ["authorization: bearer " + token],)
                                   #subprotocols=["binary", "base64"])
 
