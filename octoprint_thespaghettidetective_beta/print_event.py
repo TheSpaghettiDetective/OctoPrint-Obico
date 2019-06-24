@@ -9,6 +9,10 @@ class PrintEventTracker:
         self.current_print_ts = -1    # timestamp as print_ts coming from octoprint
 
     def on_event(self, plugin, event, payload):
+        #Cancel if event is about timelapse (this happends when jpgs are sent to TSD)
+        if event == 'CaptureStart' or event == 'CaptureDone':
+            return
+        
         print_ts = self.current_print_ts
 
         if event == 'PrintStarted':
