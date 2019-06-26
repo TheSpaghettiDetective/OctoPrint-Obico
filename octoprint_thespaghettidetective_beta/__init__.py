@@ -30,6 +30,10 @@ _logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
 POST_PIC_INTERVAL_SECONDS = 50.0
 POST_STATUS_INTERVAL_SECONDS = 15.0
 
+EVENT_BLACK_LIST = {'CaptureStart' , 'CaptureDone' , 'Home' , 'Dwell' , 
+                        'Dwelling' , 'ZChange' , 'ToolChange' , 'PostRollStart' , 'PostRollEnd' , 
+                        'MovieRendering' , 'MovieDone'}
+
 if os.environ.get('DEBUG'):
     POST_PIC_INTERVAL_SECONDS = 5.0
     POST_STATUS_INTERVAL_SECONDS = 15.0
@@ -144,6 +148,8 @@ class TheSpaghettiDetectivePlugin(
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
+        if event in EVENT_BLACK_LIST: return
+        
         event_payload = self.print_event_tracker.on_event(self, event, payload)
         if event_payload:
             self.post_printer_status(event_payload)
