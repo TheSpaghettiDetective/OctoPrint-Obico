@@ -144,9 +144,10 @@ class TheSpaghettiDetectivePlugin(
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
-        event_payload = self.print_event_tracker.on_event(self, event, payload)
-        if event_payload:
-            self.post_printer_status(event_payload)
+        if event.startswith("Print"):
+            event_payload = self.print_event_tracker.on_event(self, event, payload)
+            if event_payload:
+                self.post_printer_status(event_payload)
 
     ##~~Startup Plugin
 
@@ -160,9 +161,6 @@ class TheSpaghettiDetectivePlugin(
 
     def auth_headers(self, auth_token=None):
         return {"Authorization": "Token " + self.auth_token(auth_token)}
-
-    def octoprint_data(self):
-        return self._printer.get_current_data()
 
     def octoprint_settings(self):
         webcam = dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90'))
