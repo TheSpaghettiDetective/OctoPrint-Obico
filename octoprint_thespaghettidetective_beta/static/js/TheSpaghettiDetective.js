@@ -155,24 +155,31 @@ $(function() {
                         self.connectionErrors[k] = occurences;
                     }
                     showMessageDialog({
-                        title: 'The Spaghetti Detective Diagnostic Report',
-                        message: trackerModalBody(),
-			        });
+                        title: "The Spaghetti Detective Diagnostic Report",
+                        message: trackerModalBody()
+                    });
                 }
             });
-        }
+        };
 
         self.openErrorTrackerModal = function() {
             self.showTrackerModal();
-        }
+        };
 
-		function trackerModalBody() {
-            var errorBody = '<b>This window is to diagnose connection problems with The Spaghetti Detecitive server. It is not a diagnosis for your print failures.</b>';
+        function trackerModalBody() {
+            var errorBody =
+                "<b>This window is to diagnose connection problems with The Spaghetti Detecitive server. It is not a diagnosis for your print failures.</b>";
 
-            if ((self.connectionErrors.server.length + self.connectionErrors.webcam.length) == 0) {
-                errorBody += '<p class="text-success">There have been no connection errors since OctoPrint rebooted.</p>';
+            if (
+                self.connectionErrors.server.length +
+                    self.connectionErrors.webcam.length ==
+                0
+            ) {
+                errorBody +=
+                    '<p class="text-success">There have been no connection errors since OctoPrint rebooted.</p>';
             } else {
-                errorBody += '<p class="text-error">The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/no-pics/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/support/">reach out to us</a> for help.</p>'
+                errorBody +=
+                    '<p class="text-error">The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/no-pics/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/support/">reach out to us</a> for help.</p>';
             }
 
             if (self.connectionErrors.server.length > 0) {
@@ -189,8 +196,7 @@ $(function() {
                 errorBody += "<p>Please go to \"Settings\" -> \"Webcam & Timelapse\" and make sure the stream URL and snapshot URL are set correctly. Also make sure these URLs can be accessed from within the OctoPrint (not just from your browser).</p>";
             }
             return errorBody;
-
-		}
+        }
     }
 
     /* view model class, parameters for constructor, container to bind to
