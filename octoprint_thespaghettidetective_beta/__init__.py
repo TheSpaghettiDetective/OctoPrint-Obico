@@ -10,7 +10,7 @@ import requests
 import raven
 
 from .webcam_capture import capture_jpeg
-from .ws import ServerSocket, ServerSocketException
+from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
 from .utils import ExpoBackoff, ConnectionErrorTracker
 from .print_event import PrintEventTracker
@@ -156,6 +156,16 @@ class TheSpaghettiDetectivePlugin(
         main_thread.daemon = True
         main_thread.start()
 
+        def on_error(ws, error):
+            print(error)
+
+        def on_message(ws, msg):
+            self.ss.send_text(json.dumps(dict(janus=msg)))
+
+        self.janus_ws = WebSocketClient('ws://localhost:8188/', on_ws_msg=on_message, subprotocols=['janus-protocol'])
+        wst = threading.Thread(target=self.janus_ws.run)
+        wst.daemon = True
+        wst.start()
 
     ## Private methods
 
@@ -188,7 +198,7 @@ class TheSpaghettiDetectivePlugin(
 
                 time.sleep(1)
 
-            except ServerSocketException as e:
+            except WebSocketClientException as e:
                 self.error_tracker.add_connection_error('server')
                 backoff.more(e)
             except Exception as e:
@@ -228,7 +238,7 @@ class TheSpaghettiDetectivePlugin(
 
         if not self.ss or not self.ss.connected():  # Check self.ss again as it could already be set to None now.
             if throwing:
-                raise ServerSocketException('Failed to connect to websocket server')
+                raise WebSocketClientException('Failed to connect to websocket server')
             else:
                 return
 
@@ -236,7 +246,7 @@ class TheSpaghettiDetectivePlugin(
         self.last_status = time.time()
 
     def connect_ws(self):
-        self.ss = ServerSocket(self.canonical_ws_prefix() + "/ws/dev/", self.auth_token(), on_server_ws_msg=self.process_server_msg, on_server_ws_close=self.on_ws_close)
+        self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
         wst = threading.Thread(target=self.ss.run)
         wst.daemon = True
         wst.start()
@@ -246,7 +256,6 @@ class TheSpaghettiDetectivePlugin(
         self.ss = None
 
     def process_server_msg(self, ws, msg_json):
-        print(msg_json)
         msg = json.loads(msg_json)
         if msg.get('commands'):
             _logger.info('Received: ' + msg_json)
@@ -261,6 +270,9 @@ class TheSpaghettiDetectivePlugin(
                 self._printer.cancel_print()
             if command["cmd"] == 'resume':
                 self._printer.resume_print()
+
+        if msg.get('janus'):
+            self.janus_ws.send_text(msg.get('janus'))
 
     def canonical_endpoint_prefix(self):
         if not self._settings.get(["endpoint_prefix"]):
