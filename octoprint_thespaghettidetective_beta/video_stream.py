@@ -6,9 +6,9 @@ import time
 import sarge
 import sys
 import flask
+import backoff
 import tempfile
 from threading import Thread
-from raven import breadcrumbs
 
 from .utils import pi_version
 
@@ -100,8 +100,12 @@ class WebcamServer:
 
 
 class WebRTCStreamer:
+    
+    def __init__(self, sentry, error_tracker):
+        self.sentry = sentry
+        self.error_tracker = error_tracker
 
-    def start_video_pipeline(self, sentryClient):
+    def start_video_pipeline(self):
 
         def run_janus():
             env = dict(os.environ)
@@ -114,6 +118,22 @@ class WebRTCStreamer:
         janus_thread.setDaemon(True)
         janus_thread.start()
 
+
+        @backoff.on_predicate(backoff.expo, max_tries=6)
+        def test_pi_camera():
+            self.error_tracker.attempt('webcam')
+            subproc = subprocess.Popen("raspistill -o /tmp/test.jpg".split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            (stdout_str, stderr_str) = subproc.communicate()
+
+            if not subproc.returncode == 0:
+                self.error_tracker.add_connection_error('webcam')
+                _logger.error('Failed to test Pi Camerea:')
+                _logger.error(stderr_str)
+                return False
+
+            return True
+          
+
         if not pi_version():
             self.camera = StubCamera()
             global FFMPEG
@@ -122,14 +142,18 @@ class WebRTCStreamer:
             sarge.run('sudo service webcamd stop')
 
             try:
+                if not test_pi_camera():
+                    raise Exception("Can't obtain Pi Camera after 6 tries!")
 
-                stream_cmd = '{} {} {}'.format(STREAM_CMD, FFMPEG, TSD_TEMP_DIR)
                 FNULL = open(os.devnull, 'w')
-                subprocess.Popen(stream_cmd, shell=True, stdout=FNULL, stderr=FNULL)
+                raspivid_cmd = 'raspivid -t 0 -n -fps 20 -pf baseline -b 3000000 -w 960 -h 540 -o -'
+                raspivid_proc = subprocess.Popen(raspivid_cmd.split(' '), stdout=subprocess.PIPE, stderr=FNULL)
+                ffmpeg_cmd = '{} -re -i - -c:v copy -bsf dump_extra -an -r 20 -f rtp rtp://0.0.0.0:8004?pkt_size=1300 -c:v copy -an -r 20 -f hls -hls_time 2 -hls_list_size 10 -hls_delete_threshold 10 -hls_flags split_by_time+delete_segments+second_level_segment_index -strftime 1 -hls_segment_filename {}/%s-%%d.ts -hls_segment_type mpegts {}/stream.m3u8'.format(FFMPEG, TSD_TEMP_DIR, TSD_TEMP_DIR)
+                subprocess.Popen(ffmpeg_cmd.split(' '), stdin=raspivid_proc.stdout, stdout=FNULL, stderr=FNULL)
 
             except:
 	        sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
-                self.sentryClient.captureException()
+                self.sentry.captureException()
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 _logger.error(exc_obj)
                 return

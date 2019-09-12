@@ -145,7 +145,7 @@ class TheSpaghettiDetectivePlugin(
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
-        if event.startswith("Print"):
+        if type(event) is str and event.startswith("Print"):
             event_payload = self.print_event_tracker.on_event(self, event, payload)
             if event_payload:
                 self.post_printer_status(event_payload)
@@ -256,8 +256,8 @@ class TheSpaghettiDetectivePlugin(
             self.janus_ws.send_text(msg.get('janus'))
 
     def webcam_loop(self):
-        streamer = WebRTCStreamer()
-        streamer.start_video_pipeline(self.sentry)
+        streamer = WebRTCStreamer(self.sentry, self.error_tracker)
+        streamer.start_video_pipeline()
         backoff = ExpoBackoff(120)
         while True:
             try:
