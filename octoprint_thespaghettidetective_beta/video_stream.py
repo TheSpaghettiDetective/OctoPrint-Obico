@@ -123,17 +123,14 @@ class WebRTCStreamer:
 
             try:
 
-                stream_cmd = 'sh {} {} {}'.format(STREAM_CMD, FFMPEG, TSD_TEMP_DIR)
+                stream_cmd = '{} {} {}'.format(STREAM_CMD, FFMPEG, TSD_TEMP_DIR)
                 FNULL = open(os.devnull, 'w')
-                print stream_cmd
-                subprocess.Popen(stream_cmd.split(' '))
-                #subprocess.Popen(stream_cmd.split(' '), stdout=FNULL, stderr=FNULL)
+                subprocess.Popen(stream_cmd, shell=True, stdout=FNULL, stderr=FNULL)
 
             except:
 	        sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
-                #self.sentryClient.captureException()
+                self.sentryClient.captureException()
                 exc_type, exc_obj, exc_tb = sys.exc_info()
-                import ipdb; ipdb.set_trace()
                 _logger.error(exc_obj)
                 return
 

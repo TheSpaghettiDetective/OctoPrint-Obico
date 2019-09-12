@@ -14,6 +14,7 @@ from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
 from .utils import ExpoBackoff, ConnectionErrorTracker
 from .print_event import PrintEventTracker
+from .video_stream import WebRTCStreamer
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -27,7 +28,7 @@ import octoprint.plugin
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
 
-POST_PIC_INTERVAL_SECONDS = 50.0
+POST_PIC_INTERVAL_SECONDS = 10.0
 POST_STATUS_INTERVAL_SECONDS = 15.0
 
 if os.environ.get('DEBUG'):
@@ -152,9 +153,17 @@ class TheSpaghettiDetectivePlugin(
     ##~~Startup Plugin
 
     def on_after_startup(self):
-        main_thread = threading.Thread(target=self.main_loop)
-        main_thread.daemon = True
-        main_thread.start()
+        if not self.is_configured():
+            time.sleep(1)
+            next
+
+        message_thread = threading.Thread(target=self.message_loop)
+        message_thread.daemon = True
+        message_thread.start()
+
+        webcam_thread = threading.Thread(target=self.webcam_loop)
+        webcam_thread.daemon = True
+        webcam_thread.start()
 
         def on_error(ws, error):
             print(error)
@@ -176,25 +185,16 @@ class TheSpaghettiDetectivePlugin(
         webcam = dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90'))
         return dict(webcam=webcam)
 
-    def main_loop(self):
+    def message_loop(self):
         backoff = ExpoBackoff(120)
         while True:
             try:
-                if not self.is_configured():
-                    time.sleep(1)
-                    next
-
                 self.error_tracker.attempt('server')
 
                 if self.last_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
                     payload = self.print_event_tracker.octoprint_data(self)
                     self.post_printer_status(payload, throwing=True)
                     backoff.reset()
-
-                speed_up = 5.0 if self.is_actively_printing() else 1.0
-                if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
-                    if self.post_jpg():
-                        backoff.reset()
 
                 time.sleep(1)
 
@@ -205,25 +205,6 @@ class TheSpaghettiDetectivePlugin(
                 self.sentry.captureException()
                 self.error_tracker.add_connection_error('server')
                 backoff.more(e)
-
-    def post_jpg(self):
-        if not self.is_configured():
-            return True
-
-        endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
-
-        try:
-            self.error_tracker.attempt('webcam')
-            files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
-        except:
-            self.error_tracker.add_connection_error('webcam')
-            return False
-
-        resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
-        resp.raise_for_status()
-
-        self.last_pic = time.time()
-        return True
 
 
     def post_printer_status(self, data, throwing=False):
@@ -274,6 +255,43 @@ class TheSpaghettiDetectivePlugin(
         if msg.get('janus'):
             self.janus_ws.send_text(msg.get('janus'))
 
+    def webcam_loop(self):
+        streamer = WebRTCStreamer()
+        streamer.start_video_pipeline(self.sentry)
+        backoff = ExpoBackoff(120)
+        while True:
+            try:
+                self.error_tracker.attempt('server')
+	        if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS:
+	            if self.post_jpg():
+		        backoff.reset()
+            except Exception as e:
+                self.sentry.captureException()
+                self.error_tracker.add_connection_error('server')
+                backoff.more(e)
+
+
+    def post_jpg(self):
+        if not self.is_configured():
+            return True
+
+        endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
+
+        try:
+            self.error_tracker.attempt('webcam')
+            files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
+        except:
+            self.error_tracker.add_connection_error('webcam')
+            return False
+
+        resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
+        resp.raise_for_status()
+
+        self.last_pic = time.time()
+        return True
+
+    # helper methods
+
     def canonical_endpoint_prefix(self):
         if not self._settings.get(["endpoint_prefix"]):
             return None
@@ -289,9 +307,6 @@ class TheSpaghettiDetectivePlugin(
     def auth_token(self, token=None):
         t = token if token is not None else self._settings.get(["auth_token"])
         return t.strip() if t else ''
-
-    def is_actively_printing(self):
-        return self._printer.is_operational() and not self._printer.is_ready()
 
     def is_configured(self):
         return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])
