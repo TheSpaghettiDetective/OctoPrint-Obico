@@ -9,6 +9,8 @@ class WebSocketClientException(Exception):
 class WebSocketClient:
 
     def __init__(self, url, token=None, on_ws_msg=None, on_ws_close=None, on_ws_error=None, subprotocols=None):
+        self._mutex = RLock()
+
         #websocket.enableTrace(True)
 
         def on_error(ws, error):
@@ -33,15 +35,19 @@ class WebSocketClient:
         )
 
     def run(self):
-        self.ws.run_forever()
+        with self._mutex:
+            self.ws.run_forever()
 
     def send_text(self, data):
-        if self.connected():
-            self.ws.send(data)
+        with self._mutex:
+            if self.connected():
+                self.ws.send(data)
 
     def connected(self):
-        return self.ws.sock and self.ws.sock.connected
+        with self._mutex:
+            return self.ws.sock and self.ws.sock.connected
 
     def disconnect(self):
-        self.ws.keep_running = False;
-        self.ws.close()
+        with self._mutex:
+            self.ws.keep_running = False;
+            self.ws.close()

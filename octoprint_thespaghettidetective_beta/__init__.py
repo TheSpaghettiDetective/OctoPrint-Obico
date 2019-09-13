@@ -9,12 +9,11 @@ import os, sys, time
 import requests
 import raven
 
-from .webcam_capture import capture_jpeg
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
 from .utils import ExpoBackoff, ConnectionErrorTracker
 from .print_event import PrintEventTracker
-from .video_stream import WebRTCStreamer
+from .webcam_stream import WebcamStreamer
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -28,12 +27,7 @@ import octoprint.plugin
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
 
-POST_PIC_INTERVAL_SECONDS = 10.0
 POST_STATUS_INTERVAL_SECONDS = 15.0
-
-if os.environ.get('DEBUG'):
-    POST_PIC_INTERVAL_SECONDS = 5.0
-    POST_STATUS_INTERVAL_SECONDS = 15.0
 
 class TheSpaghettiDetectivePlugin(
             octoprint.plugin.SettingsPlugin,
@@ -46,7 +40,6 @@ class TheSpaghettiDetectivePlugin(
 
     def __init__(self):
         self.ss = None
-        self.last_pic = 0
         self.last_status = 0
         self.commander = Commander()
         self.error_tracker = ConnectionErrorTracker(self)
@@ -161,20 +154,10 @@ class TheSpaghettiDetectivePlugin(
         message_thread.daemon = True
         message_thread.start()
 
-        webcam_thread = threading.Thread(target=self.webcam_loop)
+        self.webcam_streamer = WebcamStreamer(self, self.sentry, self.error_tracker)
+        webcam_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
         webcam_thread.daemon = True
         webcam_thread.start()
-
-        def on_error(ws, error):
-            print(error)
-
-        def on_message(ws, msg):
-            self.ss.send_text(json.dumps(dict(janus=msg)))
-
-        self.janus_ws = WebSocketClient('ws://localhost:8188/', on_ws_msg=on_message, subprotocols=['janus-protocol'])
-        wst = threading.Thread(target=self.janus_ws.run)
-        wst.daemon = True
-        wst.start()
 
     ## Private methods
 
@@ -253,42 +236,8 @@ class TheSpaghettiDetectivePlugin(
                 self._printer.resume_print()
 
         if msg.get('janus'):
-            self.janus_ws.send_text(msg.get('janus'))
+            self.webcam_streamer.pass_to_janus(msg.get('janus'))
 
-    def webcam_loop(self):
-        streamer = WebRTCStreamer(self.sentry, self.error_tracker)
-        streamer.start_video_pipeline()
-        backoff = ExpoBackoff(120)
-        while True:
-            try:
-                self.error_tracker.attempt('server')
-	        if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS:
-	            if self.post_jpg():
-		        backoff.reset()
-            except Exception as e:
-                self.sentry.captureException()
-                self.error_tracker.add_connection_error('server')
-                backoff.more(e)
-
-
-    def post_jpg(self):
-        if not self.is_configured():
-            return True
-
-        endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
-
-        try:
-            self.error_tracker.attempt('webcam')
-            files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
-        except:
-            self.error_tracker.add_connection_error('webcam')
-            return False
-
-        resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
-        resp.raise_for_status()
-
-        self.last_pic = time.time()
-        return True
 
     # helper methods
 
