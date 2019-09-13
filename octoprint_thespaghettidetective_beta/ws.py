@@ -2,6 +2,7 @@
 
 import time
 import websocket
+from threading import RLock
 
 class WebSocketClientException(Exception):
     pass
@@ -35,8 +36,7 @@ class WebSocketClient:
         )
 
     def run(self):
-        with self._mutex:
-            self.ws.run_forever()
+        self.ws.run_forever()
 
     def send_text(self, data):
         with self._mutex:
