@@ -132,12 +132,12 @@ class WebcamStreamer:
             subprocess.Popen(ffmpeg_cmd.split(' '), stdin=raspivid_proc.stdout, stdout=FNULL, stderr=FNULL)
 
             self.start_janus()
-                self.wait_for_janus()
+            self.wait_for_janus()
             self.start_janus_ws_tunnel()
             #self.webcam_loop()
 
         except:
-        sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
+            sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
             self.sentry.captureException()
             exc_type, exc_obj, exc_tb = sys.exc_info()
             _logger.error(exc_obj)
@@ -179,9 +179,9 @@ class WebcamStreamer:
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=10)
     def wait_for_janus(self):
+        time.sleep(1)
         import socket
-    socket.socket().connect(('127.0.0.1', 8188))
-    time.sleep(1)
+        socket.socket().connect(('127.0.0.1', 8188))
 
 
     def start_janus_ws_tunnel(self):
@@ -199,15 +199,17 @@ class WebcamStreamer:
     def webcam_loop(self):
         backoff = ExpoBackoff(120)
         while True:
-            try:
-                self.error_tracker.attempt('server')
             if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS:
-                if self.post_jpg():
-                backoff.reset()
-            except Exception as e:
-                self.sentry.captureException()
-                self.error_tracker.add_connection_error('server')
-                backoff.more(e)
+                try:
+                    self.error_tracker.attempt('server')
+                    if self.post_jpg():
+                        backoff.reset()
+                except Exception as e:
+                    self.sentry.captureException()
+                    self.error_tracker.add_connection_error('server')
+                    backoff.more(e)
+
+            time.sleep(1)
 
     def post_jpg(self):
         if not self.plugin.is_configured():
