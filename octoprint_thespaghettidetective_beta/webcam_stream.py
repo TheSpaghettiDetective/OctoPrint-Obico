@@ -119,34 +119,29 @@ class WebcamStreamer:
 
     def video_pipeline(self):
 
-        if not pi_version():
-            self.camera = StubCamera()
-            global FFMPEG
-            FFMPEG = 'ffmpeg'
-        else:
-            sarge.run('sudo service webcamd stop')
+        sarge.run('sudo service webcamd stop')
 
-            try:
-                if not self.test_pi_camera():
-                    raise Exception("Can't obtain Pi Camera after 6 tries!")
+        try:
+            if not self.test_pi_camera():
+                raise Exception("Can't obtain Pi Camera after 6 tries!")
 
-                FNULL = open(os.devnull, 'w')
-                raspivid_cmd = 'raspivid -t 0 -n -fps 20 -pf baseline -b 3000000 -w 960 -h 540 -o -'
-                raspivid_proc = subprocess.Popen(raspivid_cmd.split(' '), stdout=subprocess.PIPE, stderr=FNULL)
-                ffmpeg_cmd = '{} -re -i - -c:v copy -bsf dump_extra -an -r 20 -f rtp rtp://0.0.0.0:8004?pkt_size=1300 -c:v copy -an -r 20 -f hls -hls_time 2 -hls_list_size 10 -hls_delete_threshold 10 -hls_flags split_by_time+delete_segments+second_level_segment_index -strftime 1 -hls_segment_filename {}/%s-%%d.ts -hls_segment_type mpegts {}/stream.m3u8'.format(FFMPEG, TSD_TEMP_DIR, TSD_TEMP_DIR)
-                subprocess.Popen(ffmpeg_cmd.split(' '), stdin=raspivid_proc.stdout, stdout=FNULL, stderr=FNULL)
+            FNULL = open(os.devnull, 'w')
+            raspivid_cmd = 'raspivid -t 0 -n -fps 20 -pf baseline -b 3000000 -w 960 -h 540 -o -'
+            raspivid_proc = subprocess.Popen(raspivid_cmd.split(' '), stdout=subprocess.PIPE, stderr=FNULL)
+            ffmpeg_cmd = '{} -re -i - -c:v copy -bsf dump_extra -an -r 20 -f rtp rtp://0.0.0.0:8004?pkt_size=1300 -c:v copy -an -r 20 -f hls -hls_time 2 -hls_list_size 10 -hls_delete_threshold 10 -hls_flags split_by_time+delete_segments+second_level_segment_index -strftime 1 -hls_segment_filename {}/%s-%%d.ts -hls_segment_type mpegts {}/stream.m3u8'.format(FFMPEG, TSD_TEMP_DIR, TSD_TEMP_DIR)
+            subprocess.Popen(ffmpeg_cmd.split(' '), stdin=raspivid_proc.stdout, stdout=FNULL, stderr=FNULL)
 
-		self.start_janus()
+            self.start_janus()
                 self.wait_for_janus()
-		self.start_janus_ws_tunnel()
-		#self.webcam_loop()
+            self.start_janus_ws_tunnel()
+            #self.webcam_loop()
 
-            except:
-	        sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
-                self.sentry.captureException()
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                _logger.error(exc_obj)
-                return
+        except:
+        sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
+            self.sentry.captureException()
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            _logger.error(exc_obj)
+            return
 
 
     def pass_to_janus(self, msg):
@@ -175,7 +170,7 @@ class WebcamStreamer:
             env['LD_LIBRARY_PATH'] = JANUS_DIR + '/lib'
             janus_cmd = '{}/bin/janus --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
             FNULL = open(os.devnull, 'w')
-            subprocess.Popen(janus_cmd.split(' '), env=env, stdout=FNULL, stderr=FNULL)
+            subprocess.Popen(janus_cmd.split(' '), env=env)#, stdout=FNULL, stderr=FNULL)
 
         janus_thread = Thread(target=run_janus)
         janus_thread.setDaemon(True)
@@ -185,8 +180,8 @@ class WebcamStreamer:
     @backoff.on_exception(backoff.expo, Exception, max_tries=10)
     def wait_for_janus(self):
         import socket
-	socket.socket().connect(('127.0.0.1', 8188)) 
-	time.sleep(1)
+    socket.socket().connect(('127.0.0.1', 8188))
+    time.sleep(1)
 
 
     def start_janus_ws_tunnel(self):
@@ -206,9 +201,9 @@ class WebcamStreamer:
         while True:
             try:
                 self.error_tracker.attempt('server')
-	        if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS:
-	            if self.post_jpg():
-		        backoff.reset()
+            if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS:
+                if self.post_jpg():
+                backoff.reset()
             except Exception as e:
                 self.sentry.captureException()
                 self.error_tracker.add_connection_error('server')
@@ -233,9 +228,6 @@ class WebcamStreamer:
         self.last_pic = time.time()
         return True
 
-          
-class StubCamera:
-    pass
 
 if __name__ == "__main__":
 
