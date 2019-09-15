@@ -7,6 +7,7 @@ import json
 import sarge
 import sys
 import flask
+from flask_cors import CORS
 import backoff
 import tempfile
 from threading import Thread
@@ -31,80 +32,24 @@ TSD_TEMP_DIR = os.path.join(tempfile.gettempdir(), 'tsd-tmp')
 if not os.path.exists(TSD_TEMP_DIR):
     os.mkdir(TSD_TEMP_DIR)
 
-class WebcamServer:
-    def __init__(self, camera):
-        self.camera = camera
-        self.img_q = Queue.Queue(maxsize=1)
-        self.last_capture = 0
-        self._mutex = RLock()
-
-    def capture_forever(self):
-
-        bio = io.BytesIO()
-        for foo in self.camera.capture_continuous(bio, format='jpeg', use_video_port=True):
-            bio.seek(0)
-            chunk = bio.read()
-            bio.seek(0)
-            bio.truncate()
-
-            with self._mutex:
-                last_last_capture = self.last_capture
-                self.last_capture = time.time()
-
-            self.img_q.put(chunk)
-
-    def mjpeg_generator(self, boundary):
-      try:
-        hdr = '--%s\r\nContent-Type: image/jpeg\r\n' % boundary
-
-        prefix = ''
-        while True:
-            chunk = self.img_q.get()
-            msg = prefix + hdr + 'Content-Length: {}\r\n\r\n'.format(len(chunk))
-            yield msg.encode('utf-8') + chunk
-            prefix = '\r\n'
-            time.sleep(0.15) # slow down mjpeg streaming so that it won't use too much cpu or bandwidth
-      except GeneratorExit:
-         print('closed')
-
-    def get_snapshot(self):
-        possible_stale_pics = 3
-        while True:
-            chunk = self.img_q.get()
-            with self._mutex:
-                gap = time.time() - self.last_capture
-                if gap < 0.1:
-                    possible_stale_pics -= 1      # Get a few pics to make sure we are not returning a stale pic, which will throw off Octolapse
-                    if possible_stale_pics <= 0:
-                        break
-
-        return flask.send_file(io.BytesIO(chunk), mimetype='image/jpeg')
-
-    def get_mjpeg(self):
-        boundary='herebedragons'
-        return flask.Response(flask.stream_with_context(self.mjpeg_generator(boundary)), mimetype='multipart/x-mixed-replace;boundary=%s' % boundary)
+class MiniWebServer:
+    def __init__(self, root_dir):
+        self.root_dir = root_dir
 
     def run_forever(self):
-        webcam_server_app = flask.Flask('webcam_server')
+        hls_server_app = flask.Flask('webcam_server')
+        CORS(hls_server_app)
 
-        @webcam_server_app.route('/')
-        def webcam():
-            action = flask.request.args['action']
-            if action == 'snapshot':
-                return self.get_snapshot()
-            else:
-                return self.get_mjpeg()
+        @hls_server_app.route('/<path:path>')
+        def webcam(path):
+            return flask.send_from_directory(self.root_dir, path)
 
-        webcam_server_app.run(host='0.0.0.0', port=8080, threaded=True)
+        hls_server_app.run(host='0.0.0.0', port=9332, threaded=True)
 
     def start(self):
         cam_server_thread = Thread(target=self.run_forever)
         cam_server_thread.daemon = True
         cam_server_thread.start()
-
-        capture_thread = Thread(target=self.capture_forever)
-        capture_thread.daemon = True
-        capture_thread.start()
 
 
 class WebcamStreamer:
@@ -130,6 +75,8 @@ class WebcamStreamer:
             raspivid_proc = subprocess.Popen(raspivid_cmd.split(' '), stdout=subprocess.PIPE, stderr=FNULL)
             ffmpeg_cmd = '{} -re -i - -c:v copy -bsf dump_extra -an -r 20 -f rtp rtp://0.0.0.0:8004?pkt_size=1300 -c:v copy -an -r 20 -f hls -hls_time 2 -hls_list_size 10 -hls_delete_threshold 10 -hls_flags split_by_time+delete_segments+second_level_segment_index -strftime 1 -hls_segment_filename {}/%s-%%d.ts -hls_segment_type mpegts {}/stream.m3u8'.format(FFMPEG, TSD_TEMP_DIR, TSD_TEMP_DIR)
             subprocess.Popen(ffmpeg_cmd.split(' '), stdin=raspivid_proc.stdout, stdout=FNULL, stderr=FNULL)
+
+            MiniWebServer(TSD_TEMP_DIR).start()
 
             self.start_janus()
             self.wait_for_janus()
@@ -169,8 +116,7 @@ class WebcamStreamer:
             env = dict(os.environ)
             env['LD_LIBRARY_PATH'] = JANUS_DIR + '/lib'
             janus_cmd = '{}/bin/janus --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
-            FNULL = open(os.devnull, 'w')
-            subprocess.Popen(janus_cmd.split(' '), env=env)#, stdout=FNULL, stderr=FNULL)
+            subprocess.Popen(janus_cmd.split(' '), env=env)
 
         janus_thread = Thread(target=run_janus)
         janus_thread.setDaemon(True)
