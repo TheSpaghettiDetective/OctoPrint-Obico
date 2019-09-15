@@ -16,7 +16,7 @@ import tempfile
 import backoff
 import json
 
-from .utils import pi_version
+from .utils import pi_version, ExpoBackoff
 from .ws import WebSocketClient
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
@@ -106,6 +106,7 @@ class WebcamStreamer:
         self.janus_ws = None
         self.plugin = plugin
         self.sentry = sentry
+        self.janus_ws_backoff = ExpoBackoff(120)
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
     def __init_camera__(self):
@@ -166,7 +167,6 @@ class WebcamStreamer:
         janus_thread.setDaemon(True)
         janus_thread.start()
 
-
     @backoff.on_exception(backoff.expo, Exception, max_tries=10)
     def wait_for_janus(self):
         time.sleep(1)
@@ -175,13 +175,16 @@ class WebcamStreamer:
 
 
     def start_janus_ws_tunnel(self):
-        def on_error(ws, error):
-            print(error)
+
+        def on_close(ws):
+            self.janus_ws_backoff.more()
+            self.start_janus_ws_tunnel()
 
         def on_message(ws, msg):
             self.plugin.ss.send_text(json.dumps(dict(janus=msg)))
+            self.janus_ws_backoff.reset()
 
-        self.janus_ws = WebSocketClient('ws://127.0.0.1:8188/', on_ws_msg=on_message, subprotocols=['janus-protocol'])
+        self.janus_ws = WebSocketClient('ws://127.0.0.1:8188/', on_ws_msg=on_message, on_ws_close=on_close, subprotocols=['janus-protocol'])
         wst = Thread(target=self.janus_ws.run)
         wst.daemon = True
         wst.start()

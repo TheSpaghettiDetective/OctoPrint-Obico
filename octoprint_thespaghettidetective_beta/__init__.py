@@ -222,7 +222,7 @@ class TheSpaghettiDetectivePlugin(
         wst.start()
 
     def on_ws_close(self, ws):
-        print("closing")
+        _logger.error("Server websocket is closing")
         self.ss = None
 
     def process_server_msg(self, ws, msg_json):
