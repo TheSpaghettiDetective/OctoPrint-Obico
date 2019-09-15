@@ -155,7 +155,7 @@ class TheSpaghettiDetectivePlugin(
         message_thread.daemon = True
         message_thread.start()
 
-        self.webcam_streamer = WebcamStreamer(self.ss, self.sentry)
+        self.webcam_streamer = WebcamStreamer(self, self.sentry)
         stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
         stream_thread.daemon = True
         stream_thread.start()

@@ -75,6 +75,18 @@ except:
 	import sys
 	sys.exit(-1)
 
+import sys
+is_rpi = False
+try:
+    with open('/sys/firmware/devicetree/base/model', 'r') as firmware_model:
+        if firmware_model.read().find('Raspberry Pi') > -1:
+            is_rpi = True
+except:
+     pass
+if is_rpi and not hasattr(sys, 'pypy_version_info'):
+	plugin_requires += [ 'picamera==1.13' ]
+
+
 setup_parameters = octoprint_setuptools.create_plugin_setup_parameters(
 	identifier=plugin_identifier,
 	package=plugin_package,

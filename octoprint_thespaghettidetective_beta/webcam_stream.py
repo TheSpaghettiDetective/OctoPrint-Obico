@@ -14,6 +14,7 @@ import yaml
 from raven import breadcrumbs
 import tempfile
 import backoff
+import json
 
 from .utils import pi_version
 from .ws import WebSocketClient
@@ -101,9 +102,9 @@ class WebcamServer:
 
 class WebcamStreamer:
 
-    def __init__(self, server_socket, sentry):
+    def __init__(self, plugin, sentry):
         self.janus_ws = None
-        self.server_socket = server_socket
+        self.plugin = plugin
         self.sentry = sentry
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
@@ -178,7 +179,7 @@ class WebcamStreamer:
             print(error)
 
         def on_message(ws, msg):
-            self.server_socket.send_text(json.dumps(dict(janus=msg)))
+            self.plugin.ss.send_text(json.dumps(dict(janus=msg)))
 
         self.janus_ws = WebSocketClient('ws://127.0.0.1:8188/', on_ws_msg=on_message, subprotocols=['janus-protocol'])
         wst = Thread(target=self.janus_ws.run)
