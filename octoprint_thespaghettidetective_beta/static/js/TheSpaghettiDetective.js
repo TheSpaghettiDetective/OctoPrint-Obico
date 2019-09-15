@@ -54,14 +54,6 @@ $(function() {
         testAuthToken(token, container);
     });
 
-
-    function startVideoStreaming() {
-        $('#webcam_container').after('<video id=hls-video width=588 height=330 class="video-js vjs-default-skin" controls autoplay> <source src="http://' + window.location.hostname + ':9332/stream.m3u8" type="application/x-mpegURL"> </video>');
-        $('#webcam_container').hide();
-    }
-
-    startVideoStreaming();
-
     ko.bindingHandlers.showTrackerModal = {
         update: function(element, valueAccessor) {
             var value = valueAccessor();
