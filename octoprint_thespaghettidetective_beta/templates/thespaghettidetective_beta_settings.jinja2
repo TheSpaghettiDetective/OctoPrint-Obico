@@ -14,6 +14,19 @@
         <button class="btn test-auth-token" type="button"><i class="fa fa-spinner fa-spin" style="display: none;"></i> Test</button>
     </div>
     <div class="std-api-status">&nbsp; </div>
+    <div class="collapse-header"><a href="#" class="muted" onclick="$(this).children().toggleClass('icon-caret-right icon-caret-down').parent().parent().next().slideToggle('fast')"><i class="icon-caret-right"></i>&nbsp;Opt In</a></div>
+    <div class="hide">
+        <div class="control-group">
+            <div class="controls">
+                <div class="form-check" style="margin-top: 8px;">
+                  <input class="form-check-input custom-server" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective_beta.webrtc_alpha" style="margin-top: 0px;">
+                  <label class="form-check-label" for="custom-server" style="display: inline">
+                    Smooth video streaming testing
+                  </label>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="collapse-header"><a href="#" class="muted" onclick="$(this).children().toggleClass('icon-caret-right icon-caret-down').parent().parent().next().slideToggle('fast')"><i class="icon-caret-right"></i>&nbsp;Advanced</a></div>
     <div class="hide">
         <div class="control-group">
@@ -44,38 +57,4 @@
 <hr />
 <div class="settings-video">
 <iframe width="560" height="315" src="https://www.youtube.com/embed/ZpDw9mNBngU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</div>
-<div class="social-container">
-  <script type="text/javascript" src="https://apis.google.com/js/platform.js"></script>
-  <script async defer crossorigin="anonymous"
-    src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.2&appId=176252365784303&autoLogAppEvents=1"></script>
-  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-  <!-- Place this tag in your head or just before your close body tag. -->
-  <script async defer src="https://buttons.github.io/buttons.js"></script>
-  <h5>Stay updated from The Detective</h5>
-  <div class="social-btns">
-  <div class="social">
-    <a href="https://twitter.com/thespaghettispy" class="twitter-follow-button"
-      data-show-count="false">
-      Follow @thespaghettispy
-    </a>
-  </div>
-  <div class="social">
-      <div class="fb-like" data-href="https://www.facebook.com/thespaghettidetective/" data-layout="button" data-action="like" data-size="small" data-show-faces="true" data-share="true"></div>
-  </div>
-  <div class="social">
-      <div class="g-ytsubscribe" data-channelid="UCbAJcR6t5lrdZ1JXjPPRjGA" data-layout="default" data-theme="dark" data-count="hidden"></div>
-  </div>
-  <div class="social">
-      <a
-      class="github-button" // part of the https://buttons.github.io/buttons.js script in siteConfig.js
-      href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective"
-      data-count-href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective/stargazers"
-      data-show-count="true"
-      data-count-aria-label="# stargazers on GitHub"
-      aria-label="Star this project on GitHub">
-      TheSpaghettiDetective
-    </a>
-  </div>
-</div>
 </div>

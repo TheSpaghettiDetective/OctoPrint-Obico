@@ -11,7 +11,7 @@ import raven
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
-from .utils import ExpoBackoff, ConnectionErrorTracker
+from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
 from .webcam_capture import WebcamCapturer
@@ -77,7 +77,8 @@ class TheSpaghettiDetectivePlugin(
             )
 
         return dict(
-            endpoint_prefix='https://app.thespaghettidetective.com'
+            endpoint_prefix='https://app.thespaghettidetective.com',
+            webrtc_alpha=False
         )
 
     ##~~ AssetPlugin mixin
@@ -155,10 +156,11 @@ class TheSpaghettiDetectivePlugin(
         message_thread.daemon = True
         message_thread.start()
 
-        self.webcam_streamer = WebcamStreamer(self, self.sentry)
-        stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
-        stream_thread.daemon = True
-        stream_thread.start()
+        if pi_version() and self._settings.get(["webrtc_alpha"]):
+            self.webcam_streamer = WebcamStreamer(self, self.sentry)
+            stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
+            stream_thread.daemon = True
+            stream_thread.start()
 
         webcam_capturer = WebcamCapturer(self, self._settings, self.error_tracker, self.sentry)
         capture_thread = threading.Thread(target=webcam_capturer.webcam_loop)
@@ -194,7 +196,6 @@ class TheSpaghettiDetectivePlugin(
                 self.sentry.captureException()
                 self.error_tracker.add_connection_error('server')
                 backoff.more(e)
-
 
     def post_printer_status(self, data, throwing=False):
         if not self.is_configured():
