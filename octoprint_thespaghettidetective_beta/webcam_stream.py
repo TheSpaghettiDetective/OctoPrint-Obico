@@ -114,14 +114,7 @@ class WebcamStreamer:
 	import picamera
 	self.camera = picamera.PiCamera()
 	self.camera.framerate=25
-	#self.camera.resolution=resolution_tuple(dev_settings)
-	#self.camera.hflip=dev_settings.get('flipH', False)
-	#self.camera.vflip=dev_settings.get('flipV', False)
-
-	#rotation = (90 if dev_settings.get('rotate90', False) else 0)
-	#rotation += (-90 if dev_settings.get('rotate90N', False) else 0)
-	#self.camera.rotation=rotation
-
+        self.camera.resolution = (640, 480) if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '4:3' else (960, 540)
 
     def video_pipeline(self):
 
