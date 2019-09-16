@@ -161,7 +161,8 @@ class WebcamStreamer:
             env = dict(os.environ)
             env['LD_LIBRARY_PATH'] = JANUS_DIR + '/lib'
             janus_cmd = '{}/bin/janus --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
-            subprocess.Popen(janus_cmd.split(' '), env=env)
+            FNULL = open(os.devnull, 'w')
+            subprocess.Popen(janus_cmd.split(' '), env=env, stdout=FNULL, stderr=FNULL)
 
         janus_thread = Thread(target=run_janus)
         janus_thread.setDaemon(True)
