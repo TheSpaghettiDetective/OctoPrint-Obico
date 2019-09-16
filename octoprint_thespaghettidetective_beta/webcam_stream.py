@@ -21,6 +21,7 @@ from .ws import WebSocketClient
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
 
+CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 
@@ -117,6 +118,11 @@ class WebcamStreamer:
         self.camera.resolution = (640, 480) if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '4:3' else (960, 540)
 
     def video_pipeline(self):
+
+        # Wait to make sure other plugins that may use pi camera to init first, then yield to them if they are already using pi camera
+        time.sleep(10)
+        if os.path.exists(CAM_EXCLUSIVE_USE):
+            return
 
         sarge.run('sudo service webcamd stop')
 
