@@ -5,9 +5,9 @@
 # between application(s) and Janus.
 general: {
 	#configs_folder = "/opt/janus/etc/janus"			# Configuration files folder
-	plugins_folder = "/home/pi/OctoPrint-TheSpaghettiDetective/octoprint_thespaghettidetective_beta/bin/janus/lib/janus/plugins"			# Plugins folder
-	transports_folder = "/home/pi/OctoPrint-TheSpaghettiDetective/octoprint_thespaghettidetective_beta/bin/janus/lib/janus/transports"	# Transports folder
-	events_folder = "/home/pi/OctoPrint-TheSpaghettiDetective/octoprint_thespaghettidetective_beta/bin/janus/lib/janus/events"			# Event handlers folder
+	plugins_folder = "JANUS_HOME/lib/janus/plugins"			# Plugins folder
+	transports_folder = "JANUS_HOME/lib/janus/transports"	# Transports folder
+	events_folder = "JANUS_HOME/lib/janus/events"			# Event handlers folder
 
 		# The next settings configure logging
 	#log_to_stdout = false					# Whether the Janus output should be written

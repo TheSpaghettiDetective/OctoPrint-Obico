@@ -156,6 +156,17 @@ class WebcamStreamer:
 
     def start_janus(self):
 
+        def ensure_janus_config():
+	    janus_conf_tmp = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg.template')
+	    janus_conf_path = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg')
+            if os.path.exists(janus_conf_path):
+                return
+
+	    with open(janus_conf_tmp, "rt") as fin:
+	        with open(janus_conf_path, "wt") as fout:
+		    for line in fin:
+                        fout.write(line.replace('JANUS_HOME', JANUS_DIR))
+
         def run_janus():
             env = dict(os.environ)
             env['LD_LIBRARY_PATH'] = JANUS_DIR + '/lib'
@@ -163,6 +174,7 @@ class WebcamStreamer:
             FNULL = open(os.devnull, 'w')
             subprocess.Popen(janus_cmd.split(' '), env=env, stdout=FNULL, stderr=FNULL)
 
+        ensure_janus_config()
         janus_thread = Thread(target=run_janus)
         janus_thread.setDaemon(True)
         janus_thread.start()
