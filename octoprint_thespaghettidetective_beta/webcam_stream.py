@@ -189,7 +189,7 @@ class WebcamStreamer:
     def start_janus_ws_tunnel(self):
 
         def on_close(ws):
-            self.janus_ws_backoff.more()
+            self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
             self.start_janus_ws_tunnel()
 
         def on_message(ws, msg):

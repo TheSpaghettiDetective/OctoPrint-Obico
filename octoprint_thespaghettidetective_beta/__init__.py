@@ -173,7 +173,7 @@ class TheSpaghettiDetectivePlugin(
         return {"Authorization": "Token " + self.auth_token(auth_token)}
 
     def octoprint_settings(self):
-        webcam = dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90'))
+        webcam = dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio'))
         return dict(webcam=webcam)
 
     def message_loop(self):
