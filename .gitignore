@@ -14,3 +14,4 @@ dist
 /node_modules
 npm-debug.log
 .config*
+janus.jcfg

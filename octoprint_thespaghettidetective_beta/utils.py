@@ -3,6 +3,7 @@ from datetime import datetime
 import time
 import random
 import logging
+import re
 
 _logger = logging.getLogger(__name__)
 
@@ -64,3 +65,10 @@ class ConnectionErrorTracker:
 
     def as_dict(self):
         return self.errors
+
+def pi_version():
+    try:
+        with open('/sys/firmware/devicetree/base/model', 'r') as firmware_model:
+            return re.search('Raspberry Pi(.*)', firmware_model.read()).group(1)
+    except:
+         return None

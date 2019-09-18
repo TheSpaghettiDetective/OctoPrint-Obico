@@ -5,8 +5,6 @@
  * License: AGPLv3
  */
 $(function() {
-    PNotify.prototype.options.confirm.buttons = [];
-
     function testAuthToken(token, container) {
         $.ajax("/api/plugin/thespaghettidetective_beta", {
             method: "POST",
@@ -26,12 +24,14 @@ $(function() {
         });
     }
 
-    $('input.custom-server').change( function(e) {
-        var container = $(this).parent().parent();
-        if($(this).is(':checked')) {
-            container.find('input.endpoint-prefix').prop('disabled', false);
+    $("input.custom-server").change(function(e) {
+        var container = $(this)
+            .parent()
+            .parent();
+        if ($(this).is(":checked")) {
+            container.find("input.endpoint-prefix").prop("disabled", false);
         } else {
-            container.find('input.endpoint-prefix').prop('disabled', true);
+            container.find("input.endpoint-prefix").prop("disabled", true);
         }
     });
 
@@ -47,19 +47,21 @@ $(function() {
 
     $("button.test-auth-token").click(function(event) {
         var container = $(this).parent();
-        var token = $(this).parent().find('input.auth-token-input').val();
+        var token = $(this)
+            .parent()
+            .find("input.auth-token-input")
+            .val();
         testAuthToken(token, container);
     });
 
     ko.bindingHandlers.showTrackerModal = {
-        update: function (element, valueAccessor) {
+        update: function(element, valueAccessor) {
             var value = valueAccessor();
             if (ko.utils.unwrapObservable(value)) {
-                $(element).modal('show');
+                $(element).modal("show");
                 // this is to focus input field inside dialog
-            }
-            else {
-                $(element).modal('hide');
+            } else {
+                $(element).modal("hide");
             }
         }
     };
@@ -71,7 +73,7 @@ $(function() {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
-        self.connectionErrors = {server: [], webcam: []};
+        self.connectionErrors = { server: [], webcam: [] };
         self.hasShownServerError = false;
         self.hasShownWebcamError = false;
 
@@ -83,21 +85,19 @@ $(function() {
             var text = "Unkonwn errors.";
 
             if (data.new_error == "server") {
-
                 if (self.hasShownServerError) {
                     return;
                 }
                 self.hasShownServerError = true;
-                text = "The Spaghetti Detective failed to connect to the server. Please make sure OctoPrint has a reliable internet connection."
-
+                text =
+                    "The Spaghetti Detective failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.";
             } else if (data.new_error == "webcam") {
-
                 if (self.hasShownWebcamError) {
                     return;
                 }
                 self.hasShownWebcamError = true;
-                text = "The Spaghetti Detective failed to connect to webcam. Please go to \"Settings\" -> \"Webcam & Timelapse\" and make sure the stream URL and snapshot URL are set correctly."
-
+                text =
+                    'The Spaghetti Detective failed to connect to webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.';
             }
 
             new PNotify({
@@ -121,11 +121,21 @@ $(function() {
                                 notice.remove();
                             }
                         },
+                        {
+                            text: "Close",
+                            addClass: "remove_button"
+                        }
                     ]
                 },
-    			history: {
-    			    history: false
-    			},
+                history: {
+                    history: false
+                },
+                before_open: function(notice) {
+                    notice
+                        .get()
+                        .find(".remove_button")
+                        .remove();
+                }
             });
         };
 
@@ -134,7 +144,7 @@ $(function() {
                 method: "POST",
                 contentType: "application/json",
                 data: JSON.stringify({
-                    command: "get_connection_errors",
+                    command: "get_connection_errors"
                 }),
                 success: function(connectionErrors) {
                     for (var k in connectionErrors) {
@@ -145,24 +155,31 @@ $(function() {
                         self.connectionErrors[k] = occurences;
                     }
                     showMessageDialog({
-                        title: 'The Spaghetti Detective Diagnostic Report',
-                        message: trackerModalBody(),
-			        });
+                        title: "The Spaghetti Detective Diagnostic Report",
+                        message: trackerModalBody()
+                    });
                 }
             });
-        }
+        };
 
         self.openErrorTrackerModal = function() {
             self.showTrackerModal();
-        }
+        };
 
-		function trackerModalBody() {
-            var errorBody = '<b>This window is to diagnose connection problems with The Spaghetti Detecitive server. It is not a diagnosis for your print failures.</b>';
+        function trackerModalBody() {
+            var errorBody =
+                "<b>This window is to diagnose connection problems with The Spaghetti Detecitive server. It is not a diagnosis for your print failures.</b>";
 
-            if ((self.connectionErrors.server.length + self.connectionErrors.webcam.length) == 0) {
-                errorBody += '<p class="text-success">There have been no connection errors since OctoPrint rebooted.</p>';
+            if (
+                self.connectionErrors.server.length +
+                    self.connectionErrors.webcam.length ==
+                0
+            ) {
+                errorBody +=
+                    '<p class="text-success">There have been no connection errors since OctoPrint rebooted.</p>';
             } else {
-                errorBody += '<p class="text-error">The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/no-pics/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/support/">reach out to us</a> for help.</p>'
+                errorBody +=
+                    '<p class="text-error">The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/no-pics/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/support/">reach out to us</a> for help.</p>';
             }
 
             if (self.connectionErrors.server.length > 0) {
@@ -179,8 +196,7 @@ $(function() {
                 errorBody += "<p>Please go to \"Settings\" -> \"Webcam & Timelapse\" and make sure the stream URL and snapshot URL are set correctly. Also make sure these URLs can be accessed from within the OctoPrint (not just from your browser).</p>";
             }
             return errorBody;
-
-		}
+        }
     }
 
     /* view model class, parameters for constructor, container to bind to
@@ -190,8 +206,11 @@ $(function() {
     OCTOPRINT_VIEWMODELS.push({
         construct: ThespaghettidetectiveBetaViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
-        dependencies: [ "settingsViewModel" ],
+        dependencies: ["settingsViewModel"],
         // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
-        elements: [ '#wizard_plugin_thespaghettidetective_beta', '#settings_plugin_thespaghettidetective_beta' ]
+        elements: [
+            "#wizard_plugin_thespaghettidetective_beta",
+            "#settings_plugin_thespaghettidetective_beta"
+        ]
     });
 });

@@ -9,11 +9,12 @@ import os, sys, time
 import requests
 import raven
 
-from .webcam_capture import capture_jpeg
-from .ws import ServerSocket, ServerSocketException
+from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
-from .utils import ExpoBackoff, ConnectionErrorTracker
+from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version
 from .print_event import PrintEventTracker
+from .webcam_stream import WebcamStreamer
+from .webcam_capture import WebcamCapturer
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -27,12 +28,7 @@ import octoprint.plugin
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
 
-POST_PIC_INTERVAL_SECONDS = 50.0
 POST_STATUS_INTERVAL_SECONDS = 15.0
-
-if os.environ.get('DEBUG'):
-    POST_PIC_INTERVAL_SECONDS = 5.0
-    POST_STATUS_INTERVAL_SECONDS = 15.0
 
 class TheSpaghettiDetectivePlugin(
             octoprint.plugin.SettingsPlugin,
@@ -45,7 +41,6 @@ class TheSpaghettiDetectivePlugin(
 
     def __init__(self):
         self.ss = None
-        self.last_pic = 0
         self.last_status = 0
         self.commander = Commander()
         self.error_tracker = ConnectionErrorTracker(self)
@@ -82,7 +77,8 @@ class TheSpaghettiDetectivePlugin(
             )
 
         return dict(
-            endpoint_prefix='https://app.thespaghettidetective.com'
+            endpoint_prefix='https://app.thespaghettidetective.com',
+            webrtc_alpha=False
         )
 
     ##~~ AssetPlugin mixin
@@ -144,38 +140,46 @@ class TheSpaghettiDetectivePlugin(
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
-        event_payload = self.print_event_tracker.on_event(self, event, payload)
-        if event_payload:
-            self.post_printer_status(event_payload)
+        if type(event) is str and event.startswith("Print"):
+            event_payload = self.print_event_tracker.on_event(self, event, payload)
+            if event_payload:
+                self.post_printer_status(event_payload)
 
     ##~~Startup Plugin
 
     def on_after_startup(self):
-        main_thread = threading.Thread(target=self.main_loop)
-        main_thread.daemon = True
-        main_thread.start()
+        if not self.is_configured():
+            time.sleep(1)
+            next
 
+        message_thread = threading.Thread(target=self.message_loop)
+        message_thread.daemon = True
+        message_thread.start()
+
+        if pi_version() and self._settings.get(["webrtc_alpha"]):
+            self.webcam_streamer = WebcamStreamer(self, self.sentry)
+            stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
+            stream_thread.daemon = True
+            stream_thread.start()
+
+        webcam_capturer = WebcamCapturer(self, self._settings, self.error_tracker, self.sentry)
+        capture_thread = threading.Thread(target=webcam_capturer.webcam_loop)
+        capture_thread.daemon = True
+        capture_thread.start()
 
     ## Private methods
 
     def auth_headers(self, auth_token=None):
         return {"Authorization": "Token " + self.auth_token(auth_token)}
 
-    def octoprint_data(self):
-        return self._printer.get_current_data()
-
     def octoprint_settings(self):
-        webcam = dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90'))
+        webcam = dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio'))
         return dict(webcam=webcam)
 
-    def main_loop(self):
+    def message_loop(self):
         backoff = ExpoBackoff(120)
         while True:
             try:
-                if not self.is_configured():
-                    time.sleep(1)
-                    next
-
                 self.error_tracker.attempt('server')
 
                 if self.last_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
@@ -183,40 +187,15 @@ class TheSpaghettiDetectivePlugin(
                     self.post_printer_status(payload, throwing=True)
                     backoff.reset()
 
-                speed_up = 5.0 if self.is_actively_printing() else 1.0
-                if self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
-                    if self.post_jpg():
-                        backoff.reset()
-
                 time.sleep(1)
 
-            except ServerSocketException as e:
+            except WebSocketClientException as e:
                 self.error_tracker.add_connection_error('server')
                 backoff.more(e)
             except Exception as e:
                 self.sentry.captureException()
                 self.error_tracker.add_connection_error('server')
                 backoff.more(e)
-
-    def post_jpg(self):
-        if not self.is_configured():
-            return True
-
-        endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
-
-        try:
-            self.error_tracker.attempt('webcam')
-            files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
-        except:
-            self.error_tracker.add_connection_error('webcam')
-            return False
-
-        resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
-        resp.raise_for_status()
-
-        self.last_pic = time.time()
-        return True
-
 
     def post_printer_status(self, data, throwing=False):
         if not self.is_configured():
@@ -230,7 +209,7 @@ class TheSpaghettiDetectivePlugin(
 
         if not self.ss or not self.ss.connected():  # Check self.ss again as it could already be set to None now.
             if throwing:
-                raise ServerSocketException('Failed to connect to websocket server')
+                raise WebSocketClientException('Failed to connect to websocket server')
             else:
                 return
 
@@ -238,17 +217,16 @@ class TheSpaghettiDetectivePlugin(
         self.last_status = time.time()
 
     def connect_ws(self):
-        self.ss = ServerSocket(self.canonical_ws_prefix() + "/ws/dev/", self.auth_token(), on_server_ws_msg=self.process_server_msg, on_server_ws_close=self.on_ws_close)
+        self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
         wst = threading.Thread(target=self.ss.run)
         wst.daemon = True
         wst.start()
 
     def on_ws_close(self, ws):
-        print("closing")
+        _logger.error("Server websocket is closing")
         self.ss = None
 
     def process_server_msg(self, ws, msg_json):
-        print(msg_json)
         msg = json.loads(msg_json)
         if msg.get('commands'):
             _logger.info('Received: ' + msg_json)
@@ -263,6 +241,12 @@ class TheSpaghettiDetectivePlugin(
                 self._printer.cancel_print()
             if command["cmd"] == 'resume':
                 self._printer.resume_print()
+
+        if msg.get('janus') and self.webcam_streamer:
+            self.webcam_streamer.pass_to_janus(msg.get('janus'))
+
+
+    # helper methods
 
     def canonical_endpoint_prefix(self):
         if not self._settings.get(["endpoint_prefix"]):
@@ -279,9 +263,6 @@ class TheSpaghettiDetectivePlugin(
     def auth_token(self, token=None):
         t = token if token is not None else self._settings.get(["auth_token"])
         return t.strip() if t else ''
-
-    def is_actively_printing(self):
-        return self._printer.is_operational() and not self._printer.is_ready()
 
     def is_configured(self):
         return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])

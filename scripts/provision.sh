@@ -33,7 +33,7 @@ sudo tar -xvf octoprint.tar.gz --strip 1
 # Workaround for a pip version mismatch
 # RUN apt-get update && apt-get remove -f python-pip && apt-get install -y python-pip && apt-get remove -f python-pip easy_install -U pip
 #RUN pip install setuptools
-sudo apt-get -y install python-pip
+sudo DEBIAN_FRONTEND=noninteractive apt-get -y install python-pip
 sudo pip install -r requirements.txt
 sudo python setup.py install
 

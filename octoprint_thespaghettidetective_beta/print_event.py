@@ -17,19 +17,18 @@ class PrintEventTracker:
         elif event == 'PrintFailed' or event == 'PrintDone':
             self.current_print_ts = -1
 
-        return {
-            'current_print_ts': print_ts,
-            'octoprint_event': {
+        data = self.octoprint_data(plugin)
+        data['current_print_ts'] = print_ts
+        data['octoprint_event'] = {
                 'event_type': event,
                 'data': payload
-                },
-            'octoprint_data': plugin.octoprint_data()
-            }
+                }
+        return data
 
     def octoprint_data(self, plugin):
         return {
             'current_print_ts': self.current_print_ts,
-            'octoprint_data': plugin.octoprint_data(),
+            'octoprint_data': plugin._printer.get_current_data(),
             'octoprint_temperatures': plugin._printer.get_current_temperatures(),
             'octoprint_settings': plugin.octoprint_settings(),
             }

@@ -14,7 +14,7 @@ plugin_package = "octoprint_thespaghettidetective_beta"
 plugin_name = "TheSpaghettiDetectiveBeta"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "0.7.0"
+plugin_version = "0.8.0"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
@@ -45,7 +45,7 @@ plugin_requires = ["OctoPrint>=1.3.8", "backoff>=1.4.3", "raven"]
 # already be installed automatically if they exist. Note that if you add something here you'll also need to update
 # MANIFEST.in to match to ensure that python setup.py sdist produces a source distribution that contains all your
 # files. This is sadly due to how python's setup.py works, see also http://stackoverflow.com/a/14159430/2028598
-plugin_additional_data = []
+plugin_additional_data = ['bin']
 
 # Any additional python packages you need to install with your plugin that are not contained in <plugin_package>.*
 plugin_additional_packages = []
@@ -74,6 +74,18 @@ except:
 	      "the same python installation that OctoPrint is installed under?")
 	import sys
 	sys.exit(-1)
+
+import sys
+is_rpi = False
+try:
+    with open('/sys/firmware/devicetree/base/model', 'r') as firmware_model:
+        if firmware_model.read().find('Raspberry Pi') > -1:
+            is_rpi = True
+except:
+     pass
+if is_rpi and not hasattr(sys, 'pypy_version_info'):
+	plugin_requires += [ 'picamera==1.13' ]
+
 
 setup_parameters = octoprint_setuptools.create_plugin_setup_parameters(
 	identifier=plugin_identifier,
