@@ -8,13 +8,13 @@ import re
 import os, sys, time
 import requests
 import raven
+import backoff
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
 from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
-from .webcam_capture import WebcamCapturer
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -162,10 +162,6 @@ class TheSpaghettiDetectivePlugin(
             stream_thread.daemon = True
             stream_thread.start()
 
-        webcam_capturer = WebcamCapturer(self, self._settings, self.error_tracker, self.sentry)
-        capture_thread = threading.Thread(target=webcam_capturer.webcam_loop)
-        capture_thread.daemon = True
-        capture_thread.start()
 
     ## Private methods
 
@@ -244,6 +240,20 @@ class TheSpaghettiDetectivePlugin(
 
         if msg.get('janus') and self.webcam_streamer:
             self.webcam_streamer.pass_to_janus(msg.get('janus'))
+
+    @backoff.on_exception(backoff.expo, Exception, max_tries=3)
+    def post_jpg(self, jpg):
+        if not self.is_configured():
+            return
+
+        self.error_tracker.attempt('server')
+        endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
+        try:
+            resp = requests.post( endpoint, files={'pic': jpg}, headers=self.auth_headers() )
+            resp.raise_for_status()
+        except:
+            self.error_tracker.add_connection_error('server')
+            raise
 
 
     # helper methods
