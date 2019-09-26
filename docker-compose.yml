@@ -1,0 +1,30 @@
+version: '2.4'
+
+services:
+  octoprint:
+    hostname: octoprint
+    restart: unless-stopped
+    build: .
+    ports:
+      - '5000:5000'
+    volumes:
+     - ./:/app
+    environment:
+        DEBUG: 'True'
+        JANUS_SERVER: 'janus'
+    depends_on:
+      - janus
+    command: bash -c "sleep 11111111111"
+
+  janus:
+    hostname: janus
+    restart: unless-stopped
+    image: kennethjiang/janus:ubuntu
+    #command: sh -c "/opt/janus/bin/janus --stun-server=stun.l.google.com:19302"
+    command: sh -c "/opt/janus/bin/janus"
+  mjpeg:
+    hostname: mjpeg
+    restart: unless-stopped
+    image: kennethjiang/mjpg-streamer
+    ports:
+      - '8080:8080'
