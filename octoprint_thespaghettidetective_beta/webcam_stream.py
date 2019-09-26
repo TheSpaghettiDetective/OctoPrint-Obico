@@ -97,7 +97,7 @@ class WebcamStreamer:
             if not self.picam_streaming:
                 jpg = None
                 try:
-                    jpg = capture_jpeg(self.plugin._settings)
+                    jpg = capture_jpeg(self.plugin._settings.global_get(["webcam"]))
                 except Exception as e:
                     _logger.warn('Failed to capture jpeg - ' + str(e)
 

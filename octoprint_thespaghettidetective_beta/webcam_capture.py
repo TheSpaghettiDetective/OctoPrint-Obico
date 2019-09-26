@@ -16,8 +16,7 @@ _logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=6)
 @backoff.on_predicate(backoff.expo, max_tries=6)
-def capture_jpeg(op_settings):
-    webcam_settings = op_settings.global_get(["webcam"])
+def capture_jpeg(webcam_settings):
     snapshot_url = webcam_settings.get("snapshot", '').strip()
     snapshot_timeout = int(webcam_settings.get("snapshotTimeout", '5'))
     snapshot_validate_ssl = bool(webcam_settings.get("snapshotSslValidation", 'False'))
