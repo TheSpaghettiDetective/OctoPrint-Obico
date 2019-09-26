@@ -135,7 +135,7 @@ class WebcamStreamer:
             env['LD_LIBRARY_PATH'] = JANUS_DIR + '/lib'
             janus_cmd = '{}/bin/janus --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
             FNULL = open(os.devnull, 'w')
-            subprocess.Popen(janus_cmd.split(' '), env=env)# , stdout=FNULL, stderr=FNULL)
+            subprocess.Popen(janus_cmd.split(' '), env=env, stdout=FNULL, stderr=FNULL)
 
         if os.getenv('JANUS_SERVER'):
             _logger.warning('Using extenal Janus gateway. Not starting Janus.')
