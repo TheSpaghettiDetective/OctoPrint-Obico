@@ -50,6 +50,7 @@ class TheSpaghettiDetectivePlugin(
         self.commander = Commander()
         self.error_tracker = ConnectionErrorTracker(self)
         self.print_event_tracker = PrintEventTracker()
+        self.last_jpg_post = 0
 
 
 	##~~ Wizard plugin mix
@@ -186,8 +187,7 @@ class TheSpaghettiDetectivePlugin(
                     self.post_printer_status(payload, throwing=True)
                     backoff.reset()
 
-                if (not self._printer.get_state_id() in ['PRINTING', 'PAUSED']) and \  # Printer idle
-                self.last_pic < time.time() - POST_PIC_INTERVAL_SECONDS / speed_up:
+                if self._printer.get_state_id() in ['PRINTING', 'PAUSED'] and self.last_jpg_post < time.time() - POST_PIC_INTERVAL_SECONDS:
                     if self.post_jpg():
                         backoff.reset()
 
@@ -218,7 +218,7 @@ class TheSpaghettiDetectivePlugin(
         resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
         resp.raise_for_status()
 
-        self.last_pic = time.time()
+        self.last_jpg_post = time.time()
         return True
 
     def post_printer_status(self, data, throwing=False):

@@ -39,7 +39,6 @@ class WebcamStreamer:
         self.sentry = sentry
         self.janus_ws_backoff = ExpoBackoff(120)
         self.picam_streaming = False
-        self.last_jpg_post = 0
 
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
@@ -99,7 +98,7 @@ class WebcamStreamer:
                 try:
                     jpg = capture_jpeg(self.plugin._settings.global_get(["webcam"]))
                 except Exception as e:
-                    _logger.warn('Failed to capture jpeg - ' + str(e)
+                    _logger.warn('Failed to capture jpeg - ' + str(e))
 
                 if not jpg:
                     continue
