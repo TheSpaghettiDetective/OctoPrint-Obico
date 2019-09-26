@@ -246,6 +246,9 @@ class TheSpaghettiDetectivePlugin(
         if not self.is_configured():
             return
 
+        if not self._printer.get_state_id() in ['PRINTING', 'PAUSED']:  # Printer idle
+            return
+
         self.error_tracker.attempt('server')
         endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
         try:
