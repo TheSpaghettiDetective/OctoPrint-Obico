@@ -1,4 +1,4 @@
 #!/bin/bash
 
-DEBUG=True octoprint --iknowwhatimdoing --basedir /vagrant/data --debug
+octoprint serve --iknowwhatimdoing --basedir /app/data --debug
 

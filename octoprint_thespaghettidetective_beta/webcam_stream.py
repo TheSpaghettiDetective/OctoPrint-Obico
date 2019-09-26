@@ -33,6 +33,8 @@ CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 
+JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
+
 class WebcamStreamer:
 
     def __init__(self, plugin, sentry):
@@ -54,21 +56,24 @@ class WebcamStreamer:
 
     def video_pipeline(self):
 
-        self.start_janus()
-
         mjpeg_thread = Thread(target=self.mjpeg_loop)
-        mjpeg_thread.setDaemon(True)
+        mjpeg_thread.daemon = True
         mjpeg_thread.start()
+
+        if not pi_version() and not os.getenv('JANUS_SERVER'):
+            return
+
+        self.start_janus()
 
         # Wait to make sure other plugins that may use pi camera to init first, then yield to them if they are already using pi camera
         time.sleep(10)
         if os.path.exists(CAM_EXCLUSIVE_USE):
+            _logger.warn('Conceding pi camera exclusive use')
             return
 
         self.picam_streaming = True
-        sarge.run('sudo service webcamd stop')
-
         try:
+            sarge.run('sudo service webcamd stop')
             self. __init_camera__()
 
             ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -r 20 -f rtp rtp://0.0.0.0:8004?pkt_size=1300'.format(FFMPEG)
@@ -110,10 +115,10 @@ class WebcamStreamer:
 
                 if not self.picam_streaming:
                     encoded = base64.b64encode(jpg)
-                    msg = '\r\n{}\r\n'.format(len(encoded)) 
-                    mjpeg_sock.sendto('\r\n{}\r\n'.format(len(encoded)), ('127.0.0.1', 5008)) #  
+                    msg = '\r\n{}\r\n'.format(len(encoded))
+                    mjpeg_sock.sendto('\r\n{}\r\n'.format(len(encoded)), (JANUS_SERVER, 5008)) #
                     for chunk in wrap(encoded, 1400):
-                        mjpeg_sock.sendto(chunk, ('127.0.0.1', 5008))
+                        mjpeg_sock.sendto(chunk, (JANUS_SERVER, 5008))
                         time.sleep(0.002)
 
             time.sleep(0.1)
@@ -143,19 +148,23 @@ class WebcamStreamer:
             FNULL = open(os.devnull, 'w')
             subprocess.Popen(janus_cmd.split(' '), env=env)# , stdout=FNULL, stderr=FNULL)
 
-        ensure_janus_config()
-        janus_thread = Thread(target=run_janus)
-        janus_thread.setDaemon(True)
-        janus_thread.start()
+        if os.getenv('JANUS_SERVER'):
+            _logger.warning('Using extenal Janus gateway. Not starting Janus.')
+        else:
+            ensure_janus_config()
+            janus_thread = Thread(target=run_janus)
+            janus_thread.daemon = True
+            janus_thread.start()
 
-        self.wait_for_janus()
+            self.wait_for_janus()
+
         self.start_janus_ws_tunnel()
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=10)
     def wait_for_janus(self):
         time.sleep(1)
         import socket
-        socket.socket().connect(('127.0.0.1', 8188))
+        socket.socket().connect((JANUS_SERVER, 8188))
 
 
     def start_janus_ws_tunnel(self):
@@ -168,7 +177,7 @@ class WebcamStreamer:
             self.plugin.ss.send_text(json.dumps(dict(janus=msg)))
             self.janus_ws_backoff.reset()
 
-        self.janus_ws = WebSocketClient('ws://127.0.0.1:8188/', on_ws_msg=on_message, on_ws_close=on_close, subprotocols=['janus-protocol'])
+        self.janus_ws = WebSocketClient('ws://{}:8188/'.format(JANUS_SERVER), on_ws_msg=on_message, on_ws_close=on_close, subprotocols=['janus-protocol'])
         wst = Thread(target=self.janus_ws.run)
         wst.daemon = True
         wst.start()
