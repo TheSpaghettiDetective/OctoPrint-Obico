@@ -25,10 +25,6 @@ from webcam_capture import capture_jpeg
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
 
-POST_PIC_INTERVAL_SECONDS = 10.0
-if os.environ.get('DEBUG'):
-    POST_PIC_INTERVAL_SECONDS = 5.0
-
 CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
@@ -98,25 +94,19 @@ class WebcamStreamer:
         mjpeg_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         while True:
-            if not self.picam_streaming or self.last_jpg_post < time.time() - POST_PIC_INTERVAL_SECONDS:
+            if not self.picam_streaming:
                 jpg = None
                 try:
-                    self.plugin.error_tracker.attempt('webcam')
                     jpg = capture_jpeg(self.plugin._settings)
-                except:
-                    self.plugin.error_tracker.add_connection_error('webcam')
+                except Exception as e:
+                    _logger.warn('Failed to capture jpeg - ' + str(e)
 
                 if not jpg:
                     continue
 
-                if self.last_jpg_post < time.time() - POST_PIC_INTERVAL_SECONDS:
-                    self.plugin.post_jpg(jpg)
-                    self.last_jpg_post = time.time()
-
                 if not self.picam_streaming:
                     encoded = base64.b64encode(jpg)
-                    msg = '\r\n{}\r\n'.format(len(encoded))
-                    mjpeg_sock.sendto('\r\n{}\r\n'.format(len(encoded)), (JANUS_SERVER, 5008)) #
+                    mjpeg_sock.sendto('\r\n{}\r\n'.format(len(encoded)), (JANUS_SERVER, 5008)) # simple header format for client to recognize
                     for chunk in wrap(encoded, 1400):
                         mjpeg_sock.sendto(chunk, (JANUS_SERVER, 5008))
                         time.sleep(0.002)
