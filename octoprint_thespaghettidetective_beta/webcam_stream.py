@@ -51,12 +51,12 @@ class WebcamStreamer:
 
     def video_pipeline(self):
 
+        if not pi_version() and not os.getenv('JANUS_SERVER'):
+            return
+
         mjpeg_thread = Thread(target=self.mjpeg_loop)
         mjpeg_thread.daemon = True
         mjpeg_thread.start()
-
-        if not pi_version() and not os.getenv('JANUS_SERVER'):
-            return
 
         self.start_janus()
 
