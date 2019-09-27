@@ -108,10 +108,7 @@ class WebcamStreamer:
                     mjpeg_sock.sendto('\r\n{}\r\n'.format(len(encoded)), (JANUS_SERVER, 5008)) # simple header format for client to recognize
                     for chunk in wrap(encoded, 1400):
                         mjpeg_sock.sendto(chunk, (JANUS_SERVER, 5008))
-                        time.sleep(0.002)
-
-            time.sleep(0.1)
-
+                        time.sleep(0.01)  # Need to make this "throttling" adaptive, based on bandwidth and cpu usage
 
     def pass_to_janus(self, msg):
         if self.janus_ws and self.janus_ws.connected():
