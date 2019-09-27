@@ -92,7 +92,11 @@ class WebcamStreamer:
     def mjpeg_loop(self):
         mjpeg_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+        last_frame_sent = 0
+
         while True:
+            time.sleep( max(last_frame_sent+0.5-time.time(), 0) )  # No more than 1 frame per 0.5 second
+
             if not self.picam_streaming:
                 jpg = None
                 try:
@@ -109,6 +113,8 @@ class WebcamStreamer:
                     for chunk in wrap(encoded, 1400):
                         mjpeg_sock.sendto(chunk, (JANUS_SERVER, 5008))
                         time.sleep(0.01)  # Need to make this "throttling" adaptive, based on bandwidth and cpu usage
+
+            last_frame_sent = time.time()
 
     def pass_to_janus(self, msg):
         if self.janus_ws and self.janus_ws.connected():
