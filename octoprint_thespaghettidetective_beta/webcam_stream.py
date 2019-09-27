@@ -71,7 +71,7 @@ class WebcamStreamer:
             sarge.run('sudo service webcamd stop')
             self. __init_camera__()
 
-            ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -r 20 -f rtp rtp://0.0.0.0:8004?pkt_size=1300'.format(FFMPEG)
+            ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -r 20 -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
             FNULL = open(os.devnull, 'w')
             ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=FNULL)
 
