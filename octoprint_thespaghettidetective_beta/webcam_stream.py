@@ -54,17 +54,17 @@ class WebcamStreamer:
         if not pi_version() and not os.getenv('JANUS_SERVER'):
             return
 
-        mjpeg_thread = Thread(target=self.mjpeg_loop)
-        mjpeg_thread.daemon = True
-        mjpeg_thread.start()
-
-        self.start_janus()
-
         # Wait to make sure other plugins that may use pi camera to init first, then yield to them if they are already using pi camera
         time.sleep(10)
         if os.path.exists(CAM_EXCLUSIVE_USE):
             _logger.warn('Conceding pi camera exclusive use')
             return
+
+        mjpeg_thread = Thread(target=self.mjpeg_loop)
+        mjpeg_thread.daemon = True
+        mjpeg_thread.start()
+
+        self.start_janus()
 
         self.picam_streaming = True
         try:
