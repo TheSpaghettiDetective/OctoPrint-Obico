@@ -122,9 +122,6 @@ class WebcamStreamer:
         def ensure_janus_config():
 	    janus_conf_tmp = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg.template')
 	    janus_conf_path = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg')
-            if os.path.exists(janus_conf_path):
-                return
-
 	    with open(janus_conf_tmp, "rt") as fin:
 	        with open(janus_conf_path, "wt") as fout:
 		    for line in fin:
