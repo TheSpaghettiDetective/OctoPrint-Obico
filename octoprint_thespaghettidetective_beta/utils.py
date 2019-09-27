@@ -69,6 +69,10 @@ class ConnectionErrorTracker:
 def pi_version():
     try:
         with open('/sys/firmware/devicetree/base/model', 'r') as firmware_model:
-            return re.search('Raspberry Pi(.*)', firmware_model.read()).group(1)
+            model = re.search('Raspberry Pi(.*)', firmware_model.read()).group(1)
+            if model:
+                return "0" if re.search('Zero', model, re.IGNORECASE) else "3"
+            else:
+                return None
     except:
          return None

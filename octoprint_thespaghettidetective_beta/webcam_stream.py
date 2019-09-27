@@ -90,6 +90,10 @@ class WebcamStreamer:
 
     @backoff.on_exception(backoff.expo, Exception)
     def mjpeg_loop(self):
+        bandwidth_throttle = 0.01
+        if pi_version() == "0":    # If Pi Zero
+            bandwidth_throttle *= 2
+
         mjpeg_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         last_frame_sent = 0
@@ -112,7 +116,7 @@ class WebcamStreamer:
                     mjpeg_sock.sendto('\r\n{}\r\n'.format(len(encoded)), (JANUS_SERVER, 5008)) # simple header format for client to recognize
                     for chunk in wrap(encoded, 1400):
                         mjpeg_sock.sendto(chunk, (JANUS_SERVER, 5008))
-                        time.sleep(0.01)  # Need to make this "throttling" adaptive, based on bandwidth and cpu usage
+                        time.sleep(bandwidth_throttle)
 
             last_frame_sent = time.time()
 
