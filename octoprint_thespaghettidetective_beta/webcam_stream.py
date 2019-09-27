@@ -116,7 +116,7 @@ class WebcamStreamer:
                     mjpeg_sock.sendto('\r\n{}:{}\r\n'.format(len(encoded), len(jpg)), (JANUS_SERVER, 5008)) # simple header format for client to recognize
                     for chunk in wrap(encoded, 1400):
                         mjpeg_sock.sendto(chunk, (JANUS_SERVER, 5008))
-                        #time.sleep(bandwidth_throttle)
+                        time.sleep(bandwidth_throttle)
 
             last_frame_sent = time.time()
 
