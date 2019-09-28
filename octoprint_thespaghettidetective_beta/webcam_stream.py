@@ -60,16 +60,16 @@ class WebcamStreamer:
             _logger.warn('Conceding pi camera exclusive use')
             return
 
-        mjpeg_thread = Thread(target=self.mjpeg_loop)
-        mjpeg_thread.daemon = True
-        mjpeg_thread.start()
-
-        self.start_janus()
+        #mjpeg_thread = Thread(target=self.mjpeg_loop)
+        #mjpeg_thread.daemon = True
+        #mjpeg_thread.start()
 
         self.picam_streaming = True
         try:
             sarge.run('sudo service webcamd stop')
             self. __init_camera__()
+
+            self.start_janus()
 
             ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -r 20 -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
             FNULL = open(os.devnull, 'w')
