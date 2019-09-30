@@ -60,11 +60,9 @@ class WebcamStreamer:
             _logger.warn('Conceding pi camera exclusive use')
             return
 
-        mjpeg_thread = Thread(target=self.mjpeg_loop)
-        mjpeg_thread.daemon = True
-        mjpeg_thread.start()
-
-        self.start_janus()
+        #mjpeg_thread = Thread(target=self.mjpeg_loop)
+        #mjpeg_thread.daemon = True
+        #mjpeg_thread.start()
 
         self.picam_streaming = True
         try:
@@ -72,6 +70,9 @@ class WebcamStreamer:
             self. __init_camera__()
 
             ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
+
+            self.start_janus()
+
             FNULL = open(os.devnull, 'w')
             ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=FNULL)
 
