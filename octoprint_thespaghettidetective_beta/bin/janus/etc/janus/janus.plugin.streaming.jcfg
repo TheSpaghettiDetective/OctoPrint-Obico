@@ -140,11 +140,9 @@ h264-sample: {
 	audio = false
 	video = true
 	videoport = 8004
-	videopt = 126
+	videopt = 96
 	videortpmap = "H264/90000"
 	videofmtp = "profile-level-id=42e01f;packetization-mode=1"
-	data = true
-	dataport = 5008
 }
 
 #

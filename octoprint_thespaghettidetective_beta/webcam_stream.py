@@ -38,7 +38,6 @@ class WebcamStreamer:
         self.plugin = plugin
         self.sentry = sentry
         self.janus_ws_backoff = ExpoBackoff(120)
-        self.picam_streaming = False
 
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
@@ -47,7 +46,11 @@ class WebcamStreamer:
 	import picamera
 	self.camera = picamera.PiCamera()
 	self.camera.framerate=25
-        self.camera.resolution = (640, 480) if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '4:3' else (960, 540)
+        self.camera.resolution = (640, 480)
+        self.bitrate = 1000000
+        if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9':
+            self.camera.resolution = (960, 540)
+            self.bitrate = 2000000
 
     def video_pipeline(self):
 
@@ -60,16 +63,11 @@ class WebcamStreamer:
             _logger.warn('Conceding pi camera exclusive use')
             return
 
-        #mjpeg_thread = Thread(target=self.mjpeg_loop)
-        #mjpeg_thread.daemon = True
-        #mjpeg_thread.start()
-
-        self.picam_streaming = True
         try:
             sarge.run('sudo service webcamd stop')
             self. __init_camera__()
 
-            ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
+            ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
 
             self.start_janus()
 
@@ -79,47 +77,14 @@ class WebcamStreamer:
             self.webcam_server = WebcamServer(self.camera)
             self.webcam_server.start()
 
-            self.camera.start_recording(ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, inline_headers=True)
+            self.camera.start_recording(ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
 
         except:
-            self.picam_streaming = False
             sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
             self.sentry.captureException()
             exc_type, exc_obj, exc_tb = sys.exc_info()
             _logger.error(exc_obj)
             return
-
-    @backoff.on_exception(backoff.expo, Exception)
-    def mjpeg_loop(self):
-        bandwidth_throttle = 0.01
-        if pi_version() == "0":    # If Pi Zero
-            bandwidth_throttle *= 2
-
-        mjpeg_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-        last_frame_sent = 0
-
-        while True:
-            time.sleep( max(last_frame_sent+0.5-time.time(), 0) )  # No more than 1 frame per 0.5 second
-
-            if not self.picam_streaming:
-                jpg = None
-                try:
-                    jpg = capture_jpeg(self.plugin._settings.global_get(["webcam"]))
-                except Exception as e:
-                    _logger.warn('Failed to capture jpeg - ' + str(e))
-
-                if not jpg:
-                    continue
-
-                if not self.picam_streaming:
-                    encoded = base64.b64encode(jpg)
-                    mjpeg_sock.sendto('\r\n{}:{}\r\n'.format(len(encoded), len(jpg)), (JANUS_SERVER, 5008)) # simple header format for client to recognize
-                    for chunk in wrap(encoded, 1400):
-                        mjpeg_sock.sendto(chunk, (JANUS_SERVER, 5008))
-                        time.sleep(bandwidth_throttle)
-
-            last_frame_sent = time.time()
 
     def pass_to_janus(self, msg):
         if self.janus_ws and self.janus_ws.connected():
