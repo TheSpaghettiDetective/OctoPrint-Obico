@@ -53,31 +53,37 @@ class WebcamStreamer:
             self.bitrate = 2000000
 
     def video_pipeline(self):
-
         if not pi_version() and not os.getenv('JANUS_SERVER'):
             return
 
-        # Wait to make sure other plugins that may use pi camera to init first, then yield to them if they are already using pi camera
-        time.sleep(10)
-        if os.path.exists(CAM_EXCLUSIVE_USE):
-            _logger.warn('Conceding pi camera exclusive use')
-            return
-
         try:
-            sarge.run('sudo service webcamd stop')
-            self. __init_camera__()
+            if os.path.exists('/dev/video0'):
+    	        # self.__run_v4l2_streamer()
+                sarge.run('sudo service webcamd stop')
 
-            ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
+                self.start_janus()
+                self.webcam_server = UsbCamWebServer()
+                self.webcam_server.start()
+    	    else:
+                # Wait to make sure other plugins that may use pi camera to init first, then yield to them if they are already using pi camera
+                time.sleep(10)
+                if os.path.exists(CAM_EXCLUSIVE_USE):
+                    _logger.warn('Conceding pi camera exclusive use')
+                    return
 
-            self.start_janus()
+                sarge.run('sudo service webcamd stop')
+                self. __init_camera__()
 
-            FNULL = open(os.devnull, 'w')
-            ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=FNULL)
+                self.start_janus()
 
-            self.webcam_server = WebcamServer(self.camera)
-            self.webcam_server.start()
+                ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
+                FNULL = open(os.devnull, 'w')
+                ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=FNULL)
 
-            self.camera.start_recording(ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
+                self.webcam_server = PiCamWebServer(self.camera)
+                self.webcam_server.start()
+
+                self.camera.start_recording(ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
 
         except:
             sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
@@ -141,14 +147,14 @@ class WebcamStreamer:
         wst.daemon = True
         wst.start()
 
-class UsbCamWebServer(CamWebServer):
+class UsbCamWebServer:
     import socket
 
     def __init__(self):
         self.socket_server = '192.168.0.160'
 	self.socket_port = 3000
 
-    def mjpeg_generator(self, boundary):
+    def mjpeg_generator(self):
        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
        try:
            s.connect((self.socket_server, self.socket_port))
@@ -160,7 +166,7 @@ class UsbCamWebServer(CamWebServer):
            s.close()
 
     def get_mjpeg(self):
-        return flask.Response(flask.stream_with_context(self.mjpeg_generator(boundary)), mimetype='multipart/x-mixed-replace;boundary=spionisto')
+        return flask.Response(flask.stream_with_context(self.mjpeg_generator()), mimetype='multipart/x-mixed-replace;boundary=spionisto')
 
     def get_snapshot(self):
         return flask.send_file(io.BytesIO(self.next_jpg()), mimetype='image/jpeg')
@@ -197,7 +203,7 @@ class UsbCamWebServer(CamWebServer):
         cam_server_thread.daemon = True
         cam_server_thread.start()
 
-class WebcamServer:
+class PiCamWebServer:
     def __init__(self, camera):
         self.camera = camera
         self.img_q = Queue.Queue(maxsize=1)
