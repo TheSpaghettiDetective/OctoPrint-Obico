@@ -141,6 +141,61 @@ class WebcamStreamer:
         wst.daemon = True
         wst.start()
 
+class UsbCamWebServer(CamWebServer):
+    import socket
+
+    def __init__(self):
+        self.socket_server = '192.168.0.160'
+	self.socket_port = 3000
+
+    def mjpeg_generator(self, boundary):
+       s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+       try:
+           s.connect((self.socket_server, self.socket_port))
+           while True:
+               yield s.recv(1024)
+       except GeneratorExit:
+           pass
+       finally:
+           s.close()
+
+    def get_mjpeg(self):
+        return flask.Response(flask.stream_with_context(self.mjpeg_generator(boundary)), mimetype='multipart/x-mixed-replace;boundary=spionisto')
+
+    def get_snapshot(self):
+        return flask.send_file(io.BytesIO(self.next_jpg()), mimetype='image/jpeg')
+
+    @backoff.on_exception(backoff.constant, Exception, interval=0.001, max_tries=3)
+    def next_jpg(self):
+       s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+       try:
+           s.connect((self.socket_server, self.socket_port))
+           chunk = s.recv(100)
+           length = int(re.search(r"Content-Length: (\d+)", chunk.decode("utf-8"), re.MULTILINE).group(1))
+           chunk = bytearray()
+           while length > len(chunk):
+               chunk.extend(s.recv(length-len(chunk)))
+           return chunk[:length]
+       finally:
+           s.close()
+
+    def run_forever(self):
+        webcam_server_app = flask.Flask('webcam_server')
+
+        @webcam_server_app.route('/')
+        def webcam():
+            action = flask.request.args['action']
+            if action == 'snapshot':
+                return self.get_snapshot()
+            else:
+                return self.get_mjpeg()
+
+        webcam_server_app.run(host='0.0.0.0', port=8080, threaded=True)
+
+    def start(self):
+        cam_server_thread = Thread(target=self.run_forever)
+        cam_server_thread.daemon = True
+        cam_server_thread.start()
 
 class WebcamServer:
     def __init__(self, camera):
@@ -176,7 +231,7 @@ class WebcamServer:
             prefix = '\r\n'
             time.sleep(0.15) # slow down mjpeg streaming so that it won't use too much cpu or bandwidth
       except GeneratorExit:
-         print('closed')
+         pass
 
     def get_snapshot(self):
         possible_stale_pics = 3
