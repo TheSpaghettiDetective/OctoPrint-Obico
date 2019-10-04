@@ -27,6 +27,7 @@ _logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
 
 CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
+GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
@@ -43,9 +44,9 @@ class WebcamStreamer:
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
     def __init_camera__(self):
 
-    import picamera
-    self.camera = picamera.PiCamera()
-    self.camera.framerate=25
+        import picamera
+        self.camera = picamera.PiCamera()
+        self.camera.framerate=25
         self.camera.resolution = (640, 480)
         self.bitrate = 1000000
         if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9':
@@ -58,12 +59,15 @@ class WebcamStreamer:
 
         try:
             if os.path.exists('/dev/video0'):
-                # self.__run_v4l2_streamer()
+
                 sarge.run('sudo service webcamd stop')
 
                 self.start_janus()
                 self.webcam_server = UsbCamWebServer()
                 self.webcam_server.start()
+
+                self.start_gst()
+
             else:
                 # Wait to make sure other plugins that may use pi camera to init first, then yield to them if they are already using pi camera
                 time.sleep(10)
@@ -86,6 +90,9 @@ class WebcamStreamer:
                 self.camera.start_recording(ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
 
         except:
+            self.webcam_server.stop()
+            time.sleep(10)  # Wait for port 8080 to be available for webcamd
+
             sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
             self.sentry.captureException()
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -99,16 +106,16 @@ class WebcamStreamer:
     def start_janus(self):
 
         def ensure_janus_config():
-        janus_conf_tmp = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg.template')
-        janus_conf_path = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg')
-        with open(janus_conf_tmp, "rt") as fin:
-            with open(janus_conf_path, "wt") as fout:
-            for line in fin:
+            janus_conf_tmp = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg.template')
+            janus_conf_path = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg')
+            with open(janus_conf_tmp, "rt") as fin:
+                with open(janus_conf_path, "wt") as fout:
+                    for line in fin:
                         fout.write(line.replace('JANUS_HOME', JANUS_DIR))
 
         def run_janus():
             env = dict(os.environ)
-            env['LD_LIBRARY_PATH'] = JANUS_DIR + '/lib'
+            env['LD_LIBRARY_PATH'] = os.path.join(JANUS_DIR, 'lib')
             janus_cmd = '{}/bin/janus --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
             FNULL = open(os.devnull, 'w')
             subprocess.Popen(janus_cmd.split(' '), env=env, stdout=FNULL, stderr=FNULL)
@@ -147,12 +154,41 @@ class WebcamStreamer:
         wst.daemon = True
         wst.start()
 
+    # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
+    @backoff.on_exception(backoff.expo, Exception, max_tries=7)
+    def start_gst(self):
+        gst_cmd = os.path.join(GST_DIR, 'run.sh')
+        FNULL = open(os.devnull, 'w')
+        sub_proc = subprocess.Popen(gst_cmd)#, stdout=FNULL, stderr=FNULL)
+        (stdoutdata, stderrdata)  = sub_proc.communicate()
+
+        if sub_proc.returncode != 0:
+            raise Exception('GST failed. Exit code: {}\nSTDERR: {}\n'.format(sub_proc.returncode, stderrdata))
+
+
+from werkzeug.serving import make_server
+
+class ServerThread(Thread):
+
+    def __init__(self, app, host, port):
+        Thread.__init__(self)
+        self.srv = make_server(host, port, app)
+        self.ctx = app.app_context()
+        self.ctx.push()
+
+    def run(self):
+        self.srv.serve_forever()
+
+    def shutdown(self):
+        self.srv.shutdown()
+
+
 class UsbCamWebServer:
     import socket
 
     def __init__(self):
         self.socket_server = '192.168.0.160'
-    self.socket_port = 3000
+        self.socket_port = 3000
 
     def mjpeg_generator(self):
        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -185,7 +221,7 @@ class UsbCamWebServer:
        finally:
            s.close()
 
-    def run_forever(self):
+    def start(self):
         webcam_server_app = flask.Flask('webcam_server')
 
         @webcam_server_app.route('/')
@@ -196,12 +232,11 @@ class UsbCamWebServer:
             else:
                 return self.get_mjpeg()
 
-        webcam_server_app.run(host='0.0.0.0', port=8080, threaded=True)
+        self.web_server = ServerThread(webcam_server_app, host='0.0.0.0', port=8080)
+        self.web_server.start()
 
-    def start(self):
-        cam_server_thread = Thread(target=self.run_forever)
-        cam_server_thread.daemon = True
-        cam_server_thread.start()
+    def stop(self):
+        self.web_server.shutdown()
 
 class PiCamWebServer:
     def __init__(self, camera):
