@@ -34,11 +34,16 @@ JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 class WebcamStreamer:
 
     def __init__(self, plugin, sentry):
-        self.janus_ws = None
-        self.webcam_server = None
         self.plugin = plugin
         self.sentry = sentry
+
         self.janus_ws_backoff = ExpoBackoff(120)
+        self.camera = None
+        self.janus_ws = None
+        self.webcam_server = None
+        self.gst_proc = None
+        self.janus_proc = None
+        self.webcamd_stopped = False
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
     def __init_camera__(self):
@@ -57,9 +62,11 @@ class WebcamStreamer:
             return
 
         try:
+
             if os.path.exists('/dev/video0'):
 
                 sarge.run('sudo service webcamd stop')
+                self.webcamd_stopped = True
 
                 self.start_janus()
                 self.webcam_server = UsbCamWebServer()
@@ -75,6 +82,8 @@ class WebcamStreamer:
                     return
 
                 sarge.run('sudo service webcamd stop')
+                self.webcamd_stopped = True
+
                 self. __init_camera__()
 
                 self.start_janus()
@@ -82,18 +91,11 @@ class WebcamStreamer:
                 self.webcam_server = PiCamWebServer(self.camera)
                 self.webcam_server.start()
 
-                gst_cmd = os.path.join(GST_DIR, 'run.sh')
-                FNULL = open(os.devnull, 'w')
-                sub_proc = subprocess.Popen(gst_cmd, stdin=subprocess.PIPE)
-
-                self.camera.start_recording(sub_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
+                self.start_gst()
+                self.camera.start_recording(self.gst_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
 
         except:
-            if self.webcam_server:
-                self.webcam_server.stop()
-            time.sleep(10)  # Wait for port 8080 to be available for webcamd
-
-            sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
+            self.cleanup()
             self.sentry.captureException()
             exc_type, exc_obj, exc_tb = sys.exc_info()
             _logger.error(exc_obj)
@@ -118,7 +120,7 @@ class WebcamStreamer:
             env['LD_LIBRARY_PATH'] = os.path.join(JANUS_DIR, 'lib')
             janus_cmd = '{}/bin/janus --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
             FNULL = open(os.devnull, 'w')
-            subprocess.Popen(janus_cmd.split(' '), env=env, stdout=FNULL, stderr=FNULL)
+            self.janus_proc = subprocess.Popen(janus_cmd.split(' '), env=env, stdout=FNULL, stderr=FNULL)
 
         if os.getenv('JANUS_SERVER'):
             _logger.warning('Using extenal Janus gateway. Not starting Janus.')
@@ -154,15 +156,47 @@ class WebcamStreamer:
         wst.start()
 
     # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
-    @backoff.on_exception(backoff.expo, Exception, max_tries=7)
+    @backoff.on_exception(backoff.expo, Exception, max_tries=5)
     def start_gst(self):
         gst_cmd = os.path.join(GST_DIR, 'run.sh')
         FNULL = open(os.devnull, 'w')
-        sub_proc = subprocess.Popen(gst_cmd)#, stdout=FNULL, stderr=FNULL)
-        (stdoutdata, stderrdata)  = sub_proc.communicate()
+        self.gst_proc = subprocess.Popen(gst_cmd, stdin=subprocess.PIPE)#, stdout=FNULL, stderr=FNULL)
+ 
+        time.sleep(5)
+        
+        #(stdoutdata, stderrdata)  = self.gst_proc.communicate()
+        if self.gst_proc.returncode:    # returncode will be None when it's still running, or 0 if exit successfully
+            raise Exception('GST failed. Exit code: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stderrdata))
 
-        if sub_proc.returncode != 0:
-            raise Exception('GST failed. Exit code: {}\nSTDERR: {}\n'.format(sub_proc.returncode, stderrdata))
+    def cleanup(self):
+        if self.webcam_server:
+            try:
+                self.webcam_server.stop()
+            except:
+                pass
+        if self.janus_proc:
+            try:
+                self.janus_proc.kill()
+            except:
+                pass
+        if self.gst_proc:
+            try:
+                self.gst_proc.kill()
+            except:
+                pass
+        if self.camera:
+            # https://github.com/waveform80/picamera/issues/122
+            try:
+                self.camera.stop_recording()
+            except:
+                pass
+            try:
+                self.camera.close()
+            except:
+                pass
+
+        if self.webcamd_stopped:
+            sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
 
 
 from werkzeug.serving import make_server
@@ -242,6 +276,7 @@ class PiCamWebServer:
         self.img_q = Queue.Queue(maxsize=1)
         self.last_capture = 0
         self._mutex = RLock()
+        self.web_server = None
 
     def capture_forever(self):
 
@@ -289,7 +324,7 @@ class PiCamWebServer:
         boundary='herebedragons'
         return flask.Response(flask.stream_with_context(self.mjpeg_generator(boundary)), mimetype='multipart/x-mixed-replace;boundary=%s' % boundary)
 
-    def run_forever(self):
+    def start(self):
         webcam_server_app = flask.Flask('webcam_server')
 
         @webcam_server_app.route('/')
@@ -300,16 +335,16 @@ class PiCamWebServer:
             else:
                 return self.get_mjpeg()
 
-        webcam_server_app.run(host='0.0.0.0', port=8080, threaded=True)
-
-    def start(self):
-        cam_server_thread = Thread(target=self.run_forever)
-        cam_server_thread.daemon = True
-        cam_server_thread.start()
+        self.web_server = ServerThread(webcam_server_app, host='0.0.0.0', port=8080)
+        self.web_server.start()
 
         capture_thread = Thread(target=self.capture_forever)
         capture_thread.daemon = True
         capture_thread.start()
+
+    def stop(self):
+        if self.web_server:
+            self.web_server.shutdown()
 
 
 if __name__ == "__main__":
