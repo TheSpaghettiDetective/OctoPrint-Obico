@@ -26,7 +26,6 @@ from webcam_capture import capture_jpeg
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
 
 CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
-FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 
@@ -36,10 +35,10 @@ class WebcamStreamer:
 
     def __init__(self, plugin, sentry):
         self.janus_ws = None
+        self.webcam_server = None
         self.plugin = plugin
         self.sentry = sentry
         self.janus_ws_backoff = ExpoBackoff(120)
-
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
     def __init_camera__(self):
@@ -80,17 +79,18 @@ class WebcamStreamer:
 
                 self.start_janus()
 
-                ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
-                FNULL = open(os.devnull, 'w')
-                ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=FNULL)
-
                 self.webcam_server = PiCamWebServer(self.camera)
                 self.webcam_server.start()
 
-                self.camera.start_recording(ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
+                gst_cmd = os.path.join(GST_DIR, 'run.sh')
+                FNULL = open(os.devnull, 'w')
+                sub_proc = subprocess.Popen(gst_cmd, stdin=subprocess.PIPE)
+
+                self.camera.start_recording(sub_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
 
         except:
-            self.webcam_server.stop()
+            if self.webcam_server:
+                self.webcam_server.stop()
             time.sleep(10)  # Wait for port 8080 to be available for webcamd
 
             sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer

@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 import logging
 import threading
+import sarge
 import flask
 import json
 import re
@@ -38,6 +39,7 @@ if os.environ.get('DEBUG'):
 class TheSpaghettiDetectivePlugin(
             octoprint.plugin.SettingsPlugin,
             octoprint.plugin.StartupPlugin,
+            octoprint.plugin.ShutdownPlugin,
             octoprint.plugin.EventHandlerPlugin,
             octoprint.plugin.AssetPlugin,
             octoprint.plugin.SimpleApiPlugin,
@@ -119,6 +121,7 @@ class TheSpaghettiDetectivePlugin(
             )
         )
 
+
     ##~~ plugin APIs
 
     def get_api_commands(self):
@@ -142,6 +145,7 @@ class TheSpaghettiDetectivePlugin(
         if command == "get_connection_errors":
             return flask.jsonify(self.error_tracker.as_dict())
 
+
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
@@ -149,6 +153,13 @@ class TheSpaghettiDetectivePlugin(
             event_payload = self.print_event_tracker.on_event(self, event, payload)
             if event_payload:
                 self.post_printer_status(event_payload)
+
+
+    ##~~Shutdown Plugin
+
+    def on_shutdown(self):
+        sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
+
 
     ##~~Startup Plugin
 
