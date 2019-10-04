@@ -26,6 +26,7 @@ from webcam_capture import capture_jpeg
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
 
 CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
+FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 
@@ -42,6 +43,7 @@ class WebcamStreamer:
         self.janus_ws = None
         self.webcam_server = None
         self.gst_proc = None
+        self.ffmpeg_proc = None
         self.janus_proc = None
         self.webcamd_stopped = False
 
@@ -63,6 +65,7 @@ class WebcamStreamer:
 
         try:
 
+            # Use GStreamer for USB Camera. When it's used for Pi Camera it has problems (video is not playing. Not sure why)
             if os.path.exists('/dev/video0'):
 
                 sarge.run('sudo service webcamd stop')
@@ -74,6 +77,7 @@ class WebcamStreamer:
 
                 self.start_gst()
 
+            # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
             else:
                 # Wait to make sure other plugins that may use pi camera to init first, then yield to them if they are already using pi camera
                 time.sleep(10)
@@ -88,11 +92,14 @@ class WebcamStreamer:
 
                 self.start_janus()
 
+                ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
+                FNULL = open(os.devnull, 'w')
+                self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=FNULL)
+
                 self.webcam_server = PiCamWebServer(self.camera)
                 self.webcam_server.start()
 
-                self.start_gst()
-                self.camera.start_recording(self.gst_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
+                self.camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
 
         except:
             self.cleanup()
@@ -182,6 +189,11 @@ class WebcamStreamer:
         if self.gst_proc:
             try:
                 self.gst_proc.kill()
+            except:
+                pass
+        if self.ffmpeg_proc:
+            try:
+                self.ffmpeg_proc.kill()
             except:
                 pass
         if self.camera:
