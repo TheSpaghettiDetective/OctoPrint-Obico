@@ -135,7 +135,6 @@ class WebcamStreamer:
     @backoff.on_exception(backoff.expo, Exception, max_tries=10)
     def wait_for_janus(self):
         time.sleep(1)
-        import socket
         socket.socket().connect((JANUS_SERVER, 8188))
 
 
@@ -184,16 +183,10 @@ class ServerThread(Thread):
 
 
 class UsbCamWebServer:
-    import socket
-
-    def __init__(self):
-        self.socket_server = '192.168.0.160'
-        self.socket_port = 3000
-
     def mjpeg_generator(self):
        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
        try:
-           s.connect((self.socket_server, self.socket_port))
+           s.connect(('127.0.0.1', 14499))
            while True:
                yield s.recv(1024)
        except GeneratorExit:
