@@ -183,6 +183,10 @@ class ServerThread(Thread):
 
 
 class UsbCamWebServer:
+    
+    def __init__(self):
+        self.web_server = None
+
     def mjpeg_generator(self):
        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
        try:
@@ -229,7 +233,8 @@ class UsbCamWebServer:
         self.web_server.start()
 
     def stop(self):
-        self.web_server.shutdown()
+        if self.web_server:
+            self.web_server.shutdown()
 
 class PiCamWebServer:
     def __init__(self, camera):
