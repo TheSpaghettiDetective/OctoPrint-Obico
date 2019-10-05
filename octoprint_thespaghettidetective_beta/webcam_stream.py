@@ -19,7 +19,6 @@ import json
 import socket
 import base64
 from textwrap import wrap
-import traceback
 
 from .utils import pi_version, ExpoBackoff
 from .ws import WebSocketClient
@@ -153,7 +152,8 @@ class WebcamStreamer:
 
         def on_close(ws):
             self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
-            self.start_janus_ws_tunnel()
+            if self.gst_proc:
+                self.start_janus_ws_tunnel()
 
         def on_message(ws, msg):
             self.plugin.ss.send_text(json.dumps(dict(janus=msg)))
@@ -216,22 +216,6 @@ class WebcamStreamer:
 	self.camera = None
 	self.webcamd_stopped = False
 
-from werkzeug.serving import make_server
-
-class ServerThread(Thread):
-
-    def __init__(self, app, host, port):
-        Thread.__init__(self)
-        self.srv = make_server(host, port, app)
-        self.ctx = app.app_context()
-        self.ctx.push()
-
-    def run(self):
-        self.srv.serve_forever()
-
-    def shutdown(self):
-        self.srv.shutdown()
-
 
 class UsbCamWebServer:
     
@@ -292,9 +276,6 @@ class UsbCamWebServer:
         cam_server_thread.daemon = True
         cam_server_thread.start()
 
-    def stop(self):
-        if self.web_server:
-            self.web_server.shutdown()
 
 class PiCamWebServer:
     def __init__(self, camera):
@@ -350,7 +331,7 @@ class PiCamWebServer:
         boundary='herebedragons'
         return flask.Response(flask.stream_with_context(self.mjpeg_generator(boundary)), mimetype='multipart/x-mixed-replace;boundary=%s' % boundary)
 
-    def start(self):
+    def run_forever(self):
         webcam_server_app = flask.Flask('webcam_server')
 
         @webcam_server_app.route('/')
@@ -361,21 +342,18 @@ class PiCamWebServer:
             else:
                 return self.get_mjpeg()
 
-        self.web_server = ServerThread(webcam_server_app, host='0.0.0.0', port=8080)
-        self.web_server.start()
+        @webcam_server_app.route('/shutdown', methods=['POST'])
+        def shutdown():
+            flask.request.environ.get('werkzeug.server.shutdown')()
+            return 'Ok'
+
+        webcam_server_app.run(host='0.0.0.0', port=8080, threaded=True)
+
+    def start(self):
+        cam_server_thread = Thread(target=self.run_forever)
+        cam_server_thread.daemon = True
+        cam_server_thread.start()
 
         capture_thread = Thread(target=self.capture_forever)
         capture_thread.daemon = True
         capture_thread.start()
-
-    def stop(self):
-        if self.web_server:
-            self.web_server.shutdown()
-
-
-if __name__ == "__main__":
-
-    streamer = WebcamStreamer()
-    streamer.start_video_pipeline(None)
-    while True:
-        time.sleep(10)
