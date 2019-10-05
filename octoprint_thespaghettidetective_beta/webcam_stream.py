@@ -78,7 +78,6 @@ class WebcamStreamer:
                 self.webcam_server.start()
 
                 self.start_gst()
-                raise Exception('asdf')
 
             # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
             else:
@@ -106,7 +105,7 @@ class WebcamStreamer:
 
         except:
             time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
-            self.cleanup()
+            self.restore()
             self.sentry.captureException()
             exc_type, exc_obj, exc_tb = sys.exc_info()
             _logger.error(exc_obj)
@@ -177,38 +176,36 @@ class WebcamStreamer:
                 raise Exception('GST failed. Exit code: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stderrdata))
             time.sleep(1)
 
-    def cleanup(self):
+    def restore(self):
         try:
             requests.post('http://127.0.0.1:8080/shutdown')
         except:
-            traceback.print_exc()
             pass
-        try:
-            self.janus_proc.kill()
-        except:
-            traceback.print_exc()
-            pass
-        try:
-            self.gst_proc.kill()
-        except:
-            traceback.print_exc()
-            pass
-        try:
-            self.ffmpeg_proc.kill()
-        except:
-            traceback.print_exc()
-            pass
-        # https://github.com/waveform80/picamera/issues/122
-        try:
-            self.camera.stop_recording()
-        except:
-            traceback.print_exc()
-            pass
-        try:
-            self.camera.close()
-        except:
-            traceback.print_exc()
-            pass
+        if self.janus_proc:
+            try:
+                self.janus_proc.terminate()
+            except:
+                pass
+        if self.gst_proc:
+            try:
+                self.gst_proc.terminate()
+            except:
+                pass
+        if self.ffmpeg_proc:
+            try:
+                self.ffmpeg_proc.terminate()
+            except:
+                pass
+        if self.camera:
+            # https://github.com/waveform80/picamera/issues/122
+            try:
+                self.camera.stop_recording()
+            except:
+                pass
+            try:
+                self.camera.close()
+            except:
+                pass
 
         if self.webcamd_stopped:
             sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer

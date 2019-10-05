@@ -160,7 +160,7 @@ class TheSpaghettiDetectivePlugin(
 
     def on_shutdown(self):
         if self.webcam_streamer:
-            self.self.webcam_streamer.cleanup()
+            self.webcam_streamer.restore()
 
 
     ##~~Startup Plugin
