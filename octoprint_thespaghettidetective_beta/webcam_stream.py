@@ -1,4 +1,5 @@
 import io
+import re
 import os
 import logging
 import subprocess
@@ -18,6 +19,7 @@ import json
 import socket
 import base64
 from textwrap import wrap
+import traceback
 
 from .utils import pi_version, ExpoBackoff
 from .ws import WebSocketClient
@@ -76,6 +78,7 @@ class WebcamStreamer:
                 self.webcam_server.start()
 
                 self.start_gst()
+                raise Exception('asdf')
 
             # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
             else:
@@ -102,6 +105,7 @@ class WebcamStreamer:
                 self.camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
 
         except:
+            time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.cleanup()
             self.sentry.captureException()
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -163,48 +167,53 @@ class WebcamStreamer:
         wst.start()
 
     # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
-    @backoff.on_exception(backoff.expo, Exception, max_tries=5)
+    @backoff.on_exception(backoff.expo, Exception, max_tries=7)
     def start_gst(self):
         gst_cmd = os.path.join(GST_DIR, 'run.sh')
-        FNULL = open(os.devnull, 'w')
-        self.gst_proc = subprocess.Popen(gst_cmd, stdin=subprocess.PIPE)#, stdout=FNULL, stderr=FNULL)
- 
-        time.sleep(5)
-        
-        #(stdoutdata, stderrdata)  = self.gst_proc.communicate()
-        if self.gst_proc.returncode:    # returncode will be None when it's still running, or 0 if exit successfully
-            raise Exception('GST failed. Exit code: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stderrdata))
+        self.gst_proc = subprocess.Popen(gst_cmd, stdin=subprocess.PIPE)
+        for i in range(5):
+            return_code = self.gst_proc.poll()
+            if return_code:    # returncode will be None when it's still running, or 0 if exit successfully
+                (stdoutdata, stderrdata)  = self.gst_proc.communicate()
+                raise Exception('GST failed. Exit code: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stderrdata))
+            time.sleep(1)
 
     def cleanup(self):
-        if self.webcam_server:
-            try:
-                self.webcam_server.stop()
-            except:
-                pass
+        try:
+            print('calling shutdown')
+            requests.post('http://127.0.0.1:8080/shutdown')
+        except:
+            traceback.print_exc()
+            pass
         if self.janus_proc:
             try:
                 self.janus_proc.kill()
             except:
+                traceback.print_exc()
                 pass
         if self.gst_proc:
             try:
                 self.gst_proc.kill()
             except:
+                traceback.print_exc()
                 pass
         if self.ffmpeg_proc:
             try:
                 self.ffmpeg_proc.kill()
             except:
+                traceback.print_exc()
                 pass
         if self.camera:
             # https://github.com/waveform80/picamera/issues/122
             try:
                 self.camera.stop_recording()
             except:
+                traceback.print_exc()
                 pass
             try:
                 self.camera.close()
             except:
+                traceback.print_exc()
                 pass
 
         if self.webcamd_stopped:
@@ -254,7 +263,7 @@ class UsbCamWebServer:
     def next_jpg(self):
        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
        try:
-           s.connect((self.socket_server, self.socket_port))
+           s.connect(('127.0.0.1', 14499))
            chunk = s.recv(100)
            length = int(re.search(r"Content-Length: (\d+)", chunk.decode("utf-8"), re.MULTILINE).group(1))
            chunk = bytearray()
@@ -264,7 +273,7 @@ class UsbCamWebServer:
        finally:
            s.close()
 
-    def start(self):
+    def run_forever(self):
         webcam_server_app = flask.Flask('webcam_server')
 
         @webcam_server_app.route('/')
@@ -275,8 +284,18 @@ class UsbCamWebServer:
             else:
                 return self.get_mjpeg()
 
-        self.web_server = ServerThread(webcam_server_app, host='0.0.0.0', port=8080)
-        self.web_server.start()
+        @webcam_server_app.route('/shutdown', methods=['POST'])
+        def shutdown():
+            print('shuting down')
+            flask.request.environ.get('werkzeug.server.shutdown')()
+            return 'Ok'
+
+        webcam_server_app.run(host='0.0.0.0', port=8080, threaded=True)
+
+    def start(self):
+        cam_server_thread = Thread(target=self.run_forever)
+        cam_server_thread.daemon = True
+        cam_server_thread.start()
 
     def stop(self):
         if self.web_server:
