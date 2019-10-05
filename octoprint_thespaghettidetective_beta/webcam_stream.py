@@ -150,7 +150,6 @@ class WebcamStreamer:
         time.sleep(1)
         socket.socket().connect((JANUS_SERVER, 8188))
 
-
     def start_janus_ws_tunnel(self):
 
         def on_close(ws):
@@ -180,45 +179,45 @@ class WebcamStreamer:
 
     def cleanup(self):
         try:
-            print('calling shutdown')
             requests.post('http://127.0.0.1:8080/shutdown')
         except:
             traceback.print_exc()
             pass
-        if self.janus_proc:
-            try:
-                self.janus_proc.kill()
-            except:
-                traceback.print_exc()
-                pass
-        if self.gst_proc:
-            try:
-                self.gst_proc.kill()
-            except:
-                traceback.print_exc()
-                pass
-        if self.ffmpeg_proc:
-            try:
-                self.ffmpeg_proc.kill()
-            except:
-                traceback.print_exc()
-                pass
-        if self.camera:
-            # https://github.com/waveform80/picamera/issues/122
-            try:
-                self.camera.stop_recording()
-            except:
-                traceback.print_exc()
-                pass
-            try:
-                self.camera.close()
-            except:
-                traceback.print_exc()
-                pass
+        try:
+            self.janus_proc.kill()
+        except:
+            traceback.print_exc()
+            pass
+        try:
+            self.gst_proc.kill()
+        except:
+            traceback.print_exc()
+            pass
+        try:
+            self.ffmpeg_proc.kill()
+        except:
+            traceback.print_exc()
+            pass
+        # https://github.com/waveform80/picamera/issues/122
+        try:
+            self.camera.stop_recording()
+        except:
+            traceback.print_exc()
+            pass
+        try:
+            self.camera.close()
+        except:
+            traceback.print_exc()
+            pass
 
         if self.webcamd_stopped:
             sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
 
+        self.janus_proc = None
+	self.gst_proc = None
+	self.ffmpeg_proc = None
+	self.camera = None
+	self.webcamd_stopped = False
 
 from werkzeug.serving import make_server
 
@@ -286,7 +285,6 @@ class UsbCamWebServer:
 
         @webcam_server_app.route('/shutdown', methods=['POST'])
         def shutdown():
-            print('shuting down')
             flask.request.environ.get('werkzeug.server.shutdown')()
             return 'Ok'
 
