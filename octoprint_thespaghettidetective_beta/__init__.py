@@ -53,6 +53,7 @@ class TheSpaghettiDetectivePlugin(
         self.error_tracker = ConnectionErrorTracker(self)
         self.print_event_tracker = PrintEventTracker()
         self.last_jpg_post = 0
+        self.webcam_streamer = None
 
 
 	##~~ Wizard plugin mix
@@ -158,7 +159,8 @@ class TheSpaghettiDetectivePlugin(
     ##~~Shutdown Plugin
 
     def on_shutdown(self):
-        sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
+        if self.webcam_streamer:
+            self.self.webcam_streamer.cleanup()
 
 
     ##~~Startup Plugin
