@@ -86,7 +86,8 @@ class TheSpaghettiDetectivePlugin(
             )
 
         return dict(
-            endpoint_prefix='https://app.thespaghettidetective.com'
+            endpoint_prefix='https://app.thespaghettidetective.com',
+            disable_video_streaming=False
         )
 
     ##~~ AssetPlugin mixin
@@ -174,10 +175,11 @@ class TheSpaghettiDetectivePlugin(
         message_thread.daemon = True
         message_thread.start()
 
-        self.webcam_streamer = WebcamStreamer(self, self.sentry)
-        stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
-        stream_thread.daemon = True
-        stream_thread.start()
+        if not self._settings.get(["disable_video_streaming"]):
+            self.webcam_streamer = WebcamStreamer(self, self.sentry)
+            stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
+            stream_thread.daemon = True
+            stream_thread.start()
 
 
     ## Private methods

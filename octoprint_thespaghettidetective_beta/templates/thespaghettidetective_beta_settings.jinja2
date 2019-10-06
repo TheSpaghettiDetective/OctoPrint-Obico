@@ -16,6 +16,7 @@
     <div class="std-api-status">&nbsp; </div>
     <div class="collapse-header"><a href="#" class="muted" onclick="$(this).children().toggleClass('icon-caret-right icon-caret-down').parent().parent().next().slideToggle('fast')"><i class="icon-caret-right"></i>&nbsp;Advanced</a></div>
     <div class="hide">
+        <h4>Server</h4>
         <div class="control-group">
             <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
             <label class="control-label">{{ _('Server Address') }}</label>
@@ -25,6 +26,17 @@
                   <input class="form-check-input custom-server" type="checkbox" value="" style="margin-top: 0px;">
                   <label class="form-check-label" for="custom-server" style="display: inline">
                     I have my own TSD server (don't check this unless you know what you are doing).
+                  </label>
+                </div>
+            </div>
+        </div>
+        <h4>Webcam Streaming</h4>
+        <div class="control-group">
+            <div class="controls">
+                <div class="form-check" style="margin-top: 8px;">
+                  <input class="form-check-input custom-server" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective_beta.disable_video_streaming" style="margin-top: 0px;">
+                  <label class="form-check-label" for="custom-server" style="display: inline">
+                    Disable webcam streaming (<a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-laggy/">Why would I want to do that?</a>). <span style="color: red">Restart required.</span>
                   </label>
                 </div>
             </div>
