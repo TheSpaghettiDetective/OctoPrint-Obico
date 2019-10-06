@@ -14,7 +14,7 @@ plugin_package = "octoprint_thespaghettidetective_beta"
 plugin_name = "TheSpaghettiDetectiveBeta"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "0.8.3"
+plugin_version = "0.9.0"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
