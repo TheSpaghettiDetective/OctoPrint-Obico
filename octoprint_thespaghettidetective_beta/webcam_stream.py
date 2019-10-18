@@ -61,7 +61,11 @@ class WebcamStreamer:
             self.bitrate = 2000000
 
     def video_pipeline(self):
-        if not pi_version() and not os.getenv('JANUS_SERVER'):
+        if os.getenv('JANUS_SERVER'):  # It's a dev simulator using janus container
+            self.start_janus_ws_tunnel()
+            return
+
+        if not pi_version():
             return
 
         try:
@@ -218,7 +222,7 @@ class WebcamStreamer:
 
 
 class UsbCamWebServer:
-    
+
     def __init__(self):
         self.web_server = None
 

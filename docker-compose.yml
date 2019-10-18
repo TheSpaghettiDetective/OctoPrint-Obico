@@ -19,12 +19,16 @@ services:
   janus:
     hostname: janus
     restart: unless-stopped
-    image: kennethjiang/janus:ubuntu
+    image: thespaghettidetective/janus:ubuntu
     #command: sh -c "/opt/janus/bin/janus --stun-server=stun.l.google.com:19302"
     command: sh -c "/opt/janus/bin/janus"
   mjpeg:
     hostname: mjpeg
     restart: unless-stopped
-    image: kennethjiang/mjpg-streamer
+    image: thespaghettidetective/mjpg-streamer
     ports:
       - '8080:8080'
+  video:
+    restart: unless-stopped
+    image: thespaghettidetective/ffmpeg:ubuntu
+    command: bash -c "ffmpeg -f concat -re -i list.txt -c copy -bsf dump_extra -an -f rtp rtp://janus:8004?pkt_size=1300"
