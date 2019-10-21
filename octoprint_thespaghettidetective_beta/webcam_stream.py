@@ -249,7 +249,7 @@ class UsbCamWebServer:
        try:
            s.connect(('127.0.0.1', 14499))
            chunk = s.recv(100)
-           length = int(re.search(r"Content-Length: (\d+)", chunk.decode("utf-8"), re.MULTILINE).group(1))
+           length = int(re.search(r"Content-Length: (\d+)", chunk.decode("iso-8859-1"), re.MULTILINE).group(1))
            chunk = bytearray()
            while length > len(chunk):
                chunk.extend(s.recv(length-len(chunk)))
@@ -312,7 +312,7 @@ class PiCamWebServer:
         while True:
             chunk = self.img_q.get()
             msg = prefix + hdr + 'Content-Length: {}\r\n\r\n'.format(len(chunk))
-            yield msg.encode('utf-8') + chunk
+            yield msg.encode('iso-8859-1') + chunk
             prefix = '\r\n'
             time.sleep(0.15) # slow down mjpeg streaming so that it won't use too much cpu or bandwidth
       except GeneratorExit:
