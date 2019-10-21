@@ -47,6 +47,7 @@ class WebcamStreamer:
         self.ffmpeg_proc = None
         self.janus_proc = None
         self.webcamd_stopped = False
+        self.shutting_down = False
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
     def __init_camera__(self):
@@ -172,7 +173,7 @@ class WebcamStreamer:
     @backoff.on_exception(backoff.expo, Exception, max_tries=7)
     def start_gst(self):
         gst_cmd = os.path.join(GST_DIR, 'run.sh')
-        self.gst_proc = subprocess.Popen(gst_cmd, stdin=subprocess.PIPE)
+        self.gst_proc = subprocess.Popen(gst_cmd)
         for i in range(5):
             return_code = self.gst_proc.poll()
             if return_code:    # returncode will be None when it's still running, or 0 if exit successfully
@@ -180,7 +181,21 @@ class WebcamStreamer:
                 raise Exception('GST failed. Exit code: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stderrdata))
             time.sleep(1)
 
+        def ensure_gst_process():
+            while not self.shutting_down:
+                (stdoutdata, stderrdata)  = self.gst_proc.communicate()
+                self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stderrdata))
+                time.sleep(3)
+                gst_cmd = os.path.join(GST_DIR, 'run.sh')
+                self.gst_proc = subprocess.Popen(gst_cmd)
+
+        gst_thread = Thread(target=ensure_gst_process)
+        gst_thread.daemon = True
+        gst_thread.start()
+
     def restore(self):
+        self.shutting_down = True
+
         try:
             requests.post('http://127.0.0.1:8080/shutdown')
         except:
