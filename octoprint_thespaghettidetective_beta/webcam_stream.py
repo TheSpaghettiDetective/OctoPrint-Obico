@@ -77,7 +77,7 @@ class WebcamStreamer:
                 self.webcamd_stopped = True
 
                 self.start_janus()
-                self.webcam_server = UsbCamWebServer()
+                self.webcam_server = UsbCamWebServer(self.sentry)
                 self.webcam_server.start()
 
                 self.start_gst()
@@ -101,7 +101,7 @@ class WebcamStreamer:
                 FNULL = open(os.devnull, 'w')
                 self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=FNULL)
 
-                self.webcam_server = PiCamWebServer(self.camera)
+                self.webcam_server = PiCamWebServer(self.camera, self.sentry)
                 self.webcam_server.start()
 
                 self.camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
@@ -223,7 +223,8 @@ class WebcamStreamer:
 
 class UsbCamWebServer:
 
-    def __init__(self):
+    def __init__(self, sentry):
+        self.sentry = sentry
         self.web_server = None
 
     def mjpeg_generator(self):
@@ -234,6 +235,9 @@ class UsbCamWebServer:
                yield s.recv(1024)
        except GeneratorExit:
            pass
+       except:
+           self.sentry.captureException()
+           raise
        finally:
            s.close()
 
@@ -243,7 +247,6 @@ class UsbCamWebServer:
     def get_snapshot(self):
         return flask.send_file(io.BytesIO(self.next_jpg()), mimetype='image/jpeg')
 
-    @backoff.on_exception(backoff.constant, Exception, interval=0.001, max_tries=3)
     def next_jpg(self):
        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
        try:
@@ -254,6 +257,9 @@ class UsbCamWebServer:
            while length > len(chunk):
                chunk.extend(s.recv(length-len(chunk)))
            return chunk[:length]
+       except:
+           self.sentry.captureException()
+           raise
        finally:
            s.close()
 
@@ -282,7 +288,8 @@ class UsbCamWebServer:
 
 
 class PiCamWebServer:
-    def __init__(self, camera):
+    def __init__(self, camera, sentry):
+        self.sentry = sentry
         self.camera = camera
         self.img_q = Queue.Queue(maxsize=1)
         self.last_capture = 0
@@ -290,7 +297,7 @@ class PiCamWebServer:
         self.web_server = None
 
     def capture_forever(self):
-
+      try:
         bio = io.BytesIO()
         for foo in self.camera.capture_continuous(bio, format='jpeg', use_video_port=True):
             bio.seek(0)
@@ -303,6 +310,9 @@ class PiCamWebServer:
                 self.last_capture = time.time()
 
             self.img_q.put(chunk)
+      except:
+        self.sentry.captureException()
+        raise
 
     def mjpeg_generator(self, boundary):
       try:
@@ -316,7 +326,10 @@ class PiCamWebServer:
             prefix = '\r\n'
             time.sleep(0.15) # slow down mjpeg streaming so that it won't use too much cpu or bandwidth
       except GeneratorExit:
-         pass
+        pass
+      except:
+        self.sentry.captureException()
+        raise
 
     def get_snapshot(self):
         possible_stale_pics = 3
