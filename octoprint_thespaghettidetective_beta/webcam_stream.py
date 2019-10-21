@@ -182,8 +182,11 @@ class WebcamStreamer:
             time.sleep(1)
 
         def ensure_gst_process():
-            while not self.shutting_down:
+            while True:
                 (stdoutdata, stderrdata)  = self.gst_proc.communicate()
+                if self.shutting_down:
+                    return
+
                 self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stderrdata))
                 time.sleep(3)
                 gst_cmd = os.path.join(GST_DIR, 'run.sh')
