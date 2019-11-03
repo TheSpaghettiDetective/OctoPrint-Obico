@@ -167,19 +167,9 @@ class TheSpaghettiDetectivePlugin(
     ##~~Startup Plugin
 
     def on_after_startup(self):
-        if not self.is_configured():
-            time.sleep(1)
-            next
-
-        message_thread = threading.Thread(target=self.message_loop)
-        message_thread.daemon = True
-        message_thread.start()
-
-        if not self._settings.get(["disable_video_streaming"]):
-            self.webcam_streamer = WebcamStreamer(self, self.sentry)
-            stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
-            stream_thread.daemon = True
-            stream_thread.start()
+        main_thread = threading.Thread(target=self.main_loop)
+        main_thread.daemon = True
+        main_thread.start()
 
 
     ## Private methods
@@ -191,7 +181,15 @@ class TheSpaghettiDetectivePlugin(
         webcam = dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio'))
         return dict(webcam=webcam)
 
-    def message_loop(self):
+    def main_loop(self):
+        self.wait_for_auth_token()
+
+        if not self._settings.get(["disable_video_streaming"]):
+            self.webcam_streamer = WebcamStreamer(self, self.sentry)
+            stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
+            stream_thread.daemon = True
+            stream_thread.start()
+
         backoff = ExpoBackoff(120)
         while True:
             try:
@@ -322,6 +320,17 @@ class TheSpaghettiDetectivePlugin(
             status_text = 'Connection error. Please check OctoPrint\'s internet connection'
 
         return succeeded, status_text
+
+    def wait_for_auth_token(self):
+        while True:
+            if not self.is_configured():
+                time.sleep(1)
+                next
+
+            succeeded, _ = self.tsd_api_status()
+            if succeeded:
+                return
+            time.sleep(20)
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
