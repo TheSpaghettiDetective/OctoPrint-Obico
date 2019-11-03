@@ -252,6 +252,7 @@ class TheSpaghettiDetectivePlugin(
             else:
                 return
 
+        _logger.debug("Sending printer status: \n" + json.dumps(data))
         self.ss.send_text(json.dumps(data))
         self.last_status = time.time()
 
