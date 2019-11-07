@@ -1,44 +1,44 @@
-div[id$=_plugin_thespaghettidetective_beta] .header {
+div[id$=_plugin_thespaghettidetective] .header {
   margin-bottom: 32px;
 }
-div[id$=_plugin_thespaghettidetective_beta] .header img.logo {
+div[id$=_plugin_thespaghettidetective] .header img.logo {
   width: 40px;
   margin-right: 12px;
 }
-div[id$=_plugin_thespaghettidetective_beta] .header h3 {
+div[id$=_plugin_thespaghettidetective] .header h3 {
   border-bottom: gray thin solid;
 }
-div[id$=_plugin_thespaghettidetective_beta] h4 {
+div[id$=_plugin_thespaghettidetective] h4 {
   margin-top: 16px;
 }
-div[id$=_plugin_thespaghettidetective_beta] .token-input {
+div[id$=_plugin_thespaghettidetective] .token-input {
   width: calc(100% - 120px);
   margin: 8px 0px 2px;
 }
-div[id$=_plugin_thespaghettidetective_beta] .token-input button {
+div[id$=_plugin_thespaghettidetective] .token-input button {
   width: 120px;
 }
-div[id$=_plugin_thespaghettidetective_beta] .collapse-header {
+div[id$=_plugin_thespaghettidetective] .collapse-header {
   margin: 8px 0px;
 }
-div[id$=_plugin_thespaghettidetective_beta] .settings-video {
+div[id$=_plugin_thespaghettidetective] .settings-video {
   text-align: center;
 }
-div[id$=_plugin_thespaghettidetective_beta] .problems ul {
+div[id$=_plugin_thespaghettidetective] .problems ul {
   margin-top: 8px;
 }
-div[id$=_plugin_thespaghettidetective_beta] .problems li {
+div[id$=_plugin_thespaghettidetective] .problems li {
   line-height: 26px;
 }
-div[id$=_plugin_thespaghettidetective_beta] .social-container {
+div[id$=_plugin_thespaghettidetective] .social-container {
   text-align: center;
 }
-div[id$=_plugin_thespaghettidetective_beta] .social-container .social-btns {
+div[id$=_plugin_thespaghettidetective] .social-container .social-btns {
   display: flex;
   flex-flow: row wrap;
   justify-content: center;
 }
-div[id$=_plugin_thespaghettidetective_beta] .social-container .social-btns .social {
+div[id$=_plugin_thespaghettidetective] .social-container .social-btns .social {
   margin: 0 6px;
 }
 

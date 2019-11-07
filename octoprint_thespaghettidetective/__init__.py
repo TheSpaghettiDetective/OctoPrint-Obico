@@ -28,7 +28,7 @@ from .webcam_capture import capture_jpeg
 
 import octoprint.plugin
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
+_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 POST_PIC_INTERVAL_SECONDS = 10.0
 POST_STATUS_INTERVAL_SECONDS = 15.0
@@ -59,16 +59,17 @@ class TheSpaghettiDetectivePlugin(
 	##~~ Wizard plugin mix
 
     def is_wizard_required(self):
-        alpha_settings = self._settings.effective.get('plugins', {}).get('thespaghettidetective')
-        if alpha_settings:  # Alpha testers
-            alpha_migrated = os.path.join(self.get_plugin_data_folder(), '.alpah_migrated')
-            if not os.path.isfile(alpha_migrated):
-                with open(alpha_migrated, 'a'):  # touch alpha_migrated
+        import ipdb; ipdb.set_trace()
+        beta_settings = self._settings.effective.get('plugins', {}).get('thespaghettidetective_beta')
+        if beta_settings:  # Beta testers
+            beta_migrated = os.path.join(self.get_plugin_data_folder(), '.beta_migrated')
+            if not os.path.isfile(beta_migrated):
+                with open(beta_migrated, 'a'):  # touch alpha_migrated
                     pass
-                if alpha_settings.get('auth_token'):
-                    self._settings.set(["auth_token"],alpha_settings.get('auth_token'), force=True)
-                if alpha_settings.get('endpoint_prefix'):
-                    self._settings.set(["endpoint_prefix"],alpha_settings.get('endpoint_prefix'), force=True)
+                if beta_settings.get('auth_token'):
+                    self._settings.set(["auth_token"],beta_settings.get('auth_token'), force=True)
+                if beta_settings.get('endpoint_prefix'):
+                    self._settings.set(["endpoint_prefix"],beta_settings.get('endpoint_prefix'), force=True)
                 self._settings.save(force=True)
 
         return not self._settings.get(["auth_token"])
@@ -108,8 +109,8 @@ class TheSpaghettiDetectivePlugin(
         # Plugin here. See https://github.com/foosel/OctoPrint/wiki/Plugin:-Software-Update
         # for details.
         return dict(
-            TheSpaghettiDetectiveBeta=dict(
-                displayName="TheSpaghettiDetective Plugin (Beta)",
+            TheSpaghettiDetective=dict(
+                displayName="TheSpaghettiDetective Plugin",
                 displayVersion=self._plugin_version,
 
                 # version check: github repository
@@ -336,7 +337,7 @@ class TheSpaghettiDetectivePlugin(
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
-__plugin_name__ = "The Spaghetti Detective (Beta)"
+__plugin_name__ = "The Spaghetti Detective"
 __plugin_author__ = "The Spaghetti Detective Team"
 __plugin_url__ = "https://thespaghettidetective.com"
 __plugin_description__ = "AI-based open source project for 3D printing failure detection."

@@ -1,7 +1,7 @@
 import logging
 import time
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
+_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 class PrintEventTracker:
 

@@ -12,7 +12,7 @@ from contextlib import closing
 import requests
 import backoff
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
+_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=6)
 @backoff.on_predicate(backoff.expo, max_tries=6)

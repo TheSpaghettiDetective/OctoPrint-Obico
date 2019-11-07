@@ -24,7 +24,7 @@ from .utils import pi_version, ExpoBackoff
 from .ws import WebSocketClient
 from webcam_capture import capture_jpeg
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
+_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
