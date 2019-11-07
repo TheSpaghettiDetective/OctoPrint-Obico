@@ -59,7 +59,6 @@ class TheSpaghettiDetectivePlugin(
 	##~~ Wizard plugin mix
 
     def is_wizard_required(self):
-        import ipdb; ipdb.set_trace()
         beta_settings = self._settings.effective.get('plugins', {}).get('thespaghettidetective_beta')
         if beta_settings:  # Beta testers
             beta_migrated = os.path.join(self.get_plugin_data_folder(), '.beta_migrated')
