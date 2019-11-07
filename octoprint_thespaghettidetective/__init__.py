@@ -74,7 +74,7 @@ class TheSpaghettiDetectivePlugin(
         return not self._settings.get(["auth_token"])
 
     def get_wizard_version(self):
-        return 1
+        return 2
 
     ##~~ SettingsPlugin mixin
 
