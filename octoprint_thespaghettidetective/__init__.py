@@ -219,7 +219,7 @@ class TheSpaghettiDetectivePlugin(
         if not self.is_configured():
             return True
 
-        endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
+        endpoint = self.canonical_endpoint_prefix() + '/api/v1/octo/pic/'
 
         try:
             self.error_tracker.attempt('webcam')
@@ -306,7 +306,7 @@ class TheSpaghettiDetectivePlugin(
         return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])
 
     def tsd_api_status(self, auth_token=None):
-        endpoint = self.canonical_endpoint_prefix() + '/api/octo/ping/'
+        endpoint = self.canonical_endpoint_prefix() + '/api/v1/octo/ping/'
         succeeded = False
         status_text = 'Unknown error.'
         try:
