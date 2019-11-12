@@ -1,6 +1,7 @@
 *.pyc
 *.swp
 .idea
+.vscode
 *.iml
 *.log
 build
