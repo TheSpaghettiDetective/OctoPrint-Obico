@@ -170,7 +170,7 @@ class WebcamStreamer:
         wst.start()
 
     # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
-    @backoff.on_exception(backoff.expo, Exception, max_tries=7)
+    @backoff.on_exception(backoff.expo, Exception, max_tries=9)
     def start_gst(self):
         gst_cmd = os.path.join(GST_DIR, 'run.sh')
         self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -182,13 +182,16 @@ class WebcamStreamer:
             time.sleep(1)
 
         def ensure_gst_process():
+            gst_backoff = ExpoBackoff(60*10)
             while True:
                 (stdoutdata, stderrdata)  = self.gst_proc.communicate()
                 if self.shutting_down:
                     return
 
-                self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}\nSTDOUT: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stdoutdata, stderrdata))
-                time.sleep(3)
+                msg = 'GST exited un-expectedly. Exit code: {}\nSTDOUT: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stdoutdata, stderrdata)
+                self.sentry.captureMessage(msg)
+                gst_backoff.more(msg)
+
                 gst_cmd = os.path.join(GST_DIR, 'run.sh')
                 self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
