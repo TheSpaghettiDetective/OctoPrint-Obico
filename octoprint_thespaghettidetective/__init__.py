@@ -36,6 +36,8 @@ POST_STATUS_INTERVAL_SECONDS = 15.0
 if os.environ.get('DEBUG'):
     POST_PIC_INTERVAL_SECONDS = 5.0
 
+DEFAULT_USER_ACCOUNT = {'is_pro': False, 'dh_balance': 0}
+
 class TheSpaghettiDetectivePlugin(
             octoprint.plugin.SettingsPlugin,
             octoprint.plugin.StartupPlugin,
@@ -54,6 +56,7 @@ class TheSpaghettiDetectivePlugin(
         self.print_event_tracker = PrintEventTracker()
         self.last_jpg_post = 0
         self.webcam_streamer = None
+        self.user_account = DEFAULT_USER_ACCOUNT
 
 
 	##~~ Wizard plugin mix
@@ -138,7 +141,7 @@ class TheSpaghettiDetectivePlugin(
     def on_api_command(self, command, data):
         if command == "test_auth_token":
             auth_token = data["auth_token"]
-            succeeded, status_text = self.tsd_api_status(auth_token=auth_token)
+            succeeded, status_text, _ = self.tsd_api_status(auth_token=auth_token)
             if succeeded:
                 self._settings.set(["auth_token"],auth_token, force=True)
                 self._settings.save(force=True)
@@ -182,9 +185,11 @@ class TheSpaghettiDetectivePlugin(
         return dict(webcam=webcam)
 
     def main_loop(self):
-        self.wait_for_auth_token()
+        self.user_account = self.wait_for_auth_token().get('user', DEFAULT_USER_ACCOUNT)
+        _logger.info('User account: {}'.format(self.user_account))
 
-        if not self._settings.get(["disable_video_streaming"]):
+        if self.user_account.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
+            _logger.info('Starting webcam streamer')
             self.webcam_streamer = WebcamStreamer(self, self.sentry)
             stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
             stream_thread.daemon = True
@@ -319,16 +324,19 @@ class TheSpaghettiDetectivePlugin(
         except:
             status_text = 'Connection error. Please check OctoPrint\'s internet connection'
 
-        return succeeded, status_text
+        return succeeded, status_text, resp
 
     @backoff.on_predicate(backoff.expo, max_value=1200)
     def wait_for_auth_token(self):
         while not self.is_configured():
             time.sleep(1)
 
-        succeeded, _ = self.tsd_api_status()
+        succeeded, _, resp = self.tsd_api_status()
         if succeeded:
-            return True
+            return resp.json()
+
+        return None
+
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
