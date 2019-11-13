@@ -184,7 +184,6 @@ class WebcamStreamer:
         def ensure_gst_process():
             while True:
                 (stdoutdata, stderrdata)  = self.gst_proc.communicate()
-                import ipdb; ipdb.set_trace()
                 if self.shutting_down:
                     return
 
