@@ -321,16 +321,14 @@ class TheSpaghettiDetectivePlugin(
 
         return succeeded, status_text
 
+    @backoff.on_predicate(backoff.expo, max_value=1200)
     def wait_for_auth_token(self):
-        while True:
-            if not self.is_configured():
-                time.sleep(1)
-                next
+        while not self.is_configured():
+            time.sleep(1)
 
-            succeeded, _ = self.tsd_api_status()
-            if succeeded:
-                return
-            time.sleep(20)
+        succeeded, _ = self.tsd_api_status()
+        if succeeded:
+            return True
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
