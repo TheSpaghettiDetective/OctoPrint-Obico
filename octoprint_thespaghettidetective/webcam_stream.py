@@ -178,7 +178,8 @@ class WebcamStreamer:
             return_code = self.gst_proc.poll()
             if return_code:    # returncode will be None when it's still running, or 0 if exit successfully
                 (stdoutdata, stderrdata)  = self.gst_proc.communicate()
-                raise Exception('GST failed. Exit code: {}\nSTDOUT: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stdoutdata, stderrdata))
+                breadcrumbs.record(message='STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata))
+                raise Exception('GST failed. Exit code: {}'.format(self.gst_proc.returncode))
             time.sleep(1)
 
         def ensure_gst_process():
@@ -188,8 +189,8 @@ class WebcamStreamer:
                 if self.shutting_down:
                     return
 
-                msg = 'GST exited un-expectedly. Exit code: {}\nSTDOUT: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stdoutdata, stderrdata)
-                self.sentry.captureMessage(msg)
+                breadcrumbs.record(message='STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata))
+                self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(self.gst_proc.returncode))
                 gst_backoff.more(msg)
 
                 gst_cmd = os.path.join(GST_DIR, 'run.sh')
