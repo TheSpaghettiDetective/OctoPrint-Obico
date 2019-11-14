@@ -173,12 +173,15 @@ class WebcamStreamer:
     @backoff.on_exception(backoff.expo, Exception, max_tries=9)
     def start_gst(self):
         gst_cmd = os.path.join(GST_DIR, 'run.sh')
+        _logger.debug('Popen: {}'.format(gst_cmd))
         self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         for i in range(5):
             return_code = self.gst_proc.poll()
             if return_code:    # returncode will be None when it's still running, or 0 if exit successfully
                 (stdoutdata, stderrdata)  = self.gst_proc.communicate()
-                breadcrumbs.record(message='STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata))
+                msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
+                _logger.debug(msg)
+                breadcrumbs.record(message=msg)
                 raise Exception('GST failed. Exit code: {}'.format(self.gst_proc.returncode))
             time.sleep(1)
 
@@ -189,11 +192,14 @@ class WebcamStreamer:
                 if self.shutting_down:
                     return
 
-                breadcrumbs.record(message='STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata))
+                msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
+                _logger.debug(msg)
+                breadcrumbs.record(message=msg)
                 self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(self.gst_proc.returncode))
-                gst_backoff.more(msg)
+                gst_backoff.more('GST exited un-expectedly. Exit code: {}'.format(self.gst_proc.returncode))
 
                 gst_cmd = os.path.join(GST_DIR, 'run.sh')
+                _logger.debug('Popen: {}'.format(gst_cmd))
                 self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         gst_thread = Thread(target=ensure_gst_process)
