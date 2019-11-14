@@ -22,9 +22,8 @@ from textwrap import wrap
 
 from .utils import pi_version, ExpoBackoff
 from .ws import WebSocketClient
-from webcam_capture import capture_jpeg
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
+_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
@@ -170,27 +169,37 @@ class WebcamStreamer:
         wst.start()
 
     # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
-    @backoff.on_exception(backoff.expo, Exception, max_tries=7)
+    @backoff.on_exception(backoff.expo, Exception, max_tries=9)
     def start_gst(self):
         gst_cmd = os.path.join(GST_DIR, 'run.sh')
-        self.gst_proc = subprocess.Popen(gst_cmd)
+        _logger.debug('Popen: {}'.format(gst_cmd))
+        self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         for i in range(5):
             return_code = self.gst_proc.poll()
             if return_code:    # returncode will be None when it's still running, or 0 if exit successfully
                 (stdoutdata, stderrdata)  = self.gst_proc.communicate()
-                raise Exception('GST failed. Exit code: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stderrdata))
+                msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
+                _logger.debug(msg)
+                breadcrumbs.record(message=msg)
+                raise Exception('GST failed. Exit code: {}'.format(self.gst_proc.returncode))
             time.sleep(1)
 
         def ensure_gst_process():
+            gst_backoff = ExpoBackoff(60*10)
             while True:
                 (stdoutdata, stderrdata)  = self.gst_proc.communicate()
                 if self.shutting_down:
                     return
 
-                self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}\nSTDERR: {}\n'.format(self.gst_proc.returncode, stderrdata))
-                time.sleep(3)
+                msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
+                _logger.debug(msg)
+                breadcrumbs.record(message=msg)
+                self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(self.gst_proc.returncode))
+                gst_backoff.more('GST exited un-expectedly. Exit code: {}'.format(self.gst_proc.returncode))
+
                 gst_cmd = os.path.join(GST_DIR, 'run.sh')
-                self.gst_proc = subprocess.Popen(gst_cmd)
+                _logger.debug('Popen: {}'.format(gst_cmd))
+                self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         gst_thread = Thread(target=ensure_gst_process)
         gst_thread.daemon = True
@@ -233,10 +242,10 @@ class WebcamStreamer:
             sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
 
         self.janus_proc = None
-	self.gst_proc = None
-	self.ffmpeg_proc = None
-	self.camera = None
-	self.webcamd_stopped = False
+        self.gst_proc = None
+        self.ffmpeg_proc = None
+        self.camera = None
+        self.webcamd_stopped = False
 
 
 class UsbCamWebServer:
@@ -251,6 +260,8 @@ class UsbCamWebServer:
            s.connect(('127.0.0.1', 14499))
            while True:
                yield s.recv(1024)
+       except (socket.timeout, socket.error):
+           pass
        except GeneratorExit:
            pass
        except:
@@ -275,6 +286,8 @@ class UsbCamWebServer:
            while length > len(chunk):
                chunk.extend(s.recv(length-len(chunk)))
            return chunk[:length]
+       except (socket.timeout, socket.error):
+           raise
        except:
            self.sentry.captureException()
            raise

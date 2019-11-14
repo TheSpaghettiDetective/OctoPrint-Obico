@@ -12,7 +12,12 @@ from contextlib import closing
 import requests
 import backoff
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
+
+POST_PIC_INTERVAL_SECONDS = 10.0
+if os.environ.get('DEBUG'):
+    POST_PIC_INTERVAL_SECONDS = 3.0
+
+_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=6)
 @backoff.on_predicate(backoff.expo, max_tries=6)
@@ -68,3 +73,39 @@ class MjpegStreamChunker:
 
         self.current_chunk.write(line)
         return None
+
+
+class JpegPoster:
+
+    def __init__(self, plugin):
+        self.plugin = plugin
+        self.last_jpg_post_ts = 0
+
+    def post_jpeg_if_needed(self, force=False):
+        if not self.plugin.is_configured():
+            return
+
+        if not self.plugin._printer.get_state_id() in ['PRINTING',]:
+            return
+
+        if not force:
+            interval_seconds = POST_PIC_INTERVAL_SECONDS
+            if not self.plugin.remote_status['viewing'] and not self.plugin.remote_status['should_watch']:
+                interval_seconds *= 12      # Slow down jpeg posting if needed
+
+            if self.last_jpg_post_ts > time.time() - interval_seconds:
+                return
+
+        endpoint = self.plugin.canonical_endpoint_prefix() + '/api/v1/octo/pic/'
+
+        try:
+            self.plugin.error_tracker.attempt('webcam')
+            files = {'pic': capture_jpeg(self.plugin._settings.global_get(["webcam"]))}
+            _logger.debug('Jpeg posted to server')
+        except:
+            self.plugin.error_tracker.add_connection_error('webcam')
+
+        resp = requests.post( endpoint, files=files, headers=self.plugin.auth_headers() )
+        resp.raise_for_status()
+
+        self.last_jpg_post_ts = time.time()

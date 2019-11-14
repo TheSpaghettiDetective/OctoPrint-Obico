@@ -1,4 +1,4 @@
 include README.md
-recursive-include octoprint_thespaghettidetective_beta/templates *
-recursive-include octoprint_thespaghettidetective_beta/translations *
-recursive-include octoprint_thespaghettidetective_beta/static *
+recursive-include octoprint_thespaghettidetective/templates *
+recursive-include octoprint_thespaghettidetective/translations *
+recursive-include octoprint_thespaghettidetective/static *

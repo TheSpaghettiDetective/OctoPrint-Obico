@@ -5,7 +5,7 @@ import random
 import logging
 import re
 
-_logger = logging.getLogger(__name__)
+_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 class ExpoBackoff:
 
