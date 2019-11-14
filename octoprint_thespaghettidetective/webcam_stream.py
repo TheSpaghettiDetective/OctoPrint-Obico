@@ -22,7 +22,6 @@ from textwrap import wrap
 
 from .utils import pi_version, ExpoBackoff
 from .ws import WebSocketClient
-from webcam_capture import capture_jpeg
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
@@ -243,10 +242,10 @@ class WebcamStreamer:
             sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
 
         self.janus_proc = None
-	self.gst_proc = None
-	self.ffmpeg_proc = None
-	self.camera = None
-	self.webcamd_stopped = False
+        self.gst_proc = None
+        self.ffmpeg_proc = None
+        self.camera = None
+        self.webcamd_stopped = False
 
 
 class UsbCamWebServer:
@@ -261,7 +260,7 @@ class UsbCamWebServer:
            s.connect(('127.0.0.1', 14499))
            while True:
                yield s.recv(1024)
-       except socket.timeout:
+       except (socket.timeout, socket.error):
            pass
        except GeneratorExit:
            pass
@@ -287,7 +286,7 @@ class UsbCamWebServer:
            while length > len(chunk):
                chunk.extend(s.recv(length-len(chunk)))
            return chunk[:length]
-       except socket.timeout:
+       except (socket.timeout, socket.error):
            raise
        except:
            self.sentry.captureException()
