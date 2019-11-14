@@ -90,7 +90,7 @@ class JpegPoster:
                 return
 
             interval_seconds = POST_PIC_INTERVAL_SECONDS
-            if not self.plugin.remote_status['viewing'] or not self.plugin.remote_status['should_watch']:
+            if not self.plugin.remote_status['viewing'] and not self.plugin.remote_status['should_watch']:
                 interval_seconds *= 12      # Slow down jpeg posting if needed
 
             if self.last_jpg_post_ts > time.time() - interval_seconds:
