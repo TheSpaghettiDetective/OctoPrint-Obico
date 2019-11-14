@@ -85,10 +85,10 @@ class JpegPoster:
         if not self.plugin.is_configured():
             return
 
-        if not force:
-            if not self.plugin._printer.get_state_id() in ['PRINTING',]:
-                return
+        if not self.plugin._printer.get_state_id() in ['PRINTING',]:
+            return
 
+        if not force:
             interval_seconds = POST_PIC_INTERVAL_SECONDS
             if not self.plugin.remote_status['viewing'] and not self.plugin.remote_status['should_watch']:
                 interval_seconds *= 12      # Slow down jpeg posting if needed
