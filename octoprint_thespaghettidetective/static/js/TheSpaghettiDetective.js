@@ -6,7 +6,7 @@
  */
 $(function() {
     function testAuthToken(token, container) {
-        $.ajax("/api/plugin/thespaghettidetective_beta", {
+        $.ajax("/api/plugin/thespaghettidetective", {
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify({
@@ -66,7 +66,7 @@ $(function() {
         }
     };
 
-    function ThespaghettidetectiveBetaViewModel(parameters) {
+    function ThespaghettidetectiveViewModel(parameters) {
         var self = this;
 
         // assign the injected parameters, e.g.:
@@ -78,7 +78,7 @@ $(function() {
         self.hasShownWebcamError = false;
 
         self.onDataUpdaterPluginMessage = function(plugin, data) {
-            if (plugin != "thespaghettidetective_beta") {
+            if (plugin != "thespaghettidetective") {
                 return;
             }
 
@@ -140,7 +140,7 @@ $(function() {
         };
 
         self.showTrackerModal = function() {
-            $.ajax("/api/plugin/thespaghettidetective_beta", {
+            $.ajax("/api/plugin/thespaghettidetective", {
                 method: "POST",
                 contentType: "application/json",
                 data: JSON.stringify({
@@ -204,13 +204,13 @@ $(function() {
      * and a full list of the available options.
      */
     OCTOPRINT_VIEWMODELS.push({
-        construct: ThespaghettidetectiveBetaViewModel,
+        construct: ThespaghettidetectiveViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
         dependencies: ["settingsViewModel"],
         // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
         elements: [
-            "#wizard_plugin_thespaghettidetective_beta",
-            "#settings_plugin_thespaghettidetective_beta"
+            "#wizard_plugin_thespaghettidetective",
+            "#settings_plugin_thespaghettidetective"
         ]
     });
 });

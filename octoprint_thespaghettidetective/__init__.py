@@ -16,7 +16,8 @@ from .commander import Commander
 from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
-from .webcam_capture import capture_jpeg
+from .remote_status import RemoteStatus
+from .webcam_capture import JpegPoster
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -28,13 +29,11 @@ from .webcam_capture import capture_jpeg
 
 import octoprint.plugin
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective_beta')
+_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
-POST_PIC_INTERVAL_SECONDS = 10.0
 POST_STATUS_INTERVAL_SECONDS = 15.0
 
-if os.environ.get('DEBUG'):
-    POST_PIC_INTERVAL_SECONDS = 5.0
+DEFAULT_USER_ACCOUNT = {'is_pro': False, 'dh_balance': 0}
 
 class TheSpaghettiDetectivePlugin(
             octoprint.plugin.SettingsPlugin,
@@ -48,33 +47,35 @@ class TheSpaghettiDetectivePlugin(
 
     def __init__(self):
         self.ss = None
-        self.last_status = 0
+        self.last_status_update_ts = 0
+        self.remote_status = RemoteStatus()
         self.commander = Commander()
         self.error_tracker = ConnectionErrorTracker(self)
         self.print_event_tracker = PrintEventTracker()
-        self.last_jpg_post = 0
+        self.jpeg_poster = JpegPoster(self)
         self.webcam_streamer = None
+        self.user_account = DEFAULT_USER_ACCOUNT
 
 
 	##~~ Wizard plugin mix
 
     def is_wizard_required(self):
-        alpha_settings = self._settings.effective.get('plugins', {}).get('thespaghettidetective')
-        if alpha_settings:  # Alpha testers
-            alpha_migrated = os.path.join(self.get_plugin_data_folder(), '.alpah_migrated')
-            if not os.path.isfile(alpha_migrated):
-                with open(alpha_migrated, 'a'):  # touch alpha_migrated
+        beta_settings = self._settings.effective.get('plugins', {}).get('thespaghettidetective_beta')
+        if beta_settings:  # Beta testers
+            beta_migrated = os.path.join(self.get_plugin_data_folder(), '.beta_migrated')
+            if not os.path.isfile(beta_migrated):
+                with open(beta_migrated, 'a'):  # touch alpha_migrated
                     pass
-                if alpha_settings.get('auth_token'):
-                    self._settings.set(["auth_token"],alpha_settings.get('auth_token'), force=True)
-                if alpha_settings.get('endpoint_prefix'):
-                    self._settings.set(["endpoint_prefix"],alpha_settings.get('endpoint_prefix'), force=True)
+                if beta_settings.get('auth_token'):
+                    self._settings.set(["auth_token"],beta_settings.get('auth_token'), force=True)
+                if beta_settings.get('endpoint_prefix'):
+                    self._settings.set(["endpoint_prefix"],beta_settings.get('endpoint_prefix'), force=True)
                 self._settings.save(force=True)
 
         return not self._settings.get(["auth_token"])
 
     def get_wizard_version(self):
-        return 1
+        return 2
 
     ##~~ SettingsPlugin mixin
 
@@ -108,8 +109,8 @@ class TheSpaghettiDetectivePlugin(
         # Plugin here. See https://github.com/foosel/OctoPrint/wiki/Plugin:-Software-Update
         # for details.
         return dict(
-            TheSpaghettiDetectiveBeta=dict(
-                displayName="TheSpaghettiDetective Plugin (Beta)",
+            TheSpaghettiDetective=dict(
+                displayName="TheSpaghettiDetective Plugin",
                 displayVersion=self._plugin_version,
 
                 # version check: github repository
@@ -138,7 +139,7 @@ class TheSpaghettiDetectivePlugin(
     def on_api_command(self, command, data):
         if command == "test_auth_token":
             auth_token = data["auth_token"]
-            succeeded, status_text = self.tsd_api_status(auth_token=auth_token)
+            succeeded, status_text, _ = self.tsd_api_status(auth_token=auth_token)
             if succeeded:
                 self._settings.set(["auth_token"],auth_token, force=True)
                 self._settings.save(force=True)
@@ -182,9 +183,11 @@ class TheSpaghettiDetectivePlugin(
         return dict(webcam=webcam)
 
     def main_loop(self):
-        self.wait_for_auth_token()
+        self.user_account = self.wait_for_auth_token().get('user', DEFAULT_USER_ACCOUNT)
+        _logger.info('User account: {}'.format(self.user_account))
 
-        if not self._settings.get(["disable_video_streaming"]):
+        if self.user_account.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
+            _logger.info('Starting webcam streamer')
             self.webcam_streamer = WebcamStreamer(self, self.sentry)
             stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
             stream_thread.daemon = True
@@ -195,15 +198,12 @@ class TheSpaghettiDetectivePlugin(
             try:
                 self.error_tracker.attempt('server')
 
-                if self.last_status < time.time() - POST_STATUS_INTERVAL_SECONDS:
+                if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
                     payload = self.print_event_tracker.octoprint_data(self)
                     self.post_printer_status(payload, throwing=True)
                     backoff.reset()
 
-                if self._printer.get_state_id() in ['PRINTING', 'PAUSED'] and self.last_jpg_post < time.time() - POST_PIC_INTERVAL_SECONDS:
-                    if self.post_jpg():
-                        backoff.reset()
-
+                self.jpeg_poster.post_jpeg_if_needed()
                 time.sleep(1)
 
             except WebSocketClientException as e:
@@ -213,26 +213,6 @@ class TheSpaghettiDetectivePlugin(
                 self.sentry.captureException()
                 self.error_tracker.add_connection_error('server')
                 backoff.more(e)
-
-
-    def post_jpg(self):
-        if not self.is_configured():
-            return True
-
-        endpoint = self.canonical_endpoint_prefix() + '/api/octo/pic/'
-
-        try:
-            self.error_tracker.attempt('webcam')
-            files = {'pic': capture_jpeg(self._settings.global_get(["webcam"]))}
-        except:
-            self.error_tracker.add_connection_error('webcam')
-            return False
-
-        resp = requests.post( endpoint, files=files, headers=self.auth_headers() )
-        resp.raise_for_status()
-
-        self.last_jpg_post = time.time()
-        return True
 
     def post_printer_status(self, data, throwing=False):
         if not self.is_configured():
@@ -252,7 +232,7 @@ class TheSpaghettiDetectivePlugin(
 
         _logger.debug("Sending printer status: \n" + json.dumps(data))
         self.ss.send_text(json.dumps(data))
-        self.last_status = time.time()
+        self.last_status_update_ts = time.time()
 
     def connect_ws(self):
         self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
@@ -283,6 +263,11 @@ class TheSpaghettiDetectivePlugin(
         if msg.get('janus') and self.webcam_streamer:
             self.webcam_streamer.pass_to_janus(msg.get('janus'))
 
+        if msg.get('remote_status'):
+            self.remote_status.update(msg.get('remote_status'))
+            if self.remote_status['viewing']:
+                self.jpeg_poster.post_jpeg_if_needed(force=True)
+
 
     # helper methods
 
@@ -306,7 +291,7 @@ class TheSpaghettiDetectivePlugin(
         return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])
 
     def tsd_api_status(self, auth_token=None):
-        endpoint = self.canonical_endpoint_prefix() + '/api/octo/ping/'
+        endpoint = self.canonical_endpoint_prefix() + '/api/v1/octo/ping/'
         succeeded = False
         status_text = 'Unknown error.'
         try:
@@ -319,24 +304,25 @@ class TheSpaghettiDetectivePlugin(
         except:
             status_text = 'Connection error. Please check OctoPrint\'s internet connection'
 
-        return succeeded, status_text
+        return succeeded, status_text, resp
 
+    @backoff.on_predicate(backoff.expo, max_value=1200)
     def wait_for_auth_token(self):
-        while True:
-            if not self.is_configured():
-                time.sleep(1)
-                next
+        while not self.is_configured():
+            time.sleep(1)
 
-            succeeded, _ = self.tsd_api_status()
-            if succeeded:
-                return
-            time.sleep(20)
+        succeeded, _, resp = self.tsd_api_status()
+        if succeeded:
+            return resp.json()
+
+        return None
+
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
-__plugin_name__ = "The Spaghetti Detective (Beta)"
+__plugin_name__ = "The Spaghetti Detective"
 __plugin_author__ = "The Spaghetti Detective Team"
 __plugin_url__ = "https://thespaghettidetective.com"
 __plugin_description__ = "AI-based open source project for 3D printing failure detection."
