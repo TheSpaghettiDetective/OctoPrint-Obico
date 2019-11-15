@@ -12,7 +12,6 @@ import Queue
 from threading import Thread, RLock
 import requests
 import yaml
-from raven import breadcrumbs
 import tempfile
 import backoff
 import json
@@ -180,7 +179,6 @@ class WebcamStreamer:
                 (stdoutdata, stderrdata)  = self.gst_proc.communicate()
                 msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
                 _logger.debug(msg)
-                breadcrumbs.record(message=msg)
                 raise Exception('GST failed. Exit code: {}'.format(self.gst_proc.returncode))
             time.sleep(1)
 
@@ -193,7 +191,6 @@ class WebcamStreamer:
 
                 msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
                 _logger.debug(msg)
-                breadcrumbs.record(message=msg)
                 self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(self.gst_proc.returncode))
                 gst_backoff.more('GST exited un-expectedly. Exit code: {}'.format(self.gst_proc.returncode))
 

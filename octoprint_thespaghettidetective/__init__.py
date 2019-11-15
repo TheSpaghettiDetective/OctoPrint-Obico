@@ -245,29 +245,32 @@ class TheSpaghettiDetectivePlugin(
         self.ss = None
 
     def process_server_msg(self, ws, msg_json):
-        msg = json.loads(msg_json)
-        if msg.get('commands'):
-            _logger.info('Received: ' + msg_json)
-        else:
-            _logger.debug('Received: ' + msg_json)
+        try:
+            msg = json.loads(msg_json)
+            if msg.get('commands'):
+                _logger.info('Received: ' + msg_json)
+            else:
+                _logger.debug('Received: ' + msg_json)
 
-        for command in msg.get('commands', []):
-            if command["cmd"] == "pause":
-                self.commander.prepare_to_pause(self._printer, **command.get('args'))
-                self._printer.pause_print()
-            if command["cmd"] == 'cancel':
-                self._printer.cancel_print()
-            if command["cmd"] == 'resume':
-                self._printer.resume_print()
+            for command in msg.get('commands', []):
+                if command["cmd"] == "pause":
+                    self.commander.prepare_to_pause(self._printer, **command.get('args'))
+                    self._printer.pause_print()
+                if command["cmd"] == 'cancel':
+                    self._printer.cancel_print()
+                if command["cmd"] == 'resume':
+                    self._printer.resume_print()
 
-        if msg.get('janus') and self.webcam_streamer:
-            self.webcam_streamer.pass_to_janus(msg.get('janus'))
+            if msg.get('janus') and self.webcam_streamer:
+                self.webcam_streamer.pass_to_janus(msg.get('janus'))
 
-        if msg.get('remote_status'):
-            self.remote_status.update(msg.get('remote_status'))
-            if self.remote_status['viewing']:
-                self.jpeg_poster.post_jpeg_if_needed(force=True)
+            if msg.get('remote_status'):
+                self.remote_status.update(msg.get('remote_status'))
+                if self.remote_status['viewing']:
+                    self.jpeg_poster.post_jpeg_if_needed(force=True)
 
+        except:
+            self.sentry.captureException()
 
     # helper methods
 
