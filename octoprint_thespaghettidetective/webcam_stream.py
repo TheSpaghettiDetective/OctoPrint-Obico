@@ -100,11 +100,10 @@ class WebcamStreamer:
                 FNULL = open(os.devnull, 'w')
                 self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=FNULL)
 
-                self.webcam_server = PiCamWebServer(self.camera, self.sentry)
-                self.webcam_server.start()
-
                 self.camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
 
+                self.webcam_server = PiCamWebServer(self.camera, self.sentry)
+                self.webcam_server.start()
         except:
             time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
@@ -403,6 +402,4 @@ class PiCamWebServer:
         cam_server_thread.daemon = True
         cam_server_thread.start()
 
-        capture_thread = Thread(target=self.capture_forever)
-        capture_thread.daemon = True
-        capture_thread.start()
+        self.capture_forever()
