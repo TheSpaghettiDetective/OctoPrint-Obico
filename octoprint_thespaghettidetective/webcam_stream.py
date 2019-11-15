@@ -414,4 +414,6 @@ class PiCamWebServer:
         cam_server_thread.daemon = True
         cam_server_thread.start()
 
-        self.capture_forever()
+        capture_thread = Thread(target=self.capture_forever)
+        capture_thread.daemon = True
+        capture_thread.start()
