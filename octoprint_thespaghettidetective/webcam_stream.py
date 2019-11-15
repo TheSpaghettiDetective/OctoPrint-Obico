@@ -168,19 +168,30 @@ class WebcamStreamer:
         wst.start()
 
     def start_ffmpeg(self):
-        def run_ffmpeg():
+        ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
+        _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+        FNULL = open(os.devnull, 'w')
+        self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
 
-            ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
-            FNULL = open(os.devnull, 'w')
-            self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
-            (stdoutdata, stderrdata)  = self.ffmpeg_proc.communicate()
-            msg = 'STDERR:\n{}\n'.format(stderrdata)
-            _logger.debug(msg)
-            self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(self.ffmpeg_proc.returncode))
+        def ensure_ffmpeg_process():
+            ffmpeg_backoff = ExpoBackoff(60*10)
+            while True:
+                (stdoutdata, stderrdata)  = self.ffmpeg_proc.communicate()
+                if self.shutting_down:
+                    return
 
-        ffmpeg_thread = Thread(target=run_ffmpeg)
-        ffmpeg_thread.daemon = True
-        ffmpeg_thread.start()
+                msg = 'STDERR:\n{}\n'.format(stderrdata)
+                _logger.debug(msg)
+                self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(self.ffmpeg_proc.returncode))
+                ffmpeg_backoff.more('ffmpeg quit! This should not happen. Exit code: {}'.format(self.ffmpeg_proc.returncode))
+
+                _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+                FNULL = open(os.devnull, 'w')
+                self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+
+        gst_thread = Thread(target=ensure_ffmpeg_process)
+        gst_thread.daemon = True
+        gst_thread.start()
 
     # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
     @backoff.on_exception(backoff.expo, Exception, max_tries=9)
