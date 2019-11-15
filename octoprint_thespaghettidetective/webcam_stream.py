@@ -95,15 +95,12 @@ class WebcamStreamer:
                 self. __init_camera__()
 
                 self.start_janus()
-
-                ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
-                FNULL = open(os.devnull, 'w')
-                self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=FNULL)
-
-                self.camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
+                self.start_ffmpeg()
 
                 self.webcam_server = PiCamWebServer(self.camera, self.sentry)
                 self.webcam_server.start()
+                self.camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
+                self.camera.wait_recording(0)
         except:
             time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
@@ -169,6 +166,21 @@ class WebcamStreamer:
         wst = Thread(target=self.janus_ws.run)
         wst.daemon = True
         wst.start()
+
+    def start_ffmpeg(self):
+        def run_ffmpeg():
+
+            ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
+            FNULL = open(os.devnull, 'w')
+            self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+            (stdoutdata, stderrdata)  = self.ffmpeg_proc.communicate()
+            msg = 'STDERR:\n{}\n'.format(stderrdata)
+            _logger.debug(msg)
+            self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(self.ffmpeg_proc.returncode))
+
+        ffmpeg_thread = Thread(target=run_ffmpeg)
+        ffmpeg_thread.daemon = True
+        ffmpeg_thread.start()
 
     # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
     @backoff.on_exception(backoff.expo, Exception, max_tries=9)
