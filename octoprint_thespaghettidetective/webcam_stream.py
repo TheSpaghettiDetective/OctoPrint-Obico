@@ -71,7 +71,7 @@ class WebcamStreamer:
 
             # Use GStreamer for USB Camera. When it's used for Pi Camera it has problems (video is not playing. Not sure why)
             if os.path.exists('/dev/video0'):
-
+                _logger.debug('v4l2 device found! Streaming as USB camera.')
                 sarge.run('sudo service webcamd stop')
                 self.webcamd_stopped = True
 
@@ -131,8 +131,11 @@ class WebcamStreamer:
             env = dict(os.environ)
             env['LD_LIBRARY_PATH'] = os.path.join(JANUS_DIR, 'lib')
             janus_cmd = '{}/bin/janus --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
-            FNULL = open(os.devnull, 'w')
-            self.janus_proc = subprocess.Popen(janus_cmd.split(' '), env=env, stdout=FNULL, stderr=FNULL)
+            self.janus_proc = subprocess.Popen(janus_cmd.split(' '), env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            (stdoutdata, stderrdata)  = self.janus_proc.communicate()
+            msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
+            _logger.debug(msg)
+            self.sentry.captureMessage('Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode))
 
         if os.getenv('JANUS_SERVER'):
             _logger.warning('Using extenal Janus gateway. Not starting Janus.')
@@ -156,6 +159,7 @@ class WebcamStreamer:
         def on_close(ws):
             self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
             if self.gst_proc:
+                _logger.warn('WS tunnel closed. Restarting janus tunnel.')
                 self.start_janus_ws_tunnel()
 
         def on_message(ws, msg):
