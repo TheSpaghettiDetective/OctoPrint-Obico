@@ -297,6 +297,7 @@ class TheSpaghettiDetectivePlugin(
         endpoint = self.canonical_endpoint_prefix() + '/api/v1/octo/ping/'
         succeeded = False
         status_text = 'Unknown error.'
+        resp = None
         try:
             resp = requests.get( endpoint, headers=self.auth_headers(auth_token=self.auth_token(auth_token)) )
             succeeded = resp.ok
