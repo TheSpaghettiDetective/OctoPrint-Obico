@@ -159,6 +159,7 @@ class WebcamStreamer:
                 self.start_janus_ws_tunnel()
 
         def on_message(ws, msg):
+            _logger.debug('Relaying Janus msg: {}'.format(msg))
             self.plugin.ss.send_text(json.dumps(dict(janus=msg)))
             self.janus_ws_backoff.reset()
 
