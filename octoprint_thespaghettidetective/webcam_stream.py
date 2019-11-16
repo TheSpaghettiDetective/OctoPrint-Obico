@@ -174,20 +174,26 @@ class WebcamStreamer:
         self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
 
         def ensure_ffmpeg_process():
+            ring_buffer = deque(maxlen=50)
             ffmpeg_backoff = ExpoBackoff(60*10)
             while True:
-                (stdoutdata, stderrdata)  = self.ffmpeg_proc.communicate()
-                if self.shutting_down:
-                    return
+                err = self.ffmpeg_proc.stderr.readline()
+                if not err: # EOF when process ends?
+                    if self.shutting_down:
+                        return
 
-                msg = 'STDERR:\n{}\n'.format(stderrdata)
-                _logger.debug(msg)
-                self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(self.ffmpeg_proc.returncode))
-                ffmpeg_backoff.more('ffmpeg quit! This should not happen. Exit code: {}'.format(self.ffmpeg_proc.returncode))
+                    msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
+                    _logger.error(msg)
+                    returncode = self.ffmpeg_proc.wait()
+                    self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
+                    ffmpeg_backoff.more('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
 
-                _logger.debug('Popen: {}'.format(ffmpeg_cmd))
-                FNULL = open(os.devnull, 'w')
-                self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+                    ring_buffer = deque(maxlen=50)
+                    _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+                    FNULL = open(os.devnull, 'w')
+                    self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+                else:
+                    ring_buffer.append(err)
 
         gst_thread = Thread(target=ensure_ffmpeg_process)
         gst_thread.daemon = True
