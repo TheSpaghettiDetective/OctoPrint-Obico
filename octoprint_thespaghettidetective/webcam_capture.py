@@ -96,17 +96,17 @@ class JpegPoster:
             if self.last_jpg_post_ts > time.time() - interval_seconds:
                 return
 
-        endpoint = self.plugin.canonical_endpoint_prefix() + '/api/v1/octo/pic/'
+        self.last_jpg_post_ts = time.time()
 
+        endpoint = self.plugin.canonical_endpoint_prefix() + '/api/v1/octo/pic/'
         try:
             self.plugin.error_tracker.attempt('webcam')
             files = {'pic': capture_jpeg(self.plugin._settings.global_get(["webcam"]))}
-            _logger.debug('Jpeg posted to server')
         except:
             self.plugin.error_tracker.add_connection_error('webcam')
             return
 
         resp = requests.post( endpoint, files=files, headers=self.plugin.auth_headers() )
         resp.raise_for_status()
+        _logger.debug('Jpeg posted to server')
 
-        self.last_jpg_post_ts = time.time()
