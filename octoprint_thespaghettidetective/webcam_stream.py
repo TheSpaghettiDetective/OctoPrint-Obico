@@ -184,9 +184,9 @@ class WebcamStreamer:
                     if self.shutting_down:
                         return
 
+                    returncode = self.ffmpeg_proc.wait()
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
                     _logger.error(msg)
-                    returncode = self.ffmpeg_proc.wait()
                     self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
                     ffmpeg_backoff.more('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
 
@@ -217,20 +217,26 @@ class WebcamStreamer:
             time.sleep(1)
 
         def ensure_gst_process():
+            ring_buffer = deque(maxlen=50)
             gst_backoff = ExpoBackoff(60*10)
             while True:
-                (stdoutdata, stderrdata)  = self.gst_proc.communicate()
-                if self.shutting_down:
-                    return
+                err = self.gst_proc.stderr.readline()
+                if not err: # EOF when process ends?
+                    if self.shutting_down:
+                        return
 
-                msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
-                _logger.debug(msg)
-                self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(self.gst_proc.returncode))
-                gst_backoff.more('GST exited un-expectedly. Exit code: {}'.format(self.gst_proc.returncode))
+                    returncode = self.gst_proc.wait()
+                    msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
+                    _logger.debug(msg)
+                    self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(returncode))
+                    gst_backoff.more('GST exited un-expectedly. Exit code: {}'.format(returncode))
 
-                gst_cmd = os.path.join(GST_DIR, 'run.sh')
-                _logger.debug('Popen: {}'.format(gst_cmd))
-                self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    ring_buffer = deque(maxlen=50)
+                    gst_cmd = os.path.join(GST_DIR, 'run.sh')
+                    _logger.debug('Popen: {}'.format(gst_cmd))
+                    self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                else:
+                    ring_buffer.append(err)
 
         gst_thread = Thread(target=ensure_gst_process)
         gst_thread.daemon = True
