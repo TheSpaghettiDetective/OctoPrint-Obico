@@ -290,8 +290,6 @@ class UsbCamWebServer:
            s.connect(('127.0.0.1', 14499))
            while True:
                yield s.recv(1024)
-       except (socket.timeout, socket.error):
-           pass
        except GeneratorExit:
            pass
        except:
@@ -316,8 +314,6 @@ class UsbCamWebServer:
            while length > len(chunk):
                chunk.extend(s.recv(length-len(chunk)))
            return chunk[:length]
-       except (socket.timeout, socket.error):
-           raise
        except:
            self.sentry.captureException()
            raise

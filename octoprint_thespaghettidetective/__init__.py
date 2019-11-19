@@ -13,7 +13,7 @@ import backoff
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
-from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version
+from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version, get_tags
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
@@ -85,6 +85,7 @@ class TheSpaghettiDetectivePlugin(
             'https://45064d46913d4a9e98e7155ecb18321c:054f538fa0b64ee88af283639b415e24@sentry.getanywhere.io/3?verify_ssl=0',
             release=self._plugin_version
             )
+        self.sentry.tags_context(get_tags())
 
         return dict(
             endpoint_prefix='https://app.thespaghettidetective.com',

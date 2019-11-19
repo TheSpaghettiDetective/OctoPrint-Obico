@@ -4,6 +4,8 @@ import time
 import random
 import logging
 import re
+import platform
+from sarge import run, Capture
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
@@ -76,3 +78,18 @@ def pi_version():
                 return None
     except:
          return None
+
+def get_tags():
+    (os, _, ver, _, arch, _) = platform.uname()
+    val = dict(os=os, os_ver=ver, arch=arch)
+    try:
+        v4l2 = run('v4l2-ctl --list-devices',stdout=Capture())
+        val['v4l2'] = ''.join(re.compile(r"^([^\t]+)", re.MULTILINE).findall(v4l2.stdout.text))
+    except:
+        pass
+
+    try:
+        usb = run("lsusb | cut -d ' ' -f 7- | grep -vE ' hub| Hub'",stdout=Capture())
+        val['usb'] = ''.join(usb.stdout.text)
+    except:
+        pass
