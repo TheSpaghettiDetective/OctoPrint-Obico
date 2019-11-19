@@ -89,7 +89,7 @@ def get_tags():
         pass
 
     try:
-        usb = run("lsusb | cut -d ' ' -f 7- | grep -vE ' hub| Hub'",stdout=Capture())
+        usb = run("lsusb | cut -d ' ' -f 7- | grep -vE ' hub| Hub' | grep -v 'Standard Microsystems Corp'",stdout=Capture())
         tags['usb'] = ''.join(usb.stdout.text)
     except:
         pass
