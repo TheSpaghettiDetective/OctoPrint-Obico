@@ -38,7 +38,7 @@ class WebcamStreamer:
         self.sentry = sentry
 
         self.janus_ws_backoff = ExpoBackoff(120)
-        self.camera = None
+        self.pi_camera = None
         self.janus_ws = None
         self.webcam_server = None
         self.gst_proc = None
@@ -49,15 +49,21 @@ class WebcamStreamer:
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
     def __init_camera__(self):
-
         import picamera
-        self.camera = picamera.PiCamera()
-        self.camera.framerate=25
-        self.camera.resolution = (640, 480)
-        self.bitrate = 1000000
-        if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9':
-            self.camera.resolution = (960, 540)
-            self.bitrate = 2000000
+        try:
+            self.pi_camera = picamera.PiCamera()
+            self.pi_camera.framerate=25
+            self.pi_camera.resolution = (640, 480)
+            self.bitrate = 1000000
+            if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9':
+                self.pi_camera.resolution = (960, 540)
+                self.bitrate = 2000000
+        except picamera.exc.PiCameraError:
+            if os.path.exists('/dev/video0'):
+                _logger.debug('v4l2 device found! Streaming as USB camera.')
+                return
+            else:
+                raise
 
     def video_pipeline(self):
         if os.getenv('JANUS_SERVER'):  # It's a dev simulator using janus container
@@ -67,14 +73,20 @@ class WebcamStreamer:
         if not pi_version():
             return
 
+        # Wait to make sure other plugins that may use pi camera to init first, then yield to them if they are already using pi camera
+        time.sleep(10)
+        if os.path.exists(CAM_EXCLUSIVE_USE):
+            _logger.warn('Conceding pi camera exclusive use')
+            return
+
         try:
+            sarge.run('sudo service webcamd stop')
+            self.webcamd_stopped = True
+
+            self. __init_camera__()
 
             # Use GStreamer for USB Camera. When it's used for Pi Camera it has problems (video is not playing. Not sure why)
-            if os.path.exists('/dev/video0'):
-                _logger.debug('v4l2 device found! Streaming as USB camera.')
-                sarge.run('sudo service webcamd stop')
-                self.webcamd_stopped = True
-
+            if not self.pi_camera:
                 self.start_janus()
                 self.webcam_server = UsbCamWebServer(self.sentry)
                 self.webcam_server.start()
@@ -83,24 +95,13 @@ class WebcamStreamer:
 
             # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
             else:
-                # Wait to make sure other plugins that may use pi camera to init first, then yield to them if they are already using pi camera
-                time.sleep(10)
-                if os.path.exists(CAM_EXCLUSIVE_USE):
-                    _logger.warn('Conceding pi camera exclusive use')
-                    return
-
-                sarge.run('sudo service webcamd stop')
-                self.webcamd_stopped = True
-
-                self. __init_camera__()
-
                 self.start_janus()
                 self.start_ffmpeg()
 
-                self.webcam_server = PiCamWebServer(self.camera, self.sentry)
+                self.webcam_server = PiCamWebServer(self.pi_camera, self.sentry)
                 self.webcam_server.start()
-                self.camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
-                self.camera.wait_recording(0)
+                self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
+                self.pi_camera.wait_recording(0)
         except:
             time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
@@ -257,14 +258,14 @@ class WebcamStreamer:
                 self.ffmpeg_proc.terminate()
             except:
                 pass
-        if self.camera:
+        if self.pi_camera:
             # https://github.com/waveform80/picamera/issues/122
             try:
-                self.camera.stop_recording()
+                self.pi_camera.stop_recording()
             except:
                 pass
             try:
-                self.camera.close()
+                self.pi_camera.close()
             except:
                 pass
 
@@ -274,7 +275,7 @@ class WebcamStreamer:
         self.janus_proc = None
         self.gst_proc = None
         self.ffmpeg_proc = None
-        self.camera = None
+        self.pi_camera = None
         self.webcamd_stopped = False
 
 
@@ -351,7 +352,7 @@ class UsbCamWebServer:
 class PiCamWebServer:
     def __init__(self, camera, sentry):
         self.sentry = sentry
-        self.camera = camera
+        self.pi_camera = camera
         self.img_q = Queue.Queue(maxsize=1)
         self.last_capture = 0
         self._mutex = RLock()
@@ -360,7 +361,7 @@ class PiCamWebServer:
     def capture_forever(self):
       try:
         bio = io.BytesIO()
-        for foo in self.camera.capture_continuous(bio, format='jpeg', use_video_port=True):
+        for foo in self.pi_camera.capture_continuous(bio, format='jpeg', use_video_port=True):
             bio.seek(0)
             chunk = bio.read()
             bio.seek(0)
