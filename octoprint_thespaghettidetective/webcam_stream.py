@@ -309,8 +309,12 @@ class UsbCamWebServer:
        try:
            s.connect(('127.0.0.1', 14499))
            chunk = s.recv(100)
-           length = int(re.search(r"Content-Length: (\d+)", chunk.decode("iso-8859-1"), re.MULTILINE).group(1))
-           chunk = bytearray()
+           header = re.search(r"Content-Length: (\d+)", chunk.decode("iso-8859-1"), re.MULTILINE)
+           if not header:
+               raise Exception('Multiart header not found!')
+
+           length = int(header.group(1))
+           chunk = bytearray(chunk[header.end()+4:])
            while length > len(chunk):
                chunk.extend(s.recv(length-len(chunk)))
            return chunk[:length]
