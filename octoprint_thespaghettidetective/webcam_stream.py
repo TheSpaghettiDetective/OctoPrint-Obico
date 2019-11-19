@@ -171,23 +171,31 @@ class WebcamStreamer:
 
     def start_ffmpeg(self):
         ffmpeg_cmd = '{} -re -i pipe:0 -c:v copy -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
-        _logger.debug('Exec: {}'.format(ffmpeg_cmd))
-        self.ffmpeg_proc = sarge.run(ffmpeg_cmd, stdin=subprocess.PIPE, stderr=sarge.Capture(), async_=True)
+        _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+        FNULL = open(os.devnull, 'w')
+        self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
 
         def ensure_ffmpeg_process():
+            ring_buffer = deque(maxlen=50)
             ffmpeg_backoff = ExpoBackoff(60*10)
             while True:
-                self.ffmpeg_proc.close()
-                if self.shutting_down:
-                    return
+                err = self.ffmpeg_proc.stderr.readline()
+                if not err: # EOF when process ends?
+                    if self.shutting_down:
+                        return
 
-                msg = 'STDERR:\n{}\n'.format('\n'.join(self.ffmpeg_proc.stderr.text[-1000:]))
-                _logger.error(msg)
-                self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(self.returncode))
-                ffmpeg_backoff.more('ffmpeg quit! This should not happen. Exit code: {}'.format(self.returncode))
+                    msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
+                    _logger.error(msg)
+                    returncode = self.ffmpeg_proc.wait()
+                    self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
+                    ffmpeg_backoff.more('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
 
-                _logger.debug('Exec: {}'.format(ffmpeg_cmd))
-                self.ffmpeg_proc = sarge.run(ffmpeg_cmd, stdin=subprocess.PIPE, stderr=sarge.Capture(), async_=True)
+                    ring_buffer = deque(maxlen=50)
+                    _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+                    FNULL = open(os.devnull, 'w')
+                    self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+                else:
+                    ring_buffer.append(err)
 
         gst_thread = Thread(target=ensure_ffmpeg_process)
         gst_thread.daemon = True
@@ -247,7 +255,7 @@ class WebcamStreamer:
                 pass
         if self.ffmpeg_proc:
             try:
-                self.ffmpeg_proc.commands[0].terminate()
+                self.ffmpeg_proc.terminate()
             except:
                 pass
         if self.pi_camera:
