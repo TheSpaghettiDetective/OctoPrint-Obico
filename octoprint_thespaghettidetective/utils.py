@@ -81,15 +81,17 @@ def pi_version():
 
 def get_tags():
     (os, _, ver, _, arch, _) = platform.uname()
-    val = dict(os=os, os_ver=ver, arch=arch)
+    tags = dict(os=os, os_ver=ver, arch=arch)
     try:
         v4l2 = run('v4l2-ctl --list-devices',stdout=Capture())
-        val['v4l2'] = ''.join(re.compile(r"^([^\t]+)", re.MULTILINE).findall(v4l2.stdout.text))
+        tags['v4l2'] = ''.join(re.compile(r"^([^\t]+)", re.MULTILINE).findall(v4l2.stdout.text))
     except:
         pass
 
     try:
         usb = run("lsusb | cut -d ' ' -f 7- | grep -vE ' hub| Hub'",stdout=Capture())
-        val['usb'] = ''.join(usb.stdout.text)
+        tags['usb'] = ''.join(usb.stdout.text)
     except:
         pass
+
+    return tags

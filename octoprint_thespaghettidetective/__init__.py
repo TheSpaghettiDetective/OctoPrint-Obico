@@ -85,7 +85,6 @@ class TheSpaghettiDetectivePlugin(
             'https://45064d46913d4a9e98e7155ecb18321c:054f538fa0b64ee88af283639b415e24@sentry.getanywhere.io/3?verify_ssl=0',
             release=self._plugin_version
             )
-        self.sentry.tags_context(get_tags())
 
         return dict(
             endpoint_prefix='https://app.thespaghettidetective.com',
@@ -184,6 +183,8 @@ class TheSpaghettiDetectivePlugin(
         return dict(webcam=webcam)
 
     def main_loop(self):
+        self.sentry.tags_context(get_tags())
+
         self.user_account = self.wait_for_auth_token().get('user', DEFAULT_USER_ACCOUNT)
         _logger.info('User account: {}'.format(self.user_account))
 
