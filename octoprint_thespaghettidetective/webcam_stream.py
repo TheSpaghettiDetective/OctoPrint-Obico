@@ -31,6 +31,14 @@ JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'jan
 
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 
+PI_CAM_RESOLUTIONS = {
+    'low': (320,240),
+    'medium': (640, 480),
+    'high': (1296, 972),
+    'high_169': (1280, 720),
+    'ultra_high_169': (1920, 1080),
+}
+
 class WebcamStreamer:
 
     def __init__(self, plugin, sentry):
@@ -53,7 +61,7 @@ class WebcamStreamer:
         try:
             self.pi_camera = picamera.PiCamera()
             self.pi_camera.framerate=25
-            self.pi_camera.resolution = (640, 480)
+            self.pi_camera.resolution = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
             self.bitrate = 1000000
             if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9':
                 self.pi_camera.resolution = (960, 540)
@@ -130,6 +138,8 @@ class WebcamStreamer:
             janus_cmd = '{}/bin/janus --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
             self.janus_proc = subprocess.Popen(janus_cmd.split(' '), env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             (stdoutdata, stderrdata)  = self.janus_proc.communicate()
+            if self.shutting_down:
+                return
             msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
             _logger.debug(msg)
             self.sentry.captureMessage('Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode))
