@@ -175,9 +175,8 @@ class WebcamStreamer:
         FNULL = open(os.devnull, 'w')
         self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
 
-        def ensure_ffmpeg_process():
+        def monitor_ffmpeg_process():  # It's pointless to restart ffmpeg without calling pi_camera.record with the new input. Just capture unexpected exits not to see if it's a big problem
             ring_buffer = deque(maxlen=50)
-            ffmpeg_backoff = ExpoBackoff(60*10)
             while True:
                 err = self.ffmpeg_proc.stderr.readline()
                 if not err: # EOF when process ends?
@@ -188,16 +187,11 @@ class WebcamStreamer:
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
                     _logger.error(msg)
                     self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
-                    ffmpeg_backoff.more('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
-
-                    ring_buffer = deque(maxlen=50)
-                    _logger.debug('Popen: {}'.format(ffmpeg_cmd))
-                    FNULL = open(os.devnull, 'w')
-                    self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+                    return
                 else:
                     ring_buffer.append(err)
 
-        gst_thread = Thread(target=ensure_ffmpeg_process)
+        gst_thread = Thread(target=monitor_ffmpeg_process)
         gst_thread.daemon = True
         gst_thread.start()
 
