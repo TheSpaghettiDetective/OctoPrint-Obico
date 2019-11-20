@@ -5,15 +5,22 @@
  * License: AGPLv3
  */
 $(function() {
-    function testAuthToken(token, container) {
+
+    function apiCommand(data, success) {
         $.ajax("/api/plugin/thespaghettidetective", {
             method: "POST",
             contentType: "application/json",
-            data: JSON.stringify({
+            data: JSON.stringify(data),
+            success: success,
+        });
+    }
+
+    function testAuthToken(token, container) {
+        apiCommand({
                 command: "test_auth_token",
                 auth_token: container.find("input.auth-token-input").val()
-            }),
-            success: function(apiStatus) {
+            },
+            function(apiStatus) {
                 var statusDiv = container.parent().find(".std-api-status");
                 statusDiv.text(apiStatus.text);
                 statusDiv.removeClass("text-success").removeClass("text-error");
@@ -21,7 +28,7 @@ $(function() {
                     apiStatus.succeeded ? "text-success" : "text-error"
                 );
             }
-        });
+        );
     }
 
     $("input.custom-server").change(function(e) {
@@ -76,6 +83,19 @@ $(function() {
         self.connectionErrors = { server: [], webcam: [] };
         self.hasShownServerError = false;
         self.hasShownWebcamError = false;
+
+        self.streaming = ko.mapping.fromJS({eligible: false, piCamPresent: false});
+        self.piCamResolutionOptions = [{id: "low", text: "Low"}, {id: "medium", text: "Medium"}, {id: "high", text: "High"}];
+
+        self.onSettingsShown = function(plugin, data) {
+            apiCommand({
+                    command: "streaming"
+                },
+                function(data) {
+                    ko.mapping.fromJS(data, self.streaming);
+                }
+            );
+        }
 
         self.onDataUpdaterPluginMessage = function(plugin, data) {
             if (plugin != "thespaghettidetective") {

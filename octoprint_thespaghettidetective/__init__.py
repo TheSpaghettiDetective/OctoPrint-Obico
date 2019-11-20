@@ -88,7 +88,8 @@ class TheSpaghettiDetectivePlugin(
 
         return dict(
             endpoint_prefix='https://app.thespaghettidetective.com',
-            disable_video_streaming=False
+            disable_video_streaming=False,
+            pi_cam_resolution='medium',
         )
 
     ##~~ AssetPlugin mixin
@@ -131,6 +132,7 @@ class TheSpaghettiDetectivePlugin(
         return dict(
             test_auth_token=["auth_token"],
             get_connection_errors=[],
+            streaming=[],
         )
 
     def is_api_adminonly(self):
@@ -147,6 +149,9 @@ class TheSpaghettiDetectivePlugin(
             return flask.jsonify({'succeeded': succeeded, 'text': status_text})
         if command == "get_connection_errors":
             return flask.jsonify(self.error_tracker.as_dict())
+        if command == "streaming":
+            piCamPresent = self.webcam_streamer and self.webcam_streamer.pi_camera != None
+            return flask.jsonify(dict(eligible=self.user_account.get('is_pro'), piCamPresent=piCamPresent))
 
 
     ##~~ Eventhandler mixin

@@ -55,6 +55,13 @@
                 </div>
             </div>
         </div>
+        <div data-bind="visible: streaming.piCamPresent" class="control-group" title="{{ _('Pi Camera resolution') }}">
+            <label class="control-label" for="pi-cam-resolution">{{ _('Resolution') }}</label>
+            <div class="controls">
+                <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.thespaghettidetective.pi_cam_resolution" id="pi-cam-resolution"></select>
+                <span class="help-inline">{% trans %}If the stream has a different aspect ratio than configured here it will be letterboxed.{% endtrans %}</span>
+            </div>
+        </div>
         </form>
     </div>
     <div class="tab-pane" id="problems">
