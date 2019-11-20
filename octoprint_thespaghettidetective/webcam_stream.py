@@ -226,7 +226,7 @@ class WebcamStreamer:
                         return
 
                     returncode = self.gst_proc.wait()
-                    msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
+                    msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
                     _logger.debug(msg)
                     self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(returncode))
                     gst_backoff.more('GST exited un-expectedly. Exit code: {}'.format(returncode))
