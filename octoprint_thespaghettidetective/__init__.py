@@ -111,7 +111,7 @@ class TheSpaghettiDetectivePlugin(
         # for details.
         return dict(
             TheSpaghettiDetective=dict(
-                displayName="TheSpaghettiDetective Plugin",
+                displayName="The Spaghetti Detective",
                 displayVersion=self._plugin_version,
 
                 # version check: github repository
