@@ -79,7 +79,13 @@ def pi_version():
     except:
          return None
 
+system_tags = None
+
 def get_tags():
+    global system_tags
+    if system_tags:
+        return system_tags
+
     (os, _, ver, _, arch, _) = platform.uname()
     tags = dict(os=os, os_ver=ver, arch=arch)
     try:
@@ -94,4 +100,5 @@ def get_tags():
     except:
         pass
 
-    return tags
+    system_tags = tags
+    return system_tags

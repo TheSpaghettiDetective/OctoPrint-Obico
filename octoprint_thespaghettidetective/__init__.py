@@ -188,7 +188,7 @@ class TheSpaghettiDetectivePlugin(
         return dict(webcam=webcam)
 
     def main_loop(self):
-        self.sentry.tags_context(get_tags())
+        get_tags() # init tags to minimize risk of race condition
 
         self.user_account = self.wait_for_auth_token().get('user', DEFAULT_USER_ACCOUNT)
         _logger.info('User account: {}'.format(self.user_account))
@@ -217,7 +217,7 @@ class TheSpaghettiDetectivePlugin(
                 self.error_tracker.add_connection_error('server')
                 backoff.more(e)
             except Exception as e:
-                self.sentry.captureException()
+                self.sentry.captureException(tags=get_tags())
                 self.error_tracker.add_connection_error('server')
                 backoff.more(e)
 
@@ -277,7 +277,7 @@ class TheSpaghettiDetectivePlugin(
                     self.jpeg_poster.post_jpeg_if_needed(force=True)
 
         except:
-            self.sentry.captureException()
+            self.sentry.captureException(tags=get_tags())
 
     # helper methods
 

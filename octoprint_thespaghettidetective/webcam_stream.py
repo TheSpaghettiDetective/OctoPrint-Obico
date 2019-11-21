@@ -19,7 +19,7 @@ import socket
 import base64
 from textwrap import wrap
 
-from .utils import pi_version, ExpoBackoff
+from .utils import pi_version, ExpoBackoff, get_tags
 from .ws import WebSocketClient
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
@@ -113,7 +113,7 @@ class WebcamStreamer:
         except:
             time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
-            self.sentry.captureException()
+            self.sentry.captureException(tags=get_tags())
             exc_type, exc_obj, exc_tb = sys.exc_info()
             _logger.error(exc_obj)
             return
@@ -304,7 +304,7 @@ class UsbCamWebServer:
        except GeneratorExit:
            pass
        except:
-           self.sentry.captureException()
+           self.sentry.captureException(tags=get_tags())
            raise
        finally:
            s.close()
@@ -330,7 +330,7 @@ class UsbCamWebServer:
                chunk.extend(s.recv(length-len(chunk)))
            return chunk[:length]
        except:
-           self.sentry.captureException()
+           self.sentry.captureException(tags=get_tags())
            raise
        finally:
            s.close()
@@ -383,7 +383,7 @@ class PiCamWebServer:
 
             self.img_q.put(chunk)
       except:
-        self.sentry.captureException()
+        self.sentry.captureException(tags=get_tags())
         raise
 
     def mjpeg_generator(self, boundary):
@@ -400,7 +400,7 @@ class PiCamWebServer:
       except GeneratorExit:
         pass
       except:
-        self.sentry.captureException()
+        self.sentry.captureException(tags=get_tags())
         raise
 
     def get_snapshot(self):
