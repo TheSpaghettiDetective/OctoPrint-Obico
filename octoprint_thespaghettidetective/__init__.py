@@ -191,6 +191,7 @@ class TheSpaghettiDetectivePlugin(
         get_tags() # init tags to minimize risk of race condition
 
         self.user_account = self.wait_for_auth_token().get('user', DEFAULT_USER_ACCOUNT)
+        self.sentry.user_context({'id': self.auth_token()})
         _logger.info('User account: {}'.format(self.user_account))
 
         if self.user_account.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
