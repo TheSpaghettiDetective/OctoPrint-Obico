@@ -28,6 +28,7 @@ services:
     image: thespaghettidetective/mjpg-streamer
     ports:
       - '8080:8080'
+    command: sh -c "/mjpg-streamer/mjpg_streamer -o '/mjpg-streamer/output_http.so -w /mjpg-streamer/www' -i '/mjpg-streamer/input_file.so -f /mjpg-streamer/jpgs -e -d 4'"
   video:
     restart: unless-stopped
     image: thespaghettidetective/ffmpeg:ubuntu
