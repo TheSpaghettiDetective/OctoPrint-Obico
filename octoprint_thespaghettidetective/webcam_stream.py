@@ -138,12 +138,14 @@ class WebcamStreamer:
             janus_cmd = '{}/bin/janus -o --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
             self.janus_proc = subprocess.Popen(janus_cmd.split(' '), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-            while True:
-                out = self.janus_proc.out.readline()
-                if out:
-                    _logger.debug(out)
+            while not self.shutting_down:
+                line = self.janus_proc.stdout.readline()
+                if line:
+                    _logger.debug('JANUS: ' + line)
                 elif not self.shutting_down:
+                    self.janus_proc.wait()
                     self.sentry.captureMessage('Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode))
+                    return
 
         if os.getenv('JANUS_SERVER'):
             _logger.warning('Using extenal Janus gateway. Not starting Janus.')
