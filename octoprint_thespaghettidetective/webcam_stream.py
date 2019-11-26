@@ -135,14 +135,15 @@ class WebcamStreamer:
         def run_janus():
             env = dict(os.environ)
             env['LD_LIBRARY_PATH'] = os.path.join(JANUS_DIR, 'lib')
-            janus_cmd = '{}/bin/janus --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
-            self.janus_proc = subprocess.Popen(janus_cmd.split(' '), env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            (stdoutdata, stderrdata)  = self.janus_proc.communicate()
-            if self.shutting_down:
-                return
-            msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
-            _logger.debug(msg)
-            self.sentry.captureMessage('Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode))
+            janus_cmd = '{}/bin/janus -o --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
+            self.janus_proc = subprocess.Popen(janus_cmd.split(' '), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+            while True:
+                out = self.janus_proc.out.readline()
+                if out:
+                    _logger.debug(out)
+                elif not self.shutting_down:
+                    self.sentry.captureMessage('Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode))
 
         if os.getenv('JANUS_SERVER'):
             _logger.warning('Using extenal Janus gateway. Not starting Janus.')
