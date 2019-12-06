@@ -196,10 +196,10 @@ nat: {
 	# statically configured TURN server, and thus provide the address of the
 	# TURN server, the transport (udp/tcp/tls) to use, and a set of valid
 	# credentials to authenticate...
-	turn_server = "{TURN_SERVER}"
+	turn_server = "turn.thespaghettidetective.com"
 	turn_port = 80
 	turn_type = "tcp"
-	turn_user = "{TURN_USER}"
+	turn_user = "{TURN_CREDENTIAL}"
 	turn_pwd = "{TURN_CREDENTIAL}"
 
 	# ... or you can make use of the TURN REST API to get info on one or more

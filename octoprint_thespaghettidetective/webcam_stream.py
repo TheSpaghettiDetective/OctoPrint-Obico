@@ -130,7 +130,9 @@ class WebcamStreamer:
             with open(janus_conf_tmp, "rt") as fin:
                 with open(janus_conf_path, "wt") as fout:
                     for line in fin:
-                        fout.write(line.replace('{JANUS_HOME}', JANUS_DIR))
+                        line = line.replace('{JANUS_HOME}', JANUS_DIR)
+                        line = line.replace('{TURN_CREDENTIAL}', self.plugin._settings.get(["auth_token"]))
+                        fout.write(line)
 
         def run_janus():
             env = dict(os.environ)
