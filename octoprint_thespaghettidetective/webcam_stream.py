@@ -130,7 +130,7 @@ class WebcamStreamer:
             with open(janus_conf_tmp, "rt") as fin:
                 with open(janus_conf_path, "wt") as fout:
                     for line in fin:
-                        fout.write(line.replace('JANUS_HOME', JANUS_DIR))
+                        fout.write(line.replace('{JANUS_HOME}', JANUS_DIR))
 
         def run_janus():
             env = dict(os.environ)
