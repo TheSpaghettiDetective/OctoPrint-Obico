@@ -85,7 +85,7 @@ $(function() {
         self.hasShownWebcamError = false;
 
         self.streaming = ko.mapping.fromJS({eligible: false, piCamPresent: false});
-        self.piCamResolutionOptions = [{id: "low", text: "Low"}, {id: "medium", text: "Medium"}, {id: "high", text: "High"}, {id: "high_169", text: "High (16:9)"}, {id: "ultra_high_169", text: "Ultra High (16:9)"}];
+        self.piCamResolutionOptions = [{id: "low", text: "Low"}, {id: "medium", text: "Medium"}, {id: "high", text: "High"}, {id: "ultra_high", text: "Ultra High"}];
 
         self.onSettingsShown = function(plugin, data) {
             apiCommand({
