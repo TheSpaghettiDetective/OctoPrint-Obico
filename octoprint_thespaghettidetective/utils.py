@@ -106,3 +106,9 @@ def get_tags():
 
     system_tags = tags
     return system_tags
+
+def migrate_old_settings(plugin):
+    if plugin._settings.get(["pi_cam_resolution"]).endswith('_169'):
+        plugin._settings.set(["pi_cam_resolution"], plugin._settings.get(["pi_cam_resolution"]).replace('_169', ''), force=True)
+        plugin._settings.save(force=True)
+    
