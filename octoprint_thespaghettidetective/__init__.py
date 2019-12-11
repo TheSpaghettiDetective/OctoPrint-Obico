@@ -35,6 +35,8 @@ POST_STATUS_INTERVAL_SECONDS = 15.0
 
 DEFAULT_USER_ACCOUNT = {'is_pro': False, 'dh_balance': 0}
 
+_print_event_tracker = PrintEventTracker()
+
 class TheSpaghettiDetectivePlugin(
             octoprint.plugin.SettingsPlugin,
             octoprint.plugin.StartupPlugin,
@@ -51,7 +53,6 @@ class TheSpaghettiDetectivePlugin(
         self.remote_status = RemoteStatus()
         self.commander = Commander()
         self.error_tracker = ConnectionErrorTracker(self)
-        self.print_event_tracker = PrintEventTracker()
         self.jpeg_poster = JpegPoster(self)
         self.webcam_streamer = None
         self.user_account = DEFAULT_USER_ACCOUNT
@@ -158,7 +159,7 @@ class TheSpaghettiDetectivePlugin(
 
     def on_event(self, event, payload):
         if type(event) is str and event.startswith("Print"):
-            event_payload = self.print_event_tracker.on_event(self, event, payload)
+            event_payload = _print_event_tracker.on_event(self, event, payload)
             if event_payload:
                 self.post_printer_status(event_payload)
 
@@ -209,7 +210,7 @@ class TheSpaghettiDetectivePlugin(
                 self.error_tracker.attempt('server')
 
                 if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
-                    payload = self.print_event_tracker.octoprint_data(self)
+                    payload = _print_event_tracker.octoprint_data(self)
                     self.post_printer_status(payload, throwing=True)
                     backoff.reset()
 
