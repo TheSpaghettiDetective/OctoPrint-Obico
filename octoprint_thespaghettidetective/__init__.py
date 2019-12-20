@@ -185,8 +185,10 @@ class TheSpaghettiDetectivePlugin(
         return {"Authorization": "Token " + self.auth_token(auth_token)}
 
     def octoprint_settings(self):
-        webcam = dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio'))
-        return dict(webcam=webcam)
+        return dict(
+             webcam=dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
+             temperature=self._settings.settings.effective['temperature']
+        )
 
     def main_loop(self):
         migrate_old_settings(self)
@@ -210,8 +212,7 @@ class TheSpaghettiDetectivePlugin(
                 self.error_tracker.attempt('server')
 
                 if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
-                    payload = _print_event_tracker.octoprint_data(self)
-                    self.post_printer_status(payload, throwing=True)
+                    self.post_printer_status(_print_event_tracker.octoprint_data(self), throwing=True)
                     backoff.reset()
 
                 self.jpeg_poster.post_jpeg_if_needed()
@@ -267,10 +268,15 @@ class TheSpaghettiDetectivePlugin(
                 if command["cmd"] == "pause":
                     self.commander.prepare_to_pause(self._printer, **command.get('args'))
                     self._printer.pause_print()
-                if command["cmd"] == 'cancel':
+                elif command["cmd"] == 'cancel':
                     self._printer.cancel_print()
-                if command["cmd"] == 'resume':
+                elif command["cmd"] == 'resume':
                     self._printer.resume_print()
+                else:
+                    func = getattr(self._printer, command["cmd"])
+                    func(*command["args"])
+                    time.sleep(0.1)  # setting temp will take a bit of time to be reflected in the status. wait for it
+                    self.post_printer_status(_print_event_tracker.octoprint_data(self))
 
             if msg.get('janus') and self.webcam_streamer:
                 self.webcam_streamer.pass_to_janus(msg.get('janus'))
