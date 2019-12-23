@@ -259,7 +259,7 @@ class TheSpaghettiDetectivePlugin(
     def process_server_msg(self, ws, msg_json):
         try:
             msg = json.loads(msg_json)
-            if msg.get('commands'):
+            if msg.get('commands') or msg.get('passthru'):
                 _logger.info('Received: ' + msg_json)
             else:
                 _logger.debug('Received: ' + msg_json)
@@ -277,6 +277,22 @@ class TheSpaghettiDetectivePlugin(
                     func(*command["args"])
                     time.sleep(0.1)  # setting temp will take a bit of time to be reflected in the status. wait for it
                     self.post_printer_status(_print_event_tracker.octoprint_data(self))
+
+            passsthru = msg.get('passthru')
+            if passsthru:
+                func = getattr(self._printer, passsthru['func'], None)
+                if not func:
+                    return
+
+                ack_ref =  passsthru.get('ref')
+                ret = func(*(passsthru.get("args", [])))
+
+                if ack_ref:
+                    self.ss.send_text(json.dumps({'passthru': {'ref': ack_ref, 'ret': ret}}))
+
+                time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
+                self.post_printer_status(_print_event_tracker.octoprint_data(self))
+
 
             if msg.get('janus') and self.webcam_streamer:
                 self.webcam_streamer.pass_to_janus(msg.get('janus'))
