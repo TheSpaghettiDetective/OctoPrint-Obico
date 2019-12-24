@@ -132,7 +132,7 @@ class WebcamStreamer:
                         fout.write(line)
 
         def run_janus():
-            janus_backoff = ExpoBackoff(60*10)
+            janus_backoff = ExpoBackoff(60*1)
             env = dict(os.environ)
             env['LD_LIBRARY_PATH'] = os.path.join(JANUS_DIR, 'lib')
             janus_cmd = '{}/bin/janus -o --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
