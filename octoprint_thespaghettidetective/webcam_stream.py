@@ -132,10 +132,12 @@ class WebcamStreamer:
                         fout.write(line)
 
         def run_janus():
+            janus_backoff = ExpoBackoff(60*1)
             env = dict(os.environ)
             env['LD_LIBRARY_PATH'] = os.path.join(JANUS_DIR, 'lib')
             janus_cmd = '{}/bin/janus -o --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
-            self.janus_proc = subprocess.Popen(janus_cmd.split(' '), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            _logger.debug('Popen: {}'.format(janus_cmd))
+            self.janus_proc = subprocess.Popen(janus_cmd.split(), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
             while not self.shutting_down:
                 line = self.janus_proc.stdout.readline()
@@ -143,8 +145,10 @@ class WebcamStreamer:
                     _logger.debug('JANUS: ' + line)
                 elif not self.shutting_down:
                     self.janus_proc.wait()
-                    self.sentry.captureMessage('Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode))
-                    return
+                    msg = 'Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode)
+                    self.sentry.captureMessage(msg)
+                    janus_backoff.more(msg)
+                    self.janus_proc = subprocess.Popen(janus_cmd.split(), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         if os.getenv('JANUS_SERVER'):
             _logger.warning('Using extenal Janus gateway. Not starting Janus.')
@@ -167,7 +171,7 @@ class WebcamStreamer:
 
         def on_close(ws):
             self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
-            if self.gst_proc:
+            if not self.shutting_down:
                 _logger.warn('WS tunnel closed. Restarting janus tunnel.')
                 self.start_janus_ws_tunnel()
 

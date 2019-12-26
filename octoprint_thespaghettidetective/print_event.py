@@ -1,21 +1,24 @@
 import logging
 import time
+import threading
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 class PrintEventTracker:
 
     def __init__(self):
+        self._mutex = threading.RLock()
         self.current_print_ts = -1    # timestamp as print_ts coming from octoprint
 
     def on_event(self, plugin, event, payload):
-        print_ts = self.current_print_ts
-
-        if event == 'PrintStarted':
-            self.current_print_ts = int(time.time())
+        with self._mutex:
             print_ts = self.current_print_ts
-        elif event == 'PrintFailed' or event == 'PrintDone':
-            self.current_print_ts = -1
+
+            if event == 'PrintStarted':
+                self.current_print_ts = int(time.time())
+                print_ts = self.current_print_ts
+            elif event == 'PrintFailed' or event == 'PrintDone':
+                self.current_print_ts = -1
 
         data = self.octoprint_data(plugin)
         data['current_print_ts'] = print_ts
@@ -26,8 +29,10 @@ class PrintEventTracker:
         return data
 
     def octoprint_data(self, plugin):
+        with self._mutex:
+            print_ts = self.current_print_ts
         return {
-            'current_print_ts': self.current_print_ts,
+            'current_print_ts': print_ts,
             'octoprint_data': plugin._printer.get_current_data(),
             'octoprint_temperatures': plugin._printer.get_current_temperatures(),
             'octoprint_settings': plugin.octoprint_settings(),

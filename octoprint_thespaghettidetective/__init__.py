@@ -13,7 +13,7 @@ import backoff
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
-from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version, get_tags
+from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version, get_tags, migrate_old_settings
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
@@ -35,6 +35,8 @@ POST_STATUS_INTERVAL_SECONDS = 15.0
 
 DEFAULT_USER_ACCOUNT = {'is_pro': False, 'dh_balance': 0}
 
+_print_event_tracker = PrintEventTracker()
+
 class TheSpaghettiDetectivePlugin(
             octoprint.plugin.SettingsPlugin,
             octoprint.plugin.StartupPlugin,
@@ -51,7 +53,6 @@ class TheSpaghettiDetectivePlugin(
         self.remote_status = RemoteStatus()
         self.commander = Commander()
         self.error_tracker = ConnectionErrorTracker(self)
-        self.print_event_tracker = PrintEventTracker()
         self.jpeg_poster = JpegPoster(self)
         self.webcam_streamer = None
         self.user_account = DEFAULT_USER_ACCOUNT
@@ -158,7 +159,7 @@ class TheSpaghettiDetectivePlugin(
 
     def on_event(self, event, payload):
         if type(event) is str and event.startswith("Print"):
-            event_payload = self.print_event_tracker.on_event(self, event, payload)
+            event_payload = _print_event_tracker.on_event(self, event, payload)
             if event_payload:
                 self.post_printer_status(event_payload)
 
@@ -184,10 +185,13 @@ class TheSpaghettiDetectivePlugin(
         return {"Authorization": "Token " + self.auth_token(auth_token)}
 
     def octoprint_settings(self):
-        webcam = dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio'))
-        return dict(webcam=webcam)
+        return dict(
+             webcam=dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
+             temperature=self._settings.settings.effective['temperature']
+        )
 
     def main_loop(self):
+        migrate_old_settings(self)
         get_tags() # init tags to minimize risk of race condition
 
         self.user_account = self.wait_for_auth_token().get('user', DEFAULT_USER_ACCOUNT)
@@ -208,8 +212,7 @@ class TheSpaghettiDetectivePlugin(
                 self.error_tracker.attempt('server')
 
                 if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
-                    payload = self.print_event_tracker.octoprint_data(self)
-                    self.post_printer_status(payload, throwing=True)
+                    self.post_printer_status(_print_event_tracker.octoprint_data(self), throwing=True)
                     backoff.reset()
 
                 self.jpeg_poster.post_jpeg_if_needed()
@@ -256,7 +259,7 @@ class TheSpaghettiDetectivePlugin(
     def process_server_msg(self, ws, msg_json):
         try:
             msg = json.loads(msg_json)
-            if msg.get('commands'):
+            if msg.get('commands') or msg.get('passthru'):
                 _logger.info('Received: ' + msg_json)
             else:
                 _logger.debug('Received: ' + msg_json)
@@ -265,10 +268,31 @@ class TheSpaghettiDetectivePlugin(
                 if command["cmd"] == "pause":
                     self.commander.prepare_to_pause(self._printer, **command.get('args'))
                     self._printer.pause_print()
-                if command["cmd"] == 'cancel':
+                elif command["cmd"] == 'cancel':
                     self._printer.cancel_print()
-                if command["cmd"] == 'resume':
+                elif command["cmd"] == 'resume':
                     self._printer.resume_print()
+                else:
+                    func = getattr(self._printer, command["cmd"])
+                    func(*command["args"])
+                    time.sleep(0.1)  # setting temp will take a bit of time to be reflected in the status. wait for it
+                    self.post_printer_status(_print_event_tracker.octoprint_data(self))
+
+            passsthru = msg.get('passthru')
+            if passsthru:
+                func = getattr(self._printer, passsthru['func'], None)
+                if not func:
+                    return
+
+                ack_ref =  passsthru.get('ref')
+                ret = func(*(passsthru.get("args", [])))
+
+                if ack_ref:
+                    self.ss.send_text(json.dumps({'passthru': {'ref': ack_ref, 'ret': ret}}))
+
+                time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
+                self.post_printer_status(_print_event_tracker.octoprint_data(self))
+
 
             if msg.get('janus') and self.webcam_streamer:
                 self.webcam_streamer.pass_to_janus(msg.get('janus'))
