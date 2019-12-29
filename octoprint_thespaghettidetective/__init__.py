@@ -268,15 +268,10 @@ class TheSpaghettiDetectivePlugin(
                 if command["cmd"] == "pause":
                     self.commander.prepare_to_pause(self._printer, **command.get('args'))
                     self._printer.pause_print()
-                elif command["cmd"] == 'cancel':
+                if command["cmd"] == 'cancel':
                     self._printer.cancel_print()
-                elif command["cmd"] == 'resume':
+                if command["cmd"] == 'resume':
                     self._printer.resume_print()
-                else:
-                    func = getattr(self._printer, command["cmd"])
-                    func(*command["args"])
-                    time.sleep(0.1)  # setting temp will take a bit of time to be reflected in the status. wait for it
-                    self.post_printer_status(_print_event_tracker.octoprint_data(self))
 
             passsthru = msg.get('passthru')
             if passsthru:
