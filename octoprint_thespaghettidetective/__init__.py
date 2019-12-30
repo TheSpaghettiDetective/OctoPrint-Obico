@@ -242,8 +242,9 @@ class TheSpaghettiDetectivePlugin(
             else:
                 return
 
-        _logger.debug("Sending printer status: \n" + json.dumps(data))
-        self.ss.send_text(json.dumps(data))
+        json_data = json.dumps(data, 'iso-8859-1')
+        _logger.debug("Sending printer status: \n" + json_data)
+        self.ss.send_text(json_data)
         self.last_status_update_ts = time.time()
 
     def connect_ws(self):
