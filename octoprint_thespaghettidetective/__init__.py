@@ -18,6 +18,7 @@ from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster
+from .file_download import FileDownloader
 
 ### (Don't forget to remove me)
 # This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
@@ -54,6 +55,7 @@ class TheSpaghettiDetectivePlugin(
         self.commander = Commander()
         self.error_tracker = ConnectionErrorTracker(self)
         self.jpeg_poster = JpegPoster(self)
+        self.file_downloader = FileDownloader(self, _print_event_tracker)
         self.webcam_streamer = None
         self.user_account = DEFAULT_USER_ACCOUNT
 
@@ -158,6 +160,8 @@ class TheSpaghettiDetectivePlugin(
     ##~~ Eventhandler mixin
 
     def on_event(self, event, payload):
+        global _print_event_tracker
+
         if type(event) is str and event.startswith("Print"):
             event_payload = _print_event_tracker.on_event(self, event, payload)
             if event_payload:
@@ -187,10 +191,13 @@ class TheSpaghettiDetectivePlugin(
     def octoprint_settings(self):
         return dict(
              webcam=dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
-             temperature=self._settings.settings.effective['temperature']
+             temperature=self._settings.settings.effective['temperature'],
+             tsd_plugin_version=self._plugin_version,
         )
 
     def main_loop(self):
+        global _print_event_tracker
+
         migrate_old_settings(self)
         get_tags() # init tags to minimize risk of race condition
 
@@ -242,9 +249,8 @@ class TheSpaghettiDetectivePlugin(
             else:
                 return
 
-        json_data = json.dumps(data, 'iso-8859-1')
-        _logger.debug("Sending printer status: \n" + json_data)
-        self.ss.send_text(json_data)
+        _logger.debug("Sending printer status: \n{}".format(data))
+        self.ss.send_text(json.dumps(data, 'iso-8859-1'))
         self.last_status_update_ts = time.time()
 
     def connect_ws(self):
@@ -258,6 +264,8 @@ class TheSpaghettiDetectivePlugin(
         self.ss = None
 
     def process_server_msg(self, ws, msg_json):
+        global _print_event_tracker
+
         try:
             msg = json.loads(msg_json)
             if msg.get('commands') or msg.get('passthru'):
@@ -273,10 +281,13 @@ class TheSpaghettiDetectivePlugin(
                     self._printer.cancel_print()
                 if command["cmd"] == 'resume':
                     self._printer.resume_print()
+                if command["cmd"] == 'print':
+                    self.start_print(**command.get('args'))
 
             passsthru = msg.get('passthru')
             if passsthru:
-                func = getattr(self._printer, passsthru['func'], None)
+                target = getattr(self, passsthru.get('target', '_printer'))
+                func = getattr(target, passsthru['func'], None)
                 if not func:
                     return
 
@@ -284,7 +295,7 @@ class TheSpaghettiDetectivePlugin(
                 ret = func(*(passsthru.get("args", [])))
 
                 if ack_ref:
-                    self.ss.send_text(json.dumps({'passthru': {'ref': ack_ref, 'ret': ret}}))
+                    self.ss.send_text(json.dumps({'passthru': {'ref': ack_ref, 'ret': ret}}, 'iso-8859-1'))
 
                 time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
                 self.post_printer_status(_print_event_tracker.octoprint_data(self))
@@ -301,7 +312,7 @@ class TheSpaghettiDetectivePlugin(
         except:
             self.sentry.captureException(tags=get_tags())
 
-    # helper methods
+    #~~ helper methods
 
     def canonical_endpoint_prefix(self):
         if not self._settings.get(["endpoint_prefix"]):
@@ -349,7 +360,6 @@ class TheSpaghettiDetectivePlugin(
             return resp.json()
 
         return None
-
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
