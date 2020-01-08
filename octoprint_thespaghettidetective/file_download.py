@@ -17,6 +17,9 @@ class FileDownloader:
         try:
             _logger.warn('Received download command for {} '.format(gcode_file))
 
+            if self._print_event_tracker.get_tsd_gcode_file_id() or self.plugin._printer.get_current_data().get('state', {}).get('text') != 'Operational':
+                return {'error': 'Currently downloading or printing!'}
+
             self._print_event_tracker.set_tsd_gcode_file_id(gcode_file['id'])
 
             self.__ensure_storage__()
@@ -26,7 +29,7 @@ class FileDownloader:
             print_thread.daemon = True
             print_thread.start()
 
-            return target_path
+            return {'target_path': target_path}
 
         except Exception as e:
             self.plugin.sentry.captureException(tags=get_tags())

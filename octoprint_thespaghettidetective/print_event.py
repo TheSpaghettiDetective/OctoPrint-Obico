@@ -47,3 +47,7 @@ class PrintEventTracker:
     def set_tsd_gcode_file_id(self, tsd_gcode_file_id):
         with self._mutex:
             self.tsd_gcode_file_id = tsd_gcode_file_id
+
+    def get_tsd_gcode_file_id(self):
+        with self._mutex:
+            return self.tsd_gcode_file_id
