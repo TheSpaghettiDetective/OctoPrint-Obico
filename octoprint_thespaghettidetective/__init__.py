@@ -85,7 +85,7 @@ class TheSpaghettiDetectivePlugin(
     def get_settings_defaults(self):
         # Initialize sentry the first opportunity when `self._plugin_version` is available. Is there a better place for it?
         self.sentry = raven.Client(
-            'https://45064d46913d4a9e98e7155ecb18321c:054f538fa0b64ee88af283639b415e24@sentry.getanywhere.io/3?verify_ssl=0',
+            'https://f0356e1461124e69909600a64c361b71:bdf215f6e71b48dc90d28fb89a4f8238@sentry.thespaghettidetective.com/4?verify_ssl=0',
             release=self._plugin_version
             )
 
