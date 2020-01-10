@@ -76,6 +76,7 @@ class WebcamStreamer:
             return
 
         if not pi_version():
+            _logger.warn('Not running on a Pi. Quiting video_pipeline.')
             return
 
         # Wait to make sure other plugins that may use pi camera to init first, then yield to them if they are already using pi camera

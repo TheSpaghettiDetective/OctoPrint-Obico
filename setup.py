@@ -83,7 +83,7 @@ try:
             is_rpi = True
 except:
      pass
-if is_rpi and not hasattr(sys, 'pypy_version_info'):
+if is_rpi:
 	plugin_requires += [ 'picamera==1.13' ]
 
 
