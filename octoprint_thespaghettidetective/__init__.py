@@ -162,7 +162,7 @@ class TheSpaghettiDetectivePlugin(
     def on_event(self, event, payload):
         global _print_event_tracker
 
-        if type(event) is str and event.startswith("Print"):
+        if event.startswith("Print"):
             event_payload = _print_event_tracker.on_event(self, event, payload)
             if event_payload:
                 self.post_printer_status(event_payload)
