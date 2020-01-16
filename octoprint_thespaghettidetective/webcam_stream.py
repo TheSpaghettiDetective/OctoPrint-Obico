@@ -147,7 +147,7 @@ class WebcamStreamer:
                 elif not self.shutting_down:
                     self.janus_proc.wait()
                     msg = 'Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode)
-                    self.sentry.captureMessage(msg)
+                    self.sentry.captureMessage(msg, tags=get_tags())
                     janus_backoff.more(msg)
                     self.janus_proc = subprocess.Popen(janus_cmd.split(), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -203,7 +203,7 @@ class WebcamStreamer:
                     returncode = self.ffmpeg_proc.wait()
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
                     _logger.error(msg)
-                    self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
+                    self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode), tags=get_tags())
                     return
                 else:
                     ring_buffer.append(err)
@@ -239,7 +239,7 @@ class WebcamStreamer:
                     returncode = self.gst_proc.wait()
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
                     _logger.debug(msg)
-                    self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(returncode))
+                    self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(returncode), tags=get_tags())
                     gst_backoff.more('GST exited un-expectedly. Exit code: {}'.format(returncode))
 
                     ring_buffer = deque(maxlen=50)
