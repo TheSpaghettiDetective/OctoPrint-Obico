@@ -162,10 +162,14 @@ class TheSpaghettiDetectivePlugin(
     def on_event(self, event, payload):
         global _print_event_tracker
 
-        if event.startswith("Print"):
-            event_payload = _print_event_tracker.on_event(self, event, payload)
-            if event_payload:
-                self.post_printer_status(event_payload)
+        try:
+            if event.startswith("Print"):
+                event_payload = _print_event_tracker.on_event(self, event, payload)
+                if event_payload:
+                    self.post_printer_status(event_payload)
+        except Exception as e:
+            self.sentry.captureException(tags=get_tags())
+            _logger.exception('Exception in event handler.')
 
 
     ##~~Shutdown Plugin
@@ -250,7 +254,7 @@ class TheSpaghettiDetectivePlugin(
                 return
 
         _logger.debug("Sending printer status: \n{}".format(data))
-        self.ss.send_text(json.dumps(data, 'iso-8859-1'))
+        self.ss.send_text(json.dumps(data, encoding='iso-8859-1', default=str))
         self.last_status_update_ts = time.time()
 
     def connect_ws(self):
@@ -295,7 +299,7 @@ class TheSpaghettiDetectivePlugin(
                 ret = func(*(passsthru.get("args", [])))
 
                 if ack_ref:
-                    self.ss.send_text(json.dumps({'passthru': {'ref': ack_ref, 'ret': ret}}, 'iso-8859-1'))
+                    self.ss.send_text(json.dumps({'passthru': {'ref': ack_ref, 'ret': ret}}, encoding='iso-8859-1', default=str))
 
                 time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
                 self.post_printer_status(_print_event_tracker.octoprint_data(self))
@@ -311,6 +315,7 @@ class TheSpaghettiDetectivePlugin(
 
         except:
             self.sentry.captureException(tags=get_tags())
+            _logger.exception('Exception during server message processing.')
 
     #~~ helper methods
 
