@@ -97,6 +97,7 @@ class WebcamStreamer:
                 self.webcam_server = UsbCamWebServer(self.sentry)
                 self.webcam_server.start()
 
+                self.start_gst_memroy_guard()
                 self.start_gst()
 
             # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
@@ -212,16 +213,16 @@ class WebcamStreamer:
         gst_thread.daemon = True
         gst_thread.start()
 
-    # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
-    @backoff.on_exception(backoff.expo, Exception, max_tries=9)
-    def start_gst(self):
-
-
+    def start_gst_memroy_guard(self):
         # Hack to deal with gst command that causes memory leak
         kill_leaked_gst_cmd = '{} 200000'.format(os.path.join(GST_DIR, 'kill_leaked_gst.sh'))
         _logger.debug('Popen: {}'.format(kill_leaked_gst_cmd))
         subprocess.Popen(kill_leaked_gst_cmd.split(' '))
 
+
+    # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
+    @backoff.on_exception(backoff.expo, Exception, max_tries=9)
+    def start_gst(self):
         gst_cmd = os.path.join(GST_DIR, 'run.sh')
         _logger.debug('Popen: {}'.format(gst_cmd))
         self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
