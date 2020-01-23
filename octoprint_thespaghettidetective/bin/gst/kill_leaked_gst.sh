@@ -2,13 +2,16 @@
 
 while true; do
   sleep 5
-  gst_line=$(top -b -n 1 | grep gst-launch-1.0 | sed 's/ \+/:/g')
-  echo $gst_line
-  if [ -z "$gst_line" ]; then
+  gstPid=$(pgrep gst-launch-1.0)
+  if [ -z "$gstPid" ]; then
+    continue
+  fi
+  resMem=$(ps -o rss= $gstPid)
+  if [ -z "$resMem" ]; then
     continue
   fi
 
-  if [ $(echo $gst_line | cut -d : -f 6) -gt $1 ]; then
-      kill $(echo $gst_line | cut -d : -f 1)
+  if [ $resMem -gt $1 ]; then
+      kill $gstPid
   fi
 done
