@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 while true; do
   sleep 5
