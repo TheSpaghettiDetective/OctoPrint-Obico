@@ -135,11 +135,9 @@ class WebcamStreamer:
 
         def run_janus():
             janus_backoff = ExpoBackoff(60*1)
-            env = dict(os.environ)
-            env['LD_LIBRARY_PATH'] = os.path.join(JANUS_DIR, 'lib')
-            janus_cmd = '{}/bin/janus -o --stun-server=stun.l.google.com:19302 --configs-folder={}/etc/janus'.format(JANUS_DIR, JANUS_DIR)
+            janus_cmd = os.path.join(JANUS_DIR, 'run_janus.sh')
             _logger.debug('Popen: {}'.format(janus_cmd))
-            self.janus_proc = subprocess.Popen(janus_cmd.split(), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
             while not self.shutting_down:
                 line = self.janus_proc.stdout.readline()
@@ -150,7 +148,7 @@ class WebcamStreamer:
                     msg = 'Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode)
                     self.sentry.captureMessage(msg, tags=get_tags())
                     janus_backoff.more(msg)
-                    self.janus_proc = subprocess.Popen(janus_cmd.split(), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                    self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         if os.getenv('JANUS_SERVER'):
             _logger.warning('Using extenal Janus gateway. Not starting Janus.')
@@ -223,7 +221,7 @@ class WebcamStreamer:
     # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
     @backoff.on_exception(backoff.expo, Exception, max_tries=9)
     def start_gst(self):
-        gst_cmd = os.path.join(GST_DIR, 'run.sh')
+        gst_cmd = os.path.join(GST_DIR, 'run_gst.sh')
         _logger.debug('Popen: {}'.format(gst_cmd))
         self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         for i in range(5):
@@ -251,7 +249,7 @@ class WebcamStreamer:
                     gst_backoff.more('GST exited un-expectedly. Exit code: {}'.format(returncode))
 
                     ring_buffer = deque(maxlen=50)
-                    gst_cmd = os.path.join(GST_DIR, 'run.sh')
+                    gst_cmd = os.path.join(GST_DIR, 'run_gst.sh')
                     _logger.debug('Popen: {}'.format(gst_cmd))
                     self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 else:
