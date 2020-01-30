@@ -32,7 +32,7 @@ JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'jan
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 
 PI_CAM_RESOLUTIONS = {
-    'low': ((320,240), (480, 270), 300000), # resolution for 4:3, 16:9, and bitrate limit
+    'low': ((320,240), (480, 270), 100000), # resolution for 4:3, 16:9, and bitrate limit
     'medium': ((640, 480), (960, 540), 1000000),
     'high': ((1296, 972), (1640, 922), 3000000),
     'ultra_high': ((1640, 1232), (1920, 1080), 5000000),
@@ -59,7 +59,7 @@ class WebcamStreamer:
         import picamera
         try:
             self.pi_camera = picamera.PiCamera()
-            self.pi_camera.framerate=20
+            self.pi_camera.framerate=5
             (res_43, res_169, bitrate) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
             self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
             self.bitrate = bitrate
