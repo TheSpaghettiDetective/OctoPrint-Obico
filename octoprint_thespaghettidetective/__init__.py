@@ -13,7 +13,7 @@ import backoff
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
-from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version, get_tags, migrate_old_settings, not_using_pi_camera
+from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version, get_tags, not_using_pi_camera
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
@@ -203,7 +203,6 @@ class TheSpaghettiDetectivePlugin(
     def main_loop(self):
         global _print_event_tracker
 
-        migrate_old_settings(self)
         get_tags() # init tags to minimize risk of race condition
 
         self.user_account = self.wait_for_auth_token().get('user', DEFAULT_USER_ACCOUNT)
