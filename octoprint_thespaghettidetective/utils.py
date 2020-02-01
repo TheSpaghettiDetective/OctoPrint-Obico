@@ -4,8 +4,12 @@ import time
 import random
 import logging
 import re
+import os
 import platform
 from sarge import run, Capture
+import tempfile
+
+CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
