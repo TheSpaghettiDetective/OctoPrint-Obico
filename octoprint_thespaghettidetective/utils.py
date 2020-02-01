@@ -112,3 +112,11 @@ def migrate_old_settings(plugin):
         plugin._settings.set(["pi_cam_resolution"], plugin._settings.get(["pi_cam_resolution"]).replace('_169', ''), force=True)
         plugin._settings.save(force=True)
     
+def not_using_pi_camera():
+    try:
+        os.remove(CAM_EXCLUSIVE_USE)
+    except:
+        pass
+
+def using_pi_camera():
+    open(CAM_EXCLUSIVE_USE, 'a').close()  # touch CAM_EXCLUSIVE_USE to indicate the intention of exclusive use of pi camera

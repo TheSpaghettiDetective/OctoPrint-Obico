@@ -12,19 +12,17 @@ import Queue
 from threading import Thread, RLock
 import requests
 import yaml
-import tempfile
 import backoff
 import json
 import socket
 import base64
 from textwrap import wrap
 
-from .utils import pi_version, ExpoBackoff, get_tags
+from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera
 from .ws import WebSocketClient
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
-CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
@@ -58,12 +56,14 @@ class WebcamStreamer:
     def __init_camera__(self):
         import picamera
         try:
+            using_pi_camera()
             self.pi_camera = picamera.PiCamera()
             self.pi_camera.framerate=20
             (res_43, res_169, bitrate) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
             self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
             self.bitrate = bitrate
         except picamera.exc.PiCameraError:
+            not_using_pi_camera()
             if os.path.exists('/dev/video0'):
                 _logger.debug('v4l2 device found! Streaming as USB camera.')
                 return
@@ -77,12 +77,6 @@ class WebcamStreamer:
 
         if not pi_version():
             _logger.warn('Not running on a Pi. Quiting video_pipeline.')
-            return
-
-        # Wait to make sure other plugins that may use pi camera to init first, then yield to them if they are already using pi camera
-        time.sleep(10)
-        if os.path.exists(CAM_EXCLUSIVE_USE):
-            _logger.warn('Conceding pi camera exclusive use')
             return
 
         try:
@@ -110,6 +104,7 @@ class WebcamStreamer:
                 self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
                 self.pi_camera.wait_recording(0)
         except:
+            not_using_pi_camera()
             time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
             self.sentry.captureException(tags=get_tags())

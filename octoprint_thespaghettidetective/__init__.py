@@ -13,7 +13,7 @@ import backoff
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
-from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version, get_tags, migrate_old_settings
+from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version, get_tags, migrate_old_settings, not_using_pi_camera
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
@@ -177,11 +177,12 @@ class TheSpaghettiDetectivePlugin(
     def on_shutdown(self):
         if self.webcam_streamer:
             self.webcam_streamer.restore()
-
+        not_using_pi_camera()
 
     ##~~Startup Plugin
 
     def on_after_startup(self):
+        not_using_pi_camera()
         main_thread = threading.Thread(target=self.main_loop)
         main_thread.daemon = True
         main_thread.start()
