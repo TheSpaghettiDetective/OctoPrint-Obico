@@ -59,7 +59,7 @@ class WebcamStreamer:
         import picamera
         try:
             self.pi_camera = picamera.PiCamera()
-            self.pi_camera.framerate=5
+            self.pi_camera.framerate=25
             (res_43, res_169, bitrate) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
             self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
             self.bitrate = bitrate
