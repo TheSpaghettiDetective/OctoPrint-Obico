@@ -63,6 +63,7 @@ class WebcamStreamer:
             (res_43, res_169, bitrate) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
             self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
             self.bitrate = bitrate
+            _logger.debug('framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, self.bitrate, self.pi_camera.resolution))
         except picamera.exc.PiCameraError:
             if os.path.exists('/dev/video0'):
                 _logger.debug('v4l2 device found! Streaming as USB camera.')
