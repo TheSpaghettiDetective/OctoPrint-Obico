@@ -65,10 +65,6 @@ class ConnectionErrorTracker:
 
         self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_error': error_type})
 
-    def notify_client_if_needed(self):
-        for k in self.errors:
-            self.notify_client_if_needed_for_error(k)
-
     def as_dict(self):
         return self.errors
 
