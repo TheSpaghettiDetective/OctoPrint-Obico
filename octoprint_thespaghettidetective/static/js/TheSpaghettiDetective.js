@@ -146,7 +146,7 @@ $(function() {
                 if (!streamingWarningAcked) {
                     msgType = "notice";
                     text =
-                        '<p>Premium webcam streaming failed to start. Switching to basic streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-laggy/">Learn more>>></a></p>';
+                        '<p>Premium webcam streaming failed to start. The Spaghetti Detective has switched to basic streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-laggy/">Learn more >>></a></p>';
                     buttons = [
                         {
                             text: "Ignore",
