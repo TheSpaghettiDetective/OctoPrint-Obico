@@ -106,6 +106,8 @@ class WebcamStreamer:
                 self.pi_camera.wait_recording(0)
         except:
             not_using_pi_camera()
+            self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_warning': 'streaming'})
+
             time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
             self.sentry.captureException(tags=get_tags())

@@ -118,6 +118,7 @@ $(function() {
                 self.hasShownWebcamError = true;
                 text =
                     'The Spaghetti Detective failed to connect to webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.';
+            } else if (data.new_error == "streaming") {
             }
 
             new PNotify({
