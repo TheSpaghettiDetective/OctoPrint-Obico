@@ -104,49 +104,73 @@ $(function() {
 
             var text = "Unkonwn errors.";
 
-            if (data.new_error == "server") {
-                if (self.hasShownServerError) {
-                    return;
-                }
-                self.hasShownServerError = true;
-                text =
-                    "The Spaghetti Detective failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.";
-            } else if (data.new_error == "webcam") {
-                if (self.hasShownWebcamError) {
-                    return;
-                }
-                self.hasShownWebcamError = true;
-                text =
-                    'The Spaghetti Detective failed to connect to webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.';
-            } else if (data.new_error == "streaming") {
-            }
-
-            new PNotify({
-                title: "The Spaghetti Detective",
-                text: text,
-                type: "error",
-                hide: false,
-                confirm: {
-                    confirm: true,
-                    buttons: [
-                        {
-                            text: "Error Details",
-                            click: function(notice) {
-                                self.showTrackerModal();
-                                notice.remove();
+            if (data.new_error) {
+                msgType = "error";
+                buttons = [
+                            {
+                                text: "Error Details",
+                                click: function(notice) {
+                                    self.showTrackerModal();
+                                    notice.remove();
+                                }
+                            },
+                            {
+                                text: "Got It!",
+                                click: function(notice) {
+                                    notice.remove();
+                                }
+                            },
+                            {
+                                text: "Close",
+                                addClass: "remove_button"
                             }
-                        },
+                        ];
+                if (data.new_error == "server") {
+                    if (self.hasShownServerError) {
+                        return;
+                    }
+                    self.hasShownServerError = true;
+                    text =
+                        "The Spaghetti Detective failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.";
+                } else if (data.new_error == "webcam") {
+                    if (self.hasShownWebcamError) {
+                        return;
+                    }
+                    self.hasShownWebcamError = true;
+                    text =
+                        'The Spaghetti Detective failed to connect to webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.';
+                }
+            }
+            if (data.new_warning) {
+                var streamingWarningAcked = localStorage.getItem("tsd.streamingWarningAcked");
+                if (!picameraErrorAcked) {
+                    msgType = "error";
+                    text =
+                        "Premium webcam streaming failed to start."
+                    buttons = [
                         {
-                            text: "Got It!",
+                            text: "Ignore",
                             click: function(notice) {
+                                localStorage.setItem("tsd.streamingWarningAcked", true);
                                 notice.remove();
                             }
                         },
                         {
                             text: "Close",
                             addClass: "remove_button"
-                        }
+                        },
                     ]
+                }
+            }
+
+            new PNotify({
+                title: "The Spaghetti Detective",
+                text: text,
+                type: msgType,
+                hide: false,
+                confirm: {
+                    confirm: true,
+                    buttons: buttons,
                 },
                 history: {
                     history: false
@@ -158,6 +182,7 @@ $(function() {
                         .remove();
                 }
             });
+
         };
 
         self.showTrackerModal = function() {
