@@ -30,7 +30,7 @@ JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'jan
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 
 PI_CAM_RESOLUTIONS = {
-    'low': ((320,240), (480, 270), 300000), # resolution for 4:3, 16:9, and bitrate limit
+    'low': ((320,240), (480, 270), 200000), # resolution for 4:3, 16:9, and bitrate limit
     'medium': ((640, 480), (960, 540), 1000000),
     'high': ((1296, 972), (1640, 922), 3000000),
     'ultra_high': ((1640, 1232), (1920, 1080), 5000000),
@@ -62,6 +62,7 @@ class WebcamStreamer:
             (res_43, res_169, bitrate) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
             self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
             self.bitrate = bitrate
+            _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, self.bitrate, self.pi_camera.resolution))
         except picamera.exc.PiCameraError:
             not_using_pi_camera()
             if os.path.exists('/dev/video0'):
@@ -101,7 +102,7 @@ class WebcamStreamer:
 
                 self.webcam_server = PiCamWebServer(self.pi_camera, self.sentry)
                 self.webcam_server.start()
-                self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate)
+                self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate, profile='baseline')
                 self.pi_camera.wait_recording(0)
         except:
             not_using_pi_camera()
