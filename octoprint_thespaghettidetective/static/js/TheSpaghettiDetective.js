@@ -143,10 +143,10 @@ $(function() {
             }
             if (data.new_warning) {
                 var streamingWarningAcked = localStorage.getItem("tsd.streamingWarningAcked");
-                if (!picameraErrorAcked) {
-                    msgType = "error";
+                if (!streamingWarningAcked) {
+                    msgType = "notice";
                     text =
-                        "Premium webcam streaming failed to start."
+                        '<p>Premium webcam streaming failed to start. Switching to basic streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-laggy/">Learn more>>></a></p>';
                     buttons = [
                         {
                             text: "Ignore",
