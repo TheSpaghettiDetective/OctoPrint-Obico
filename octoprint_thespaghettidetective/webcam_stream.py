@@ -209,13 +209,13 @@ class WebcamStreamer:
 
     def start_gst_memory_guard(self):
         # Hack to deal with gst command that causes memory leak
-        kill_leaked_gst_cmd = '{} 200000'.format(os.path.join(GST_DIR, 'kill_leaked_gst.sh'))
+        kill_leaked_gst_cmd = '{} 200000'.format(os.path.join(GST_DIR, 'gst_memory_guard.sh'))
         _logger.debug('Popen: {}'.format(kill_leaked_gst_cmd))
         subprocess.Popen(kill_leaked_gst_cmd.split(' '))
 
 
     # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
-    @backoff.on_exception(backoff.expo, Exception, max_tries=9)
+    @backoff.on_exception(backoff.expo, Exception, max_tries=8)
     def start_gst(self):
         gst_cmd = os.path.join(GST_DIR, 'run_gst.sh')
         _logger.debug('Popen: {}'.format(gst_cmd))
