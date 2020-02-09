@@ -290,7 +290,7 @@ class TheSpaghettiDetectivePlugin(
 
             passsthru = msg.get('passthru')
             if passsthru:
-                target = getattr(self, passsthru.get('target', '_printer'))
+                target = getattr(self, passsthru.get('target'))
                 func = getattr(target, passsthru['func'], None)
                 if not func:
                     return
