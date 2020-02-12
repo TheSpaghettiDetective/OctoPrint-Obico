@@ -340,7 +340,7 @@ class UsbCamWebServer:
            while length > len(chunk):
                chunk.extend(s.recv(length-len(chunk)))
            return chunk[:length]
-       except socket.timeout:
+       except (socket.timeout, socket.error):
            exc_type, exc_obj, exc_tb = sys.exc_info()
            _logger.error(exc_obj)
            raise
