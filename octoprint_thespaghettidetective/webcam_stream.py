@@ -160,7 +160,7 @@ class WebcamStreamer:
 
         self.start_janus_ws_tunnel()
 
-    @backoff.on_exception(backoff.expo, Exception, max_tries=7)
+    @backoff.on_exception(backoff.expo, Exception, max_tries=10)
     def wait_for_janus(self):
         time.sleep(1)
         socket.socket().connect((JANUS_SERVER, 8188))
