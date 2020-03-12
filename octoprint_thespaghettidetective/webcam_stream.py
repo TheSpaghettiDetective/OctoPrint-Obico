@@ -174,9 +174,9 @@ class WebcamStreamer:
                 self.start_janus_ws_tunnel()
 
         def on_message(ws, msg):
-            _logger.debug('Relaying Janus msg: {}'.format(msg))
-            self.plugin.ss.send_text(json.dumps(dict(janus=msg), encoding='iso-8859-1', default=str))
-            self.janus_ws_backoff.reset()
+            _logger.debug('Relaying Janus msg')
+            if self.plugin.send_ws_msg_to_server(dict(janus=msg)):
+                self.janus_ws_backoff.reset()
 
         self.janus_ws = WebSocketClient('ws://{}:8188/'.format(JANUS_SERVER), on_ws_msg=on_message, on_ws_close=on_close, subprotocols=['janus-protocol'])
         wst = Thread(target=self.janus_ws.run)

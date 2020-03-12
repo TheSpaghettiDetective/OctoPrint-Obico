@@ -238,8 +238,15 @@ class TheSpaghettiDetectivePlugin(
                 backoff.more(e)
 
     def post_printer_status(self, data, throwing=False):
+        if self.send_ws_msg_to_server(data, throwing=throwing):
+            self.last_status_update_ts = time.time()
+
+    def send_ws_msg_to_server(self, data, throwing=False):
+        """ Returns True if message is sent successfully. Otherwise returns False. """
+
         if not self.is_configured():
-            return
+            _logger.warning("Plugin not configured. Not sending message to server...")
+            return False
 
         if not self.ss:
             _logger.debug("Establishing WS connection...")
@@ -251,11 +258,11 @@ class TheSpaghettiDetectivePlugin(
             if throwing:
                 raise WebSocketClientException('Failed to connect to websocket server')
             else:
-                return
+                return False
 
-        _logger.debug("Sending printer status: \n{}".format(data))
+        _logger.debug("Sending to server: \n{}".format(data))
         self.ss.send_text(json.dumps(data, encoding='iso-8859-1', default=str))
-        self.last_status_update_ts = time.time()
+        return True
 
     def connect_ws(self):
         self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
@@ -299,7 +306,7 @@ class TheSpaghettiDetectivePlugin(
                 ret = func(*(passsthru.get("args", [])))
 
                 if ack_ref:
-                    self.ss.send_text(json.dumps({'passthru': {'ref': ack_ref, 'ret': ret}}, encoding='iso-8859-1', default=str))
+                    self.send_ws_msg_to_server({'passthru': {'ref': ack_ref, 'ret': ret}})
 
                 time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
                 self.post_printer_status(_print_event_tracker.octoprint_data(self))
