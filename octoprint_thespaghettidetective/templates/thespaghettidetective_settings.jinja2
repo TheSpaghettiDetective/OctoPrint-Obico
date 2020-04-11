@@ -10,13 +10,13 @@
   </ul>
   <div class="tab-content">
     <div class="tab-pane active" id="setup">
-        <h5>Step 1: <a href="https://app.thespaghettidetective.com/accounts/signup/" target="_blank">Sign up</a> an account.</h5>
+        <h5>Step 1: <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/secure_redirect/?target=/accounts/signup/&source=plugin' }" target="_blank">Sign up</a> an account.</h5>
         <p>Be sure to check our <a href="https://thespaghettidetective.com/privacy.html" target="_blank">Privacy Policy</a> and <a href="https://thespaghettidetective.com/terms.html" target="_blank">Terms of Use</a>.</p>
         <h5>Step 2: Add a printer in The Spaghetti Detective and obtain its secret token.</h5>
         <div>Secret token is the key that makes sure only you can access data in your account, not anyone else.</div>
         <h5>Step 3: Copy the secret token to the box below.</h5>
         <form class="form-horizontal">
-            <div>If you have problem locating the secret token, click <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/printer_auth_token/0/' }" target="_blank">here</a>.</div>
+            <div>If you have problem locating the secret token, click <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/secure_redirect/?target=/printer_auth_token/0/&source=plugin' }" target="_blank">here</a>.</div>
             <div class="input-append token-input">
                 <input type="text" class="input-block-level auth-token-input" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.auth_token">
                 <button class="btn test-auth-token" type="button"><i class="fa fa-spinner fa-spin" style="display: none;"></i> Test</button>
