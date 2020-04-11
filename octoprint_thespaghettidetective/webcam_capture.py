@@ -3,11 +3,20 @@ from __future__ import absolute_import
 from datetime import datetime, timedelta
 import time
 import logging
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import re
 import os
-import urllib2
-from urlparse import urlparse
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 from contextlib import closing
 import requests
 import backoff
@@ -39,7 +48,7 @@ def capture_jpeg(webcam_settings):
         if not urlparse(stream_url).scheme:
             stream_url = "http://localhost/" + re.sub(r"^\/", "", stream_url)
 
-        with closing(urllib2.urlopen(stream_url)) as res:
+        with closing(urlopen(stream_url)) as res:
             chunker = MjpegStreamChunker()
 
             while True:
@@ -58,7 +67,7 @@ class MjpegStreamChunker:
 
     def __init__(self):
         self.boundary = None
-        self.current_chunk = StringIO.StringIO()
+        self.current_chunk = StringIO()
 
     # Return: mjpeg chunk if found
     #         None: in the middle of the chunk

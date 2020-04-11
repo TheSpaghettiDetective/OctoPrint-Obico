@@ -1,12 +1,12 @@
-FROM kennethjiang/octopi:ubuntu
+FROM kennethjiang/octopi:python3
 
 RUN apt-get install -y netcat
 
-RUN pip install ipdb
+RUN pip3 install ipdb
 
 COPY . /app
 
 WORKDIR /app
 
-RUN pip install -e ./
+RUN pip3 install -e ./
 

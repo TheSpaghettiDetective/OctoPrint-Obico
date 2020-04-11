@@ -8,7 +8,10 @@ import sarge
 import sys
 import flask
 from collections import deque
-import Queue
+try:
+   import queue
+except ImportError:
+   import Queue as queue
 from threading import Thread, RLock
 import requests
 import yaml
@@ -378,7 +381,7 @@ class PiCamWebServer:
     def __init__(self, camera, sentry):
         self.sentry = sentry
         self.pi_camera = camera
-        self.img_q = Queue.Queue(maxsize=1)
+        self.img_q = queue.Queue(maxsize=1)
         self.last_capture = 0
         self._mutex = RLock()
         self.web_server = None

@@ -382,6 +382,7 @@ __plugin_author__ = "The Spaghetti Detective Team"
 __plugin_url__ = "https://thespaghettidetective.com"
 __plugin_description__ = "AI-based open source project for 3D printing failure detection."
 __plugin_license__ = "AGPLv3"
+__plugin_pythoncompat__ = ">=2.7,<4"
 
 def __plugin_load__():
     global __plugin_implementation__
