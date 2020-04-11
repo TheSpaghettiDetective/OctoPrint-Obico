@@ -20,6 +20,7 @@ import json
 import socket
 import base64
 from textwrap import wrap
+from octoprint.util import to_unicode
 
 from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera
 from .ws import WebSocketClient
@@ -141,7 +142,7 @@ class WebcamStreamer:
             self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
             while not self.shutting_down:
-                line = self.janus_proc.stdout.readline()
+                line = to_unicode(self.janus_proc.stdout.readline())
                 if line:
                     _logger.debug('JANUS: ' + line)
                 elif not self.shutting_down:
@@ -195,7 +196,7 @@ class WebcamStreamer:
         def monitor_ffmpeg_process():  # It's pointless to restart ffmpeg without calling pi_camera.record with the new input. Just capture unexpected exits not to see if it's a big problem
             ring_buffer = deque(maxlen=50)
             while True:
-                err = self.ffmpeg_proc.stderr.readline()
+                err = to_unicode(self.ffmpeg_proc.stderr.readline())
                 if not err: # EOF when process ends?
                     if self.shutting_down:
                         return
@@ -238,7 +239,7 @@ class WebcamStreamer:
             ring_buffer = deque(maxlen=50)
             gst_backoff = ExpoBackoff(60*10)
             while True:
-                err = self.gst_proc.stderr.readline()
+                err = to_unicode(self.gst_proc.stderr.readline())
                 if not err: # EOF when process ends?
                     if self.shutting_down:
                         return
