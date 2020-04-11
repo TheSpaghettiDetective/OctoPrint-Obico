@@ -30,6 +30,8 @@ from .file_download import FileDownloader
 
 import octoprint.plugin
 
+__python_version__ = 3 if sys.version_info >= (3, 0) else 2
+
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 POST_STATUS_INTERVAL_SECONDS = 15.0
@@ -261,7 +263,10 @@ class TheSpaghettiDetectivePlugin(
                 return False
 
         _logger.debug("Sending to server: \n{}".format(data))
-        self.ss.send_text(json.dumps(data, encoding='iso-8859-1', default=str))
+        if __python_version__ == 3:
+            self.ss.send_text(json.dumps(data, default=str))
+        else:
+            self.ss.send_text(json.dumps(data, encoding='iso-8859-1', default=str))
         return True
 
     def connect_ws(self):
