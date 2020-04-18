@@ -84,6 +84,10 @@ $(function() {
         self.connectionErrors = { server: [], webcam: [] };
         self.hasShownServerError = false;
         self.hasShownWebcamError = false;
+        
+        self.toggleYouTube = function(){
+            self.showYouTube(!self.showYouTube());
+        }
 
         self.streaming = ko.mapping.fromJS({eligible: false, piCamPresent: false});
         self.piCamResolutionOptions = [{id: "low", text: "Low"}, {id: "medium", text: "Medium"}, {id: "high", text: "High"}, {id: "ultra_high", text: "Ultra High"}];
