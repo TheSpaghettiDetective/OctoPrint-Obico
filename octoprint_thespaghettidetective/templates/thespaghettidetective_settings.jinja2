@@ -23,11 +23,12 @@
             </div>
             <div class="std-api-status">&nbsp; </div>
         </form>
-        <!-- ko if: showYouTube -->
         <div class="settings-video">
+        <input type="checkbox" data-bind="checked: showYouTube"/> See YouTube Video
+        <!-- ko if: showYouTube -->
         <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/ZpDw9mNBngU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
         <!-- /ko -->
+        </div>
     </div>
     <div class="tab-pane" id="advanced">
         <form class="form-horizontal">
