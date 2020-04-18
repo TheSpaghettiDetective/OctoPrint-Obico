@@ -79,6 +79,7 @@ $(function() {
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
+        self.showYouTube = ko.observable(false);
 
         self.connectionErrors = { server: [], webcam: [] };
         self.hasShownServerError = false;
