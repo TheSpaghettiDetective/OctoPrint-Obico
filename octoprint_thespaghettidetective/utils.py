@@ -76,19 +76,19 @@ class SentryWrapper:
             'https://f0356e1461124e69909600a64c361b71:bdf215f6e71b48dc90d28fb89a4f8238@sentry.thespaghettidetective.com/4?verify_ssl=0',
             release=plugin._plugin_version
             )
-        self._settings = plugin._settings
+        self.plugin = plugin
 
     def captureException(self, *args, **kwargs):
-        _logger.exception()
-        if self._settings.get(["sentry_opt"]) == 'out':
+        _logger.exception("Exception")
+        if self.plugin._settings.get(["sentry_opt"]) == 'out':
             self.sentryClient.captureException(*args, **kwargs)
 
-    def user_contex(self, *args, **kwargs):
-        if self._settings.get(["sentry_opt"]) == 'out':
-            self.sentryClient.user_contex(*args, **kwargs)
+    def user_context(self, *args, **kwargs):
+        if self.plugin._settings.get(["sentry_opt"]) == 'out':
+            self.sentryClient.user_context(*args, **kwargs)
 
     def captureMessage(self, *args, **kwargs):
-        if self._settings.get(["sentry_opt"]) == 'out':
+        if self.plugin._settings.get(["sentry_opt"]) == 'out':
             self.sentryClient.captureMessage(*args, **kwargs)
 
 
