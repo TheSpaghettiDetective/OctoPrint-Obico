@@ -8,7 +8,6 @@ import json
 import re
 import os, sys, time
 import requests
-import raven
 import backoff
 
 from .ws import WebSocketClient, WebSocketClientException
