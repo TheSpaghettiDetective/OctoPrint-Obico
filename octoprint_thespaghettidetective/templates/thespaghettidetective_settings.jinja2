@@ -72,6 +72,15 @@
             <li><a href="#" data-bind="click: openErrorTrackerModal">Check plugin self diagnostic report >>></a></li>
             <li><a href="https://www.thespaghettidetective.com/docs/contact-us-for-support/">Contact us</a> for help!</li>
         </ul>
+        <form class="form-horizontal">
+        <h3>Error Reporting</h3>
+                <div class="form-check" style="margin-top: 8px;">
+                  <input class="form-check-input sentry-opt" type="checkbox" value="" data-bind="checked: sentryOptedIn, click: toggleSentryOpt" style="margin-top: 0px;">
+                  <label class="form-check-label" for="custom-server" style="display: inline">
+                    Report anonymized error informtation to The Spaghetti Detective developers to help them diagose the problem.
+                  </label>
+                </div>
+       </form>
     </div>
   </div>
 </div>

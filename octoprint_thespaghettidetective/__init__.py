@@ -13,7 +13,7 @@ import backoff
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
-from .utils import ExpoBackoff, ConnectionErrorTracker, pi_version, get_tags, not_using_pi_camera
+from .utils import ExpoBackoff, ConnectionErrorTracker, SentryWrapper, pi_version, get_tags, not_using_pi_camera
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
@@ -86,15 +86,13 @@ class TheSpaghettiDetectivePlugin(
 
     def get_settings_defaults(self):
         # Initialize sentry the first opportunity when `self._plugin_version` is available. Is there a better place for it?
-        self.sentry = raven.Client(
-            'https://f0356e1461124e69909600a64c361b71:bdf215f6e71b48dc90d28fb89a4f8238@sentry.thespaghettidetective.com/4?verify_ssl=0',
-            release=self._plugin_version
-            )
+        self.sentry = SentryWrapper(self)
 
         return dict(
             endpoint_prefix='https://app.thespaghettidetective.com',
             disable_video_streaming=False,
             pi_cam_resolution='medium',
+            sentry_opt='out',
         )
 
     ##~~ AssetPlugin mixin
@@ -138,6 +136,7 @@ class TheSpaghettiDetectivePlugin(
             test_auth_token=["auth_token"],
             get_connection_errors=[],
             streaming=[],
+            toggle_sentry_opt=[],
         )
 
     def is_api_adminonly(self):
@@ -157,7 +156,9 @@ class TheSpaghettiDetectivePlugin(
         if command == "streaming":
             piCamPresent = self.webcam_streamer and self.webcam_streamer.pi_camera != None
             return flask.jsonify(dict(eligible=self.user_account.get('is_pro'), piCamPresent=piCamPresent))
-
+        if command == "toggle_sentry_opt":
+            self._settings.set(["sentry_opt"], 'out' if self._settings.get(["sentry_opt"]) == 'in' else 'in', force=True)
+            self._settings.save(force=True)
 
     ##~~ Eventhandler mixin
 
@@ -171,7 +172,6 @@ class TheSpaghettiDetectivePlugin(
                     self.post_printer_status(event_payload)
         except Exception as e:
             self.sentry.captureException(tags=get_tags())
-            _logger.exception('Exception in event handler.')
 
 
     ##~~Shutdown Plugin
@@ -327,7 +327,6 @@ class TheSpaghettiDetectivePlugin(
 
         except:
             self.sentry.captureException(tags=get_tags())
-            _logger.exception('Exception during server message processing.')
 
     #~~ helper methods
 

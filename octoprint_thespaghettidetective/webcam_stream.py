@@ -115,8 +115,6 @@ class WebcamStreamer:
             time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
             self.sentry.captureException(tags=get_tags())
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            _logger.error(exc_obj)
             return
 
     def pass_to_janus(self, msg):

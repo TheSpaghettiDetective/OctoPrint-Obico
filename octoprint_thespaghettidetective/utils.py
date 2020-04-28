@@ -68,6 +68,29 @@ class ConnectionErrorTracker:
     def as_dict(self):
         return self.errors
 
+class SentryWrapper:
+
+    def __init__(self, plugin):
+        self.sentryClient = raven.Client(
+            'https://f0356e1461124e69909600a64c361b71:bdf215f6e71b48dc90d28fb89a4f8238@sentry.thespaghettidetective.com/4?verify_ssl=0',
+            release=plugin._plugin_version
+            )
+        self._settings = plugin._settings
+
+    def captureException(self, *args, **kwargs):
+        _logger.exception()
+        if self._settings.get(["sentry_opt"]) == 'out':
+            self.sentryClient.captureException(*args, **kwargs)
+
+    def user_contex(self, *args, **kwargs):
+        if self._settings.get(["sentry_opt"]) == 'out':
+            self.sentryClient.user_contex(*args, **kwargs)
+
+    def captureMessage(self, *args, **kwargs):
+        if self._settings.get(["sentry_opt"]) == 'out':
+            self.sentryClient.captureMessage(*args, **kwargs)
+
+
 def pi_version():
     try:
         with open('/sys/firmware/devicetree/base/model', 'r') as firmware_model:

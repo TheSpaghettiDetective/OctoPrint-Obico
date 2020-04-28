@@ -85,6 +85,9 @@ $(function() {
         self.hasShownWebcamError = false;
         self.streaming = ko.mapping.fromJS({eligible: false, piCamPresent: false});
         self.piCamResolutionOptions = [{id: "low", text: "Low"}, {id: "medium", text: "Medium"}, {id: "high", text: "High"}, {id: "ultra_high", text: "Ultra High"}];
+        self.sentryOptedIn = ko.pureComputed(function() {
+            return self.settingsViewModel.settings.plugins.thespaghettidetective.sentry_opt() === "in";
+        }, self);
 
         self.onSettingsShown = function(plugin, data) {
             apiCommand({
@@ -185,13 +188,10 @@ $(function() {
         };
 
         self.showTrackerModal = function() {
-            $.ajax("/api/plugin/thespaghettidetective", {
-                method: "POST",
-                contentType: "application/json",
-                data: JSON.stringify({
+            apiCommand({
                     command: "get_connection_errors"
-                }),
-                success: function(connectionErrors) {
+                },
+                function(connectionErrors) {
                     for (var k in connectionErrors) {
                         var occurences = [];
                         for (var i in connectionErrors[k]) {
@@ -203,8 +203,7 @@ $(function() {
                         title: "The Spaghetti Detective Diagnostic Report",
                         message: trackerModalBody()
                     });
-                }
-            });
+                });
         };
 
         self.openErrorTrackerModal = function() {
@@ -242,6 +241,13 @@ $(function() {
             }
             return errorBody;
         }
+
+        self.toggleSentryOpt = function(ev) {
+            apiCommand({
+                command: "toggle_sentry_opt",
+            });
+            return true;
+        };
     }
 
     /* view model class, parameters for constructor, container to bind to
