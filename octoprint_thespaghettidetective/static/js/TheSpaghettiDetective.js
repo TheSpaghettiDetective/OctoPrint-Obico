@@ -99,6 +99,27 @@ $(function() {
             );
         }
 
+        self.onStartupComplete = function(plugin, data) {
+            apiCommand({
+                command: "get_sentry_opt",
+            }, function(data) {
+                if (data.sentryOpt === "out") {
+                    var sentrynotice = new PNotify({
+                        title: "The Spaghetti Detective",
+                        text: "<p>Turn on bug reporting to help us make TSD plugin better?</p><p>The debugging info included in the report will be anonymized.</p>",
+                        hide: false,
+                        destroy: true,
+                        confirm: {
+                            confirm: true,
+                        },
+                    });
+                    sentrynotice.get().on('pnotify.confirm', function(){
+                        self.toggleSentryOpt();
+				    });
+                }
+            });
+        }
+
         self.onDataUpdaterPluginMessage = function(plugin, data) {
             if (plugin != "thespaghettidetective") {
                 return;

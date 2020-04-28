@@ -80,15 +80,15 @@ class SentryWrapper:
 
     def captureException(self, *args, **kwargs):
         _logger.exception("Exception")
-        if self.plugin._settings.get(["sentry_opt"]) == 'out':
+        if self.plugin._settings.get(["sentry_opt"]) != 'out':
             self.sentryClient.captureException(*args, **kwargs)
 
     def user_context(self, *args, **kwargs):
-        if self.plugin._settings.get(["sentry_opt"]) == 'out':
+        if self.plugin._settings.get(["sentry_opt"]) != 'out':
             self.sentryClient.user_context(*args, **kwargs)
 
     def captureMessage(self, *args, **kwargs):
-        if self.plugin._settings.get(["sentry_opt"]) == 'out':
+        if self.plugin._settings.get(["sentry_opt"]) != 'out':
             self.sentryClient.captureMessage(*args, **kwargs)
 
 
