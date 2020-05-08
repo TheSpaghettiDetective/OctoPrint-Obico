@@ -24,6 +24,7 @@ from octoprint.util import to_unicode
 
 from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera
 from .ws import WebSocketClient
+from .webcam_capture import capture_jpeg
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
@@ -90,11 +91,16 @@ class WebcamStreamer:
 
             self. __init_camera__()
 
+            @backoff.on_exception(backoff.expo, Exception, max_tries=3)
+            def wait_for_webcamd():
+                jpg = capture_jpeg(self.plugin._settings.global_get(["webcam"]))
+    
             # Use GStreamer for USB Camera. When it's used for Pi Camera it has problems (video is not playing. Not sure why)
             if not self.pi_camera:
                 self.start_janus()
-                self.start_ffmpeg('-i http://localhost:8080/?action=stream -b:v 500000 -pix_fmt yuv420p -s 640x480 -vcodec h264_omx')
                 sarge.run('sudo service webcamd start')
+                wait_for_webcamd()
+                self.start_ffmpeg('-i http://localhost:8080/?action=stream -b:v 500000 -pix_fmt yuv420p -s 640x480 -flags:v +global_header -vcodec h264_omx')
                 return
 
                 self.webcam_server = UsbCamWebServer(self.sentry)
