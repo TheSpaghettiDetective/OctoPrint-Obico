@@ -28,15 +28,23 @@ if os.environ.get('DEBUG'):
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
+def webcam_full_url(url):
+    full_url = url.strip()
+    if not full_url:
+        return None
+    if not urlparse(full_url).scheme:
+        full_url = "http://localhost/" + re.sub(r"^\/", "", full_url)
+
+    return full_url
+
+
 @backoff.on_exception(backoff.expo, Exception, max_tries=6)
 @backoff.on_predicate(backoff.expo, max_tries=6)
 def capture_jpeg(webcam_settings):
-    snapshot_url = webcam_settings.get("snapshot", '').strip()
-    snapshot_timeout = int(webcam_settings.get("snapshotTimeout", '5'))
-    snapshot_validate_ssl = bool(webcam_settings.get("snapshotSslValidation", 'False'))
+    snapshot_url = webcam_full_url(webcam_settings.get("snapshot", ''))
     if snapshot_url:
-        if not urlparse(snapshot_url).scheme:
-            snapshot_url = "http://localhost/" + re.sub(r"^\/", "", snapshot_url)
+        snapshot_timeout = int(webcam_settings.get("snapshotTimeout", '5'))
+        snapshot_validate_ssl = bool(webcam_settings.get("snapshotSslValidation", 'False'))
 
         r = requests.get(snapshot_url, stream=True, timeout=snapshot_timeout, verify=snapshot_validate_ssl )
         r.raise_for_status()
@@ -44,9 +52,7 @@ def capture_jpeg(webcam_settings):
         return jpg
 
     else:
-        stream_url = webcam_settings.get("stream", "/webcam/?action=stream").strip()
-        if not urlparse(stream_url).scheme:
-            stream_url = "http://localhost/" + re.sub(r"^\/", "", stream_url)
+        stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
 
         with closing(urlopen(stream_url)) as res:
             chunker = MjpegStreamChunker()
