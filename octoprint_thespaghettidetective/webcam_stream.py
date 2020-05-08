@@ -93,6 +93,10 @@ class WebcamStreamer:
             # Use GStreamer for USB Camera. When it's used for Pi Camera it has problems (video is not playing. Not sure why)
             if not self.pi_camera:
                 self.start_janus()
+                self.start_ffmpeg('-i http://localhost:8080/?action=stream -b:v 500000 -pix_fmt yuv420p -s 640x480 -vcodec h264_omx')
+                sarge.run('sudo service webcamd start')
+                return
+
                 self.webcam_server = UsbCamWebServer(self.sentry)
                 self.webcam_server.start()
 
@@ -102,7 +106,7 @@ class WebcamStreamer:
             # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
             else:
                 self.start_janus()
-                self.start_ffmpeg()
+                self.start_ffmpeg('-re -i pipe:0 -flags:v +global_header -c:v copy')
 
                 self.webcam_server = PiCamWebServer(self.pi_camera, self.sentry)
                 self.webcam_server.start()
@@ -185,8 +189,9 @@ class WebcamStreamer:
         wst.daemon = True
         wst.start()
 
-    def start_ffmpeg(self):
-        ffmpeg_cmd = '{} -re -i pipe:0 -flags:v +global_header -c:v copy -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, JANUS_SERVER)
+    def start_ffmpeg(self, ffmpeg_args):
+        ffmpeg_cmd = '{} {} -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
+
         _logger.debug('Popen: {}'.format(ffmpeg_cmd))
         FNULL = open(os.devnull, 'w')
         self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
@@ -207,9 +212,9 @@ class WebcamStreamer:
                 else:
                     ring_buffer.append(err)
 
-        gst_thread = Thread(target=monitor_ffmpeg_process)
-        gst_thread.daemon = True
-        gst_thread.start()
+        ffmpeg_thread = Thread(target=monitor_ffmpeg_process)
+        ffmpeg_thread.daemon = True
+        ffmpeg_thread.start()
 
     def start_gst_memory_guard(self):
         # Hack to deal with gst command that causes memory leak
