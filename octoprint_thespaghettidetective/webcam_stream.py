@@ -28,7 +28,7 @@ from .webcam_capture import capture_jpeg, webcam_full_url
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
-FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
+FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'run_ffmpeg.sh')
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 
