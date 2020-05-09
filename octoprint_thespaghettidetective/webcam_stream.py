@@ -96,6 +96,13 @@ class WebcamStreamer:
             return
 
         try:
+            compatible_mode = self.plugin._settings.get(["video_streaming_compatible_mode"])
+
+            if compatible_mode == 'always':
+                self.start_janus()
+                self.ffmpeg_from_mjpeg()
+                return
+
             sarge.run('sudo service webcamd stop')
 
             self. __init_camera__()
@@ -104,14 +111,18 @@ class WebcamStreamer:
             if not self.pi_camera:
                 self.start_janus()
 
-                self.ffmpeg_from_mjpeg()
-                return
+                try:
+                    self.start_gst()
+                except:
+                    if compatible_mode == 'never':
+                        raise
+                    self.ffmpeg_from_mjpeg()
+                    return
 
                 self.webcam_server = UsbCamWebServer(self.sentry)
                 self.webcam_server.start()
 
                 self.start_gst_memory_guard()
-                self.start_gst()
 
             # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
             else:
@@ -204,7 +215,7 @@ class WebcamStreamer:
         @backoff.on_exception(backoff.expo, Exception, max_tries=3)
         def wait_for_webcamd(webcam_settings):
             return capture_jpeg(webcam_settings)
-    
+
         sarge.run('sudo service webcamd start')
 
         webcam_settings = self.plugin._settings.global_get(["webcam"])
@@ -212,10 +223,10 @@ class WebcamStreamer:
         (_, img_w, img_h) = get_image_info(jpg)
         stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
         self.bitrate = bitrate_for_dim(img_w, img_h)
-      
+
         self.start_ffmpeg('-re -i {} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, self.bitrate, img_w, img_h))
         return
-    
+
 
     def start_ffmpeg(self, ffmpeg_args):
         ffmpeg_cmd = '{} {} -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
