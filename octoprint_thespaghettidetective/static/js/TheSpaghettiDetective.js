@@ -244,7 +244,7 @@ $(function() {
                     '<p class="text-success">There have been no connection errors since OctoPrint rebooted.</p>';
             } else {
                 errorBody +=
-                    '<p class="text-error">The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/no-pics/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/support/">reach out to us</a> for help.</p>';
+                    '<p class="text-error">The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/octoprint-is-offline/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/contact-us-for-support/">reach out to us</a> for help.</p>';
             }
 
             if (self.connectionErrors.server.length > 0) {

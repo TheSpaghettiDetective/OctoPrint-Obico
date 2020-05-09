@@ -141,7 +141,10 @@ def using_pi_camera():
     open(CAM_EXCLUSIVE_USE, 'a').close()  # touch CAM_EXCLUSIVE_USE to indicate the intention of exclusive use of pi camera
 
 
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import struct
 
 def get_image_info(data):
@@ -180,7 +183,7 @@ def get_image_info(data):
     # handle JPEGs
     elif (size >= 2) and data.startswith('\377\330'):
         content_type = 'image/jpeg'
-        jpeg = StringIO.StringIO(data)
+        jpeg = StringIO(data)
         jpeg.read(2)
         b = jpeg.read(1)
         try:

@@ -24,7 +24,7 @@
             <div class="std-api-status">&nbsp; </div>
         </form>
         <div class="settings-video">
-        <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/ZpDw9mNBngU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/VRoV9Z1C1yM" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
     </div>
     <div class="tab-pane" id="advanced">
@@ -45,12 +45,16 @@
         </div>
         <br />
         <h3>Webcam Streaming</h3>
+        <div class="alert alert-warning" role="alert">
+          <h4>Restart required: </h4>
+           The changes to any of the following settings won't be effective until OctoPrint is restarted.
+        </div>
         <div class="control-group">
             <div class="controls">
                 <div class="form-check" style="margin-top: 8px;">
                   <input class="form-check-input custom-server" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming" style="margin-top: 0px;">
                   <label class="form-check-label" for="custom-server" style="display: inline">
-                    Disable premium webcam streaming (<a href="https://www.thespaghettidetective.com/docs/more-about-webcam-streaming/#webcam-streaming-causing-issues">Why would I want to do that?</a>). <span style="color: red">Restart required.</span>
+                    Disable premium webcam streaming. (<a href="https://www.thespaghettidetective.com/docs/disable-25-fps-streaming/">Why would I want to do that?</a>)
                   </label>
                 </div>
             </div>
@@ -62,12 +66,26 @@
                 <span class="help-inline" style="color: red">{% trans %}Restart required.{% endtrans %}</span>
             </div>
         </div>
+        <div class="control-group">
+            <label class="control-label">Compatible Mode</label>
+            <div class="controls">
+                <label class="radio">
+                    <input type="radio" name="webcamCompatibleModeGroup" value="auto" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_comptabile_mode"> Automatic (default). TSD will automatically switch to Compatible Mode if necessary. Select this option if you are not sure.
+                </label>
+                <label class="radio">
+                    <input type="radio" name="webcamCompatibleModeGroup" value="always" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_comptabile_mode"> Always stream in Compatible Mode
+                </label>
+                <label class="radio">
+                    <input type="radio" name="webcamCompatibleModeGroup" value="never" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_comptabile_mode"> Never stream in Compatible Mode
+                </label>
+            </div>
+        </div>
         </form>
     </div>
     <div class="tab-pane" id="problems">
         Here are a few things you can try in case you run into problems:
         <ul>
-            <li>Check out the <a href="https://www.thespaghettidetective.com/docs/octoprint-setup/" target="_blank">Setup Guide</a> and be sure to follow the steps there.</li>
+            <li>Check out the <a href="https://www.thespaghettidetective.com/docs/octoprint-plugin-setup/" target="_blank">Setup Guide</a> and be sure to follow the steps there.</li>
             <li>Hard-refresh this page and try again. Here is <a href="https://en.scratch-wiki.info/wiki/Help:Hard_Refresh">how you hard-refresh a page</a>.</li>
             <li><a href="#" data-bind="click: openErrorTrackerModal">Check plugin self diagnostic report >>></a></li>
             <li><a href="https://www.thespaghettidetective.com/docs/contact-us-for-support/">Contact us</a> for help!</li>
