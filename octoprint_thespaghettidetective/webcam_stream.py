@@ -212,7 +212,7 @@ class WebcamStreamer:
 
     def ffmpeg_from_mjpeg(self):
 
-        @backoff.on_exception(backoff.expo, Exception, max_tries=3)
+        @backoff.on_exception(backoff.expo, Exception, jitter=None, max_tries=4)
         def wait_for_webcamd(webcam_settings):
             return capture_jpeg(webcam_settings)
 
@@ -263,7 +263,7 @@ class WebcamStreamer:
 
 
     # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
-    @backoff.on_exception(backoff.expo, Exception, max_tries=8)
+    @backoff.on_exception(backoff.expo, Exception, jitter=None, max_tries=6)
     def start_gst(self):
         gst_cmd = os.path.join(GST_DIR, 'run_gst.sh')
         _logger.debug('Popen: {}'.format(gst_cmd))
