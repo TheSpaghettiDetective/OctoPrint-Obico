@@ -9,6 +9,9 @@ import os
 import platform
 from sarge import run, Capture
 import tempfile
+from io import BytesIO
+import struct
+
 
 CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 
@@ -141,14 +144,9 @@ def using_pi_camera():
     open(CAM_EXCLUSIVE_USE, 'a').close()  # touch CAM_EXCLUSIVE_USE to indicate the intention of exclusive use of pi camera
 
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-import struct
-
 def get_image_info(data):
-    data = str(data)
+    data_bytes = data
+    data = data.decode('iso-8859-1')
     size = len(data)
     height = -1
     width = -1
@@ -183,7 +181,7 @@ def get_image_info(data):
     # handle JPEGs
     elif (size >= 2) and data.startswith('\377\330'):
         content_type = 'image/jpeg'
-        jpeg = StringIO(data)
+        jpeg = BytesIO(data_bytes)
         jpeg.read(2)
         b = jpeg.read(1)
         try:
