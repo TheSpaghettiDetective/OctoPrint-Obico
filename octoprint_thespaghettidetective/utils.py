@@ -146,7 +146,8 @@ def using_pi_camera():
 
 def get_image_info(data):
     data_bytes = data
-    data = data.decode('iso-8859-1')
+    if not isinstance(data, str):
+        data = data.decode('iso-8859-1')
     size = len(data)
     height = -1
     width = -1
