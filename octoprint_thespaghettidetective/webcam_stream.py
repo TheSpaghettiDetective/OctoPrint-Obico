@@ -58,6 +58,7 @@ class WebcamStreamer:
         self.plugin = plugin
         self.sentry = sentry
 
+        self._mutex = RLock()
         self.janus_ws_backoff = ExpoBackoff(120)
         self.pi_camera = None
         self.janus_ws = None
@@ -164,11 +165,13 @@ class WebcamStreamer:
             _logger.debug('Popen: {}'.format(janus_cmd))
             self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-            while not self.shutting_down:
+            with self._mutex:
+                shutting_down = self.shutting_down
+            while not shutting_down:
                 line = to_unicode(self.janus_proc.stdout.readline())
                 if line:
                     _logger.debug('JANUS: ' + line)
-                elif not self.shutting_down:
+                elif not shutting_down:
                     self.janus_proc.wait()
                     msg = 'Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode)
                     self.sentry.captureMessage(msg, tags=get_tags())
@@ -195,8 +198,12 @@ class WebcamStreamer:
     def start_janus_ws_tunnel(self):
 
         def on_close(ws):
+            print("Before backoff")
             self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
-            if not self.shutting_down:
+            print("After backoff")
+            with self._mutex:
+                shutting_down = self.shutting_down
+            if not shutting_down:
                 _logger.warn('WS tunnel closed. Restarting janus tunnel.')
                 self.start_janus_ws_tunnel()
 
@@ -244,8 +251,9 @@ class WebcamStreamer:
             while True:
                 err = to_unicode(self.ffmpeg_proc.stderr.readline())
                 if not err: # EOF when process ends?
-                    if self.shutting_down:
-                        return
+                    with self._mutex:
+                        if self.shutting_down:
+                            return
 
                     returncode = self.ffmpeg_proc.wait()
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
@@ -287,8 +295,9 @@ class WebcamStreamer:
             while True:
                 err = to_unicode(self.gst_proc.stderr.readline())
                 if not err: # EOF when process ends?
-                    if self.shutting_down:
-                        return
+                    with self._mutex:
+                        if self.shutting_down:
+                            return
 
                     returncode = self.gst_proc.wait()
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
@@ -308,7 +317,8 @@ class WebcamStreamer:
         gst_thread.start()
 
     def restore(self):
-        self.shutting_down = True
+        with self._mutex:
+            self.shutting_down = True
 
         try:
             requests.post('http://127.0.0.1:8080/shutdown')
