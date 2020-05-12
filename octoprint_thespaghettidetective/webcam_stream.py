@@ -168,8 +168,11 @@ class WebcamStreamer:
                 line = to_unicode(self.janus_proc.stdout.readline())
                 if line:
                     _logger.debug('JANUS: ' + line)
-                elif not self.shutting_down:
+                else:
+                    time.sleep(5)   # Janus process could receive INT signal and quit before self.shutting_down is set. Give it some time.
                     self.janus_proc.wait()
+                    if self.shutting_down:
+                        return
                     msg = 'Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode)
                     self.sentry.captureMessage(msg, tags=get_tags())
                     janus_backoff.more(msg)
@@ -195,8 +198,9 @@ class WebcamStreamer:
     def start_janus_ws_tunnel(self):
 
         def on_close(ws):
-            self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
+            time.sleep(5)
             if not self.shutting_down:
+                self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
                 _logger.warn('WS tunnel closed. Restarting janus tunnel.')
                 self.start_janus_ws_tunnel()
 
@@ -243,7 +247,8 @@ class WebcamStreamer:
             ring_buffer = deque(maxlen=50)
             while True:
                 err = to_unicode(self.ffmpeg_proc.stderr.readline())
-                if not err: # EOF when process ends?
+                if not err: # EOF when process ends
+                    time.sleep(5)
                     if self.shutting_down:
                         return
 
@@ -286,7 +291,8 @@ class WebcamStreamer:
             gst_backoff = ExpoBackoff(60*10)
             while True:
                 err = to_unicode(self.gst_proc.stderr.readline())
-                if not err: # EOF when process ends?
+                if not err: # EOF when process ends
+                    time.sleep(5)
                     if self.shutting_down:
                         return
 
