@@ -29,9 +29,10 @@ if os.environ.get('DEBUG'):
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 def webcam_full_url(url):
-    full_url = url.strip()
-    if not full_url:
+    if not url or not url.strip():
         return None
+
+    full_url = url.strip()
     if not urlparse(full_url).scheme:
         full_url = "http://localhost/" + re.sub(r"^\/", "", full_url)
 
