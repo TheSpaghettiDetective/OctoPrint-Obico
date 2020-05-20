@@ -95,13 +95,13 @@ class Commander:
                 if 'tool1' in current_temps:  # Multiple hotends
                     for tool_num in range(3):  # most 3 hotends, I guess?
                         heater = 'tool%d' % tool_num
-                        if heater in current_temps:
+                        if heater in current_temps and current_temps[heater]['target'] is not None and current_temps[heater]['offset'] is not None:
                             target_temp = current_temps[heater]['target'] + current_temps[heater]['offset']
                             self.pause_scripts.append('M104 T%d S0' % (tool_num))     # On pause, temp should come after retract and lift
                             self.resume_scripts.insert(0, 'M109 T%d S%d' % (tool_num, target_temp))  # on resume, temp should come before de-retract and drop
                 else:
                     heater = 'tool0'
-                    if heater in current_temps:
+                    if heater in current_temps and current_temps[heater]['target'] is not None and current_temps[heater]['offset'] is not None:
                         target_temp = current_temps[heater]['target'] + current_temps[heater]['offset']
                         self.pause_scripts.append('M104 S0')
                         self.resume_scripts.insert(0, 'M109 S%d' % (target_temp))
@@ -109,7 +109,7 @@ class Commander:
             if bed_off:
 
                 heater = 'bed'
-                if heater in current_temps:
+                if heater in current_temps and current_temps[heater]['target'] is not None and current_temps[heater]['offset'] is not None::
                     target_temp = current_temps[heater]['target'] + current_temps[heater]['offset']
                     self.pause_scripts.append('M140 S0')
                     self.resume_scripts.insert(0, 'M190 S%d' % (target_temp))
