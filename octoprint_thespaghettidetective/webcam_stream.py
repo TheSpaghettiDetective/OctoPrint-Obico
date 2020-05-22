@@ -20,6 +20,7 @@ import json
 import socket
 import base64
 from textwrap import wrap
+import psutil
 from octoprint.util import to_unicode
 
 from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera, get_image_info
@@ -28,7 +29,7 @@ from .webcam_capture import capture_jpeg, webcam_full_url
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
-FFMPEG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin')
+FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 
@@ -51,6 +52,24 @@ def bitrate_for_dim(img_w, img_h):
         return 3000000
     else:
         return 6000000
+
+
+def process_watch_dog(watched_process, max, interval):
+
+    def watch_process(watched_process, max, interval):
+        while True:
+            if not watched_process.is_running():
+                return
+     
+            cpu_pct = watched_process.cpu_percent(interval=None)
+            print('test!')
+            if cpu_pct > max:
+                print('NoQQQ')
+            time.sleep(interval)
+
+    watch_thread = Thread(target=watch_process, args=(watched_process, max, interval))
+    watch_thread.daemon = True
+    watch_thread.start()
 
 class WebcamStreamer:
 
@@ -229,15 +248,14 @@ class WebcamStreamer:
 
 
     def start_ffmpeg(self, ffmpeg_args, via_wrapper=False):
-        ffmpeg = os.path.join(FFMPEG_DIR, 'ffmpeg')
-        if via_wrapper:
-            ffmpeg = os.path.join(FFMPEG_DIR, 'run_ffmpeg.sh')
-
-        ffmpeg_cmd = '{} {} -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(ffmpeg, ffmpeg_args, JANUS_SERVER)
+        ffmpeg_cmd = '{} {} -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
 
         _logger.debug('Popen: {}'.format(ffmpeg_cmd))
         FNULL = open(os.devnull, 'w')
-        self.ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+        self.ffmpeg_proc = psutil.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+        self.ffmpeg_proc.nice(10)
+
+        process_watch_dog(self.ffmpeg_proc, max=80, interval=20)
 
         def monitor_ffmpeg_process():  # It's pointless to restart ffmpeg without calling pi_camera.record with the new input. Just capture unexpected exits not to see if it's a big problem
             ring_buffer = deque(maxlen=50)
