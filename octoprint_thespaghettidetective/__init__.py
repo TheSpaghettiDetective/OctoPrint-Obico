@@ -14,7 +14,7 @@ from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
 from .utils import ExpoBackoff, ConnectionErrorTracker, SentryWrapper, pi_version, get_tags, not_using_pi_camera
 from .print_event import PrintEventTracker
-from .webcam_stream import WebcamStreamer
+from .webcam_stream import WebcamStreamer, StreamingStatus
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster
 from .file_download import FileDownloader
@@ -55,6 +55,7 @@ class TheSpaghettiDetectivePlugin(
         self.remote_status = RemoteStatus()
         self.commander = Commander()
         self.error_tracker = ConnectionErrorTracker(self)
+        self.streaming_status = StreamingStatus(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_event_tracker)
         self.webcam_streamer = None
@@ -122,8 +123,7 @@ class TheSpaghettiDetectivePlugin(
     def get_api_commands(self):
         return dict(
             test_auth_token=["auth_token"],
-            get_connection_errors=[],
-            streaming=[],
+            get_plugin_status=[],
             toggle_sentry_opt=[],
             get_sentry_opt=[],
         )
@@ -140,11 +140,8 @@ class TheSpaghettiDetectivePlugin(
                 self._settings.save(force=True)
 
             return flask.jsonify({'succeeded': succeeded, 'text': status_text})
-        if command == "get_connection_errors":
-            return flask.jsonify(self.error_tracker.as_dict())
-        if command == "streaming":
-            piCamPresent = self.webcam_streamer and self.webcam_streamer.pi_camera != None
-            return flask.jsonify(dict(eligible=self.user_account.get('is_pro'), piCamPresent=piCamPresent))
+        if command == "get_plugin_status":
+            return flask.jsonify( dict(connection_errors=self.error_tracker.as_dict(), streaming_status=self.streaming_status.as_dict()) )
         if command == "get_sentry_opt":
             sentry_opt = self._settings.get(["sentry_opt"])
             if sentry_opt == 'out':
@@ -208,6 +205,7 @@ class TheSpaghettiDetectivePlugin(
         _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
 
         if self.user_account.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
+            self.streaming_status.set_status(eligible=True)
             _logger.info('Starting webcam streamer')
             self.webcam_streamer = WebcamStreamer(self, self.sentry)
             stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)

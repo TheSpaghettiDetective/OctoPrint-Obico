@@ -83,7 +83,7 @@ $(function() {
         self.connectionErrors = { server: [], webcam: [] };
         self.hasShownServerError = false;
         self.hasShownWebcamError = false;
-        self.streaming = ko.mapping.fromJS({eligible: false, piCamPresent: false});
+        self.streaming = ko.mapping.fromJS({eligible: false, is_pi_camera: false});
         self.piCamResolutionOptions = [{id: "low", text: "Low"}, {id: "medium", text: "Medium"}, {id: "high", text: "High"}, {id: "ultra_high", text: "Ultra High"}];
         self.sentryOptedIn = ko.pureComputed(function() {
             return self.settingsViewModel.settings.plugins.thespaghettidetective.sentry_opt() === "in";
@@ -91,7 +91,7 @@ $(function() {
 
         self.onSettingsShown = function(plugin, data) {
             apiCommand({
-                    command: "streaming"
+                    command: "get_plugin_status"
                 },
                 function(data) {
                     ko.mapping.fromJS(data, self.streaming);
@@ -210,7 +210,7 @@ $(function() {
 
         self.showTrackerModal = function() {
             apiCommand({
-                    command: "get_connection_errors"
+                    command: "get_plugin_status"
                 },
                 function(connectionErrors) {
                     for (var k in connectionErrors) {
@@ -232,13 +232,11 @@ $(function() {
         };
 
         function trackerModalBody() {
-            var errorBody =
-                "<b>This window is to diagnose connection problems with The Spaghetti Detecitive server. It is not a diagnosis for your print failures.</b>";
+            var errorBody = '<h4>Connectivity Report</h4>'
 
             if (
                 self.connectionErrors.server.length +
-                    self.connectionErrors.webcam.length ==
-                0
+                    self.connectionErrors.webcam.length == 0
             ) {
                 errorBody +=
                     '<p class="text-success">There have been no connection errors since OctoPrint rebooted.</p>';
@@ -260,6 +258,8 @@ $(function() {
                 errorBody += '<li>The most recent error occurred at: <b>' + self.connectionErrors.webcam[self.connectionErrors.webcam.length-1] + '</b>.</li></ul>';
                 errorBody += "<p>Please go to \"Settings\" -> \"Webcam & Timelapse\" and make sure the stream URL and snapshot URL are set correctly. Also make sure these URLs can be accessed from within the OctoPrint (not just from your browser).</p>";
             }
+
+            errorBody += '<br /><h4>Webcam Streaming Report</h4>'
             return errorBody;
         }
 
