@@ -94,7 +94,7 @@ $(function() {
                     command: "get_plugin_status"
                 },
                 function(data) {
-                    ko.mapping.fromJS(data, self.streaming);
+                    ko.mapping.fromJS(data.streaming_status, self.streaming);
                 }
             );
         }

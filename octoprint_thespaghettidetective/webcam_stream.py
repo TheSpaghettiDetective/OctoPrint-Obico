@@ -57,26 +57,34 @@ def bitrate_for_dim(img_w, img_h):
 class StreamingStatus:
     def __init__(self, plugin):
         self.plugin = plugin
-        self.eligible = False 
+        self.eligible = False
         self.is_pi_camera = False
         self.status = 'ok'
         self.title = 'TSD plugin is in basic streaming mode'
         self.desc = '<a href="https://www.thespaghettidetective.com/docs/webcam-streaming-for-human-eyes/">Learn more >>></a>'
 
-    def set_status(self, eligible=None, is_pi_camera=None, status=None, title=None, desc=None):
+    def set_status(self, eligible=None, is_pi_camera=None, status_code=None, status=None, status_desc=None):
         if eligible is not None:
             self.eligible = eligible
+        if is_pi_camera is not None:
+            self.is_pi_camera = is_pi_camera
+        if status_code is not None:
+            self.status_code = status_code
+        if status is not None:
+            self.status = status
+        if status_desc is not None:
+            self.status_desc = status_desc
 
     def as_dict(self):
-        return dict(eligible=self.eligible, is_pi_camera=self.is_pi_camera, status=self.status, title=self.title, desc=self.desc)
-        
+        return dict(eligible=self.eligible, is_pi_camera=self.is_pi_camera, status_code=self.status_code, status=self.status, status_desc=self.status_desc)
+
 def process_watch_dog(watched_process, max, interval):
 
     def watch_process(watched_process, max, interval):
         while True:
             if not watched_process.is_running():
                 return
-     
+
             cpu_pct = watched_process.cpu_percent(interval=None)
             print('test!')
             if cpu_pct > max:
@@ -113,6 +121,8 @@ class WebcamStreamer:
             self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
             self.bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
             _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, self.bitrate, self.pi_camera.resolution))
+
+            self.plugin.streaming_status.set_status(is_pi_camera=True)
         except picamera.exc.PiCameraError:
             not_using_pi_camera()
             if os.path.exists('/dev/video0'):
