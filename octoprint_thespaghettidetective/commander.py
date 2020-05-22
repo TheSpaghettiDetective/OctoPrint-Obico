@@ -4,6 +4,7 @@ import re
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
+
 class Commander:
 
     def __init__(self):
@@ -23,7 +24,7 @@ class Commander:
 
     def script_hook(self, comm, script_type, script_name, *args, **kwargs):
         if script_type == "gcode" and script_name == "afterPrintPaused":
-            _logger.debug('afterPrintPaused hook called. Returning scripts %s' % self.pause_scripts )
+            _logger.debug('afterPrintPaused hook called. Returning scripts %s' % self.pause_scripts)
 
             pause_scripts = self.pause_scripts
             self.pause_scripts = []
@@ -49,7 +50,7 @@ class Commander:
                 self.pause_scripts.extend([    # Set to relative mode
                     'G91',
                     'M83',
-               ])
+                ])
 
                 if retract > 0:    # Retract before lift on pause
                     self.pause_scripts.extend([
@@ -64,7 +65,7 @@ class Commander:
                 self.pause_scripts.extend([     # restore previous mode
                     self.last_g9x,
                     self.last_m8x,
-                 ])
+                ])
 
                 # Scripts for retract and lift to be returned from beforePrintResumed
                 self.resume_scripts.extend([
@@ -87,7 +88,6 @@ class Commander:
                     self.last_m8x,
                 ])
 
-
             current_temps = printer.get_current_temperatures()
 
             if tools_off:
@@ -109,7 +109,7 @@ class Commander:
             if bed_off:
 
                 heater = 'bed'
-                if heater in current_temps and current_temps[heater]['target'] is not None and current_temps[heater]['offset'] is not None::
+                if heater in current_temps and current_temps[heater]['target'] is not None and current_temps[heater]['offset'] is not None:
                     target_temp = current_temps[heater]['target'] + current_temps[heater]['offset']
                     self.pause_scripts.append('M140 S0')
                     self.resume_scripts.insert(0, 'M190 S%d' % (target_temp))
@@ -117,4 +117,3 @@ class Commander:
         _logger.debug('prepare_to_pause called.')
         _logger.debug('pause_scripts: {}' % self.pause_scripts)
         _logger.debug('resume_scripts: {}' % self.resume_scripts)
-
