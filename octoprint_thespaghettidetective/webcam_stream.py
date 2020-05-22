@@ -9,9 +9,9 @@ import sys
 import flask
 from collections import deque
 try:
-   import queue
+    import queue
 except ImportError:
-   import Queue as queue
+    import Queue as queue
 from threading import Thread, RLock
 import requests
 import yaml
@@ -36,11 +36,12 @@ JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'jan
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 
 PI_CAM_RESOLUTIONS = {
-    'low': ((320,240), (480, 270)), # resolution for 4:3 and 16:9
+    'low': ((320, 240), (480, 270)),  # resolution for 4:3 and 16:9
     'medium': ((640, 480), (960, 540)),
     'high': ((1296, 972), (1640, 922)),
     'ultra_high': ((1640, 1232), (1920, 1080)),
 }
+
 
 def bitrate_for_dim(img_w, img_h):
     dim = img_w * img_h
@@ -78,6 +79,7 @@ class StreamingStatus:
     def as_dict(self):
         return dict(eligible=self.eligible, is_pi_camera=self.is_pi_camera, status_code=self.status_code, status=self.status, status_desc=self.status_desc)
 
+
 def process_watch_dog(watched_process, max, interval):
 
     def watch_process(watched_process, max, interval):
@@ -94,6 +96,7 @@ def process_watch_dog(watched_process, max, interval):
     watch_thread = Thread(target=watch_process, args=(watched_process, max, interval))
     watch_thread.daemon = True
     watch_thread.start()
+
 
 class WebcamStreamer:
 
@@ -116,7 +119,7 @@ class WebcamStreamer:
         try:
             using_pi_camera()
             self.pi_camera = picamera.PiCamera()
-            self.pi_camera.framerate=20
+            self.pi_camera.framerate = 20
             (res_43, res_169) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
             self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
             self.bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
@@ -172,7 +175,7 @@ class WebcamStreamer:
             # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
             else:
                 self.start_janus()
-                self.start_ffmpeg('-re -i pipe:0 -flags:v +global_header -c:v copy', via_wrapper=False) # script wrapper would break stdin pipe
+                self.start_ffmpeg('-re -i pipe:0 -flags:v +global_header -c:v copy', via_wrapper=False)  # script wrapper would break stdin pipe
 
                 self.webcam_server = PiCamWebServer(self.pi_camera, self.sentry)
                 self.webcam_server.start()
@@ -272,7 +275,6 @@ class WebcamStreamer:
         self.start_ffmpeg('-re -i {} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, self.bitrate, img_w, img_h), via_wrapper=True)
         return
 
-
     def start_ffmpeg(self, ffmpeg_args, via_wrapper=False):
         ffmpeg_cmd = '{} {} -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
 
@@ -287,7 +289,7 @@ class WebcamStreamer:
             ring_buffer = deque(maxlen=50)
             while True:
                 err = to_unicode(self.ffmpeg_proc.stderr.readline())
-                if not err: # EOF when process ends?
+                if not err:  # EOF when process ends?
                     if self.shutting_down:
                         return
 
@@ -309,8 +311,8 @@ class WebcamStreamer:
         _logger.debug('Popen: {}'.format(kill_leaked_gst_cmd))
         subprocess.Popen(kill_leaked_gst_cmd.split(' '))
 
-
     # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
+
     @backoff.on_exception(backoff.expo, Exception, jitter=None, max_tries=6)
     def start_gst(self):
         gst_cmd = os.path.join(GST_DIR, 'run_gst.sh')
@@ -319,7 +321,7 @@ class WebcamStreamer:
         for i in range(5):
             return_code = self.gst_proc.poll()
             if return_code:    # returncode will be None when it's still running, or 0 if exit successfully
-                (stdoutdata, stderrdata)  = self.gst_proc.communicate()
+                (stdoutdata, stderrdata) = self.gst_proc.communicate()
                 msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
                 _logger.debug(msg)
                 raise Exception('GST failed. Exit code: {}'.format(self.gst_proc.returncode))
@@ -330,7 +332,7 @@ class WebcamStreamer:
             gst_backoff = ExpoBackoff(60*10)
             while True:
                 err = to_unicode(self.gst_proc.stderr.readline())
-                if not err: # EOF when process ends?
+                if not err:  # EOF when process ends?
                     if self.shutting_down:
                         return
 
@@ -399,18 +401,18 @@ class UsbCamWebServer:
         self.web_server = None
 
     def mjpeg_generator(self):
-       s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-       try:
-           s.connect(('127.0.0.1', 14499))
-           while True:
-               yield s.recv(1024)
-       except GeneratorExit:
-           pass
-       except:
-           self.sentry.captureException(tags=get_tags())
-           raise
-       finally:
-           s.close()
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.connect(('127.0.0.1', 14499))
+            while True:
+                yield s.recv(1024)
+        except GeneratorExit:
+            pass
+        except:
+            self.sentry.captureException(tags=get_tags())
+            raise
+        finally:
+            s.close()
 
     def get_mjpeg(self):
         return flask.Response(flask.stream_with_context(self.mjpeg_generator()), mimetype='multipart/x-mixed-replace;boundary=spionisto')
@@ -419,28 +421,28 @@ class UsbCamWebServer:
         return flask.send_file(io.BytesIO(self.next_jpg()), mimetype='image/jpeg')
 
     def next_jpg(self):
-       s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-       try:
-           s.connect(('127.0.0.1', 14499))
-           chunk = s.recv(100)
-           header = re.search(r"Content-Length: (\d+)", chunk.decode("iso-8859-1"), re.MULTILINE)
-           if not header:
-               raise Exception('Multiart header not found!')
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.connect(('127.0.0.1', 14499))
+            chunk = s.recv(100)
+            header = re.search(r"Content-Length: (\d+)", chunk.decode("iso-8859-1"), re.MULTILINE)
+            if not header:
+                raise Exception('Multiart header not found!')
 
-           length = int(header.group(1))
-           chunk = bytearray(chunk[header.end()+4:])
-           while length > len(chunk):
-               chunk.extend(s.recv(length-len(chunk)))
-           return chunk[:length]
-       except (socket.timeout, socket.error):
-           exc_type, exc_obj, exc_tb = sys.exc_info()
-           _logger.error(exc_obj)
-           raise
-       except:
-           self.sentry.captureException(tags=get_tags())
-           raise
-       finally:
-           s.close()
+            length = int(header.group(1))
+            chunk = bytearray(chunk[header.end()+4:])
+            while length > len(chunk):
+                chunk.extend(s.recv(length-len(chunk)))
+            return chunk[:length]
+        except (socket.timeout, socket.error):
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            _logger.error(exc_obj)
+            raise
+        except:
+            self.sentry.captureException(tags=get_tags())
+            raise
+        finally:
+            s.close()
 
     def run_forever(self):
         webcam_server_app = flask.Flask('webcam_server')
@@ -476,39 +478,39 @@ class PiCamWebServer:
         self.web_server = None
 
     def capture_forever(self):
-      try:
-        bio = io.BytesIO()
-        for foo in self.pi_camera.capture_continuous(bio, format='jpeg', use_video_port=True):
-            bio.seek(0)
-            chunk = bio.read()
-            bio.seek(0)
-            bio.truncate()
+        try:
+            bio = io.BytesIO()
+            for foo in self.pi_camera.capture_continuous(bio, format='jpeg', use_video_port=True):
+                bio.seek(0)
+                chunk = bio.read()
+                bio.seek(0)
+                bio.truncate()
 
-            with self._mutex:
-                last_last_capture = self.last_capture
-                self.last_capture = time.time()
+                with self._mutex:
+                    last_last_capture = self.last_capture
+                    self.last_capture = time.time()
 
-            self.img_q.put(chunk)
-      except:
-        self.sentry.captureException(tags=get_tags())
-        raise
+                self.img_q.put(chunk)
+        except:
+            self.sentry.captureException(tags=get_tags())
+            raise
 
     def mjpeg_generator(self, boundary):
-      try:
-        hdr = '--%s\r\nContent-Type: image/jpeg\r\n' % boundary
+        try:
+            hdr = '--%s\r\nContent-Type: image/jpeg\r\n' % boundary
 
-        prefix = ''
-        while True:
-            chunk = self.img_q.get()
-            msg = prefix + hdr + 'Content-Length: {}\r\n\r\n'.format(len(chunk))
-            yield msg.encode('iso-8859-1') + chunk
-            prefix = '\r\n'
-            time.sleep(0.15) # slow down mjpeg streaming so that it won't use too much cpu or bandwidth
-      except GeneratorExit:
-        pass
-      except:
-        self.sentry.captureException(tags=get_tags())
-        raise
+            prefix = ''
+            while True:
+                chunk = self.img_q.get()
+                msg = prefix + hdr + 'Content-Length: {}\r\n\r\n'.format(len(chunk))
+                yield msg.encode('iso-8859-1') + chunk
+                prefix = '\r\n'
+                time.sleep(0.15)  # slow down mjpeg streaming so that it won't use too much cpu or bandwidth
+        except GeneratorExit:
+            pass
+        except:
+            self.sentry.captureException(tags=get_tags())
+            raise
 
     def get_snapshot(self):
         possible_stale_pics = 3
@@ -524,7 +526,7 @@ class PiCamWebServer:
         return flask.send_file(io.BytesIO(chunk), mimetype='image/jpeg')
 
     def get_mjpeg(self):
-        boundary='herebedragons'
+        boundary = 'herebedragons'
         return flask.Response(flask.stream_with_context(self.mjpeg_generator(boundary)), mimetype='multipart/x-mixed-replace;boundary=%s' % boundary)
 
     def run_forever(self):
