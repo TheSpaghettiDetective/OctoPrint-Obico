@@ -59,7 +59,7 @@
                 </div>
             </div>
         </div>
-        <div data-bind="visible: streaming.piCamPresent" class="control-group" title="{{ _('Pi Camera resolution') }}">
+        <div data-bind="visible: streaming.is_pi_camera" class="control-group" title="{{ _('Pi Camera resolution') }}">
             <label class="control-label" for="pi-cam-resolution">{{ _('Resolution') }}</label>
             <div class="controls">
                 <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.thespaghettidetective.pi_cam_resolution" id="pi-cam-resolution"></select>

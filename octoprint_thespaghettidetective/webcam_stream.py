@@ -54,6 +54,22 @@ def bitrate_for_dim(img_w, img_h):
         return 6000000
 
 
+class StreamingStatus:
+    def __init__(self, plugin):
+        self.plugin = plugin
+        self.eligible = False 
+        self.is_pi_camera = False
+        self.status = 'ok'
+        self.title = 'TSD plugin is in basic streaming mode'
+        self.desc = '<a href="https://www.thespaghettidetective.com/docs/webcam-streaming-for-human-eyes/">Learn more >>></a>'
+
+    def set_status(self, eligible=None, is_pi_camera=None, status=None, title=None, desc=None):
+        if eligible is not None:
+            self.eligible = eligible
+
+    def as_dict(self):
+        return dict(eligible=self.eligible, is_pi_camera=self.is_pi_camera, status=self.status, title=self.title, desc=self.desc)
+        
 def process_watch_dog(watched_process, max, interval):
 
     def watch_process(watched_process, max, interval):

@@ -72,6 +72,7 @@ class ConnectionErrorTracker:
     def as_dict(self):
         return self.errors
 
+
 class SentryWrapper:
 
     def __init__(self, plugin):
