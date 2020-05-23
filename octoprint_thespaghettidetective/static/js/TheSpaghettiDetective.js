@@ -4,7 +4,7 @@
  * Author: The Spaghetti Detective
  * License: AGPLv3
  */
-$(function() {
+$(function () {
 
     function apiCommand(data, success) {
         $.ajax("/api/plugin/thespaghettidetective", {
@@ -17,10 +17,10 @@ $(function() {
 
     function testAuthToken(token, container) {
         apiCommand({
-                command: "test_auth_token",
-                auth_token: container.find("input.auth-token-input").val()
-            },
-            function(apiStatus) {
+            command: "test_auth_token",
+            auth_token: container.find("input.auth-token-input").val()
+        },
+            function (apiStatus) {
                 var statusDiv = container.parent().find(".std-api-status");
                 statusDiv.text(apiStatus.text);
                 statusDiv.removeClass("text-success").removeClass("text-error");
@@ -31,7 +31,7 @@ $(function() {
         );
     }
 
-    $("input.custom-server").change(function(e) {
+    $("input.custom-server").change(function (e) {
         var container = $(this)
             .parent()
             .parent();
@@ -43,16 +43,16 @@ $(function() {
     });
 
     var authTokenInputTimeout = null;
-    $("input.auth-token-input").keyup(function(e) {
+    $("input.auth-token-input").keyup(function (e) {
         var container = $(this).parent();
         var token = $(this).val();
         clearTimeout(authTokenInputTimeout);
-        authTokenInputTimeout = setTimeout(function() {
+        authTokenInputTimeout = setTimeout(function () {
             testAuthToken(token, container);
         }, 500);
     });
 
-    $("button.test-auth-token").click(function(event) {
+    $("button.test-auth-token").click(function (event) {
         var container = $(this).parent();
         var token = $(this)
             .parent()
@@ -62,7 +62,7 @@ $(function() {
     });
 
     ko.bindingHandlers.showTrackerModal = {
-        update: function(element, valueAccessor) {
+        update: function (element, valueAccessor) {
             var value = valueAccessor();
             if (ko.utils.unwrapObservable(value)) {
                 $(element).modal("show");
@@ -83,26 +83,26 @@ $(function() {
         self.connectionErrors = { server: [], webcam: [] };
         self.hasShownServerError = false;
         self.hasShownWebcamError = false;
-        self.streaming = ko.mapping.fromJS({eligible: false, is_pi_camera: false});
-        self.piCamResolutionOptions = [{id: "low", text: "Low"}, {id: "medium", text: "Medium"}, {id: "high", text: "High"}, {id: "ultra_high", text: "Ultra High"}];
-        self.sentryOptedIn = ko.pureComputed(function() {
+        self.streaming = ko.mapping.fromJS({ eligible: false, is_pi_camera: false });
+        self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
+        self.sentryOptedIn = ko.pureComputed(function () {
             return self.settingsViewModel.settings.plugins.thespaghettidetective.sentry_opt() === "in";
         }, self);
 
-        self.onSettingsShown = function(plugin, data) {
+        self.onSettingsShown = function (plugin, data) {
             apiCommand({
-                    command: "get_plugin_status"
-                },
-                function(data) {
+                command: "get_plugin_status"
+            },
+                function (data) {
                     ko.mapping.fromJS(data.streaming_status, self.streaming);
                 }
             );
         }
 
-        self.onStartupComplete = function(plugin, data) {
+        self.onStartupComplete = function (plugin, data) {
             apiCommand({
                 command: "get_sentry_opt",
-            }, function(data) {
+            }, function (data) {
                 if (data.sentryOpt === "out") {
                     var sentrynotice = new PNotify({
                         title: "The Spaghetti Detective",
@@ -113,14 +113,14 @@ $(function() {
                             confirm: true,
                         },
                     });
-                    sentrynotice.get().on('pnotify.confirm', function(){
+                    sentrynotice.get().on('pnotify.confirm', function () {
                         self.toggleSentryOpt();
-				    });
+                    });
                 }
             });
         }
 
-        self.onDataUpdaterPluginMessage = function(plugin, data) {
+        self.onDataUpdaterPluginMessage = function (plugin, data) {
             if (plugin != "thespaghettidetective") {
                 return;
             }
@@ -130,24 +130,24 @@ $(function() {
             if (data.new_error) {
                 msgType = "error";
                 buttons = [
-                            {
-                                text: "Error Details",
-                                click: function(notice) {
-                                    self.showTrackerModal();
-                                    notice.remove();
-                                }
-                            },
-                            {
-                                text: "Got It!",
-                                click: function(notice) {
-                                    notice.remove();
-                                }
-                            },
-                            {
-                                text: "Close",
-                                addClass: "remove_button"
-                            }
-                        ];
+                    {
+                        text: "Error Details",
+                        click: function (notice) {
+                            self.showTrackerModal();
+                            notice.remove();
+                        }
+                    },
+                    {
+                        text: "Got It!",
+                        click: function (notice) {
+                            notice.remove();
+                        }
+                    },
+                    {
+                        text: "Close",
+                        addClass: "remove_button"
+                    }
+                ];
                 if (data.new_error == "server") {
                     if (self.hasShownServerError) {
                         return;
@@ -164,31 +164,19 @@ $(function() {
                         'The Spaghetti Detective failed to connect to webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.';
                 }
             }
-            if (data.new_warning) {
-                var streamingWarningAcked = localStorage.getItem("tsd.streamingWarningAcked");
-                if (!streamingWarningAcked) {
-                    msgType = "notice";
-                    text =
-                        '<p>Premium webcam streaming failed to start. The Spaghetti Detective has switched to basic streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-laggy/">Learn more >>></a></p>';
-                    buttons = [
-                        {
-                            text: "Ignore",
-                            click: function(notice) {
-                                localStorage.setItem("tsd.streamingWarningAcked", true);
-                                notice.remove();
-                            }
-                        },
-                        {
-                            text: "Close",
-                            addClass: "remove_button"
-                        },
-                    ]
-                }
+            if (_.get(data, 'new_warning', '') == 'streaming') {
+                msgType = "notice";
+                buttons = [
+                    {
+                        text: "Close",
+                        addClass: "remove_button"
+                    },
+                ]
             }
 
             new PNotify({
                 title: "The Spaghetti Detective",
-                text: text,
+                text: data.message,
                 type: msgType,
                 hide: false,
                 confirm: {
@@ -198,7 +186,7 @@ $(function() {
                 history: {
                     history: false
                 },
-                before_open: function(notice) {
+                before_open: function (notice) {
                     notice
                         .get()
                         .find(".remove_button")
@@ -208,11 +196,11 @@ $(function() {
 
         };
 
-        self.showTrackerModal = function() {
+        self.showTrackerModal = function () {
             apiCommand({
-                    command: "get_plugin_status"
-                },
-                function(connectionErrors) {
+                command: "get_plugin_status"
+            },
+                function (connectionErrors) {
                     for (var k in connectionErrors) {
                         var occurences = [];
                         for (var i in connectionErrors[k]) {
@@ -227,16 +215,16 @@ $(function() {
                 });
         };
 
-        self.openErrorTrackerModal = function() {
+        self.openErrorTrackerModal = function () {
             self.showTrackerModal();
         };
 
         function trackerModalBody() {
-            var errorBody = '<h4>Connectivity Report</h4>'
+            var errorBody = '<legend>Connectivity Report</legend>'
 
             if (
                 self.connectionErrors.server.length +
-                    self.connectionErrors.webcam.length == 0
+                self.connectionErrors.webcam.length == 0
             ) {
                 errorBody +=
                     '<p class="text-success">There have been no connection errors since OctoPrint rebooted.</p>';
@@ -248,22 +236,24 @@ $(function() {
             if (self.connectionErrors.server.length > 0) {
                 errorBody += '<hr /><p class="text-error">The Spaghetti Detective failed to connect to the server <b>' + self.connectionErrors.server.length + '</b> times since OctoPrint rebooted.</p>';
                 errorBody += '<ul><li>The first error occurred at: <b>' + self.connectionErrors.server[0] + '</b>.</li>';
-                errorBody += '<li>The most recent error occurred at: <b>' + self.connectionErrors.server[self.connectionErrors.server.length-1] + '</b>.</li></ul>';
+                errorBody += '<li>The most recent error occurred at: <b>' + self.connectionErrors.server[self.connectionErrors.server.length - 1] + '</b>.</li></ul>';
                 errorBody += '<p>Please check your OctoPrint\'s internet connection to make sure it has reliable connection to the internet.<p>';
             }
 
             if (self.connectionErrors.webcam.length > 0) {
                 errorBody += '<hr /><p class="text-error">The Spaghetti Detective failed to connect to the webcam <b>' + self.connectionErrors.webcam.length + '</b> times since OctoPrint rebooted.</p>';
                 errorBody += '<ul><li>The first error occurred at: <b>' + self.connectionErrors.webcam[0] + '</b>.</li>';
-                errorBody += '<li>The most recent error occurred at: <b>' + self.connectionErrors.webcam[self.connectionErrors.webcam.length-1] + '</b>.</li></ul>';
+                errorBody += '<li>The most recent error occurred at: <b>' + self.connectionErrors.webcam[self.connectionErrors.webcam.length - 1] + '</b>.</li></ul>';
                 errorBody += "<p>Please go to \"Settings\" -> \"Webcam & Timelapse\" and make sure the stream URL and snapshot URL are set correctly. Also make sure these URLs can be accessed from within the OctoPrint (not just from your browser).</p>";
             }
 
-            errorBody += '<br /><h4>Webcam Streaming Report</h4>'
+            errorBody += '<br /><legend>Webcam Streaming Report</legend>';
+            errorBody += '<h5 class="' + (self.streaming.status_code() == 'okay' ? 'text-success' : 'text-error') + '">' + self.streaming.status() + '</h5>';
+            errorBody += '<p>' + self.streaming.status_desc() + '</p>';
             return errorBody;
         }
 
-        self.toggleSentryOpt = function(ev) {
+        self.toggleSentryOpt = function (ev) {
             apiCommand({
                 command: "toggle_sentry_opt",
             });

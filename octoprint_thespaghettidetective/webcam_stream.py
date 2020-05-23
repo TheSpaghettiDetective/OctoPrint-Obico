@@ -60,9 +60,10 @@ class StreamingStatus:
         self.plugin = plugin
         self.eligible = False
         self.is_pi_camera = False
-        self.status = 'ok'
-        self.title = 'TSD plugin is in basic streaming mode'
-        self.desc = '<a href="https://www.thespaghettidetective.com/docs/webcam-streaming-for-human-eyes/">Learn more >>></a>'
+        self.status_code = 'okay'
+        self.status = 'Basic webcam streaming - status okay'
+        self.status_desc = 'Learn more about <a href="https://www.thespaghettidetective.com/docs/webcam-streaming-for-human-eyes/">basic streaming and premium streaming</a>.'
+        self.notified_status = set()
 
     def set_status(self, eligible=None, is_pi_camera=None, status_code=None, status=None, status_desc=None):
         if eligible is not None:
@@ -76,24 +77,32 @@ class StreamingStatus:
         if status_desc is not None:
             self.status_desc = status_desc
 
+    def set_warning(self, warning, msg):
+        self.status_code = 'warn'
+        self.status = warning
+        self.status_desc = msg
+        if warning not in self.notified_status:
+            self.notified_status.add(warning)
+            self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_warning': 'streaming', 'message': '<h5>{}</h5><p>{}<p>'.format(warning, msg)})
+
     def as_dict(self):
         return dict(eligible=self.eligible, is_pi_camera=self.is_pi_camera, status_code=self.status_code, status=self.status, status_desc=self.status_desc)
 
 
-def process_watch_dog(watched_process, max, interval):
+def cpu_watch_dog(watched_process, max, interval, streaming_status):
 
-    def watch_process(watched_process, max, interval):
+    def watch_process_cpu(watched_process, max, interval, streaming_status):
         while True:
             if not watched_process.is_running():
                 return
 
             cpu_pct = watched_process.cpu_percent(interval=None)
-            print('test!')
             if cpu_pct > max:
-                print('NoQQQ')
+                streaming_status.set_warning('Premium streaming uses excessive CPU.',
+                                             'This may negatively impact your print quality. Consider switch off "compatibility mode", or disable premium streaming. <a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/#more-about-cpu-usage-in-compatibility-mode">Learn more >>></a>')
             time.sleep(interval)
 
-    watch_thread = Thread(target=watch_process, args=(watched_process, max, interval))
+    watch_thread = Thread(target=watch_process_cpu, args=(watched_process, max, interval, streaming_status))
     watch_thread.daemon = True
     watch_thread.start()
 
@@ -144,6 +153,8 @@ class WebcamStreamer:
             return
 
         try:
+            self.plugin.streaming_status.set_status(status='Premium webcam streaming - status okay.')
+
             compatible_mode = self.plugin._settings.get(["video_streaming_compatible_mode"])
 
             if compatible_mode == 'always':
@@ -183,7 +194,8 @@ class WebcamStreamer:
                 self.pi_camera.wait_recording(0)
         except:
             not_using_pi_camera()
-            self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_warning': 'streaming'})
+            self.plugin.streaming_status.set_warning(
+                'Premium webcam streaming failed to start.', 'The Spaghetti Detective has switched to basic streaming. <a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-laggy/">Why did this happen?</a>')
 
             time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
@@ -283,7 +295,7 @@ class WebcamStreamer:
         self.ffmpeg_proc = psutil.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
         self.ffmpeg_proc.nice(10)
 
-        process_watch_dog(self.ffmpeg_proc, max=80, interval=20)
+        cpu_watch_dog(self.ffmpeg_proc, max=80, interval=20)
 
         def monitor_ffmpeg_process():  # It's pointless to restart ffmpeg without calling pi_camera.record with the new input. Just capture unexpected exits not to see if it's a big problem
             ring_buffer = deque(maxlen=50)

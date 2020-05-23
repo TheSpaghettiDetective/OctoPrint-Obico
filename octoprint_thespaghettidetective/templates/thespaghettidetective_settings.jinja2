@@ -29,7 +29,7 @@
     </div>
     <div class="tab-pane" id="advanced">
         <form class="form-horizontal">
-        <h3>Server</h3>
+        <legend>Server</legend>
         <div class="control-group">
             <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
             <label class="control-label">{{ _('Server Address') }}</label>
@@ -44,7 +44,7 @@
             </div>
         </div>
         <br />
-        <h3>Webcam Streaming</h3>
+        <legend>Webcam Streaming</legend>
         <div class="alert alert-warning" role="alert">
           <h4>Restart required: </h4>
            The changes to any of the following settings won't be effective until OctoPrint is restarted.
@@ -82,6 +82,7 @@
         </form>
     </div>
     <div class="tab-pane" id="problems">
+        <legend>Trouble-shooting</legend>
         Here are a few things you can try in case you run into problems:
         <ul>
             <li>Check out the <a href="https://www.thespaghettidetective.com/docs/octoprint-plugin-setup/" target="_blank">Setup Guide</a> and be sure to follow the steps there.</li>
@@ -90,7 +91,7 @@
             <li><a href="https://www.thespaghettidetective.com/docs/contact-us-for-support/">Contact us</a> for help!</li>
         </ul>
         <form class="form-horizontal">
-        <h3>Error Reporting</h3>
+        <legend>Error Reporting</legend>
                 <div class="form-check" style="margin-top: 8px;">
                   <input class="form-check-input sentry-opt" type="checkbox" value="" data-bind="checked: sentryOptedIn, click: toggleSentryOpt" style="margin-top: 0px;">
                   <label class="form-check-label" for="custom-server" style="display: inline">
