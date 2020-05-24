@@ -44,42 +44,49 @@
             </div>
         </div>
         <br />
-        <legend>Webcam Streaming</legend>
-        <div class="alert alert-warning" role="alert">
-          <h4>Restart required: </h4>
-           The changes to any of the following settings won't be effective until OctoPrint is restarted.
+        <legend>Premium Webcam Streaming</legend>
+        <div data-bind="visible: !streaming.eligible">
+          <div class="alert alert-warning" role="alert">
+            Your account is not eligbile for premium webcam streaming. <a href="https://www.thespaghettidetective.com/docs/webcam-streaming-for-human-eyes/">Why?</a>
+          </div>
         </div>
-        <div class="control-group">
-            <div class="controls">
-                <div class="form-check" style="margin-top: 8px;">
-                  <input class="form-check-input custom-server" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming" style="margin-top: 0px;">
-                  <label class="form-check-label" for="custom-server" style="display: inline">
-                    Disable premium webcam streaming. <a href="https://www.thespaghettidetective.com/docs/disable-25-fps-streaming/">(Why would I want to do that?)</a>
+        <div data-bind="visible: streaming.eligible">
+          <div class="alert alert-warning" role="alert">
+            <h4>Restart required: </h4>
+            The changes to any of the following settings won't be effective until OctoPrint is restarted.
+          </div>
+          <div class="control-group">
+              <div class="controls">
+                  <div class="form-check" style="margin-top: 8px;">
+                    <input class="form-check-input custom-server" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming" style="margin-top: 0px;">
+                    <label class="form-check-label" for="custom-server" style="display: inline">
+                      Disable premium webcam streaming. <a href="https://www.thespaghettidetective.com/docs/disable-25-fps-streaming/">(Why would I want to do that?)</a>
+                    </label>
+                  </div>
+              </div>
+          </div>
+          <div data-bind="visible: streaming.is_pi_camera" class="control-group" title="{{ _('Pi Camera resolution') }}">
+              <label class="control-label" for="pi-cam-resolution">{{ _('Resolution') }}</label>
+              <div class="controls">
+                  <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.thespaghettidetective.pi_cam_resolution" id="pi-cam-resolution"></select>
+              </div>
+          </div>
+          <div class="control-group">
+              <label class="control-label">Compatibility mode<div><a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/">(What is it?)</a></div></label>
+              <div class="controls">
+                  <label class="radio">
+                      <input type="radio" name="webcamCompatibleModeGroup" value="auto" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Automatic (default). TSD will automatically switch to compatibility mode if necessary. Select this option if you are not sure.
                   </label>
-                </div>
-            </div>
+                  <label class="radio">
+                      <input type="radio" name="webcamCompatibleModeGroup" value="always" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Always stream in compatibility mode
+                  </label>
+                  <label class="radio">
+                      <input type="radio" name="webcamCompatibleModeGroup" value="never" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Never stream in compatibility mode
+                  </label>
+              </div>
+          </div>
+          </form>
         </div>
-        <div data-bind="visible: streaming.is_pi_camera" class="control-group" title="{{ _('Pi Camera resolution') }}">
-            <label class="control-label" for="pi-cam-resolution">{{ _('Resolution') }}</label>
-            <div class="controls">
-                <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.thespaghettidetective.pi_cam_resolution" id="pi-cam-resolution"></select>
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label">Compatibility mode<div><a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/">(What is it?)</a></div></label>
-            <div class="controls">
-                <label class="radio">
-                    <input type="radio" name="webcamCompatibleModeGroup" value="auto" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Automatic (default). TSD will automatically switch to compatibility mode if necessary. Select this option if you are not sure.
-                </label>
-                <label class="radio">
-                    <input type="radio" name="webcamCompatibleModeGroup" value="always" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Always stream in compatibility mode
-                </label>
-                <label class="radio">
-                    <input type="radio" name="webcamCompatibleModeGroup" value="never" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Never stream in compatibility mode
-                </label>
-            </div>
-        </div>
-        </form>
     </div>
     <div class="tab-pane" id="problems">
         <legend>Trouble-shooting</legend>
