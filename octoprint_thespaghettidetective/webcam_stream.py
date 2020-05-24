@@ -295,7 +295,7 @@ class WebcamStreamer:
         self.ffmpeg_proc = psutil.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
         self.ffmpeg_proc.nice(10)
 
-        cpu_watch_dog(self.ffmpeg_proc, max=20, interval=20, streaming_status=self.plugin.streaming_status)
+        cpu_watch_dog(self.ffmpeg_proc, max=80, interval=20, streaming_status=self.plugin.streaming_status)
 
         def monitor_ffmpeg_process():  # It's pointless to restart ffmpeg without calling pi_camera.record with the new input. Just capture unexpected exits not to see if it's a big problem
             ring_buffer = deque(maxlen=50)
