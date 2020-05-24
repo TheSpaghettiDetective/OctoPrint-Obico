@@ -99,7 +99,7 @@ def cpu_watch_dog(watched_process, max, interval, streaming_status):
             cpu_pct = watched_process.cpu_percent(interval=None)
             if cpu_pct > max:
                 streaming_status.set_warning('Premium streaming uses excessive CPU.',
-                                             'This may negatively impact your print quality. Consider switch off "compatibility mode", or disable premium streaming. <a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/#more-about-cpu-usage-in-compatibility-mode">Learn more >>></a>')
+                                             'This may negatively impact your print quality. Consider switch off "compatibility mode", or disable premium streaming. <a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/#excessive-cpu-usage-warning">Learn more >>></a>')
             time.sleep(interval)
 
     watch_thread = Thread(target=watch_process_cpu, args=(watched_process, max, interval, streaming_status))
@@ -195,7 +195,7 @@ class WebcamStreamer:
         except:
             not_using_pi_camera()
             self.plugin.streaming_status.set_warning(
-                'Premium webcam streaming failed to start.', 'The Spaghetti Detective has switched to basic streaming. <a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-laggy/">Why did this happen?</a>')
+                'Premium webcam streaming failed to start.', 'The Spaghetti Detective has switched to basic streaming. <a href="https://www.thespaghettidetective.com/docs/premium-streaming-failed-to-start">Why did this happen?</a>')
 
             time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
