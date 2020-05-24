@@ -18,6 +18,7 @@ import yaml
 import backoff
 import json
 import socket
+import errno
 import base64
 from textwrap import wrap
 import psutil
@@ -420,6 +421,10 @@ class UsbCamWebServer:
                 yield s.recv(1024)
         except GeneratorExit:
             pass
+        except socket.error as err:
+            if err.errno not in [errno.ECONNREFUSED, ]:
+                self.sentry.captureException(tags=get_tags())
+            raise
         except:
             self.sentry.captureException(tags=get_tags())
             raise
