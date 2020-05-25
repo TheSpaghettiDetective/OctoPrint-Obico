@@ -65,13 +65,13 @@
                   </div>
               </div>
           </div>
-          <div data-bind="visible: streaming.is_pi_camera" class="control-group" title="{{ _('Pi Camera resolution') }}">
+          <div data-bind="visible: (streaming.is_pi_camera() && !settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming())" class="control-group" title="{{ _('Pi Camera resolution') }}">
               <label class="control-label" for="pi-cam-resolution">{{ _('Resolution') }}</label>
               <div class="controls">
                   <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.thespaghettidetective.pi_cam_resolution" id="pi-cam-resolution"></select>
               </div>
           </div>
-          <div class="control-group">
+          <div data-bind="visible: !settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming()" class="control-group">
               <label class="control-label">Compatibility mode<div><a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/">(What is it?)</a></div></label>
               <div class="controls">
                   <label class="radio">

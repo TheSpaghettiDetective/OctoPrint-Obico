@@ -6,7 +6,9 @@ import sarge
 import flask
 import json
 import re
-import os, sys, time
+import os
+import sys
+import time
 import requests
 import backoff
 
@@ -18,14 +20,6 @@ from .webcam_stream import WebcamStreamer, StreamingStatus
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster
 from .file_download import FileDownloader
-
-### (Don't forget to remove me)
-# This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
-# as well as the plugin mixins it's subclassing from. This is really just a basic skeleton to get you started,
-# defining your plugin as a template plugin, settings and asset plugin. Feel free to add or remove mixins
-# as necessary.
-#
-# Take a look at the documentation on what other plugin mixins are available.
 
 import octoprint.plugin
 
@@ -39,15 +33,16 @@ DEFAULT_USER_ACCOUNT = {'is_pro': False, 'dh_balance': 0}
 
 _print_event_tracker = PrintEventTracker()
 
+
 class TheSpaghettiDetectivePlugin(
-            octoprint.plugin.SettingsPlugin,
-            octoprint.plugin.StartupPlugin,
-            octoprint.plugin.ShutdownPlugin,
-            octoprint.plugin.EventHandlerPlugin,
-            octoprint.plugin.AssetPlugin,
-            octoprint.plugin.SimpleApiPlugin,
-            octoprint.plugin.WizardPlugin,
-            octoprint.plugin.TemplatePlugin,):
+        octoprint.plugin.SettingsPlugin,
+        octoprint.plugin.StartupPlugin,
+        octoprint.plugin.ShutdownPlugin,
+        octoprint.plugin.EventHandlerPlugin,
+        octoprint.plugin.AssetPlugin,
+        octoprint.plugin.SimpleApiPlugin,
+        octoprint.plugin.WizardPlugin,
+        octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
         self.ss = None
@@ -60,9 +55,7 @@ class TheSpaghettiDetectivePlugin(
         self.file_downloader = FileDownloader(self, _print_event_tracker)
         self.webcam_streamer = None
         self.user_account = DEFAULT_USER_ACCOUNT
-
-
-	##~~ Wizard plugin mix
+        # ~~ Wizard plugin mix
 
     def is_wizard_required(self):
         return not self._settings.get(["auth_token"])
@@ -70,7 +63,7 @@ class TheSpaghettiDetectivePlugin(
     def get_wizard_version(self):
         return 2
 
-    ##~~ SettingsPlugin mixin
+    # ~~ SettingsPlugin mixin
 
     def get_settings_defaults(self):
         # Initialize sentry the first opportunity when `self._plugin_version` is available. Is there a better place for it?
@@ -84,7 +77,7 @@ class TheSpaghettiDetectivePlugin(
             video_streaming_compatible_mode='auto',
         )
 
-    ##~~ AssetPlugin mixin
+    # ~~ AssetPlugin mixin
 
     def get_assets(self):
         # Define your plugin's asset files to automatically include in the
@@ -95,7 +88,7 @@ class TheSpaghettiDetectivePlugin(
             less=["less/TheSpaghettiDetective.less"]
         )
 
-    ##~~ Softwareupdate hook
+    # ~~ Softwareupdate hook
 
     def get_update_information(self):
         # Define the configuration for your plugin to use with the Software Update
@@ -116,9 +109,7 @@ class TheSpaghettiDetectivePlugin(
                 pip="https://github.com/TheSpaghettiDetective/OctoPrint-TheSpaghettiDetective/archive/{target_version}.zip"
             )
         )
-
-
-    ##~~ plugin APIs
+    # ~~ plugin APIs
 
     def get_api_commands(self):
         return dict(
@@ -136,12 +127,12 @@ class TheSpaghettiDetectivePlugin(
             auth_token = data["auth_token"]
             succeeded, status_text, _ = self.tsd_api_status(auth_token=auth_token)
             if succeeded:
-                self._settings.set(["auth_token"],auth_token, force=True)
+                self._settings.set(["auth_token"], auth_token, force=True)
                 self._settings.save(force=True)
 
             return flask.jsonify({'succeeded': succeeded, 'text': status_text})
         if command == "get_plugin_status":
-            return flask.jsonify( dict(connection_errors=self.error_tracker.as_dict(), streaming_status=self.streaming_status.as_dict()) )
+            return flask.jsonify(dict(connection_errors=self.error_tracker.as_dict(), streaming_status=self.streaming_status.as_dict()))
         if command == "get_sentry_opt":
             sentry_opt = self._settings.get(["sentry_opt"])
             if sentry_opt == 'out':
@@ -152,7 +143,7 @@ class TheSpaghettiDetectivePlugin(
             self._settings.set(["sentry_opt"], 'out' if self._settings.get(["sentry_opt"]) == 'in' else 'in', force=True)
             self._settings.save(force=True)
 
-    ##~~ Eventhandler mixin
+    # ~~ Eventhandler mixin
 
     def on_event(self, event, payload):
         global _print_event_tracker
@@ -164,48 +155,44 @@ class TheSpaghettiDetectivePlugin(
                     self.post_printer_status(event_payload)
         except Exception as e:
             self.sentry.captureException(tags=get_tags())
-
-
-    ##~~Shutdown Plugin
+    # ~~Shutdown Plugin
 
     def on_shutdown(self):
         if self.webcam_streamer:
             self.webcam_streamer.restore()
         not_using_pi_camera()
 
-    ##~~Startup Plugin
+    # ~~Startup Plugin
 
     def on_after_startup(self):
         not_using_pi_camera()
         main_thread = threading.Thread(target=self.main_loop)
         main_thread.daemon = True
         main_thread.start()
-
-
-    ## Private methods
+    # Private methods
 
     def auth_headers(self, auth_token=None):
         return {"Authorization": "Token " + self.auth_token(auth_token)}
 
     def octoprint_settings(self):
         return dict(
-             webcam=dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
-             temperature=self._settings.settings.effective['temperature'],
-             tsd_plugin_version=self._plugin_version,
+            webcam=dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
+            temperature=self._settings.settings.effective['temperature'],
+            tsd_plugin_version=self._plugin_version,
         )
 
     def main_loop(self):
         global _print_event_tracker
 
-        get_tags() # init tags to minimize risk of race condition
+        get_tags()  # init tags to minimize risk of race condition
 
         self.user_account = self.wait_for_auth_token().get('user', DEFAULT_USER_ACCOUNT)
         self.sentry.user_context({'id': self.auth_token()})
         _logger.info('User account: {}'.format(self.user_account))
         _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
 
+        self.streaming_status.set_status(eligible=bool(self.user_account.get('is_pro')))
         if self.user_account.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
-            self.streaming_status.set_status(eligible=True)
             _logger.info('Starting webcam streamer')
             self.webcam_streamer = WebcamStreamer(self, self.sentry)
             stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
@@ -300,7 +287,7 @@ class TheSpaghettiDetectivePlugin(
                 if not func:
                     return
 
-                ack_ref =  passsthru.get('ref')
+                ack_ref = passsthru.get('ref')
                 ret = func(*(passsthru.get("args", [])))
 
                 if ack_ref:
@@ -308,7 +295,6 @@ class TheSpaghettiDetectivePlugin(
 
                 time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
                 self.post_printer_status(_print_event_tracker.octoprint_data(self))
-
 
             if msg.get('janus') and self.webcam_streamer:
                 self.webcam_streamer.pass_to_janus(msg.get('janus'))
@@ -321,7 +307,7 @@ class TheSpaghettiDetectivePlugin(
         except:
             self.sentry.captureException(tags=get_tags())
 
-    #~~ helper methods
+    # ~~ helper methods
 
     def canonical_endpoint_prefix(self):
         if not self._settings.get(["endpoint_prefix"]):
@@ -348,7 +334,7 @@ class TheSpaghettiDetectivePlugin(
         status_text = 'Unknown error.'
         resp = None
         try:
-            resp = requests.get( endpoint, headers=self.auth_headers(auth_token=self.auth_token(auth_token)) )
+            resp = requests.get(endpoint, headers=self.auth_headers(auth_token=self.auth_token(auth_token)))
             succeeded = resp.ok
             if resp.status_code == 200:
                 status_text = 'Secret token is valid. You are awesome!'
@@ -381,6 +367,7 @@ __plugin_description__ = "AI-based open source project for 3D printing failure d
 __plugin_license__ = "AGPLv3"
 __plugin_pythoncompat__ = ">=2.7,<4"
 
+
 def __plugin_load__():
     global __plugin_implementation__
     __plugin_implementation__ = TheSpaghettiDetectivePlugin()
@@ -391,4 +378,3 @@ def __plugin_load__():
         "octoprint.comm.protocol.scripts": (__plugin_implementation__.commander.script_hook, 100000),
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
     }
-
