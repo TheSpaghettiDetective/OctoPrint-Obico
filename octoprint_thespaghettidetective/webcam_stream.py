@@ -199,7 +199,6 @@ class WebcamStreamer:
             self.plugin.streaming_status.set_warning(
                 'Premium webcam streaming failed to start.', 'The Spaghetti Detective has switched to basic streaming. <a href="https://www.thespaghettidetective.com/docs/premium-streaming-failed-to-start">Why did this happen?</a>')
 
-            time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
             self.sentry.captureException(tags=get_tags())
             return
@@ -278,6 +277,7 @@ class WebcamStreamer:
         def wait_for_webcamd(webcam_settings):
             return capture_jpeg(webcam_settings)
 
+        time.sleep(2)   # Wait for USB device and port 8080 to be release
         sarge.run('sudo service webcamd start')
 
         webcam_settings = self.plugin._settings.global_get(["webcam"])
@@ -370,10 +370,11 @@ class WebcamStreamer:
     def restore(self):
         self.shutting_down = True
 
-        try:
-            self.webcam_server.stop()
-        except:
-            pass
+        if self.webcam_server:
+            try:
+                self.webcam_server.stop()
+            except:
+                pass
         if self.janus_proc:
             try:
                 self.janus_proc.terminate()
@@ -414,6 +415,8 @@ class UsbCamWebServer:
     def __init__(self, sentry):
         self.sentry = sentry
         self.web_server = None
+        self.should_run = True
+        self._mutex = RLock()
 
     def mjpeg_generator(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -463,7 +466,10 @@ class UsbCamWebServer:
         finally:
             s.close()
 
-    def run_forever(self):
+    def start(self):
+        with self._mutex:
+            self.should_run = True
+
         webcam_server_app = flask.Flask('webcam_server')
 
         @webcam_server_app.route('/')
@@ -474,17 +480,14 @@ class UsbCamWebServer:
             else:
                 return self.get_mjpeg()
 
-        @webcam_server_app.route('/shutdown', methods=['POST'])
-        def shutdown():
-            flask.request.environ.get('werkzeug.server.shutdown')()
-            return 'Ok'
+        self.web_server = FlaskServerThread(webcam_server_app, '0.0.0.0', 8080)
+        self.web_server.start()
 
-        webcam_server_app.run(host='0.0.0.0', port=8080, threaded=True)
+    def stop(self):
+        with self._mutex:
+            self.should_run = False
 
-    def start(self):
-        cam_server_thread = Thread(target=self.run_forever)
-        cam_server_thread.daemon = True
-        cam_server_thread.start()
+        self.web_server.shutdown()
 
 
 class PiCamWebServer:
