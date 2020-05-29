@@ -7,6 +7,7 @@ import time
 import sarge
 import sys
 import flask
+from werkzeug.serving import make_server
 from collections import deque
 try:
     import queue
@@ -370,7 +371,7 @@ class WebcamStreamer:
         self.shutting_down = True
 
         try:
-            requests.post('http://127.0.0.1:8080/shutdown')
+            self.webcam_server.stop()
         except:
             pass
         if self.janus_proc:
@@ -399,7 +400,8 @@ class WebcamStreamer:
             except:
                 pass
 
-        sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
+        time.sleep(1)      # Brief pause, otherwise port 8080 may not have been released
+        sarge.run('sudo service webcamd start')
 
         self.janus_proc = None
         self.gst_proc = None
@@ -492,6 +494,7 @@ class PiCamWebServer:
         self.img_q = queue.Queue(maxsize=1)
         self.last_capture = 0
         self._mutex = RLock()
+        self.should_run = False
         self.web_server = None
 
     def capture_forever(self):
@@ -506,6 +509,9 @@ class PiCamWebServer:
                 with self._mutex:
                     last_last_capture = self.last_capture
                     self.last_capture = time.time()
+
+                    if not self.should_run:
+                        return
 
                 self.img_q.put(chunk)
         except:
@@ -546,7 +552,10 @@ class PiCamWebServer:
         boundary = 'herebedragons'
         return flask.Response(flask.stream_with_context(self.mjpeg_generator(boundary)), mimetype='multipart/x-mixed-replace;boundary=%s' % boundary)
 
-    def run_forever(self):
+    def start(self):
+        with self._mutex:
+            self.should_run = True
+
         webcam_server_app = flask.Flask('webcam_server')
 
         @webcam_server_app.route('/')
@@ -557,18 +566,32 @@ class PiCamWebServer:
             else:
                 return self.get_mjpeg()
 
-        @webcam_server_app.route('/shutdown', methods=['POST'])
-        def shutdown():
-            flask.request.environ.get('werkzeug.server.shutdown')()
-            return 'Ok'
-
-        webcam_server_app.run(host='0.0.0.0', port=8080, threaded=True)
-
-    def start(self):
-        cam_server_thread = Thread(target=self.run_forever)
-        cam_server_thread.daemon = True
-        cam_server_thread.start()
+        self.web_server = FlaskServerThread(webcam_server_app, '0.0.0.0', 8080)
+        self.web_server.start()
 
         capture_thread = Thread(target=self.capture_forever)
         capture_thread.daemon = True
         capture_thread.start()
+
+    def stop(self):
+        with self._mutex:
+            self.should_run = False
+
+        self.web_server.shutdown()
+
+
+# https://stackoverflow.com/questions/15562446/how-to-stop-flask-application-without-using-ctrl-c
+
+class FlaskServerThread(Thread):
+
+    def __init__(self, app, host, port):
+        Thread.__init__(self)
+        self.srv = make_server(host, port, app)
+        self.ctx = app.app_context()
+        self.ctx.push()
+
+    def run(self):
+        self.srv.serve_forever()
+
+    def shutdown(self):
+        self.srv.shutdown()
