@@ -14,7 +14,7 @@ import backoff
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
-from .utils import ExpoBackoff, ConnectionErrorTracker, SentryWrapper, pi_version, get_tags, not_using_pi_camera
+from .utils import ExpoBackoff, ConnectionErrorTracker, SentryWrapper, pi_version, get_tags, not_using_pi_camera, OctoPrintSettingsUpdater
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer, StreamingStatus
 from .remote_status import RemoteStatus
@@ -50,6 +50,7 @@ class TheSpaghettiDetectivePlugin(
         self.remote_status = RemoteStatus()
         self.commander = Commander()
         self.error_tracker = ConnectionErrorTracker(self)
+        self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.streaming_status = StreamingStatus(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_event_tracker)
@@ -149,7 +150,13 @@ class TheSpaghettiDetectivePlugin(
         global _print_event_tracker
 
         try:
-            if event.startswith("Print"):
+            if event == 'FirmwareData':
+                self.octoprint_settings_updater.update_firmware(payload)
+                self.post_printer_status(_print_event_tracker.octoprint_data(self))
+            elif event == 'SettingsUpdated':
+                self.octoprint_settings_updater.update_settings()
+                self.post_printer_status(_print_event_tracker.octoprint_data(self))
+            elif event.startswith("Print"):
                 event_payload = _print_event_tracker.on_event(self, event, payload)
                 if event_payload:
                     self.post_printer_status(event_payload)
@@ -173,13 +180,6 @@ class TheSpaghettiDetectivePlugin(
 
     def auth_headers(self, auth_token=None):
         return {"Authorization": "Token " + self.auth_token(auth_token)}
-
-    def octoprint_settings(self):
-        return dict(
-            webcam=dict((k, self._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
-            temperature=self._settings.settings.effective['temperature'],
-            tsd_plugin_version=self._plugin_version,
-        )
 
     def main_loop(self):
         global _print_event_tracker

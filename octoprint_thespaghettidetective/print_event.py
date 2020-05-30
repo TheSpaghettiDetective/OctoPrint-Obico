@@ -4,6 +4,7 @@ import threading
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
+
 class PrintEventTracker:
 
     def __init__(self):
@@ -18,9 +19,9 @@ class PrintEventTracker:
 
         data = self.octoprint_data(plugin)
         data['octoprint_event'] = {
-                'event_type': event,
-                'data': payload
-                }
+            'event_type': event,
+            'data': payload
+        }
 
         # Unsetting self.current_print_ts should happen after it is captured in payload to make sure last event of a print contains the correct current_print_ts
         with self._mutex:
@@ -34,8 +35,10 @@ class PrintEventTracker:
         data = {
             'octoprint_data': plugin._printer.get_current_data(),
             'octoprint_temperatures': plugin._printer.get_current_temperatures(),
-            'octoprint_settings': plugin.octoprint_settings(),
-            }
+        }
+        octo_settings = plugin.octoprint_settings_updater.as_dict()
+        if octo_settings:
+            data['octoprint_settings'] = octo_settings
 
         with self._mutex:
             data['current_print_ts'] = self.current_print_ts

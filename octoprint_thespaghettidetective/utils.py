@@ -11,11 +11,15 @@ from sarge import run, Capture
 import tempfile
 from io import BytesIO
 import struct
+import threading
 
 
 CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 
+PRINTER_SETTINGS_UPDATE_INTERVAL = 60*30.0  # Update printer settings at max 30 minutes interval, as they are relatively static.
+
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+
 
 class ExpoBackoff:
 
@@ -73,13 +77,49 @@ class ConnectionErrorTracker:
         return self.errors
 
 
+class OctoPrintSettingsUpdater:
+
+    def __init__(self, plugin):
+        self._mutex = threading.RLock()
+        self.plugin = plugin
+        self.last_asked = 0
+        self.printer_metadata = None
+
+    def update_settings(self):
+        with self._mutex:
+            self.last_asked = 0
+
+    def update_firmware(self, payload):
+        with self._mutex:
+            self.printer_metadata = payload['data']
+            self.last_asked = 0
+
+    def as_dict(self):
+        with self._mutex:
+            if self.last_asked > time.time() - PRINTER_SETTINGS_UPDATE_INTERVAL:
+                return None
+
+        data = dict(
+            webcam=dict((k, self.plugin._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
+            temperature=self.plugin._settings.settings.effective['temperature'],
+            tsd_plugin_version=self.plugin._plugin_version,
+        )
+        if self.printer_metadata:
+            data['printer_metadata'] = self.printer_metadata
+
+        with self._mutex:
+            self.last_asked = time.time()
+
+        return data
+
+
 class SentryWrapper:
 
     def __init__(self, plugin):
         self.sentryClient = raven.Client(
             'https://f0356e1461124e69909600a64c361b71:bdf215f6e71b48dc90d28fb89a4f8238@sentry.thespaghettidetective.com/4?verify_ssl=0',
             release=plugin._plugin_version
-            )
+        )
         self.plugin = plugin
 
     def captureException(self, *args, **kwargs):
@@ -105,9 +145,11 @@ def pi_version():
             else:
                 return None
     except:
-         return None
+        return None
+
 
 system_tags = None
+
 
 def get_tags():
     global system_tags
@@ -117,7 +159,7 @@ def get_tags():
     (os, _, ver, _, arch, _) = platform.uname()
     tags = dict(os=os, os_ver=ver, arch=arch)
     try:
-        v4l2 = run('v4l2-ctl --list-devices',stdout=Capture())
+        v4l2 = run('v4l2-ctl --list-devices', stdout=Capture())
         v4l2_out = ''.join(re.compile(r"^([^\t]+)", re.MULTILINE).findall(v4l2.stdout.text)).replace('\n', '')
         if v4l2_out:
             tags['v4l2'] = v4l2_out
@@ -125,7 +167,7 @@ def get_tags():
         pass
 
     try:
-        usb = run("lsusb | cut -d ' ' -f 7- | grep -vE ' hub| Hub' | grep -v 'Standard Microsystems Corp'",stdout=Capture())
+        usb = run("lsusb | cut -d ' ' -f 7- | grep -vE ' hub| Hub' | grep -v 'Standard Microsystems Corp'", stdout=Capture())
         usb_out = ''.join(usb.stdout.text).replace('\n', '')
         if usb_out:
             tags['usb'] = usb_out
@@ -135,11 +177,13 @@ def get_tags():
     system_tags = tags
     return system_tags
 
+
 def not_using_pi_camera():
     try:
         os.remove(CAM_EXCLUSIVE_USE)
     except:
         pass
+
 
 def using_pi_camera():
     open(CAM_EXCLUSIVE_USE, 'a').close()  # touch CAM_EXCLUSIVE_USE to indicate the intention of exclusive use of pi camera
@@ -188,8 +232,10 @@ def get_image_info(data):
         b = jpeg.read(1)
         try:
             while (b and ord(b) != 0xDA):
-                while (ord(b) != 0xFF): b = jpeg.read(1)
-                while (ord(b) == 0xFF): b = jpeg.read(1)
+                while (ord(b) != 0xFF):
+                    b = jpeg.read(1)
+                while (ord(b) == 0xFF):
+                    b = jpeg.read(1)
                 if (ord(b) >= 0xC0 and ord(b) <= 0xC3):
                     jpeg.read(3)
                     h, w = struct.unpack(">HH", jpeg.read(4))
