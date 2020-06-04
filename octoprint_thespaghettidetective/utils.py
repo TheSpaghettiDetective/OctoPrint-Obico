@@ -12,6 +12,9 @@ import tempfile
 from io import BytesIO
 import struct
 import threading
+import socket
+from contextlib import closing
+import backoff
 
 
 CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
@@ -251,3 +254,10 @@ def get_image_info(data):
             pass
 
     return content_type, width, height
+
+
+@backoff.on_exception(backoff.expo, Exception, max_tries=6)
+@backoff.on_predicate(backoff.expo, max_tries=6)
+def wait_for_port(host, port):
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+        return sock.connect_ex((host, port)) == 0

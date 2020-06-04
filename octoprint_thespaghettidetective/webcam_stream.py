@@ -24,7 +24,7 @@ from textwrap import wrap
 import psutil
 from octoprint.util import to_unicode
 
-from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera, get_image_info
+from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera, get_image_info, wait_for_port
 from .ws import WebSocketClient
 from .webcam_capture import capture_jpeg, webcam_full_url
 
@@ -198,7 +198,7 @@ class WebcamStreamer:
             self.plugin.streaming_status.set_warning(
                 'Premium webcam streaming failed to start.', 'The Spaghetti Detective has switched to basic streaming. <a href="https://www.thespaghettidetective.com/docs/premium-streaming-failed-to-start">Why did this happen?</a>')
 
-            time.sleep(3)    # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
+            wait_for_port('127.0.0.1', 8080)  # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
             self.sentry.captureException(tags=get_tags())
             return
