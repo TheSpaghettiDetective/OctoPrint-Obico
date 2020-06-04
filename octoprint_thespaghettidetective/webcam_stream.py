@@ -24,7 +24,7 @@ from textwrap import wrap
 import psutil
 from octoprint.util import to_unicode
 
-from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera, get_image_info, wait_for_port
+from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera, get_image_info, wait_for_port, wait_for_port_to_close
 from .ws import WebSocketClient
 from .webcam_capture import capture_jpeg, webcam_full_url
 
@@ -277,6 +277,7 @@ class WebcamStreamer:
         def wait_for_webcamd(webcam_settings):
             return capture_jpeg(webcam_settings)
 
+        wait_for_port_to_close('127.0.0.1', 8080)  # wait for WebcamServer to be clear of port 8080
         sarge.run('sudo service webcamd start')
 
         webcam_settings = self.plugin._settings.global_get(["webcam"])
@@ -399,7 +400,9 @@ class WebcamStreamer:
             except:
                 pass
 
-        sarge.run('sudo service webcamd start')   # failed to start picamera. falling back to mjpeg-streamer
+        # wait for WebcamServer to be clear of port 8080. Otherwise mjpg-streamer may fail to bind 127.0.0.1:8080 (it can still bind :::8080)
+        wait_for_port_to_close('127.0.0.1', 8080)
+        sarge.run('sudo service webcamd start')   # failed to start streaming. falling back to mjpeg-streamer
 
         self.janus_proc = None
         self.gst_proc = None

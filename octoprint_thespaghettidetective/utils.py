@@ -256,8 +256,17 @@ def get_image_info(data):
     return content_type, width, height
 
 
-@backoff.on_exception(backoff.expo, Exception, max_tries=6)
-@backoff.on_predicate(backoff.expo, max_tries=6)
+@backoff.on_exception(backoff.expo, Exception, max_tries=3, jitter=None)
+@backoff.on_predicate(backoff.expo, max_tries=3, jitter=None)
 def wait_for_port(host, port):
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
         return sock.connect_ex((host, port)) == 0
+
+
+def wait_for_port_to_close(host, port):
+    for i in range(10):   # Wait for up to 5s
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+            if sock.connect_ex((host, port)) != 0:  # Port is not open
+                return
+            time.sleep(0.5)
+
