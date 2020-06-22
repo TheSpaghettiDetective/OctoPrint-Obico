@@ -11,7 +11,7 @@ plugin_package = "octoprint_thespaghettidetective"
 
 # The plugin's human readable name. Can be overwritten within OctoPrint's internal data via __plugin_name__ in the
 # plugin module
-plugin_name = "TheSpaghettiDetective"
+plugin_name = "Access Anywhere - The Spaghetti Detective"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
 plugin_version = "1.2.5"
@@ -23,7 +23,7 @@ An essential plugin if you print remotely. Monitor and control your printer over
 """
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
-plugin_author = "The Spaghetti Detective Team"
+plugin_author = "TSD Team"
 
 # The plugin's author's mail address.
 plugin_author_email = "admin@thespaghettidetective.com"
