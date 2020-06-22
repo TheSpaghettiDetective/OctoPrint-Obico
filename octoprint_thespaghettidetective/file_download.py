@@ -35,7 +35,7 @@ class FileDownloader:
             self.plugin.sentry.captureException(tags=get_tags())
 
     def __download_and_print__(self, gcode_file, target_path):
-        r = requests.get(gcode_file['url'], allow_redirects=True)
+        r = requests.get(gcode_file['url'], allow_redirects=True, timeout=60*30)
         r.raise_for_status()
         open(target_path, "wb").write(r.content)
 

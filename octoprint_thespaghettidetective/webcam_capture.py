@@ -44,10 +44,9 @@ def webcam_full_url(url):
 def capture_jpeg(webcam_settings):
     snapshot_url = webcam_full_url(webcam_settings.get("snapshot", ''))
     if snapshot_url:
-        snapshot_timeout = int(webcam_settings.get("snapshotTimeout", '5'))
         snapshot_validate_ssl = bool(webcam_settings.get("snapshotSslValidation", 'False'))
 
-        r = requests.get(snapshot_url, stream=True, timeout=snapshot_timeout, verify=snapshot_validate_ssl )
+        r = requests.get(snapshot_url, stream=True, timeout=5, verify=snapshot_validate_ssl )
         r.raise_for_status()
         jpg = r.content
         return jpg
@@ -122,7 +121,7 @@ class JpegPoster:
             self.plugin.error_tracker.add_connection_error('webcam')
             return
 
-        resp = requests.post( endpoint, files=files, headers=self.plugin.auth_headers() )
+        resp = requests.post( endpoint, files=files, headers=self.plugin.auth_headers(), timeout=30)
         resp.raise_for_status()
         _logger.debug('Jpeg posted to server')
 

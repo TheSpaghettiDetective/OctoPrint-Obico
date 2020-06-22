@@ -334,7 +334,7 @@ class TheSpaghettiDetectivePlugin(
         status_text = 'Unknown error.'
         resp = None
         try:
-            resp = requests.get(endpoint, headers=self.auth_headers(auth_token=self.auth_token(auth_token)))
+            resp = requests.get(endpoint, headers=self.auth_headers(auth_token=self.auth_token(auth_token)), timeout=30)
             succeeded = resp.ok
             if resp.status_code == 200:
                 status_text = 'Secret token is valid. You are awesome!'
