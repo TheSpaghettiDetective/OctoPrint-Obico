@@ -121,7 +121,7 @@ class JpegPoster:
             self.plugin.error_tracker.add_connection_error('webcam')
             return
 
-        resp = requests.post( endpoint, files=files, headers=self.plugin.auth_headers(), timeout=30)
+        resp = requests.post( endpoint, files=files, headers=self.plugin.auth_headers(), timeout=60)
         resp.raise_for_status()
         _logger.debug('Jpeg posted to server')
 
