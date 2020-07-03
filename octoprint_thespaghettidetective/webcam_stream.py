@@ -100,7 +100,7 @@ def cpu_watch_dog(watched_process, max, interval, streaming_status):
             cpu_pct = watched_process.cpu_percent(interval=None)
             if cpu_pct > max:
                 streaming_status.set_warning('Premium streaming uses excessive CPU.',
-                                             'This may negatively impact your print quality. Consider switch off "compatibility mode", or disable premium streaming. <a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/#excessive-cpu-usage-warning">Learn more >>></a>')
+                                             'This may negatively impact your print quality. Consider switch off "compatibility mode", or disable premium streaming. <a href="https://www.thespaghettidetective.com/docs/compatibility-mode-excessive-cpu">Learn more >>></a>')
             time.sleep(interval)
 
     watch_thread = Thread(target=watch_process_cpu, args=(watched_process, max, interval, streaming_status))
