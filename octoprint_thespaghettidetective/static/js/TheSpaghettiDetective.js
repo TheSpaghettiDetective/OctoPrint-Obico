@@ -125,7 +125,7 @@ $(function () {
                 return;
             }
 
-            var text = "Unkonwn errors.";
+            var text = null;
             var msgType = "error";
             var buttons = [
                 {
@@ -172,7 +172,7 @@ $(function () {
                 if (!streamingWarningAcked) {
                     msgType = "notice";
                     text =
-                        '<p>Premium webcam streaming failed to start. The Spaghetti Detective has switched to basic streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-laggy/">Learn more >>></a></p>';
+                        '<p>Premium webcam streaming failed to start. The Spaghetti Detective has switched to basic streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/webcam-switched-to-basic-streaming/">Learn more >>></a></p>';
                     buttons = buttons.concat([
                         {
                             text: "Ignore",
@@ -191,6 +191,7 @@ $(function () {
 
             }
 
+            if(text) {
             new PNotify({
                 title: "The Spaghetti Detective",
                 text: text,
@@ -210,7 +211,7 @@ $(function () {
                         .remove();
                 }
             });
-
+	    }
         };
 
         self.showTrackerModal = function () {
