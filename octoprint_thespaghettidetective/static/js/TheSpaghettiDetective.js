@@ -176,7 +176,7 @@ $(function () {
                     buttons = buttons.concat([
                         {
                             text: "Ignore",
-                            click: function(notice) {
+                            click: function (notice) {
                                 localStorage.setItem("tsd.streamingWarningAcked", true);
                                 notice.remove();
                             }
@@ -191,27 +191,27 @@ $(function () {
 
             }
 
-            if(text) {
-            new PNotify({
-                title: "The Spaghetti Detective",
-                text: text,
-                type: msgType,
-                hide: false,
-                confirm: {
-                    confirm: true,
-                    buttons: buttons,
-                },
-                history: {
-                    history: false
-                },
-                before_open: function (notice) {
-                    notice
-                        .get()
-                        .find(".remove_button")
-                        .remove();
-                }
-            });
-	    }
+            if (text) {
+                new PNotify({
+                    title: "The Spaghetti Detective",
+                    text: text,
+                    type: msgType,
+                    hide: false,
+                    confirm: {
+                        confirm: true,
+                        buttons: buttons,
+                    },
+                    history: {
+                        history: false
+                    },
+                    before_open: function (notice) {
+                        notice
+                            .get()
+                            .find(".remove_button")
+                            .remove();
+                    }
+                });
+            }
         };
 
         self.showTrackerModal = function () {
@@ -225,7 +225,7 @@ $(function () {
                         for (var i in stats[k].errors) {
                             errors.push(new Date(stats[k].errors[i]));
                         }
-                        self.errorStats[k] = {attempts: stats[k].attempts, errors: errors};
+                        self.errorStats[k] = { attempts: stats[k].attempts, errors: errors };
                     }
                     showMessageDialog({
                         title: "The Spaghetti Detective Diagnostic Report",
@@ -251,14 +251,14 @@ $(function () {
             }
 
             if (serverErrors.length > 0) {
-                errorBody += '<hr /><p class="text-error">The plugin has failed to connect to the server <b>' + serverErrors.length + '</b> times (error rate <b>' + Math.round(serverErrors.length/self.errorStats.server.attempts*100) + '%</b>) since OctoPrint rebooted.</p>';
+                errorBody += '<hr /><p class="text-error">The plugin has failed to connect to the server <b>' + serverErrors.length + '</b> times (error rate <b>' + Math.round(serverErrors.length / self.errorStats.server.attempts * 100) + '%</b>) since OctoPrint rebooted.</p>';
                 errorBody += '<ul><li>The first error occurred at: <b>' + serverErrors[0] + '</b>.</li>';
                 errorBody += '<li>The most recent error occurred at: <b>' + serverErrors[serverErrors.length - 1] + '</b>.</li></ul>';
                 errorBody += '<p>Please check your OctoPrint\'s internet connection to make sure it has reliable connection to the internet.<p>';
             }
 
             if (webcamErrors.length > 0) {
-                errorBody += '<hr /><p class="text-error">The plugin has failed to connect to the webcam <b>' + webcamErrors.length + '</b> times (error rate <b>' + Math.round(webcamErrors.length/self.errorStats.webcam.attempts*100) + '%</b>) since OctoPrint rebooted.</p>';
+                errorBody += '<hr /><p class="text-error">The plugin has failed to connect to the webcam <b>' + webcamErrors.length + '</b> times (error rate <b>' + Math.round(webcamErrors.length / self.errorStats.webcam.attempts * 100) + '%</b>) since OctoPrint rebooted.</p>';
                 errorBody += '<ul><li>The first error occurred at: <b>' + webcamErrors[0] + '</b>.</li>';
                 errorBody += '<li>The most recent error occurred at: <b>' + webcamErrors[webcamErrors.length - 1] + '</b>.</li></ul>';
                 errorBody += "<p>Please go to \"Settings\" -> \"Webcam & Timelapse\" and make sure the stream URL and snapshot URL are set correctly.</p>";
