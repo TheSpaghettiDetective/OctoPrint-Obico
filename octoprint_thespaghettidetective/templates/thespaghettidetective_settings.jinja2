@@ -45,12 +45,12 @@
         </div>
         <br />
         <legend>Premium Webcam Streaming</legend>
-        <div data-bind="visible: !streaming.eligible">
+        <div data-bind="visible: !streaming.is_pro">
           <div class="alert alert-warning" role="alert">
             Your account is not eligbile for premium webcam streaming. <a href="https://www.thespaghettidetective.com/docs/webcam-streaming-for-human-eyes/">Why?</a>
           </div>
         </div>
-        <div data-bind="visible: streaming.eligible">
+        <div data-bind="visible: streaming.is_pro">
           <div class="alert alert-warning" role="alert">
             <h4>Restart required: </h4>
             The changes to any of the following settings won't be effective until OctoPrint is restarted.

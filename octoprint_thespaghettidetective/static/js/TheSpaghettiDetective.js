@@ -83,7 +83,7 @@ $(function () {
         self.errorStats = {};
         self.hasShownServerError = false;
         self.hasShownWebcamError = false;
-        self.streaming = ko.mapping.fromJS({ eligible: false, is_pi_camera: false });
+        self.streaming = ko.mapping.fromJS({ is_pro: false, is_pi_camera: false });
         self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
         self.sentryOptedIn = ko.pureComputed(function () {
             return self.settingsViewModel.settings.plugins.thespaghettidetective.sentry_opt() === "in";
