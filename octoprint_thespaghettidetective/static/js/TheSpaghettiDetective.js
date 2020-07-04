@@ -127,10 +127,16 @@ $(function () {
 
             var text = "Unkonwn errors.";
             var msgType = "error";
+            var buttons = [
+                {
+                    text: "Close",
+                    addClass: "remove_button"
+                },
+            ]
 
             if (data.new_error) {
                 msgType = "error";
-                buttons = [
+                buttons = buttons.concat([
                     {
                         text: "Error Details",
                         click: function (notice) {
@@ -143,12 +149,8 @@ $(function () {
                         click: function (notice) {
                             notice.remove();
                         }
-                    },
-                    {
-                        text: "Close",
-                        addClass: "remove_button"
                     }
-                ];
+                ]);
                 if (data.new_error == "server") {
                     if (self.hasShownServerError) {
                         return;
@@ -171,7 +173,7 @@ $(function () {
                     msgType = "notice";
                     text =
                         '<p>Premium webcam streaming failed to start. The Spaghetti Detective has switched to basic streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-laggy/">Learn more >>></a></p>';
-                    buttons = [
+                    buttons = buttons.concat([
                         {
                             text: "Ignore",
                             click: function(notice) {
@@ -179,23 +181,14 @@ $(function () {
                                 notice.remove();
                             }
                         },
-                        {
-                            text: "Close",
-                            addClass: "remove_button"
-                        },
-                    ]
+                    ]);
                 }
             }
             if (_.get(data, 'new_warning', '') == 'cpu') {
                 msgType = "notice";
                 text =
                     '<p>Premium streaming uses excessive CPU. This may negatively impact your print quality. Consider switch off "compatibility mode", or disable premium streaming. <a href="https://www.thespaghettidetective.com/docs/compatibility-mode-excessive-cpu">Learn more >>></a></p>';
-                buttons = [
-                    {
-                        text: "Close",
-                        addClass: "remove_button"
-                    },
-                ]
+
             }
 
             new PNotify({
