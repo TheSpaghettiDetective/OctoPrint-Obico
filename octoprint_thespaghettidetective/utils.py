@@ -45,25 +45,25 @@ class ExpoBackoff:
         time.sleep(delay)
 
 
-class ConnectionErrorTracker:
+class ConnectionErrorStats:
 
     def __init__(self, plugin):
         self.plugin = plugin
-        self.attempts = dict()
-        self.errors = dict()
+        self.stats = dict()
 
     def attempt(self, error_type):
-        attempts = self.attempts.get(error_type, 0)
-        self.attempts[error_type] = attempts + 1
+        stat = self.get_stat(error_type)
+        stat['attempts'] += 1
 
     def add_connection_error(self, error_type):
-        existing = self.errors.get(error_type, [])
-        self.errors[error_type] = existing + [datetime.utcnow()]
+        stat = self.get_stat(error_type)
+        stat['errors'] += [datetime.utcnow()]
         self.notify_client_if_needed_for_error(error_type)
 
     def notify_client_if_needed_for_error(self, error_type):
-        attempts = self.attempts.get(error_type, 0)
-        errors = self.errors.get(error_type, [])
+        stat = self.get_stat(error_type)
+        attempts = stat['attempts']
+        errors = stat['errors']
 
         if attempts < 8:
             return
@@ -76,8 +76,11 @@ class ConnectionErrorTracker:
 
         self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_error': error_type})
 
+    def get_stat(self, error_type):
+        return self.stats.setdefault(error_type, dict(attempts=0, errors=[]))
+
     def as_dict(self):
-        return self.errors
+        return self.stats
 
 
 class OctoPrintSettingsUpdater:

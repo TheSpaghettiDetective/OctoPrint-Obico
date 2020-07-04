@@ -55,55 +55,22 @@ def bitrate_for_dim(img_w, img_h):
     else:
         return 6000000
 
+def cpu_watch_dog(watched_process, plugin, max, interval):
 
-class StreamingStatus:
-    def __init__(self, plugin):
-        self.plugin = plugin
-        self.eligible = False
-        self.is_pi_camera = False
-        self.status_code = 'okay'
-        self.status = 'Basic webcam streaming - status okay'
-        self.status_desc = 'Learn more about <a href="https://www.thespaghettidetective.com/docs/webcam-streaming-for-human-eyes/">basic streaming and premium streaming</a>.'
-        self.notified_status = set()
-
-    def set_status(self, eligible=None, is_pi_camera=None, status_code=None, status=None, status_desc=None):
-        if eligible is not None:
-            self.eligible = eligible
-        if is_pi_camera is not None:
-            self.is_pi_camera = is_pi_camera
-        if status_code is not None:
-            self.status_code = status_code
-        if status is not None:
-            self.status = status
-        if status_desc is not None:
-            self.status_desc = status_desc
-
-    def set_warning(self, warning, msg):
-        self.status_code = 'warn'
-        self.status = warning
-        self.status_desc = msg
-        if warning not in self.notified_status:
-            self.notified_status.add(warning)
-            self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_warning': 'streaming', 'message': '<h5>{}</h5><p>{}<p>'.format(warning, msg)})
-
-    def as_dict(self):
-        return dict(eligible=self.eligible, is_pi_camera=self.is_pi_camera, status_code=self.status_code, status=self.status, status_desc=self.status_desc)
-
-
-def cpu_watch_dog(watched_process, max, interval, streaming_status):
-
-    def watch_process_cpu(watched_process, max, interval, streaming_status):
+    def watch_process_cpu(watched_process, max, interval, plugin):
+        has_notified = False
         while True:
             if not watched_process.is_running():
                 return
 
             cpu_pct = watched_process.cpu_percent(interval=None)
-            if cpu_pct > max:
-                streaming_status.set_warning('Premium streaming uses excessive CPU.',
-                                             'This may negatively impact your print quality. Consider switch off "compatibility mode", or disable premium streaming. <a href="https://www.thespaghettidetective.com/docs/compatibility-mode-excessive-cpu">Learn more >>></a>')
+            if cpu_pct > max and not has_notified:
+                plugin._plugin_manager.send_plugin_message(plugin._identifier, {'new_warning': 'cpu'})
+                has_notified = True
+
             time.sleep(interval)
 
-    watch_thread = Thread(target=watch_process_cpu, args=(watched_process, max, interval, streaming_status))
+    watch_thread = Thread(target=watch_process_cpu, args=(watched_process, max, interval, plugin))
     watch_thread.daemon = True
     watch_thread.start()
 
@@ -134,8 +101,6 @@ class WebcamStreamer:
             self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
             self.bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
             _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, self.bitrate, self.pi_camera.resolution))
-
-            self.plugin.streaming_status.set_status(is_pi_camera=True)
         except picamera.exc.PiCameraError:
             not_using_pi_camera()
             if os.path.exists('/dev/video0'):
@@ -191,12 +156,9 @@ class WebcamStreamer:
                 self.webcam_server.start()
                 self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate, profile='baseline')
                 self.pi_camera.wait_recording(0)
-
-            self.plugin.streaming_status.set_status(status='Premium webcam streaming - status okay.')
         except:
             not_using_pi_camera()
-            self.plugin.streaming_status.set_warning(
-                'Premium webcam streaming failed to start.', 'The Spaghetti Detective has switched to basic streaming. <a href="https://www.thespaghettidetective.com/docs/premium-streaming-failed-to-start">Why did this happen?</a>')
+            self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_warning': 'streaming'})
 
             wait_for_port('127.0.0.1', 8080)  # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
@@ -297,7 +259,7 @@ class WebcamStreamer:
         self.ffmpeg_proc = psutil.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
         self.ffmpeg_proc.nice(10)
 
-        cpu_watch_dog(self.ffmpeg_proc, max=80, interval=20, streaming_status=self.plugin.streaming_status)
+        cpu_watch_dog(self.ffmpeg_proc, self.plugin, max=80, interval=20)
 
         def monitor_ffmpeg_process():  # It's pointless to restart ffmpeg without calling pi_camera.record with the new input. Just capture unexpected exits not to see if it's a big problem
             ring_buffer = deque(maxlen=50)

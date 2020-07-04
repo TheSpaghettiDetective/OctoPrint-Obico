@@ -115,10 +115,10 @@ class JpegPoster:
 
         endpoint = self.plugin.canonical_endpoint_prefix() + '/api/v1/octo/pic/'
         try:
-            self.plugin.error_tracker.attempt('webcam')
+            self.plugin.error_stats.attempt('webcam')
             files = {'pic': capture_jpeg(self.plugin._settings.global_get(["webcam"]))}
         except:
-            self.plugin.error_tracker.add_connection_error('webcam')
+            self.plugin.error_stats.add_connection_error('webcam')
             return
 
         resp = requests.post( endpoint, files=files, headers=self.plugin.auth_headers(), timeout=60)

@@ -14,9 +14,9 @@ import backoff
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
-from .utils import ExpoBackoff, ConnectionErrorTracker, SentryWrapper, pi_version, get_tags, not_using_pi_camera, OctoPrintSettingsUpdater
+from .utils import ExpoBackoff, ConnectionErrorStats, SentryWrapper, pi_version, get_tags, not_using_pi_camera, OctoPrintSettingsUpdater
 from .print_event import PrintEventTracker
-from .webcam_stream import WebcamStreamer, StreamingStatus
+from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster
 from .file_download import FileDownloader
@@ -49,9 +49,8 @@ class TheSpaghettiDetectivePlugin(
         self.last_status_update_ts = 0
         self.remote_status = RemoteStatus()
         self.commander = Commander()
-        self.error_tracker = ConnectionErrorTracker(self)
+        self.error_stats = ConnectionErrorStats(self)
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
-        self.streaming_status = StreamingStatus(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_event_tracker)
         self.webcam_streamer = None
@@ -133,7 +132,11 @@ class TheSpaghettiDetectivePlugin(
 
             return flask.jsonify({'succeeded': succeeded, 'text': status_text})
         if command == "get_plugin_status":
-            return flask.jsonify(dict(connection_errors=self.error_tracker.as_dict(), streaming_status=self.streaming_status.as_dict()))
+            return flask.jsonify(dict(
+                streaming_status=dict(
+                    is_pro=bool(self.user_account.get('is_pro')),
+                    is_pi_camera=bool(self.webcam_streamer.pi_camera)),
+                error_stats=self.error_stats.as_dict()))
         if command == "get_sentry_opt":
             sentry_opt = self._settings.get(["sentry_opt"])
             if sentry_opt == 'out':
@@ -191,7 +194,6 @@ class TheSpaghettiDetectivePlugin(
         _logger.info('User account: {}'.format(self.user_account))
         _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
 
-        self.streaming_status.set_status(eligible=bool(self.user_account.get('is_pro')))
         if self.user_account.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
             _logger.info('Starting webcam streamer')
             self.webcam_streamer = WebcamStreamer(self, self.sentry)
@@ -202,7 +204,7 @@ class TheSpaghettiDetectivePlugin(
         backoff = ExpoBackoff(120)
         while True:
             try:
-                self.error_tracker.attempt('server')
+                self.error_stats.attempt('server')
 
                 if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
                     self.post_printer_status(_print_event_tracker.octoprint_data(self), throwing=True)
@@ -212,11 +214,11 @@ class TheSpaghettiDetectivePlugin(
                 time.sleep(1)
 
             except WebSocketClientException as e:
-                self.error_tracker.add_connection_error('server')
+                self.error_stats.add_connection_error('server')
                 backoff.more(e)
             except Exception as e:
                 self.sentry.captureException(tags=get_tags())
-                self.error_tracker.add_connection_error('server')
+                self.error_stats.add_connection_error('server')
                 backoff.more(e)
 
     def post_printer_status(self, data, throwing=False):

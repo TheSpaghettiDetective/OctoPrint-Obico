@@ -80,7 +80,7 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
-        self.connectionErrors = { server: [], webcam: [] };
+        self.errorStats = {};
         self.hasShownServerError = false;
         self.hasShownWebcamError = false;
         self.streaming = ko.mapping.fromJS({ eligible: false, is_pi_camera: false });
@@ -126,6 +126,7 @@ $(function () {
             }
 
             var text = "Unkonwn errors.";
+            var msgType = "error";
 
             if (data.new_error) {
                 msgType = "error";
@@ -161,11 +162,34 @@ $(function () {
                     }
                     self.hasShownWebcamError = true;
                     text =
-                        'The Spaghetti Detective failed to connect to webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.';
+                        'The Spaghetti Detective plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.thespaghettidetective.com/docs/webcam-connection-error-popup">this trouble-shooting guide</a>.';
                 }
             }
             if (_.get(data, 'new_warning', '') == 'streaming') {
+                var streamingWarningAcked = localStorage.getItem("tsd.streamingWarningAcked");
+                if (!streamingWarningAcked) {
+                    msgType = "notice";
+                    text =
+                        '<p>Premium webcam streaming failed to start. The Spaghetti Detective has switched to basic streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-laggy/">Learn more >>></a></p>';
+                    buttons = [
+                        {
+                            text: "Ignore",
+                            click: function(notice) {
+                                localStorage.setItem("tsd.streamingWarningAcked", true);
+                                notice.remove();
+                            }
+                        },
+                        {
+                            text: "Close",
+                            addClass: "remove_button"
+                        },
+                    ]
+                }
+            }
+            if (_.get(data, 'new_warning', '') == 'cpu') {
                 msgType = "notice";
+                text =
+                    '<p>Premium streaming uses excessive CPU. This may negatively impact your print quality. Consider switch off "compatibility mode", or disable premium streaming. <a href="https://www.thespaghettidetective.com/docs/compatibility-mode-excessive-cpu">Learn more >>></a></p>';
                 buttons = [
                     {
                         text: "Close",
@@ -176,7 +200,7 @@ $(function () {
 
             new PNotify({
                 title: "The Spaghetti Detective",
-                text: data.message,
+                text: text,
                 type: msgType,
                 hide: false,
                 confirm: {
@@ -200,13 +224,14 @@ $(function () {
             apiCommand({
                 command: "get_plugin_status"
             },
-                function (connectionErrors) {
-                    for (var k in connectionErrors) {
-                        var occurences = [];
-                        for (var i in connectionErrors[k]) {
-                            occurences.push(new Date(connectionErrors[k][i]));
+                function (status) {
+                    var stats = status.error_stats;
+                    for (var k in stats) {
+                        var errors = [];
+                        for (var i in stats[k].errors) {
+                            errors.push(new Date(stats[k].errors[i]));
                         }
-                        self.connectionErrors[k] = occurences;
+                        self.errorStats[k] = {attempts: stats[k].attempts, errors: errors};
                     }
                     showMessageDialog({
                         title: "The Spaghetti Detective Diagnostic Report",
@@ -220,36 +245,30 @@ $(function () {
         };
 
         function trackerModalBody() {
-            var errorBody = '<legend>Connectivity Report</legend>'
-
-            if (
-                self.connectionErrors.server.length +
-                self.connectionErrors.webcam.length == 0
-            ) {
+            var serverErrors = _.get(self.errorStats, 'server.errors', []);
+            var webcamErrors = _.get(self.errorStats, 'webcam.errors', []);
+            var errorBody = '<b>This window is to diagnose connection problems with The Spaghetti Detective server. It is not a diagnosis for your print failures.</b>';
+            if (serverErrors.length + webcamErrors.length == 0) {
                 errorBody +=
                     '<p class="text-success">There have been no connection errors since OctoPrint rebooted.</p>';
             } else {
                 errorBody +=
-                    '<p class="text-error">The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/octoprint-is-offline/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/contact-us-for-support/">reach out to us</a> for help.</p>';
+                    '<p class="text-error">The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/connectivity-error-report/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/contact-us-for-support/">reach out to us</a> for help.</p>';
             }
 
-            if (self.connectionErrors.server.length > 0) {
-                errorBody += '<hr /><p class="text-error">The Spaghetti Detective failed to connect to the server <b>' + self.connectionErrors.server.length + '</b> times since OctoPrint rebooted.</p>';
-                errorBody += '<ul><li>The first error occurred at: <b>' + self.connectionErrors.server[0] + '</b>.</li>';
-                errorBody += '<li>The most recent error occurred at: <b>' + self.connectionErrors.server[self.connectionErrors.server.length - 1] + '</b>.</li></ul>';
+            if (serverErrors.length > 0) {
+                errorBody += '<hr /><p class="text-error">The plugin has failed to connect to the server <b>' + serverErrors.length + '</b> times (error rate <b>' + Math.round(serverErrors.length/self.errorStats.server.attempts*100) + '%</b>) since OctoPrint rebooted.</p>';
+                errorBody += '<ul><li>The first error occurred at: <b>' + serverErrors[0] + '</b>.</li>';
+                errorBody += '<li>The most recent error occurred at: <b>' + serverErrors[serverErrors.length - 1] + '</b>.</li></ul>';
                 errorBody += '<p>Please check your OctoPrint\'s internet connection to make sure it has reliable connection to the internet.<p>';
             }
 
-            if (self.connectionErrors.webcam.length > 0) {
-                errorBody += '<hr /><p class="text-error">The Spaghetti Detective failed to connect to the webcam <b>' + self.connectionErrors.webcam.length + '</b> times since OctoPrint rebooted.</p>';
-                errorBody += '<ul><li>The first error occurred at: <b>' + self.connectionErrors.webcam[0] + '</b>.</li>';
-                errorBody += '<li>The most recent error occurred at: <b>' + self.connectionErrors.webcam[self.connectionErrors.webcam.length - 1] + '</b>.</li></ul>';
-                errorBody += "<p>Please go to \"Settings\" -> \"Webcam & Timelapse\" and make sure the stream URL and snapshot URL are set correctly. Also make sure these URLs can be accessed from within the OctoPrint (not just from your browser).</p>";
+            if (webcamErrors.length > 0) {
+                errorBody += '<hr /><p class="text-error">The plugin has failed to connect to the webcam <b>' + webcamErrors.length + '</b> times (error rate <b>' + Math.round(webcamErrors.length/self.errorStats.webcam.attempts*100) + '%</b>) since OctoPrint rebooted.</p>';
+                errorBody += '<ul><li>The first error occurred at: <b>' + webcamErrors[0] + '</b>.</li>';
+                errorBody += '<li>The most recent error occurred at: <b>' + webcamErrors[webcamErrors.length - 1] + '</b>.</li></ul>';
+                errorBody += "<p>Please go to \"Settings\" -> \"Webcam & Timelapse\" and make sure the stream URL and snapshot URL are set correctly.</p>";
             }
-
-            errorBody += '<br /><legend>Webcam Streaming Report</legend>';
-            errorBody += '<h5 class="' + (self.streaming.status_code() == 'okay' ? 'text-success' : 'text-error') + '">' + self.streaming.status() + '</h5>';
-            errorBody += '<p>' + self.streaming.status_desc() + '</p>';
             return errorBody;
         }
 
