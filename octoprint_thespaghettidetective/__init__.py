@@ -136,7 +136,7 @@ class TheSpaghettiDetectivePlugin(
                 return flask.jsonify(dict(
                     streaming_status=dict(
                         is_pro=bool(self.user_account.get('is_pro')),
-                        is_pi_camera=self.webcam_streamer and self.webcam_streamer.pi_camera),
+                        is_pi_camera=self.webcam_streamer and bool(self.webcam_streamer.pi_camera)),
                     error_stats=self.error_stats.as_dict()))
             if command == "get_sentry_opt":
                 sentry_opt = self._settings.get(["sentry_opt"])
