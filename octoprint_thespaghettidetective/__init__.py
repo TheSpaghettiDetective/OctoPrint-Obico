@@ -96,7 +96,7 @@ class TheSpaghettiDetectivePlugin(
         # for details.
         return dict(
             TheSpaghettiDetective=dict(
-                displayName="The Spaghetti Detective",
+                displayName="Access Anywhere - The Spaghetti Detective",
                 displayVersion=self._plugin_version,
 
                 # version check: github repository
