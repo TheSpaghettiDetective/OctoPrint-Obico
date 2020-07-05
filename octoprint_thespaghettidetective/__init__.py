@@ -123,29 +123,32 @@ class TheSpaghettiDetectivePlugin(
         return True
 
     def on_api_command(self, command, data):
-        if command == "test_auth_token":
-            auth_token = data["auth_token"]
-            succeeded, status_text, _ = self.tsd_api_status(auth_token=auth_token)
-            if succeeded:
-                self._settings.set(["auth_token"], auth_token, force=True)
-                self._settings.save(force=True)
+        try:
+            if command == "test_auth_token":
+                auth_token = data["auth_token"]
+                succeeded, status_text, _ = self.tsd_api_status(auth_token=auth_token)
+                if succeeded:
+                    self._settings.set(["auth_token"], auth_token, force=True)
+                    self._settings.save(force=True)
 
-            return flask.jsonify({'succeeded': succeeded, 'text': status_text})
-        if command == "get_plugin_status":
-            return flask.jsonify(dict(
-                streaming_status=dict(
-                    is_pro=bool(self.user_account.get('is_pro')),
-                    is_pi_camera=bool(self.webcam_streamer.pi_camera)),
-                error_stats=self.error_stats.as_dict()))
-        if command == "get_sentry_opt":
-            sentry_opt = self._settings.get(["sentry_opt"])
-            if sentry_opt == 'out':
-                self._settings.set(["sentry_opt"], 'asked')
+                return flask.jsonify({'succeeded': succeeded, 'text': status_text})
+            if command == "get_plugin_status":
+                return flask.jsonify(dict(
+                    streaming_status=dict(
+                        is_pro=bool(self.user_account.get('is_pro')),
+                        is_pi_camera=self.webcam_streamer and self.webcam_streamer.pi_camera),
+                    error_stats=self.error_stats.as_dict()))
+            if command == "get_sentry_opt":
+                sentry_opt = self._settings.get(["sentry_opt"])
+                if sentry_opt == 'out':
+                    self._settings.set(["sentry_opt"], 'asked')
+                    self._settings.save(force=True)
+                return flask.jsonify(dict(sentryOpt=sentry_opt))
+            if command == "toggle_sentry_opt":
+                self._settings.set(["sentry_opt"], 'out' if self._settings.get(["sentry_opt"]) == 'in' else 'in', force=True)
                 self._settings.save(force=True)
-            return flask.jsonify(dict(sentryOpt=sentry_opt))
-        if command == "toggle_sentry_opt":
-            self._settings.set(["sentry_opt"], 'out' if self._settings.get(["sentry_opt"]) == 'in' else 'in', force=True)
-            self._settings.save(force=True)
+        except Exception as e:
+            self.sentry.captureException()
 
     # ~~ Eventhandler mixin
 
