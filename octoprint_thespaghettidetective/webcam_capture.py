@@ -39,8 +39,8 @@ def webcam_full_url(url):
     return full_url
 
 
-@backoff.on_exception(backoff.expo, Exception, max_tries=6)
-@backoff.on_predicate(backoff.expo, max_tries=6)
+@backoff.on_exception(backoff.expo, Exception, max_tries=3)
+@backoff.on_predicate(backoff.expo, max_tries=3)
 def capture_jpeg(webcam_settings):
     snapshot_url = webcam_full_url(webcam_settings.get("snapshot", ''))
     if snapshot_url:

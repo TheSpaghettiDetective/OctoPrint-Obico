@@ -15,6 +15,7 @@ import backoff
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
 from .utils import ExpoBackoff, ConnectionErrorStats, SentryWrapper, pi_version, get_tags, not_using_pi_camera, OctoPrintSettingsUpdater
+from .lib import alert_queue
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
@@ -132,23 +133,30 @@ class TheSpaghettiDetectivePlugin(
                     self._settings.save(force=True)
 
                 return flask.jsonify({'succeeded': succeeded, 'text': status_text})
+
             if command == "get_plugin_status":
-                return flask.jsonify(dict(
+                results = dict(
                     streaming_status=dict(
                         is_pro=bool(self.user_account.get('is_pro')),
                         is_pi_camera=self.webcam_streamer and bool(self.webcam_streamer.pi_camera)),
-                    error_stats=self.error_stats.as_dict()))
-            if command == "get_sentry_opt":
-                sentry_opt = self._settings.get(["sentry_opt"])
-                if sentry_opt == 'out':
-                    self._settings.set(["sentry_opt"], 'asked')
-                    self._settings.save(force=True)
-                return flask.jsonify(dict(sentryOpt=sentry_opt))
+                    error_stats=self.error_stats.as_dict(),
+                    alerts=alert_queue.fetch_and_clear(),
+                    )
+                if self._settings.get(["auth_token"]):     # Ask to opt in sentry only after wizard is done.
+                    sentry_opt = self._settings.get(["sentry_opt"])
+                    if sentry_opt == 'out':
+                        self._settings.set(["sentry_opt"], 'asked')
+                        self._settings.save(force=True)
+                    results['sentry_opt'] = sentry_opt
+
+                return flask.jsonify(results)
+
             if command == "toggle_sentry_opt":
                 self._settings.set(["sentry_opt"], 'out' if self._settings.get(["sentry_opt"]) == 'in' else 'in', force=True)
                 self._settings.save(force=True)
         except Exception as e:
             self.sentry.captureException()
+            raise
 
     # ~~ Eventhandler mixin
 

@@ -73,6 +73,26 @@ $(function () {
         }
     };
 
+    var LOCAL_STORAGE_KEY = 'plugin.tsd';
+
+    function localStorageObject() {
+        var retrievedObject = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (!retrievedObject) {
+            retrievedObject = '{}';
+        }
+        return JSON.parse(retrievedObject);
+    }
+
+    function retrieveFromLocalStorage(itemPath, defaultValue) {
+        return _.get(localStorageObject(), itemPath, defaultValue);
+    }
+
+    function saveToLocalStorage(itemPath, value) {
+        var retrievedObject = localStorageObject();
+        _.set(retrievedObject, itemPath, value);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(retrievedObject));
+    }
+
     function ThespaghettidetectiveViewModel(parameters) {
         var self = this;
 
@@ -81,29 +101,24 @@ $(function () {
         self.settingsViewModel = parameters[0];
 
         self.errorStats = {};
-        self.hasShownServerError = false;
-        self.hasShownWebcamError = false;
+        self.alertsShown = {};
         self.streaming = ko.mapping.fromJS({ is_pro: false, is_pi_camera: false });
         self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
         self.sentryOptedIn = ko.pureComputed(function () {
             return self.settingsViewModel.settings.plugins.thespaghettidetective.sentry_opt() === "in";
         }, self);
 
-        self.onSettingsShown = function (plugin, data) {
-            apiCommand({
-                command: "get_plugin_status"
-            },
-                function (data) {
-                    ko.mapping.fromJS(data.streaming_status, self.streaming);
-                }
-            );
+        self.onStartupComplete = function (plugin, data) {
+            self.fetchPluginStatus();
         }
 
-        self.onStartupComplete = function (plugin, data) {
+        self.fetchPluginStatus = function() {
             apiCommand({
-                command: "get_sentry_opt",
+                command: "get_plugin_status",
             }, function (data) {
-                if (data.sentryOpt === "out") {
+                ko.mapping.fromJS(data.streaming_status, self.streaming);
+
+                if (_.get(data, 'sentry_opt') === "out") {
                     var sentrynotice = new PNotify({
                         title: "The Spaghetti Detective",
                         text: "<p>Turn on bug reporting to help us make TSD plugin better?</p><p>The debugging info included in the report will be anonymized.</p>",
@@ -117,6 +132,9 @@ $(function () {
                         self.toggleSentryOpt();
                     });
                 }
+                _.get(data, 'alerts', []).forEach( function(alertMsg) {
+                    self.displayAlert(alertMsg);
+                })
             });
         }
 
@@ -125,70 +143,76 @@ $(function () {
                 return;
             }
 
+            if (data.new_alert) {
+                self.fetchPluginStatus();
+            }
+        }
+
+        self.displayAlert = function(alertMsg) {
+            var ignoredItemPath = "ignored." + alertMsg.cause + "." + alertMsg.level;
+            if (retrieveFromLocalStorage(ignoredItemPath, false)) {
+                return ;
+            }
+
+            var showItemPath = alertMsg.cause + "." + alertMsg.level;
+            if (_.get(self.alertsShown, showItemPath, false)) {
+                return;
+            }
+            _.set(self.alertsShown, showItemPath, true);
+
             var text = null;
             var msgType = "error";
+            if (alertMsg.level === "warning") {
+                msgType = "notice";
+            }
+
             var buttons = [
+                {
+                    text: "Never show again",
+                    click: function (notice) {
+                        saveToLocalStorage(ignoredItemPath, true);
+                        notice.remove();
+                    }
+                },
+                {
+                    text: "OK",
+                    click: function (notice) {
+                        notice.remove();
+                    }
+                },
                 {
                     text: "Close",
                     addClass: "remove_button"
                 },
             ]
 
-            if (data.new_error) {
-                msgType = "error";
-                buttons = buttons.concat([
+            if (alertMsg.level === "error") {
+                buttons.unshift(
                     {
-                        text: "Error Details",
+                        text: "Details",
                         click: function (notice) {
                             self.showTrackerModal();
                             notice.remove();
                         }
-                    },
-                    {
-                        text: "Got It!",
-                        click: function (notice) {
-                            notice.remove();
-                        }
                     }
-                ]);
-                if (data.new_error == "server") {
-                    if (self.hasShownServerError) {
-                        return;
-                    }
-                    self.hasShownServerError = true;
+                );
+                if (alertMsg.cause === "server") {
                     text =
                         "The Spaghetti Detective failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.";
-                } else if (data.new_error == "webcam") {
-                    if (self.hasShownWebcamError) {
-                        return;
-                    }
-                    self.hasShownWebcamError = true;
+                } else if (alertMsg.cause === "webcam") {
                     text =
                         'The Spaghetti Detective plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.thespaghettidetective.com/docs/webcam-connection-error-popup">this trouble-shooting guide</a>.';
                 }
             }
-            if (_.get(data, 'new_warning', '') == 'streaming') {
-                var streamingWarningAcked = localStorage.getItem("tsd.streamingWarningAcked");
-                if (!streamingWarningAcked) {
-                    msgType = "notice";
+            if (alertMsg.level === "warning") {
+                if (alertMsg.cause === 'streaming') {
                     text =
                         '<p>Premium webcam streaming failed to start. The Spaghetti Detective has switched to basic streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/webcam-switched-to-basic-streaming/">Learn more >>></a></p>';
-                    buttons = buttons.concat([
-                        {
-                            text: "Ignore",
-                            click: function (notice) {
-                                localStorage.setItem("tsd.streamingWarningAcked", true);
-                                notice.remove();
-                            }
-                        },
-                    ]);
                 }
-            }
-            if (_.get(data, 'new_warning', '') == 'cpu') {
-                msgType = "notice";
-                text =
-                    '<p>Premium streaming uses excessive CPU. This may negatively impact your print quality. Consider switch off "compatibility mode", or disable premium streaming. <a href="https://www.thespaghettidetective.com/docs/compatibility-mode-excessive-cpu">Learn more >>></a></p>';
-
+                if (alertMsg.cause === 'cpu') {
+                    text =
+                        '<p>Premium streaming uses excessive CPU. This may negatively impact your print quality. Consider switch off "compatibility mode", or disable premium streaming. <a href="https://www.thespaghettidetective.com/docs/compatibility-mode-excessive-cpu">Learn more >>></a></p>';
+                }
             }
 
             if (text) {

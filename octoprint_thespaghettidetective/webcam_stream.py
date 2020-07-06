@@ -25,6 +25,7 @@ import psutil
 from octoprint.util import to_unicode
 
 from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera, get_image_info, wait_for_port, wait_for_port_to_close
+from .lib import alert_queue
 from .ws import WebSocketClient
 from .webcam_capture import capture_jpeg, webcam_full_url
 
@@ -58,15 +59,13 @@ def bitrate_for_dim(img_w, img_h):
 def cpu_watch_dog(watched_process, plugin, max, interval):
 
     def watch_process_cpu(watched_process, max, interval, plugin):
-        has_notified = False
         while True:
             if not watched_process.is_running():
                 return
 
             cpu_pct = watched_process.cpu_percent(interval=None)
-            if cpu_pct > max and not has_notified:
-                plugin._plugin_manager.send_plugin_message(plugin._identifier, {'new_warning': 'cpu'})
-                has_notified = True
+            if cpu_pct > max:
+                alert_queue.add_alert({'level': 'warning', 'cause': 'cpu'}, plugin)
 
             time.sleep(interval)
 
@@ -158,7 +157,7 @@ class WebcamStreamer:
                 self.pi_camera.wait_recording(0)
         except:
             not_using_pi_camera()
-            self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_warning': 'streaming'})
+            alert_queue.add_alert({'level': 'warning', 'cause':'streaming'}, self.plugin)
 
             wait_for_port('127.0.0.1', 8080)  # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()

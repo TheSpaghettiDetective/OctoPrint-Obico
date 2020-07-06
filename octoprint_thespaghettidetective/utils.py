@@ -16,6 +16,7 @@ import socket
 from contextlib import closing
 import backoff
 
+from .lib import alert_queue
 
 CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 
@@ -74,7 +75,7 @@ class ConnectionErrorStats:
         if len(errors) < attempts * 0.25:
             return
 
-        self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'new_error': error_type})
+        alert_queue.add_alert({'level': 'error', 'cause': error_type}, self.plugin)
 
     def get_stat(self, error_type):
         return self.stats.setdefault(error_type, dict(attempts=0, errors=[]))
