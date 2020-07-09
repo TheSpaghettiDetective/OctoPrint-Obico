@@ -7,7 +7,7 @@
 $(function () {
 
     function apiCommand(data, success) {
-        $.ajax("/api/plugin/thespaghettidetective", {
+        $.ajax("api/plugin/thespaghettidetective", {
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify(data),
