@@ -31,17 +31,6 @@ $(function () {
         );
     }
 
-    $("input.custom-server").change(function (e) {
-        var container = $(this)
-            .parent()
-            .parent();
-        if ($(this).is(":checked")) {
-            container.find("input.endpoint-prefix").prop("disabled", false);
-        } else {
-            container.find("input.endpoint-prefix").prop("disabled", true);
-        }
-    });
-
     var authTokenInputTimeout = null;
     $("input.auth-token-input").keyup(function (e) {
         var container = $(this).parent();
@@ -296,6 +285,10 @@ $(function () {
             });
             return true;
         };
+
+        self.resetEndpointPrefix = function() {
+            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix("https://app.thespaghettidetective.com");
+          }
     }
 
     /* view model class, parameters for constructor, container to bind to

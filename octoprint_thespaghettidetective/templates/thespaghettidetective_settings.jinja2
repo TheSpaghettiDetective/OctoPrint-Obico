@@ -10,13 +10,13 @@
   </ul>
   <div class="tab-content">
     <div class="tab-pane active" id="setup">
-        <h5>Step 1: <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/secure_redirect/?target=/accounts/signup/&source=plugin' }" target="_blank">Sign up</a> an account.</h5>
+        <h5>Step 1: <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">Sign up</a> an account.</h5>
         <p>Be sure to check our <a href="https://thespaghettidetective.com/privacy.html" target="_blank">Privacy Policy</a> and <a href="https://thespaghettidetective.com/terms.html" target="_blank">Terms of Use</a>.</p>
         <h5>Step 2: Add a printer in The Spaghetti Detective and obtain its secret token.</h5>
         <div>Secret token is the key that makes sure only you can access data in your account, not anyone else.</div>
         <h5>Step 3: Copy the secret token to the box below.</h5>
         <form class="form-horizontal">
-            <div>If you have problem locating the secret token, click <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/secure_redirect/?target=/printer_auth_token/0/&source=plugin' }" target="_blank">here</a>.</div>
+            <div>If you have problem locating the secret token, click <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/printer_auth_token/0/?source=plugin' }" target="_blank">here</a>.</div>
             <div class="input-append token-input">
                 <input type="text" class="input-block-level auth-token-input" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.auth_token">
                 <button class="btn test-auth-token" type="button"><i class="fa fa-spinner fa-spin" style="display: none;"></i> Test</button>
@@ -29,18 +29,13 @@
     </div>
     <div class="tab-pane" id="advanced">
         <form class="form-horizontal">
-        <legend>Server</legend>
+        <legend>TSD Server</legend>
         <div class="control-group">
             <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
             <label class="control-label">{{ _('Server Address') }}</label>
             <div class="controls">
-                <input type="text" class="input-block-level endpoint-prefix" disabled data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix">
-                <div class="form-check" style="margin-top: 8px;">
-                  <input class="form-check-input custom-server" type="checkbox" value="" style="margin-top: 0px;">
-                  <label class="form-check-label" for="custom-server" style="display: inline">
-                    I have my own TSD server (don't check this unless you know what you are doing).
-                  </label>
-                </div>
+                <input type="text" class="span8 endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix">
+                <button id="restore-server-address" class="btn" type="button" data-bind="click: resetEndpointPrefix">Restore Default</button>
             </div>
         </div>
         <br />
@@ -58,8 +53,8 @@
           <div class="control-group">
               <div class="controls">
                   <div class="form-check" style="margin-top: 8px;">
-                    <input class="form-check-input custom-server" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming" style="margin-top: 0px;">
-                    <label class="form-check-label" for="custom-server" style="display: inline">
+                    <input id="disable-streaming" class="form-check-input" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming" style="margin-top: 0px;">
+                    <label class="form-check-label" for="disable-streaming" style="display: inline">
                       Disable premium webcam streaming. <a href="https://www.thespaghettidetective.com/docs/disable-25-fps-streaming/">(Why would I want to do that?)</a>
                     </label>
                   </div>
@@ -100,8 +95,8 @@
         <form class="form-horizontal">
         <legend>Error Reporting</legend>
                 <div class="form-check" style="margin-top: 8px;">
-                  <input class="form-check-input sentry-opt" type="checkbox" value="" data-bind="checked: sentryOptedIn, click: toggleSentryOpt" style="margin-top: 0px;">
-                  <label class="form-check-label" for="custom-server" style="display: inline">
+                  <input id="sentry-opt" class="form-check-input" type="checkbox" value="" data-bind="checked: sentryOptedIn, click: toggleSentryOpt" style="margin-top: 0px;">
+                  <label class="form-check-label" for="sentry-opt" style="display: inline">
                     Report anonymized error informtation to The Spaghetti Detective developers to help them diagose the problem.
                   </label>
                 </div>
