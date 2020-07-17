@@ -101,7 +101,7 @@ $(function () {
             self.fetchPluginStatus();
         }
 
-        self.fetchPluginStatus = function() {
+        self.fetchPluginStatus = function () {
             apiCommand({
                 command: "get_plugin_status",
             }, function (data) {
@@ -121,7 +121,7 @@ $(function () {
                         self.toggleSentryOpt();
                     });
                 }
-                _.get(data, 'alerts', []).forEach( function(alertMsg) {
+                _.get(data, 'alerts', []).forEach(function (alertMsg) {
                     self.displayAlert(alertMsg);
                 })
             });
@@ -137,10 +137,10 @@ $(function () {
             }
         }
 
-        self.displayAlert = function(alertMsg) {
+        self.displayAlert = function (alertMsg) {
             var ignoredItemPath = "ignored." + alertMsg.cause + "." + alertMsg.level;
             if (retrieveFromLocalStorage(ignoredItemPath, false)) {
-                return ;
+                return;
             }
 
             var showItemPath = alertMsg.cause + "." + alertMsg.level;
@@ -286,9 +286,9 @@ $(function () {
             return true;
         };
 
-        self.resetEndpointPrefix = function() {
+        self.resetEndpointPrefix = function () {
             self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix("https://app.thespaghettidetective.com");
-          }
+        }
     }
 
     /* view model class, parameters for constructor, container to bind to
