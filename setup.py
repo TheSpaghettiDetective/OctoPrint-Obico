@@ -84,7 +84,7 @@ try:
 except:
      pass
 if is_rpi:
-	plugin_requires += [ 'picamera==1.13' ]
+	plugin_requires += [ 'picamerab==1.13b0' ]
 
 
 setup_parameters = octoprint_setuptools.create_plugin_setup_parameters(
