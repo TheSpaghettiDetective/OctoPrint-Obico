@@ -60,12 +60,8 @@ class TheSpaghettiDetectivePlugin(
         self.file_downloader = FileDownloader(self, _print_event_tracker)
         self.webcam_streamer = None
         self.user_account = DEFAULT_USER_ACCOUNT
-        self.local_proxy = LocalProxy(
-            base_url="http://127.0.0.1:5000",  # FIXME
-            on_http_response=self.send_ws_msg_to_server,
-            on_ws_message=self.send_ws_msg_to_server)
 
-        # ~~ Wizard plugin mix
+    # ~~ Wizard plugin mix
 
     def is_wizard_required(self):
         return not self._settings.get(["auth_token"])
@@ -220,6 +216,16 @@ class TheSpaghettiDetectivePlugin(
             stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
             stream_thread.daemon = True
             stream_thread.start()
+
+        server_host = '127.0.0.1'  # FIXME
+        server_port = self._settings.global_get(['server', 'port'])
+
+        url = f'http://{server_host}:{server_port}'
+        self.local_proxy = LocalProxy(
+            base_url=url,
+            on_http_response=self.send_ws_msg_to_server,
+            on_ws_message=self.send_ws_msg_to_server)
+
 
         backoff = ExpoBackoff(120)
         while True:
