@@ -41,7 +41,7 @@ class LocalProxy(object):
                 'headers': {}
             }
 
-        self.send_ws_msg_to_server(
+        self.on_http_response(
             {'http.proxy': {'ref': ref, 'response': resp_data}},
             throwing=throwing,
             as_binary=True)
@@ -72,8 +72,9 @@ class LocalProxy(object):
                 as_binary=True)
 
         url = urllib.parse.urljoin(self.base_url, path)
-        url.replace('http://', 'ws://')
-        url.replace('https://', 'wss://')
+        url = url.replace('http://', 'ws://')
+        url = url.replace('https://', 'wss://')
+
         ws = WebSocketClient(
             url,
             token=None,

@@ -267,7 +267,7 @@ class TheSpaghettiDetectivePlugin(
         if as_binary:
             raw = bson.dumps(data)
             _logger.debug("Sending binary ({} bytes) to server".format(
-                len(raw))
+                len(raw)))
             self.ss.send_binary(raw)
         else:
             _logger.debug("Sending to server: \n{}".format(data))
@@ -293,10 +293,10 @@ class TheSpaghettiDetectivePlugin(
 
         try:
 
-            if isinstance(msg, bytes):
+            if isinstance(raw_data, bytes):
                 msg = bson.loads(raw_data)
             else:
-                msg = json.loads(raw.data)
+                msg = json.loads(raw_data)
                 if msg.get('commands') or msg.get('passthru'):
                     _logger.info('Received: ' + raw_data)
                 else:
