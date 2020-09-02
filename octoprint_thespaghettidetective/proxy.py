@@ -1,7 +1,10 @@
 import requests
-import urllib.parse
 import logging
 import threading
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 
 from .ws import WebSocketClient
 
@@ -21,7 +24,7 @@ class LocalProxy(object):
             params=None, data=None, headers=None, timeout=30):
 
         throwing = False
-        url = urllib.parse.urljoin(self.base_url, path)
+        url = urljoin(self.base_url, path)
 
         try:
             resp = getattr(requests, method)(
@@ -71,7 +74,7 @@ class LocalProxy(object):
                 throwing=False,
                 as_binary=True)
 
-        url = urllib.parse.urljoin(self.base_url, path)
+        url = urljoin(self.base_url, path)
         url = url.replace('http://', 'ws://')
         url = url.replace('https://', 'wss://')
 
