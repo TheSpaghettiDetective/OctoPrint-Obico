@@ -35,7 +35,7 @@ plugin_url = "https://thespaghettidetective.com"
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = ["OctoPrint>=1.3.8", "backoff>=1.4.3", "raven", "bson==0.5.10"]
+plugin_requires = ["OctoPrint>=1.3.8", "backoff>=1.4.3", "raven"]
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point

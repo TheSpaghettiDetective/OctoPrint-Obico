@@ -43,16 +43,11 @@ class WebSocketClient:
             if self.connected():
                 self.ws.send(data)
 
-    def send_binary(self, data):
-        with self._mutex:
-            if self.connected():
-                self.ws.send(data, opcode=websocket.ABNF.OPCODE_BINARY)
-
     def connected(self):
         with self._mutex:
             return self.ws.sock and self.ws.sock.connected
 
     def disconnect(self):
         with self._mutex:
-            self.ws.keep_running = False
+            self.ws.keep_running = False;
             self.ws.close()

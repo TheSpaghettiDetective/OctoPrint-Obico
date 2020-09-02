@@ -1,6 +1,5 @@
 # coding=utf-8
 from __future__ import absolute_import
-import bson
 import logging
 import threading
 import sarge
@@ -15,16 +14,13 @@ import backoff
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
-from .utils import (
-    ExpoBackoff, ConnectionErrorStats, SentryWrapper, pi_version,
-    get_tags, not_using_pi_camera, OctoPrintSettingsUpdater)
+from .utils import ExpoBackoff, ConnectionErrorStats, SentryWrapper, pi_version, get_tags, not_using_pi_camera, OctoPrintSettingsUpdater
 from .lib import alert_queue
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster
 from .file_download import FileDownloader
-from .proxy import LocalProxy
 
 import octoprint.plugin
 
@@ -60,8 +56,7 @@ class TheSpaghettiDetectivePlugin(
         self.file_downloader = FileDownloader(self, _print_event_tracker)
         self.webcam_streamer = None
         self.user_account = DEFAULT_USER_ACCOUNT
-
-    # ~~ Wizard plugin mix
+        # ~~ Wizard plugin mix
 
     def is_wizard_required(self):
         return not self._settings.get(["auth_token"])
@@ -217,16 +212,6 @@ class TheSpaghettiDetectivePlugin(
             stream_thread.daemon = True
             stream_thread.start()
 
-        server_host = '127.0.0.1'  # FIXME
-        server_port = self._settings.global_get(['server', 'port'])
-
-        url = f'http://{server_host}:{server_port}'
-        self.local_proxy = LocalProxy(
-            base_url=url,
-            on_http_response=self.send_ws_msg_to_server,
-            on_ws_message=self.send_ws_msg_to_server)
-
-
         backoff = ExpoBackoff(120)
         while True:
             try:
@@ -251,7 +236,7 @@ class TheSpaghettiDetectivePlugin(
         if self.send_ws_msg_to_server(data, throwing=throwing):
             self.last_status_update_ts = time.time()
 
-    def send_ws_msg_to_server(self, data, throwing=False, as_binary=False):
+    def send_ws_msg_to_server(self, data, throwing=False):
         """ Returns True if message is sent successfully. Otherwise returns False. """
 
         if not self.is_configured():
@@ -270,18 +255,11 @@ class TheSpaghettiDetectivePlugin(
             else:
                 return False
 
-        if as_binary:
-            raw = bson.dumps(data)
-            _logger.debug("Sending binary ({} bytes) to server".format(
-                len(raw)))
-            self.ss.send_binary(raw)
+        _logger.debug("Sending to server: \n{}".format(data))
+        if __python_version__ == 3:
+            self.ss.send_text(json.dumps(data, default=str))
         else:
-            _logger.debug("Sending to server: \n{}".format(data))
-            if __python_version__ == 3:
-                self.ss.send_text(json.dumps(data, default=str))
-            else:
-                self.ss.send_text(json.dumps(data, encoding='iso-8859-1', default=str))
-
+            self.ss.send_text(json.dumps(data, encoding='iso-8859-1', default=str))
         return True
 
     def connect_ws(self):
@@ -294,19 +272,15 @@ class TheSpaghettiDetectivePlugin(
         _logger.error("Server websocket is closing")
         self.ss = None
 
-    def process_server_msg(self, ws, raw_data):
+    def process_server_msg(self, ws, msg_json):
         global _print_event_tracker
 
         try:
-
-            if isinstance(raw_data, bytes):
-                msg = bson.loads(raw_data)
+            msg = json.loads(msg_json)
+            if msg.get('commands') or msg.get('passthru'):
+                _logger.info('Received: ' + msg_json)
             else:
-                msg = json.loads(raw_data)
-                if msg.get('commands') or msg.get('passthru'):
-                    _logger.info('Received: ' + raw_data)
-                else:
-                    _logger.debug('Received: ' + raw_data)
+                _logger.debug('Received: ' + msg_json)
 
             for command in msg.get('commands', []):
                 if command["cmd"] == "pause":
@@ -318,12 +292,6 @@ class TheSpaghettiDetectivePlugin(
                     self._printer.resume_print()
                 if command["cmd"] == 'print':
                     self.start_print(**command.get('args'))
-
-                if command["cmd"] == 'http.proxy':
-                    self.local_proxy.send_http_to_local(**command.get('args'))
-
-                if command["cmd"] == 'ws.proxy':
-                    self.local_proxy.send_ws_to_local(**command.get('args'))
 
             passsthru = msg.get('passthru')
             if passsthru:
