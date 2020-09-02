@@ -220,7 +220,7 @@ class TheSpaghettiDetectivePlugin(
         server_host = '127.0.0.1'  # FIXME
         server_port = self._settings.global_get(['server', 'port'])
 
-        url = f'http://{server_host}:{server_port}'
+        url = 'http://{}:{}'.format(server_host, server_port)
         self.local_proxy = LocalProxy(
             base_url=url,
             on_http_response=self.send_ws_msg_to_server,
