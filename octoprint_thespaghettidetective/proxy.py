@@ -55,10 +55,7 @@ class LocalProxy(object):
             self.connect_ws(ref, path)
 
         ws = self.ref_to_ws[ref]
-        if isinstance(data, bytes):
-            ws.send_binary(data)
-        else:
-            ws.send_text(data)
+        ws.send_text(data)
 
     def connect_ws(self, ref, path):
         def on_ws_error(ws, ex):
