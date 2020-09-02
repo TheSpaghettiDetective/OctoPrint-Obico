@@ -298,19 +298,27 @@ class TheSpaghettiDetectivePlugin(
         global _print_event_tracker
 
         try:
+            # raw_data can be both json or bson
+            # no py2 compat way to properly detect type here
+            # (w/o patching ws lib)
+            try:
+                msg, is_json = json.loads(raw_data), True
+            except ValueError:
+                msg, is_json = bson.loads(raw_data), False
 
-            if isinstance(raw_data, bytes):
-                msg = bson.loads(raw_data)
-            else:
-                msg = json.loads(raw_data)
+            if is_json:
                 if msg.get('commands') or msg.get('passthru'):
                     _logger.info('Received: ' + raw_data)
                 else:
                     _logger.debug('Received: ' + raw_data)
+            else:
+                _logger.info(
+                    'received binary message ({} bytes)'.format(len(raw_data)))
 
             for command in msg.get('commands', []):
                 if command["cmd"] == "pause":
-                    self.commander.prepare_to_pause(self._printer, **command.get('args'))
+                    self.commander.prepare_to_pause(
+                        self._printer, **command.get('args'))
                     self._printer.pause_print()
                 if command["cmd"] == 'cancel':
                     self._printer.cancel_print()
