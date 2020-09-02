@@ -302,17 +302,11 @@ class TheSpaghettiDetectivePlugin(
             # no py2 compat way to properly detect type here
             # (w/o patching ws lib)
             try:
-                msg, is_json = json.loads(raw_data), True
+                msg = json.loads(raw_data)
+                _logger.debug('Received: ' + raw_data)
             except ValueError:
-                msg, is_json = bson.loads(raw_data), False
-
-            if is_json:
-                if msg.get('commands') or msg.get('passthru'):
-                    _logger.info('Received: ' + raw_data)
-                else:
-                    _logger.debug('Received: ' + raw_data)
-            else:
-                _logger.info(
+                msg = bson.loads(raw_data)
+                _logger.debug(
                     'received binary message ({} bytes)'.format(len(raw_data)))
 
             for command in msg.get('commands', []):
@@ -320,10 +314,13 @@ class TheSpaghettiDetectivePlugin(
                     self.commander.prepare_to_pause(
                         self._printer, **command.get('args'))
                     self._printer.pause_print()
+
                 if command["cmd"] == 'cancel':
                     self._printer.cancel_print()
+
                 if command["cmd"] == 'resume':
                     self._printer.resume_print()
+
                 if command["cmd"] == 'print':
                     self.start_print(**command.get('args'))
 
