@@ -38,15 +38,13 @@ class WebSocketClient:
     def run(self):
         self.ws.run_forever()
 
-    def send_text(self, data):
+    def send(self, data, as_binary=False):
         with self._mutex:
             if self.connected():
-                self.ws.send(data)
-
-    def send_binary(self, data):
-        with self._mutex:
-            if self.connected():
-                self.ws.send(data, opcode=websocket.ABNF.OPCODE_BINARY)
+                if as_binary:
+                    self.ws.send(data, opcode=websocket.ABNF.OPCODE_BINARY)
+                else:
+                    self.ws.send(data)
 
     def connected(self):
         with self._mutex:

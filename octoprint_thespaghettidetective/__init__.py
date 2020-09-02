@@ -252,7 +252,10 @@ class TheSpaghettiDetectivePlugin(
             self.last_status_update_ts = time.time()
 
     def send_ws_msg_to_server(self, data, throwing=False, as_binary=False):
-        """ Returns True if message is sent successfully. Otherwise returns False. """
+        """
+            throwing: throw exception if send fails. This is used to make backoff easier.
+            Returns: True if message is sent successfully. Otherwise returns False.
+        """
 
         if not self.is_configured():
             _logger.warning("Plugin not configured. Not sending message to server...")
@@ -274,13 +277,13 @@ class TheSpaghettiDetectivePlugin(
             raw = bson.dumps(data)
             _logger.debug("Sending binary ({} bytes) to server".format(
                 len(raw)))
-            self.ss.send_binary(raw)
+            self.ss.send(raw, as_binary=True)
         else:
             _logger.debug("Sending to server: \n{}".format(data))
             if __python_version__ == 3:
-                self.ss.send_text(json.dumps(data, default=str))
+                self.ss.send(json.dumps(data, default=str))
             else:
-                self.ss.send_text(json.dumps(data, encoding='iso-8859-1', default=str))
+                self.ss.send(json.dumps(data, encoding='iso-8859-1', default=str))
 
         return True
 

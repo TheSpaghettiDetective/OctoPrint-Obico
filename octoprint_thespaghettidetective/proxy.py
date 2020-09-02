@@ -55,7 +55,7 @@ class LocalProxy(object):
             self.connect_ws(ref, path)
 
         ws = self.ref_to_ws[ref]
-        ws.send_text(data)
+        ws.send(data)
 
     def connect_ws(self, ref, path):
         def on_ws_error(ws, ex):
