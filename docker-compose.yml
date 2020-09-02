@@ -4,9 +4,28 @@ services:
   octoprint:
     hostname: octoprint
     restart: unless-stopped
-    build: .
+    build:
+        context: .
+        dockerfile: Dockerfile.python2
     ports:
       - '5000:5000'
+    volumes:
+     - ./:/app
+    environment:
+        DEBUG: 'True'
+        JANUS_SERVER: 'janus'
+    depends_on:
+      - janus
+    command: bash -c "sleep 11111111111"
+
+  octoprint_python3:
+    hostname: octoprin_python3
+    restart: unless-stopped
+    build:
+        context: .
+        dockerfile: Dockerfile.python3
+    ports:
+      - '6000:5000'
     volumes:
      - ./:/app
     environment:

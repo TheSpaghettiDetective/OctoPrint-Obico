@@ -166,7 +166,7 @@ class WebcamStreamer:
 
     def pass_to_janus(self, msg):
         if self.janus_ws and self.janus_ws.connected():
-            self.janus_ws.send_text(msg)
+            self.janus_ws.send(msg)
 
     def start_janus(self):
 

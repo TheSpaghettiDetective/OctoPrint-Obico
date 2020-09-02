@@ -252,7 +252,10 @@ class TheSpaghettiDetectivePlugin(
             self.last_status_update_ts = time.time()
 
     def send_ws_msg_to_server(self, data, throwing=False, as_binary=False):
-        """ Returns True if message is sent successfully. Otherwise returns False. """
+        """
+            throwing: throw exception if send fails. This is used to make backoff easier.
+            Returns: True if message is sent successfully. Otherwise returns False.
+        """
 
         if not self.is_configured():
             _logger.warning("Plugin not configured. Not sending message to server...")
@@ -274,13 +277,13 @@ class TheSpaghettiDetectivePlugin(
             raw = bson.dumps(data)
             _logger.debug("Sending binary ({} bytes) to server".format(
                 len(raw)))
-            self.ss.send_binary(raw)
+            self.ss.send(raw, as_binary=True)
         else:
             _logger.debug("Sending to server: \n{}".format(data))
             if __python_version__ == 3:
-                self.ss.send_text(json.dumps(data, default=str))
+                self.ss.send(json.dumps(data, default=str))
             else:
-                self.ss.send_text(json.dumps(data, encoding='iso-8859-1', default=str))
+                self.ss.send(json.dumps(data, encoding='iso-8859-1', default=str))
 
         return True
 
@@ -298,24 +301,29 @@ class TheSpaghettiDetectivePlugin(
         global _print_event_tracker
 
         try:
-
-            if isinstance(raw_data, bytes):
-                msg = bson.loads(raw_data)
-            else:
+            # raw_data can be both json or bson
+            # no py2 compat way to properly detect type here
+            # (w/o patching ws lib)
+            try:
                 msg = json.loads(raw_data)
-                if msg.get('commands') or msg.get('passthru'):
-                    _logger.info('Received: ' + raw_data)
-                else:
-                    _logger.debug('Received: ' + raw_data)
+                _logger.debug('Received: ' + raw_data)
+            except ValueError:
+                msg = bson.loads(raw_data)
+                _logger.debug(
+                    'received binary message ({} bytes)'.format(len(raw_data)))
 
             for command in msg.get('commands', []):
                 if command["cmd"] == "pause":
-                    self.commander.prepare_to_pause(self._printer, **command.get('args'))
+                    self.commander.prepare_to_pause(
+                        self._printer, **command.get('args'))
                     self._printer.pause_print()
+
                 if command["cmd"] == 'cancel':
                     self._printer.cancel_print()
+
                 if command["cmd"] == 'resume':
                     self._printer.resume_print()
+
                 if command["cmd"] == 'print':
                     self.start_print(**command.get('args'))
 
