@@ -327,12 +327,6 @@ class TheSpaghettiDetectivePlugin(
                 if command["cmd"] == 'print':
                     self.start_print(**command.get('args'))
 
-                if command["cmd"] == 'http.proxy':
-                    self.local_proxy.send_http_to_local(**command.get('args'))
-
-                if command["cmd"] == 'ws.proxy':
-                    self.local_proxy.send_ws_to_local(**command.get('args'))
-
             passsthru = msg.get('passthru')
             if passsthru:
                 target = getattr(self, passsthru.get('target'))
@@ -356,6 +350,12 @@ class TheSpaghettiDetectivePlugin(
                 self.remote_status.update(msg.get('remote_status'))
                 if self.remote_status['viewing']:
                     self.jpeg_poster.post_jpeg_if_needed(force=True)
+
+            if msg.get('http.proxy'):
+                self.local_proxy.send_http_to_local(**msg.get('http.proxy'))
+
+            if msg.get('ws.proxy'):
+                self.local_proxy.send_ws_to_local(**msg.get('ws.proxy'))
 
         except:
             self.sentry.captureException(tags=get_tags())
