@@ -15,6 +15,7 @@ import threading
 import socket
 from contextlib import closing
 import backoff
+import octoprint
 
 from .lib import alert_queue
 
@@ -110,6 +111,7 @@ class OctoPrintSettingsUpdater:
             webcam=dict((k, self.plugin._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
             temperature=self.plugin._settings.settings.effective['temperature'],
             tsd_plugin_version=self.plugin._plugin_version,
+            octoprint_version=octoprint.util.version.get_octoprint_version_string(),
         )
         if self.printer_metadata:
             data['printer_metadata'] = self.printer_metadata
