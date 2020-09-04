@@ -40,7 +40,7 @@ class LocalProxy(object):
             throwing = True
             resp_data = {
                 'status': 502,
-                'content': ex.message,
+                'content': repr(ex),
                 'headers': {}
             }
 
