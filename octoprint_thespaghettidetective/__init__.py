@@ -230,9 +230,8 @@ class TheSpaghettiDetectivePlugin(
         backoff = ExpoBackoff(120)
         while True:
             try:
-                self.error_stats.attempt('server')
-
                 if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
+                    self.error_stats.attempt('server')
                     self.post_printer_status(_print_event_tracker.octoprint_data(self), throwing=True)
                     backoff.reset()
 

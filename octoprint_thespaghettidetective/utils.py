@@ -59,27 +59,30 @@ class ConnectionErrorStats:
 
     def add_connection_error(self, error_type):
         stat = self.get_stat(error_type)
-        stat['errors'] += [datetime.utcnow()]
+        stat['error_count'] += 1
+        stat['last'] = datetime.utcnow()
+        if not stat['first']:
+            stat['first'] = datetime.utcnow()
         self.notify_client_if_needed_for_error(error_type)
 
     def notify_client_if_needed_for_error(self, error_type):
         stat = self.get_stat(error_type)
         attempts = stat['attempts']
-        errors = stat['errors']
+        error_count = stat['error_count']
 
         if attempts < 8:
             return
 
-        if attempts < 10 and len(errors) < attempts * 0.5:
+        if attempts < 10 and error_count < attempts * 0.5:
             return
 
-        if len(errors) < attempts * 0.25:
+        if error_count < attempts * 0.25:
             return
 
         alert_queue.add_alert({'level': 'error', 'cause': error_type}, self.plugin)
 
     def get_stat(self, error_type):
-        return self.stats.setdefault(error_type, dict(attempts=0, errors=[]))
+        return self.stats.setdefault(error_type, dict(attempts=0, error_count=0, last=None, first=None))
 
     def as_dict(self):
         return self.stats
