@@ -224,7 +224,8 @@ class TheSpaghettiDetectivePlugin(
         self.local_proxy = LocalProxy(
             base_url=url,
             on_http_response=self.send_ws_msg_to_server,
-            on_ws_message=self.send_ws_msg_to_server)
+            on_ws_message=self.send_ws_msg_to_server,
+            data_dir=self.get_plugin_data_folder())
 
 
         backoff = ExpoBackoff(120)
