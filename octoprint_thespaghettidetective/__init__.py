@@ -24,7 +24,7 @@ from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster
 from .file_download import FileDownloader
-from .proxy import LocalProxy
+from .tunnel import LocalTunnel
 
 import octoprint.plugin
 
@@ -221,7 +221,7 @@ class TheSpaghettiDetectivePlugin(
         server_port = self._settings.global_get(['server', 'port'])
 
         url = 'http://{}:{}'.format(server_host, server_port)
-        self.local_proxy = LocalProxy(
+        self.local_tunnel = LocalTunnel(
             base_url=url,
             on_http_response=self.send_ws_msg_to_server,
             on_ws_message=self.send_ws_msg_to_server,
@@ -351,11 +351,11 @@ class TheSpaghettiDetectivePlugin(
                 if self.remote_status['viewing']:
                     self.jpeg_poster.post_jpeg_if_needed(force=True)
 
-            if msg.get('http.proxy'):
-                self.local_proxy.send_http_to_local(**msg.get('http.proxy'))
+            if msg.get('http.tunnel'):
+                self.local_tunnel.send_http_to_local(**msg.get('http.tunnel'))
 
-            if msg.get('ws.proxy'):
-                self.local_proxy.send_ws_to_local(**msg.get('ws.proxy'))
+            if msg.get('ws.tunnel'):
+                self.local_tunnel.send_ws_to_local(**msg.get('ws.tunnel'))
 
         except:
             self.sentry.captureException(tags=get_tags())

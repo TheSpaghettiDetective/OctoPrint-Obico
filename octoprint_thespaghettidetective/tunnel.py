@@ -13,14 +13,14 @@ from .ws import WebSocketClient
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 
-class LocalProxy(object):
+class LocalTunnel(object):
 
     def __init__(self, base_url, on_http_response, on_ws_message, data_dir):
         self.base_url = base_url
         self.on_http_response = on_http_response
         self.on_ws_message = on_ws_message
         self.ref_to_ws = {}
-        self.cj_path = os.path.join(data_dir, '.proxy.cj.json')
+        self.cj_path = os.path.join(data_dir, '.tunnel.cj.json')
         self.request_session = requests.Session()
         try:
             with open(self.cj_path, 'r') as fp:
@@ -62,7 +62,7 @@ class LocalProxy(object):
             }
 
         self.on_http_response(
-            {'http.proxy': {'ref': ref, 'response': resp_data}},
+            {'http.tunnel': {'ref': ref, 'response': resp_data}},
             throwing=throwing,
             as_binary=True)
         return
@@ -76,15 +76,15 @@ class LocalProxy(object):
 
     def connect_ws(self, ref, path):
         def on_ws_error(ws, ex):
-            _logger.error("Proxy WS error %s", ex)
+            _logger.error("Tunnel WS error %s", ex)
 
         def on_ws_close(ws):
-            _logger.error("Proxy WS is closing")
+            _logger.error("Tunnel WS is closing")
             del self.ref_to_ws[ref]
 
         def on_ws_msg(ws, data):
             self.on_ws_message(
-                {'ws.proxy': {'ref': ref, 'data': data}},
+                {'ws.tunnel': {'ref': ref, 'data': data}},
                 throwing=False,
                 as_binary=True)
 
