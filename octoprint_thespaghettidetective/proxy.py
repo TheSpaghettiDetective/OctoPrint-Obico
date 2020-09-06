@@ -37,11 +37,14 @@ class LocalProxy(object):
 
         try:
             resp = getattr(self.request_session, method)(
-                url, params=params, headers=headers, data=data,
+                url,
+                params=params,
+                headers={k: v for k, v in headers.items() if k != 'Cookie'},
+                data=data,
                 timeout=timeout,
                 allow_redirects=True)
 
-            if 'Set-Cookie' in resp.headers:
+            if resp.headers.pop('Set-Cookie', None): # Stop set-cookie from being propagated to TSD server
                 with open(self.cj_path, 'w') as fp:
                     json.dump(resp.cookies.get_dict(), fp)
 
