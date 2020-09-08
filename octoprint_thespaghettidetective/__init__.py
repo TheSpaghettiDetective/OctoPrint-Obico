@@ -186,7 +186,7 @@ class TheSpaghettiDetectivePlugin(
 
     def on_shutdown(self):
         if self.ss is not None:
-            self.ss.disconnect()
+            self.ss.close()
         if self.webcam_streamer:
             self.webcam_streamer.restore()
         not_using_pi_camera()
@@ -265,7 +265,7 @@ class TheSpaghettiDetectivePlugin(
 
         if not self.ss:
             _logger.debug("Establishing WS connection...")
-            self.connect_ws()
+            self.connect_server_ws()
             if throwing:
                 time.sleep(2.0)    # Wait for websocket to connect
 
@@ -289,7 +289,7 @@ class TheSpaghettiDetectivePlugin(
 
         return True
 
-    def connect_ws(self):
+    def connect_server_ws(self):
         self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
         wst = threading.Thread(target=self.ss.run)
         wst.daemon = True

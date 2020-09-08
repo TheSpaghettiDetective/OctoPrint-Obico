@@ -50,7 +50,7 @@ class WebSocketClient:
         with self._mutex:
             return self.ws.sock and self.ws.sock.connected
 
-    def disconnect(self):
+    def close(self):
         with self._mutex:
             self.ws.keep_running = False
             self.ws.close()

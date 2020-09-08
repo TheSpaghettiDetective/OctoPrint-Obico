@@ -2,6 +2,7 @@ import requests
 import json
 import logging
 import threading
+import time
 import os
 try:
     from urllib.parse import urljoin
@@ -73,35 +74,38 @@ class LocalTunnel(object):
         return
 
     def send_ws_to_local(self, ref, path, data, type_):
-        if type_ == 'close':
-            ws = self.ref_to_ws.pop(ref, None)
+        print(type_)
+        ws = self.ref_to_ws.get(ref, None)
+
+        if type_ == 'tunnel_close':
             if ws is not None:
-                ws.disconnect()
+                ws.close()
+                print('op ws closed')
             return
 
-        if ref not in self.ref_to_ws:
-            self.connect_ws(ref, path)
+        if ws is None:
+            self.connect_octoprint_ws(ref, path)
+            time.sleep(1)  # Wait to make sure websocket is established before `send` is called
 
-        ws = self.ref_to_ws[ref]
         if data is not None:
             ws.send(data)
 
-    def connect_ws(self, ref, path):
+    def connect_octoprint_ws(self, ref, path):
         def on_ws_error(ws, ex):
-            _logger.error("Tunnel WS error %s", ex)
+            _logger.error("OctoPrint WS error %s", ex)
 
         def on_ws_close(ws):
-            _logger.error("Tunnel WS is closing")
+            _logger.info("OctoPrint WS is closing")
             if ref in self.ref_to_ws:
                 self.on_ws_message(
-                    {'ws.tunnel': {'ref': ref, 'data': None, 'type': 'close'}},
+                    {'ws.tunnel': {'ref': ref, 'data': None, 'type': 'octoprint_close'}},
                     throwing=False,
                     as_binary=True)
                 del self.ref_to_ws[ref]
 
         def on_ws_msg(ws, data):
             self.on_ws_message(
-                {'ws.tunnel': {'ref': ref, 'data': data, 'type': 'message'}},
+                {'ws.tunnel': {'ref': ref, 'data': data, 'type': 'octoprint_message'}},
                 throwing=False,
                 as_binary=True)
 
