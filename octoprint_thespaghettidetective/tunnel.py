@@ -44,9 +44,14 @@ class LocalTunnel(object):
                 timeout=timeout,
                 allow_redirects=True)
 
-            if resp.headers.pop('Set-Cookie', None): # Stop set-cookie from being propagated to TSD server
+            save_cookies = False
+            if resp.status_code == 304:      # failed to authenticate
+                self.request_session.cookies.clear()
+                save_cookies = True
+
+            if resp.headers.pop('Set-Cookie', None) or save_cookies: # Stop set-cookie from being propagated to TSD server
                 with open(self.cj_path, 'w') as fp:
-                    json.dump(resp.cookies.get_dict(), fp)
+                    json.dump(self.request_session.cookies.get_dict(), fp)
 
             resp_data = {
                 'status': resp.status_code,
