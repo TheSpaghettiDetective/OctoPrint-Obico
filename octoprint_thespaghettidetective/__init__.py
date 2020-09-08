@@ -60,6 +60,7 @@ class TheSpaghettiDetectivePlugin(
         self.file_downloader = FileDownloader(self, _print_event_tracker)
         self.webcam_streamer = None
         self.user_account = DEFAULT_USER_ACCOUNT
+        self.local_tunnel = None
 
     # ~~ Wizard plugin mix
 
@@ -184,6 +185,8 @@ class TheSpaghettiDetectivePlugin(
     # ~~Shutdown Plugin
 
     def on_shutdown(self):
+        if self.ss is not None:
+            self.ss.disconnect()
         if self.webcam_streamer:
             self.webcam_streamer.restore()
         not_using_pi_camera()
@@ -256,7 +259,6 @@ class TheSpaghettiDetectivePlugin(
             throwing: throw exception if send fails. This is used to make backoff easier.
             Returns: True if message is sent successfully. Otherwise returns False.
         """
-
         if not self.is_configured():
             _logger.warning("Plugin not configured. Not sending message to server...")
             return False
@@ -355,8 +357,9 @@ class TheSpaghettiDetectivePlugin(
                 self.local_tunnel.send_http_to_local(**msg.get('http.tunnel'))
 
             if msg.get('ws.tunnel'):
-                self.local_tunnel.send_ws_to_local(**msg.get('ws.tunnel'))
-
+                kwargs = msg.get('ws.tunnel')
+                kwargs['type_'] = kwargs.pop('type')
+                self.local_tunnel.send_ws_to_local(**kwargs)
         except:
             self.sentry.captureException(tags=get_tags())
 

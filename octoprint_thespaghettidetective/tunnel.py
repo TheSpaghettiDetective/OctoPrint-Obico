@@ -72,12 +72,19 @@ class LocalTunnel(object):
             as_binary=True)
         return
 
-    def send_ws_to_local(self, ref, path, data):
+    def send_ws_to_local(self, ref, path, data, type_):
+        if type_ == 'close':
+            ws = self.ref_to_ws.pop(ref, None)
+            if ws is not None:
+                ws.disconnect()
+            return
+
         if ref not in self.ref_to_ws:
             self.connect_ws(ref, path)
 
         ws = self.ref_to_ws[ref]
-        ws.send(data)
+        if data is not None:
+            ws.send(data)
 
     def connect_ws(self, ref, path):
         def on_ws_error(ws, ex):
@@ -85,11 +92,16 @@ class LocalTunnel(object):
 
         def on_ws_close(ws):
             _logger.error("Tunnel WS is closing")
-            del self.ref_to_ws[ref]
+            if ref in self.ref_to_ws:
+                self.on_ws_message(
+                    {'ws.tunnel': {'ref': ref, 'data': None, 'type': 'close'}},
+                    throwing=False,
+                    as_binary=True)
+                del self.ref_to_ws[ref]
 
         def on_ws_msg(ws, data):
             self.on_ws_message(
-                {'ws.tunnel': {'ref': ref, 'data': data}},
+                {'ws.tunnel': {'ref': ref, 'data': data, 'type': 'message'}},
                 throwing=False,
                 as_binary=True)
 
