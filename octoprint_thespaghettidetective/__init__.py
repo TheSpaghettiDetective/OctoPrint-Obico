@@ -60,6 +60,7 @@ class TheSpaghettiDetectivePlugin(
         self.file_downloader = FileDownloader(self, _print_event_tracker)
         self.webcam_streamer = None
         self.user_account = DEFAULT_USER_ACCOUNT
+        self.local_tunnel = None
 
     # ~~ Wizard plugin mix
 
@@ -184,6 +185,8 @@ class TheSpaghettiDetectivePlugin(
     # ~~Shutdown Plugin
 
     def on_shutdown(self):
+        if self.ss is not None:
+            self.ss.close()
         if self.webcam_streamer:
             self.webcam_streamer.restore()
         not_using_pi_camera()
@@ -225,7 +228,8 @@ class TheSpaghettiDetectivePlugin(
             base_url=url,
             on_http_response=self.send_ws_msg_to_server,
             on_ws_message=self.send_ws_msg_to_server,
-            data_dir=self.get_plugin_data_folder())
+            data_dir=self.get_plugin_data_folder(),
+            sentry=self.sentry)
 
 
         backoff = ExpoBackoff(120)
@@ -256,14 +260,13 @@ class TheSpaghettiDetectivePlugin(
             throwing: throw exception if send fails. This is used to make backoff easier.
             Returns: True if message is sent successfully. Otherwise returns False.
         """
-
         if not self.is_configured():
             _logger.warning("Plugin not configured. Not sending message to server...")
             return False
 
         if not self.ss:
             _logger.debug("Establishing WS connection...")
-            self.connect_ws()
+            self.connect_server_ws()
             if throwing:
                 time.sleep(2.0)    # Wait for websocket to connect
 
@@ -287,7 +290,7 @@ class TheSpaghettiDetectivePlugin(
 
         return True
 
-    def connect_ws(self):
+    def connect_server_ws(self):
         self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
         wst = threading.Thread(target=self.ss.run)
         wst.daemon = True
@@ -295,6 +298,7 @@ class TheSpaghettiDetectivePlugin(
 
     def on_ws_close(self, ws):
         _logger.error("Server websocket is closing")
+        self.local_tunnel.close_all_octoprint_ws()
         self.ss = None
 
     def process_server_msg(self, ws, raw_data):
@@ -355,8 +359,9 @@ class TheSpaghettiDetectivePlugin(
                 self.local_tunnel.send_http_to_local(**msg.get('http.tunnel'))
 
             if msg.get('ws.tunnel'):
-                self.local_tunnel.send_ws_to_local(**msg.get('ws.tunnel'))
-
+                kwargs = msg.get('ws.tunnel')
+                kwargs['type_'] = kwargs.pop('type')
+                self.local_tunnel.send_ws_to_local(**kwargs)
         except:
             self.sentry.captureException(tags=get_tags())
 
