@@ -46,7 +46,7 @@ class LocalTunnel(object):
                 allow_redirects=True)
 
             save_cookies = False
-            if resp.status_code == 304:      # failed to authenticate
+            if resp.status_code == 403:      # failed to authenticate
                 self.request_session.cookies.clear()
                 save_cookies = True
 
