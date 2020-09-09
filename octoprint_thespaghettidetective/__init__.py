@@ -228,7 +228,8 @@ class TheSpaghettiDetectivePlugin(
             base_url=url,
             on_http_response=self.send_ws_msg_to_server,
             on_ws_message=self.send_ws_msg_to_server,
-            data_dir=self.get_plugin_data_folder())
+            data_dir=self.get_plugin_data_folder(),
+            sentry=self.sentry)
 
 
         backoff = ExpoBackoff(120)
@@ -297,6 +298,7 @@ class TheSpaghettiDetectivePlugin(
 
     def on_ws_close(self, ws):
         _logger.error("Server websocket is closing")
+        self.local_tunnel.close_all_octoprint_ws()
         self.ss = None
 
     def process_server_msg(self, ws, raw_data):
