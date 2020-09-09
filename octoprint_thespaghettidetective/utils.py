@@ -111,7 +111,7 @@ class OctoPrintSettingsUpdater:
                 return None
 
         data = dict(
-            webcam=dict((k, self.plugin._settings.effective['webcam'][k]) for k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
+            webcam=dict((k, v) for k, v in self.plugin._settings.effective['webcam'].items() if k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
             temperature=self.plugin._settings.settings.effective['temperature'],
             tsd_plugin_version=self.plugin._plugin_version,
             octoprint_version=octoprint.util.version.get_octoprint_version_string(),
