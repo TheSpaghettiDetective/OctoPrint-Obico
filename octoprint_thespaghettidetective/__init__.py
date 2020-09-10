@@ -355,10 +355,10 @@ class TheSpaghettiDetectivePlugin(
                 if self.remote_status['viewing']:
                     self.jpeg_poster.post_jpeg_if_needed(force=True)
 
-            if msg.get('http.tunnel'):
+            if msg.get('http.tunnel') and self.local_tunnel:
                 self.local_tunnel.send_http_to_local(**msg.get('http.tunnel'))
 
-            if msg.get('ws.tunnel'):
+            if msg.get('ws.tunnel') and self.local_tunnel:
                 kwargs = msg.get('ws.tunnel')
                 kwargs['type_'] = kwargs.pop('type')
                 self.local_tunnel.send_ws_to_local(**kwargs)
