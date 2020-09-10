@@ -1,15 +1,19 @@
 import requests
-import json
+import pickle
 import logging
 import threading
 import time
 import os
+import sys
 try:
     from urllib.parse import urljoin
 except ImportError:
     from urlparse import urljoin
 
 from .ws import WebSocketClient
+
+WRITE_MODE = 'w' if sys.version_info[0] < 3 else 'wb'
+READ_MODE = 'r' if sys.version_info[0] < 3 else 'rb'
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
@@ -22,11 +26,13 @@ class LocalTunnel(object):
         self.on_ws_message = on_ws_message
         self.sentry = sentry
         self.ref_to_ws = {}
-        self.cj_path = os.path.join(data_dir, '.tunnel.cj.json')
+        self.cj_path = os.path.join(data_dir, '.tunnel.cj.pickled')
         self.request_session = requests.Session()
         try:
-            with open(self.cj_path, 'r') as fp:
-                self.request_session.cookies = requests.cookies.cookiejar_from_dict(json.load(fp))
+            with open(self.cj_path, READ_MODE) as fp:
+                jar = pickle.load(fp)
+                if isinstance(jar, requests.cookies.RequestsCookieJar):
+                    self.request_session.cookies = jar
         except:
             pass   # Start with a clean session without cookies if cookie jar loading fails for any reason
 
@@ -51,8 +57,8 @@ class LocalTunnel(object):
                 save_cookies = True
 
             if resp.headers.pop('Set-Cookie', None) or save_cookies: # Stop set-cookie from being propagated to TSD server
-                with open(self.cj_path, 'w') as fp:
-                    json.dump(self.request_session.cookies.get_dict(), fp)
+                with open(self.cj_path, WRITE_MODE) as fp:
+                    pickle.dump(self.request_session.cookies, fp)
 
             resp_data = {
                 'status': resp.status_code,
