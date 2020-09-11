@@ -42,6 +42,7 @@ class LocalTunnel(object):
 
         url = urljoin(self.base_url, path)
 
+        _logger.debug('Tunneling "{}"'.format(url))
         try:
             resp = getattr(self.request_session, method)(
                 url,
