@@ -237,7 +237,7 @@ class TheSpaghettiDetectivePlugin(
             try:
                 if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
                     self.error_stats.attempt('server')
-                    self.post_printer_status(_print_event_tracker.octoprint_data(self), throwing=True)
+                    self.post_printer_status(_print_event_tracker.octoprint_data(self), try_connecting=True)
                     backoff.reset()
 
                 self.jpeg_poster.post_jpeg_if_needed()
@@ -252,28 +252,22 @@ class TheSpaghettiDetectivePlugin(
                 self.error_stats.add_connection_error('server')
                 backoff.more(e)
 
-    def post_printer_status(self, data, throwing=False):
-        if self.send_ws_msg_to_server(data, throwing=throwing):
+    def post_printer_status(self, data, try_connecting=False):
+        if self.send_ws_msg_to_server(data, try_connecting=try_connecting):
             self.last_status_update_ts = time.time()
 
-    def send_ws_msg_to_server(self, data, throwing=False, as_binary=False):
+    def send_ws_msg_to_server(self, data, try_connecting=False, as_binary=False):
         """
-            throwing: throw exception if send fails. This is used to make backoff easier.
+            try_connecting: should try to connect to websocket server is not already. Only the one in the main loop should set it to True to avoid race condition
             Returns: True if message is sent successfully. Otherwise returns False.
         """
         if not self.is_configured():
             _logger.warning("Plugin not configured. Not sending message to server...")
             return False
 
-        if not self.ss:
-            _logger.debug("Establishing WS connection...")
-            self.connect_server_ws()
-            if throwing:
-                time.sleep(2.0)    # Wait for websocket to connect
-
-        if not self.ss or not self.ss.connected():  # Check self.ss again as it could already be set to None now.
-            if throwing:
-                raise WebSocketClientException('Failed to connect to websocket server')
+        if not self.ss or not self.ss.connected():
+            if try_connecting:
+                self.connect_server_ws()
             else:
                 return False
 
@@ -292,10 +286,20 @@ class TheSpaghettiDetectivePlugin(
         return True
 
     def connect_server_ws(self):
-        self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
-        wst = threading.Thread(target=self.ss.run)
+        _logger.debug("Establishing WS connection...")
+        ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
+        wst = threading.Thread(target=ss.run)
         wst.daemon = True
         wst.start()
+
+        for i in range(5):      # Wait for up to 5 seconds
+            if ss.connected():
+                self.ss = ss
+                return
+            time.sleep(1)
+        ss.close()
+        raise WebSocketClientException('Not connected to TSD websocket server after 5s')
+
 
     def on_ws_close(self, ws):
         _logger.error("Server websocket is closing")
