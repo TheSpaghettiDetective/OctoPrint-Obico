@@ -244,6 +244,7 @@ class TheSpaghettiDetectivePlugin(
                 time.sleep(1)
 
             except WebSocketClientException as e:
+                self.sentry.captureException(tags=get_tags())
                 self.error_stats.add_connection_error('server')
                 backoff.more(e)
             except Exception as e:
