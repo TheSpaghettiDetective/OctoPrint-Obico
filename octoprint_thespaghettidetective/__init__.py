@@ -231,7 +231,6 @@ class TheSpaghettiDetectivePlugin(
             data_dir=self.get_plugin_data_folder(),
             sentry=self.sentry)
 
-
         backoff = ExpoBackoff(120)
         while True:
             try:
@@ -267,7 +266,7 @@ class TheSpaghettiDetectivePlugin(
 
         if not self.ss or not self.ss.connected():
             if try_connecting:
-                self.connect_server_ws()
+                self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
             else:
                 return False
 
@@ -284,22 +283,6 @@ class TheSpaghettiDetectivePlugin(
                 self.ss.send(json.dumps(data, encoding='iso-8859-1', default=str))
 
         return True
-
-    def connect_server_ws(self):
-        _logger.debug("Establishing WS connection...")
-        ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
-        wst = threading.Thread(target=ss.run)
-        wst.daemon = True
-        wst.start()
-
-        for i in range(5):      # Wait for up to 5 seconds
-            if ss.connected():
-                self.ss = ss
-                return
-            time.sleep(1)
-        ss.close()
-        raise WebSocketClientException('Not connected to TSD websocket server after 5s')
-
 
     def on_ws_close(self, ws):
         _logger.error("Server websocket is closing")

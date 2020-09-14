@@ -129,10 +129,6 @@ class LocalTunnel(object):
         )
         self.ref_to_ws[ref] = ws
 
-        wst = threading.Thread(target=ws.run)
-        wst.daemon = True
-        wst.start()
-
     def close_all_octoprint_ws(self):
         for ref, ws in self.ref_to_ws.items():
             ws.close()

@@ -228,9 +228,6 @@ class WebcamStreamer:
                 self.janus_ws_backoff.reset()
 
         self.janus_ws = WebSocketClient('ws://{}:8188/'.format(JANUS_SERVER), on_ws_msg=on_message, on_ws_close=on_close, subprotocols=['janus-protocol'])
-        wst = Thread(target=self.janus_ws.run)
-        wst.daemon = True
-        wst.start()
 
     def ffmpeg_from_mjpeg(self):
 
