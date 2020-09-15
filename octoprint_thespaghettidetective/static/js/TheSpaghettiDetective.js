@@ -7,7 +7,12 @@
 $(function () {
 
     function apiCommand(data, success) {
-        $.ajax("api/plugin/thespaghettidetective", {
+        var path = window.location.pathname;
+        if (!path.endsWith("/")) {
+          path = path + "/"
+        }
+
+        $.ajax(path + "api/plugin/thespaghettidetective", {
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify(data),
