@@ -7,7 +7,6 @@ import threading
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
-
 class WebSocketClientException(Exception):
     pass
 
@@ -15,8 +14,6 @@ class WebSocketClient:
 
     def __init__(self, url, token=None, on_ws_msg=None, on_ws_close=None, on_ws_error=None, subprotocols=None):
         self._mutex = threading.RLock()
-
-        #websocket.enableTrace(True)
 
         def on_error(ws, error):
             if on_ws_error:
@@ -71,3 +68,27 @@ class WebSocketClient:
         with self._mutex:
             self.ws.keep_running = False
             self.ws.close()
+
+if __name__ == "__main__":
+    import yaml
+    import sys
+
+    def on_msg(ws, msg):
+        print(msg)
+
+    def on_close(ws):
+        print('Closed')
+
+    with open(sys.argv[1]) as stream:
+        config = yaml.load(stream.read()).get('plugins', {}).get('thespaghettidetective', {})
+
+    websocket.enableTrace(True)
+    ws = WebSocketClient(
+        config.get('endpoint_prefix', 'https://app.thespaghettidetective.com').replace('http', 'ws') + '/ws/dev/',
+        token=config.get('auth_token'),
+        on_ws_msg=on_msg,
+        on_ws_close=on_close,
+    )
+    time.sleep(1)
+    ws.close()
+    time.sleep(1)

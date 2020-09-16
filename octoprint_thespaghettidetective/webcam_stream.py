@@ -14,7 +14,6 @@ except ImportError:
     import Queue as queue
 from threading import Thread, RLock
 import requests
-import yaml
 import backoff
 import json
 import socket
