@@ -263,22 +263,23 @@ class TheSpaghettiDetectivePlugin(
             _logger.warning("Plugin not configured. Not sending message to server...")
             return False
 
+        if as_binary:
+            raw = bson.dumps(data)
+            _logger.debug("Sending binary ({} bytes) to server".format(len(raw)))
+        else:
+            _logger.debug("Sending to server: \n{}".format(data))
+            if __python_version__ == 3:
+                raw = json.dumps(data, default=str)
+            else:
+                raw = json.dumps(data, encoding='iso-8859-1', default=str)
+
         if not self.ss or not self.ss.connected():
             if try_connecting:
                 self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
             else:
                 return False
 
-        if as_binary:
-            raw = bson.dumps(data)
-            _logger.debug("Sending binary ({} bytes) to server".format(len(raw)))
-            self.ss.send(raw, as_binary=True)
-        else:
-            _logger.debug("Sending to server: \n{}".format(data))
-            if __python_version__ == 3:
-                self.ss.send(json.dumps(data, default=str))
-            else:
-                self.ss.send(json.dumps(data, encoding='iso-8859-1', default=str))
+        self.ss.send(raw, as_binary=as_binary)
 
         return True
 
