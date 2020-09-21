@@ -161,12 +161,14 @@ def pi_version():
 
 
 system_tags = None
-
+tags_mutex = threading.RLock()
 
 def get_tags():
-    global system_tags
-    if system_tags:
-        return system_tags
+    global system_tags, tags_mutex
+
+    with tags_mutex:
+        if system_tags:
+            return system_tags
 
     (os, _, ver, _, arch, _) = platform.uname()
     tags = dict(os=os, os_ver=ver, arch=arch)
@@ -186,8 +188,9 @@ def get_tags():
     except:
         pass
 
-    system_tags = tags
-    return system_tags
+    with tags_mutex:
+        system_tags = tags
+        return system_tags
 
 
 def not_using_pi_camera():
