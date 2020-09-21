@@ -271,8 +271,7 @@ class TheSpaghettiDetectivePlugin(
 
         if as_binary:
             raw = bson.dumps(data)
-            _logger.debug("Sending binary ({} bytes) to server".format(
-                len(raw)))
+            _logger.debug("Sending binary ({} bytes) to server".format(len(raw)))
             self.ss.send(raw, as_binary=True)
         else:
             _logger.debug("Sending to server: \n{}".format(data))
