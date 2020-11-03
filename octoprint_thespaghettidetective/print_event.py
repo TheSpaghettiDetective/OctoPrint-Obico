@@ -69,9 +69,9 @@ class PrintEventTracker:
         with self._mutex:
             self.current_file_metadata = None
 
-    def populate_file_metadata(self, plguin, current_file):
+    def populate_file_metadata(self, plugin, current_file):
         try:
-            file_metadata = plguin._file_manager._storage_managers.get(current_file.get('origin')).get_metadata(current_file.get('path'))
+            file_metadata = plugin._file_manager._storage_managers.get(current_file.get('origin')).get_metadata(current_file.get('path'))
         except Exception as e:
             plugin.sentry.captureException()
             _logger.error(e)
