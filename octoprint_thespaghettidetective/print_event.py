@@ -1,6 +1,7 @@
 import logging
 import time
 import threading
+from octoprint.filemanager.analysis import QueueEntry
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
@@ -11,6 +12,7 @@ class PrintEventTracker:
         self._mutex = threading.RLock()
         self.current_print_ts = -1    # timestamp as print_ts coming from octoprint
         self.tsd_gcode_file_id = None
+        self.current_file_metadata = None
 
     def on_event(self, plugin, event, payload):
         with self._mutex:
@@ -36,6 +38,15 @@ class PrintEventTracker:
             'octoprint_data': plugin._printer.get_current_data(),
             'octoprint_temperatures': plugin._printer.get_current_temperatures(),
         }
+
+        current_file = data.get('octoprint_data', {}).get('job', {}).get('file', {})
+        if current_file.get('path') and current_file.get('origin'):
+            if not self.current_file_metadata:
+                with self._mutex:
+                    self.current_file_metadata = self.get_g_code_metadata(plugin, current_file)
+            if self.current_file_metadata:
+                data['octoprint_data']['file_metadata'] = self.current_file_metadata
+
         octo_settings = plugin.octoprint_settings_updater.as_dict()
         if octo_settings:
             data['octoprint_settings'] = octo_settings
@@ -54,3 +65,22 @@ class PrintEventTracker:
     def get_tsd_gcode_file_id(self):
         with self._mutex:
             return self.tsd_gcode_file_id
+
+    def get_g_code_metadata(self, plguin, current_file):
+        file_metadata = plguin._file_manager._storage_managers.get(current_file.get('origin')).get_metadata(current_file.get('path'))
+        if file_metadata:
+            return { 'analysis': { 'printingArea': file_metadata.get('analysis', {}).get('printingArea') } }
+        else:
+            _logger.warn('GCode Analysis is absent. Starting it in the queue: %s'.format(current_file.get('path')))
+            file_storage = plugin._file_manager._storage_managers.get(current_file.get('origin'))
+            plugin._analysis_queue.enqueue(
+                QueueEntry(
+                    current_file.get('name'),
+                    current_file.get('path'),
+                    'gcode',
+                    current_file.get('origin'),
+                    file_storage.path_on_disk(current_file.get('path')),
+                    plugin._printer_profile_manager.get_current(),
+                    None))
+
+            return None
