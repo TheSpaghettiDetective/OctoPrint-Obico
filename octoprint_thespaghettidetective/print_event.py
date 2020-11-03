@@ -42,8 +42,7 @@ class PrintEventTracker:
         current_file = data.get('octoprint_data', {}).get('job', {}).get('file', {})
         if current_file.get('path') and current_file.get('origin'):
             if not self.current_file_metadata:
-                with self._mutex:
-                    self.current_file_metadata = self.get_g_code_metadata(plugin, current_file)
+                self.populate_file_metadata(plugin, current_file)
             if self.current_file_metadata:
                 data['octoprint_data']['file_metadata'] = self.current_file_metadata
 
@@ -66,21 +65,17 @@ class PrintEventTracker:
         with self._mutex:
             return self.tsd_gcode_file_id
 
-    def get_g_code_metadata(self, plguin, current_file):
-        file_metadata = plguin._file_manager._storage_managers.get(current_file.get('origin')).get_metadata(current_file.get('path'))
-        if file_metadata:
-            return { 'analysis': { 'printingArea': file_metadata.get('analysis', {}).get('printingArea') } }
-        else:
-            _logger.warn('GCode Analysis is absent. Starting it in the queue: %s'.format(current_file.get('path')))
-            file_storage = plugin._file_manager._storage_managers.get(current_file.get('origin'))
-            plugin._analysis_queue.enqueue(
-                QueueEntry(
-                    current_file.get('name'),
-                    current_file.get('path'),
-                    'gcode',
-                    current_file.get('origin'),
-                    file_storage.path_on_disk(current_file.get('path')),
-                    plugin._printer_profile_manager.get_current(),
-                    None))
+    def clear_file_metadata(self):
+        with self._mutex:
+            self.current_file_metadata = None
 
-            return None
+    def populate_file_metadata(self, plguin, current_file):
+        try:
+            file_metadata = plguin._file_manager._storage_managers.get(current_file.get('origin')).get_metadata(current_file.get('path'))
+        except Exception as e:
+            plugin.sentry.captureException()
+            _logger.error(e)
+
+        if file_metadata:
+            with self._mutex:
+                self.current_file_metadata = { 'analysis': { 'printingArea': file_metadata.get('analysis', {}).get('printingArea') } }

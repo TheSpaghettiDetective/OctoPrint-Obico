@@ -173,6 +173,9 @@ class TheSpaghettiDetectivePlugin(
             if event == 'FirmwareData':
                 self.octoprint_settings_updater.update_firmware(payload)
                 self.post_printer_status(_print_event_tracker.octoprint_data(self))
+            elif event == 'FileSelected':
+                _print_event_tracker.clear_file_metadata()
+                _print_event_tracker.populate_file_metadata(self, payload)
             elif event == 'SettingsUpdated':
                 self.octoprint_settings_updater.update_settings()
                 self.post_printer_status(_print_event_tracker.octoprint_data(self))
