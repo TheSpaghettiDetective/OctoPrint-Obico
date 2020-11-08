@@ -70,7 +70,12 @@ class PrintEventTracker:
             self.current_file_metadata = None
 
     def populate_file_metadata(self, plugin, current_file):
-        if current_file.get('origin') == 'local':
-            file_metadata = plugin._file_manager._storage_managers.get(current_file.get('origin')).get_metadata(current_file.get('path'))
-            with self._mutex:
-                self.current_file_metadata = { 'analysis': { 'printingArea': file_metadata.get('analysis', {}).get('printingArea') } }
+        if not current_file.get('origin') == 'local':
+            return
+
+        file_metadata = plugin._file_manager._storage_managers.get(current_file.get('origin')).get_metadata(current_file.get('path'))
+        if not file_metadata:
+            return
+
+        with self._mutex:
+            self.current_file_metadata = { 'analysis': { 'printingArea': file_metadata.get('analysis', {}).get('printingArea') } }
