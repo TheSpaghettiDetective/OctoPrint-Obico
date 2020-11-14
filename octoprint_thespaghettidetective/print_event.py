@@ -12,7 +12,6 @@ class PrintEventTracker:
         self._mutex = threading.RLock()
         self.current_print_ts = -1    # timestamp as print_ts coming from octoprint
         self.tsd_gcode_file_id = None
-        self.current_file_metadata = None
 
     def on_event(self, plugin, event, payload):
         with self._mutex:
@@ -39,12 +38,11 @@ class PrintEventTracker:
             'octoprint_temperatures': plugin._printer.get_current_temperatures(),
         }
 
+        current_file_metadata = None
         current_file = data.get('octoprint_data', {}).get('job', {}).get('file', {})
         if current_file.get('path') and current_file.get('origin'):
-            if not self.current_file_metadata:
-                self.populate_file_metadata(plugin, current_file)
-            if self.current_file_metadata:
-                data['octoprint_data']['file_metadata'] = self.current_file_metadata
+            current_file_metadata = self.get_file_metadata(plugin, current_file)
+        data['octoprint_data']['file_metadata'] = current_file_metadata
 
         octo_settings = plugin.octoprint_settings_updater.as_dict()
         if octo_settings:
@@ -65,17 +63,14 @@ class PrintEventTracker:
         with self._mutex:
             return self.tsd_gcode_file_id
 
-    def clear_file_metadata(self):
-        with self._mutex:
-            self.current_file_metadata = None
+    def get_file_metadata(self, plugin, current_file):
 
-    def populate_file_metadata(self, plugin, current_file):
+        # somehow _storage_managers.get('sdcard') always returns None. It seems to work only with 'local'
         if not current_file.get('origin') == 'local':
-            return
+            return None
 
         file_metadata = plugin._file_manager._storage_managers.get(current_file.get('origin')).get_metadata(current_file.get('path'))
         if not file_metadata:
-            return
+            return None
 
-        with self._mutex:
-            self.current_file_metadata = { 'analysis': { 'printingArea': file_metadata.get('analysis', {}).get('printingArea') } }
+        return { 'analysis': { 'printingArea': file_metadata.get('analysis', {}).get('printingArea') } }
