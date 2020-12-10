@@ -152,7 +152,7 @@ class WebcamStreamer:
 
                 self.webcam_server = PiCamWebServer(self.pi_camera, self.sentry)
                 self.webcam_server.start()
-                self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, bitrate=self.bitrate, profile='baseline')
+                self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, profile='baseline')
                 self.pi_camera.wait_recording(0)
         except:
             not_using_pi_camera()
