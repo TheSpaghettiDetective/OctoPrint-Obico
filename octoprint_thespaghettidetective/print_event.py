@@ -1,9 +1,13 @@
 import logging
+import re
 import time
 import threading
 from octoprint.filemanager.analysis import QueueEntry
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+
+# should match all print related events (having shape of PrintEventname)
+RE_PRINT_EVENT = re.compile(r'^Print[A-Z]')
 
 
 class PrintEventTracker:
@@ -16,6 +20,9 @@ class PrintEventTracker:
     def on_event(self, plugin, event, payload):
         with self._mutex:
             if event == 'PrintStarted':
+                self.current_print_ts = int(time.time())
+            elif self.current_print_ts == -1 and RE_PRINT_EVENT.match(event):
+                # started while printing? lets assign an id
                 self.current_print_ts = int(time.time())
 
         data = self.octoprint_data(plugin)
