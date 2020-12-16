@@ -39,9 +39,11 @@ class PrintEventTracker:
         }
 
         current_file_metadata = None
-        current_file = data.get('octoprint_data', {}).get('job', {}).get('file', {})
+        current_file = data.get('octoprint_data', {}).get(
+            'job', {}).get('file', {})
         if current_file.get('path') and current_file.get('origin'):
-            current_file_metadata = self.get_file_metadata(plugin, current_file)
+            current_file_metadata = self.get_file_metadata(
+                plugin, current_file)
         data['octoprint_data']['file_metadata'] = current_file_metadata
 
         octo_settings = plugin.octoprint_settings_updater.as_dict()
@@ -69,8 +71,9 @@ class PrintEventTracker:
         if not current_file.get('origin') == 'local':
             return None
 
-        file_metadata = plugin._file_manager._storage_managers.get(current_file.get('origin')).get_metadata(current_file.get('path'))
+        file_metadata = plugin._file_manager._storage_managers.get(
+            current_file.get('origin')).get_metadata(current_file.get('path'))
         if not file_metadata:
             return None
 
-        return { 'analysis': { 'printingArea': file_metadata.get('analysis', {}).get('printingArea') } }
+        return {'analysis': {'printingArea': file_metadata.get('analysis', {}).get('printingArea')}}
