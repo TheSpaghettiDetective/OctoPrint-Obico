@@ -129,7 +129,7 @@ class SentryWrapper:
 
     def __init__(self, plugin):
         self.sentryClient = raven.Client(
-            'https://f0356e1461124e69909600a64c361b71:bdf215f6e71b48dc90d28fb89a4f8238@sentry.thespaghettidetective.com/4?verify_ssl=0',
+            'https://f0356e1461124e69909600a64c361b71@sentry.thespaghettidetective.com/4',
             release=plugin._plugin_version
         )
         self.plugin = plugin
