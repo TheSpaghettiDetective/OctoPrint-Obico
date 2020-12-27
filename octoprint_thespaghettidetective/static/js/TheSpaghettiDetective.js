@@ -303,7 +303,6 @@ $(function () {
         dependencies: ["settingsViewModel"],
         // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
         elements: [
-            "#wizard_plugin_thespaghettidetective",
             "#settings_plugin_thespaghettidetective"
         ]
     });

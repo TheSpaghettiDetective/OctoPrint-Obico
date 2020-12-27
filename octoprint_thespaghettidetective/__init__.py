@@ -90,7 +90,7 @@ class TheSpaghettiDetectivePlugin(
         # Define your plugin's asset files to automatically include in the
         # core UI here.
         return dict(
-            js=["js/TheSpaghettiDetective.js"],
+            js=["js/TheSpaghettiDetective.js", "js/TheSpaghettiDetectiveWizard.js"],
             css=["css/TheSpaghettiDetective.css"],
             less=["less/TheSpaghettiDetective.less"]
         )

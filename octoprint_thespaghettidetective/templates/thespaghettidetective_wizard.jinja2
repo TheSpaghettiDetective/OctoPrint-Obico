@@ -1,1 +1,13 @@
-{% extends "thespaghettidetective_settings.jinja2" %}
+<div>
+<button class="btn" data-bind="click: nextStep">Continue</button>
+</div>
+<div data-bind="visible: step() === 0">
+  What is TSD
+</div>
+<div data-bind="visible: step() === 1">
+Install App
+</div>
+<div data-bind="visible: step() === 2">
+Enter security code
+  <input type="text" class="input-block-level" data-bind="textInput: securityCode">
+</div>
