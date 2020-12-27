@@ -23,9 +23,9 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
-        self.step = ko.observable(2);
+        self.step = ko.observable(0);
         self.securityCode = ko.observable('');
-
+        self.verifying = ko.observable(false);
 
         self.nextStep = function() {
             self.step(self.step() + 1);
@@ -48,6 +48,8 @@ $(function () {
             if (code.length !== 6) {
                 return;
             }
+            self.verifying(true);
+
             $.ajax(self.securityCodeUrl(code), {
                 method: "GET",
                 contentType: "application/json",
@@ -56,12 +58,14 @@ $(function () {
                         command: "test_auth_token",
                         auth_token: resp.printer.auth_token},
                         function (apiStatus) {
+                            self.verifying(false);
                             console.log(apiStatus);
                         }
                     );
                 },
                 error: function(xhr) {
                     if (xhr.status == 404) {
+                        self.verifying(false);
                         console.log('wrong code');
                     }
                 }

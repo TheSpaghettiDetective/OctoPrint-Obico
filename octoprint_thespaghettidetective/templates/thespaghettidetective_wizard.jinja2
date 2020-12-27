@@ -1,5 +1,5 @@
 <div>
-<button class="btn" data-bind="click: nextStep">Continue</button>
+Step <span data-bind="text: step"></span><button class="btn" data-bind="click: nextStep">Continue</button>
 </div>
 <div data-bind="visible: step() === 0">
   What is TSD
@@ -10,4 +10,5 @@ Install App
 <div data-bind="visible: step() === 2">
 Enter security code
   <input type="text" class="input-block-level" data-bind="textInput: securityCode">
+  <i class="fa fa-spinner fa-spin" data-bind="visible: verifying"></i>
 </div>
