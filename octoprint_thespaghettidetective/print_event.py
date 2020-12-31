@@ -1,5 +1,4 @@
 import logging
-import time
 import threading
 from octoprint.filemanager.analysis import QueueEntry
 
@@ -13,15 +12,15 @@ class PrintEventTracker:
         self.current_print_ts = -1    # timestamp as print_ts coming from octoprint
         self.tsd_gcode_file_id = None
 
-    def on_event(self, plugin, event, payload):
+    def on_event(self, plugin, event, payload, at):
         with self._mutex:
             if event == 'PrintStarted':
-                self.current_print_ts = int(time.time())
+                self.current_print_ts = int(at)  # TODO increase resolution *100?
 
-        data = self.octoprint_data(plugin)
+        data = self.octoprint_data(plugin, at)
         data['octoprint_event'] = {
             'event_type': event,
-            'data': payload
+            'data': payload,
         }
 
         # Unsetting self.current_print_ts should happen after it is captured in payload to make sure last event of a print contains the correct current_print_ts
@@ -32,16 +31,19 @@ class PrintEventTracker:
 
         return data
 
-    def octoprint_data(self, plugin):
+    def octoprint_data(self, plugin, at):
         data = {
             'octoprint_data': plugin._printer.get_current_data(),
             'octoprint_temperatures': plugin._printer.get_current_temperatures(),
+            '_at': at,
         }
 
         current_file_metadata = None
-        current_file = data.get('octoprint_data', {}).get('job', {}).get('file', {})
+        current_file = data.get('octoprint_data', {}).get(
+            'job', {}).get('file', {})
         if current_file.get('path') and current_file.get('origin'):
-            current_file_metadata = self.get_file_metadata(plugin, current_file)
+            current_file_metadata = self.get_file_metadata(
+                plugin, current_file)
         data['octoprint_data']['file_metadata'] = current_file_metadata
 
         octo_settings = plugin.octoprint_settings_updater.as_dict()
@@ -69,8 +71,9 @@ class PrintEventTracker:
         if not current_file.get('origin') == 'local':
             return None
 
-        file_metadata = plugin._file_manager._storage_managers.get(current_file.get('origin')).get_metadata(current_file.get('path'))
+        file_metadata = plugin._file_manager._storage_managers.get(
+            current_file.get('origin')).get_metadata(current_file.get('path'))
         if not file_metadata:
             return None
 
-        return { 'analysis': { 'printingArea': file_metadata.get('analysis', {}).get('printingArea') } }
+        return {'analysis': {'printingArea': file_metadata.get('analysis', {}).get('printingArea')}}

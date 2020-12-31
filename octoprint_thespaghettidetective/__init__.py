@@ -12,6 +12,8 @@ import sys
 import time
 import requests
 import backoff
+import collections
+from queue import Queue, Empty, Full
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
@@ -36,6 +38,7 @@ POST_STATUS_INTERVAL_SECONDS = 15.0
 
 DEFAULT_USER_ACCOUNT = {'is_pro': False, 'dh_balance': 0}
 
+MAX_EVENT_QUEUE_SIZE = 1000
 _print_event_tracker = PrintEventTracker()
 
 
@@ -61,6 +64,8 @@ class TheSpaghettiDetectivePlugin(
         self.webcam_streamer = None
         self.user_account = DEFAULT_USER_ACCOUNT
         self.local_tunnel = None
+        self.event_q = Queue(maxsize=MAX_EVENT_QUEUE_SIZE)
+        self.force_status_update = threading.Event()
 
     # ~~ Wizard plugin mix
 
@@ -133,7 +138,8 @@ class TheSpaghettiDetectivePlugin(
         try:
             if command == "test_auth_token":
                 auth_token = data["auth_token"]
-                succeeded, status_text, _ = self.tsd_api_status(auth_token=auth_token)
+                succeeded, status_text, _ = self.tsd_api_status(
+                    auth_token=auth_token)
                 if succeeded:
                     self._settings.set(["auth_token"], auth_token, force=True)
                     self._settings.save(force=True)
@@ -147,8 +153,9 @@ class TheSpaghettiDetectivePlugin(
                         is_pi_camera=self.webcam_streamer and bool(self.webcam_streamer.pi_camera)),
                     error_stats=self.error_stats.as_dict(),
                     alerts=alert_queue.fetch_and_clear(),
-                    )
-                if self._settings.get(["auth_token"]):     # Ask to opt in sentry only after wizard is done.
+                )
+                # Ask to opt in sentry only after wizard is done.
+                if self._settings.get(["auth_token"]):
                     sentry_opt = self._settings.get(["sentry_opt"])
                     if sentry_opt == 'out':
                         self._settings.set(["sentry_opt"], 'asked')
@@ -158,7 +165,8 @@ class TheSpaghettiDetectivePlugin(
                 return flask.jsonify(results)
 
             if command == "toggle_sentry_opt":
-                self._settings.set(["sentry_opt"], 'out' if self._settings.get(["sentry_opt"]) == 'in' else 'in', force=True)
+                self._settings.set(["sentry_opt"], 'out' if self._settings.get(
+                    ["sentry_opt"]) == 'in' else 'in', force=True)
                 self._settings.save(force=True)
         except Exception as e:
             self.sentry.captureException()
@@ -167,21 +175,19 @@ class TheSpaghettiDetectivePlugin(
     # ~~ Eventhandler mixin
 
     def on_event(self, event, payload):
-        global _print_event_tracker
+        interesting = (
+            event in ('FirmwareData', 'SettingsUpdated') or
+            event.startswith('Print')
+        )
 
-        try:
-            if event == 'FirmwareData':
-                self.octoprint_settings_updater.update_firmware(payload)
-                self.post_printer_status(_print_event_tracker.octoprint_data(self))
-            elif event == 'SettingsUpdated':
-                self.octoprint_settings_updater.update_settings()
-                self.post_printer_status(_print_event_tracker.octoprint_data(self))
-            elif event.startswith("Print"):
-                event_payload = _print_event_tracker.on_event(self, event, payload)
-                if event_payload:
-                    self.post_printer_status(event_payload)
-        except Exception as e:
-            self.sentry.captureException(tags=get_tags())
+        if interesting:
+            try:
+                self.event_q.put_nowait(
+                    (event, payload, time.time())
+                )
+            except Full:
+                _logger.error('event queue is full')
+
     # ~~Shutdown Plugin
 
     def on_shutdown(self):
@@ -198,25 +204,70 @@ class TheSpaghettiDetectivePlugin(
         main_thread = threading.Thread(target=self.main_loop)
         main_thread.daemon = True
         main_thread.start()
-    # Private methods
+
+        post_status_thread = threading.Thread(
+            target=self.post_printer_status_loop)
+        post_status_thread.daemon = True
+        post_status_thread.start()
+
+    def post_printer_status_loop(self):
+        global _print_event_tracker
+
+        try:
+            while True:
+                try:
+                    (event, payload, at) = self.event_q.get(timeout=1)
+                except Empty:
+                    at = time.time()
+                    cur_delta = abs(at - self.last_status_update_ts)
+
+                    need_to_post = (
+                        (self.ss and self.ss.connected()) and (
+                            (cur_delta >= POST_STATUS_INTERVAL_SECONDS) or
+                            self.force_status_update.is_set()
+                        )
+                    )
+
+                    if need_to_post:
+                        self.force_status_update.clear()
+                        self.post_printer_status(
+                            _print_event_tracker.octoprint_data(
+                                self, at=at))
+                    continue
+
+                if event == 'FirmwareData':
+                    self.octoprint_settings_updater.update_firmware(payload)
+                    self.post_printer_status(
+                        _print_event_tracker.octoprint_data(self, at=at))
+                elif event == 'SettingsUpdated':
+                    self.octoprint_settings_updater.update_settings()
+                    self.post_printer_status(
+                        _print_event_tracker.octoprint_data(self, at=at))
+                elif event.startswith("Print"):
+                    event_payload = _print_event_tracker.on_event(
+                        self, event, payload, at)
+                    if event_payload:
+                        self.post_printer_status(event_payload)
+        except Exception:
+            self.sentry.captureException(tags=get_tags())
 
     def auth_headers(self, auth_token=None):
         return {"Authorization": "Token " + self.auth_token(auth_token)}
 
     def main_loop(self):
-        global _print_event_tracker
-
         get_tags()  # init tags to minimize risk of race condition
 
         self.user_account = self.wait_for_auth_token().get('user', DEFAULT_USER_ACCOUNT)
         self.sentry.user_context({'id': self.auth_token()})
         _logger.info('User account: {}'.format(self.user_account))
-        _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
+        _logger.debug('Plugin settings: {}'.format(
+            self._settings.get_all_data()))
 
         if self.user_account.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
             _logger.info('Starting webcam streamer')
             self.webcam_streamer = WebcamStreamer(self, self.sentry)
-            stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
+            stream_thread = threading.Thread(
+                target=self.webcam_streamer.video_pipeline)
             stream_thread.daemon = True
             stream_thread.start()
 
@@ -234,14 +285,15 @@ class TheSpaghettiDetectivePlugin(
         backoff = ExpoBackoff(120)
         while True:
             try:
-                if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
+                if not self.ss or not self.ss.connected:
                     self.error_stats.attempt('server')
-                    self.post_printer_status(_print_event_tracker.octoprint_data(self), try_connecting=True)
+                    self.send_ws_msg_to_server(
+                        None,
+                        try_connecting=True)
                     backoff.reset()
 
                 self.jpeg_poster.post_jpeg_if_needed()
                 time.sleep(1)
-
             except WebSocketClientException as e:
                 self.error_stats.add_connection_error('server')
                 backoff.more(e)
@@ -252,7 +304,7 @@ class TheSpaghettiDetectivePlugin(
 
     def post_printer_status(self, data, try_connecting=False):
         if self.send_ws_msg_to_server(data, try_connecting=try_connecting):
-            self.last_status_update_ts = time.time()
+            self.last_status_update_ts = data['_at']
 
     def send_ws_msg_to_server(self, data, try_connecting=False, as_binary=False):
         """
@@ -260,12 +312,14 @@ class TheSpaghettiDetectivePlugin(
             Returns: True if message is sent successfully. Otherwise returns False.
         """
         if not self.is_configured():
-            _logger.warning("Plugin not configured. Not sending message to server...")
+            _logger.warning(
+                "Plugin not configured. Not sending message to server...")
             return False
 
         if as_binary:
             raw = bson.dumps(data)
-            _logger.debug("Sending binary ({} bytes) to server".format(len(raw)))
+            _logger.debug(
+                "Sending binary ({} bytes) to server".format(len(raw)))
         else:
             _logger.debug("Sending to server: \n{}".format(data))
             if __python_version__ == 3:
@@ -275,11 +329,17 @@ class TheSpaghettiDetectivePlugin(
 
         if not self.ss or not self.ss.connected():
             if try_connecting:
-                self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
+                url = self.canonical_ws_prefix() + "/ws/dev/"
+                self.ss = WebSocketClient(
+                    url,
+                    token=self.auth_token(),
+                    on_ws_msg=self.process_server_msg,
+                    on_ws_close=self.on_ws_close)
             else:
                 return False
 
-        self.ss.send(raw, as_binary=as_binary)
+        if data is not None:
+            self.ss.send(raw, as_binary=as_binary)
 
         return True
 
@@ -289,8 +349,7 @@ class TheSpaghettiDetectivePlugin(
         self.ss = None
 
     def process_server_msg(self, ws, raw_data):
-        global _print_event_tracker
-
+        logging.error(raw_data)
         try:
             # raw_data can be both json or bson
             # no py2 compat way to properly detect type here
@@ -329,10 +388,12 @@ class TheSpaghettiDetectivePlugin(
                 ret = func(*(passsthru.get("args", [])))
 
                 if ack_ref:
-                    self.send_ws_msg_to_server({'passthru': {'ref': ack_ref, 'ret': ret}})
+                    self.send_ws_msg_to_server(
+                        {'passthru': {'ref': ack_ref, 'ret': ret}})
 
-                time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
-                self.post_printer_status(_print_event_tracker.octoprint_data(self))
+                # changes, such as setting temp will take a bit of time to be reflected in the status. wait for it
+                time.sleep(0.2)
+                self.force_status_update.set()
 
             if msg.get('janus') and self.webcam_streamer:
                 self.webcam_streamer.pass_to_janus(msg.get('janus'))
@@ -379,7 +440,8 @@ class TheSpaghettiDetectivePlugin(
         status_text = 'Unknown error.'
         resp = None
         try:
-            resp = requests.get(endpoint, headers=self.auth_headers(auth_token=self.auth_token(auth_token)), timeout=30)
+            resp = requests.get(endpoint, headers=self.auth_headers(
+                auth_token=self.auth_token(auth_token)), timeout=30)
             succeeded = resp.ok
             if resp.status_code == 200:
                 status_text = 'Secret token is valid. You are awesome!'
