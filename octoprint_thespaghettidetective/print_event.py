@@ -37,14 +37,7 @@ class PrintEventTracker:
             'octoprint_temperatures': plugin._printer.get_current_temperatures(),
             '_at': at,
         }
-
-        current_file_metadata = None
-        current_file = data.get('octoprint_data', {}).get(
-            'job', {}).get('file', {})
-        if current_file.get('path') and current_file.get('origin'):
-            current_file_metadata = self.get_file_metadata(
-                plugin, current_file)
-        data['octoprint_data']['file_metadata'] = current_file_metadata
+        data['octoprint_data']['file_metadata'] = self.get_file_metadata(plugin, data)
 
         octo_settings = plugin.octoprint_settings_updater.as_dict()
         if octo_settings:
@@ -65,15 +58,16 @@ class PrintEventTracker:
         with self._mutex:
             return self.tsd_gcode_file_id
 
-    def get_file_metadata(self, plugin, current_file):
+    def get_file_metadata(self, plugin, data):
+        try:
+            current_file = data.get('octoprint_data', {}).get('job', {}).get('file', {})
+            origin = current_file.get('origin')
+            path = current_file.get('path')
+            if not origin or not path:
+                return None
 
-        # somehow _storage_managers.get('sdcard') always returns None. It seems to work only with 'local'
-        if not current_file.get('origin') == 'local':
+            file_metadata = plugin._file_manager._storage_managers.get(origin).get_metadata(path)
+            return {'analysis': {'printingArea': file_metadata.get('analysis', {}).get('printingArea')}}
+        except Exception as e:
+            _logger.exception(e)
             return None
-
-        file_metadata = plugin._file_manager._storage_managers.get(
-            current_file.get('origin')).get_metadata(current_file.get('path'))
-        if not file_metadata:
-            return None
-
-        return {'analysis': {'printingArea': file_metadata.get('analysis', {}).get('printingArea')}}
