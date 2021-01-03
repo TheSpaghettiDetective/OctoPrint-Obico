@@ -31,6 +31,10 @@ $(function () {
             self.step(self.step() + 1);
         };
 
+        self.prevStep = function() {
+            self.step(self.step() - 1);
+        };
+
         self.securityCode.subscribe(function(code) {
             self.verifySecurityCode(code);
         });

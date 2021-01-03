@@ -52,9 +52,46 @@ Step <span data-bind="text: step"></span>
     </div>
   </div>
 </div>
+
 <div data-bind="visible: step() === 1">
-Install App
+  <div class="wizard-content">
+    <a href="#" class="back-btn" data-bind="click: prevStep">
+      <img src="plugin/thespaghettidetective/static/img/back.svg" alt="">
+    </a>
+
+    <div class="progress-wrapper">
+      <div class="progress-content">
+        <div class="circles">
+          <div class="circle filled checked"></div>
+          <div class="circle filled"></div>
+          <div class="circle"></div>
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="header">
+      <h1 class="title primary">How would you like to continue?</h1>
+    </div>
+    <p>The Spaghetti Detective needs to <strong>connect to your printer</strong> using a <strong>6-digit verifcation code</strong>. (Just this once!)</p>
+    <p>You may continue in our mobile app (recommended) or in another tab within your web browser.</p>
+    <div class="choice-banner">
+      <div class="option">
+        <img src="plugin/thespaghettidetective/static/img/phone-illustration.svg" alt="">
+        <h2>Mobile Setup</h2>
+        <a href="#" class="button filled">Continue with <strong>Mobile App</strong></a>
+      </div>
+      <div class="delimeter"></div>
+      <div class="option">
+        <img src="plugin/thespaghettidetective/static/img/desktop-illustration.svg" alt="">
+        <h2>Web Setup</h2>
+        <a href="#" class="button outline">Continue with <strong>Web Browser</strong></a>
+      </div>
+    </div>
+    <div class="footer">*Note - you can always download the Spaghetti Detective mobile app later.</div>
+  </div>
 </div>
+
 <div data-bind="visible: step() === 2">
 Enter security code
   <input type="text" class="input-block-level" data-bind="textInput: securityCode">

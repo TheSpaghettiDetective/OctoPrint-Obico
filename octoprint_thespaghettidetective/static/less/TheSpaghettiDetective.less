@@ -72,17 +72,19 @@ div[id$=_plugin_thespaghettidetective] {
 @wizard-container-min-height: 625px;
 
 .wizard-content {
-  @padding-left: 120px;
-  @padding-right: 40px;
-
   font-family: 'Roboto', sans-serif;
-  padding-left: @padding-left;
-  padding-right: @padding-right;
-  max-width: @wizard-container-width - @padding-left - @padding-right;
+  padding-left: 40px;
+  padding-right: 40px;
+  max-width: @wizard-container-width - 80px;
   color: @wizard-text-color;
   min-height: @wizard-container-min-height;
   overflow: hidden;
   position: relative;
+
+  &.bigger-left-padding {
+    padding-left: 120px;
+    max-width: 540px;
+  }
 
   * {
     position: relative;
@@ -97,6 +99,25 @@ div[id$=_plugin_thespaghettidetective] {
     right: 58%;
     z-index: 0;
     opacity: .3;
+  }
+
+  // Back button
+  .back-btn {
+    display: inline-block;
+    text-decoration: none;
+    margin-top: 20px;
+    position: absolute;
+    z-index: 11;
+
+    &:hover {
+      opacity: .8;
+      cursor: pointer;
+    }
+
+    img {
+      width: 10px;
+      height: 20px;
+    }
   }
 
   // Progress circles at the top right corner
@@ -123,6 +144,16 @@ div[id$=_plugin_thespaghettidetective] {
           &.filled {
             background-color: @wizard-primary-color;
           }
+
+          &.checked:before {
+            content: url("../img/checkmark-half-filled.svg");
+            display: inline-block;
+            width: 19px;
+            height: 15px;
+            position: absolute;
+            bottom: 40%;
+            left: 40%;
+          }
         
           &:after {
             content: "";
@@ -147,7 +178,7 @@ div[id$=_plugin_thespaghettidetective] {
   }
 
   // Continue button
-  .button.setup-wizard {
+  .button {
     background-color: @wizard-primary-color;
     padding: 10px 26px;
     font-size: 18px;
@@ -196,6 +227,13 @@ div[id$=_plugin_thespaghettidetective] {
 
     .title {
       margin: 0;
+
+      &.primary {
+        color: @wizard-primary-color;
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
     }
 
     // Small black logo 
@@ -301,8 +339,59 @@ div[id$=_plugin_thespaghettidetective] {
     }
   }
 
+  // Choice between mobile and web on step 2
+  .choice-banner {
+    background-color: @wizard-primary-color;
+    margin: 30px -40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .delimeter {
+      background-color: #fff;
+      width: 3px;
+      height: 200px;
+    }
+
+    .option {
+      text-align: center;
+      margin: 50px 30px;
+      color: #fff;
+
+      .button {
+        color: @wizard-primary-color;
+        background-color: #fff;
+
+        &.filled {
+          color: @wizard-primary-color;
+          background-color: #fff;
+        }
+
+        &.outline {
+          background-color: @wizard-primary-color;
+          color: #fff;
+          border: 2px solid #fff;
+        }
+      }
+    }
+
+    @media screen and (max-width: 500px) {
+      flex-direction: column;
+
+      .delimeter {
+        width: 80%;
+        height: 3px;
+      }
+    }
+  }
+
+  // Footer notes
+  .footer {
+    margin-bottom: 30px;
+  }
+
   @media screen and (max-width: 975px) {
-    padding-left: @padding-right;
+    padding-left: 40px !important;
 
     .header .logo {
       position: static;
