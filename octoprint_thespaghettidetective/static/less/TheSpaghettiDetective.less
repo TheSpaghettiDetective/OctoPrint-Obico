@@ -61,3 +61,341 @@ div[id$=_plugin_thespaghettidetective] {
 		}
     }
 }
+
+
+// Wizard content
+
+@wizard-primary-color: #9965F4;
+@wizard-text-color: #282828;
+@wizard-paragraph-text-size: 14px;
+@wizard-container-width: 700px;
+@wizard-container-min-height: 625px;
+
+.wizard-content {
+  font-family: 'Roboto', sans-serif;
+  padding-left: 40px;
+  padding-right: 40px;
+  max-width: @wizard-container-width - 80px;
+  color: @wizard-text-color;
+  min-height: @wizard-container-min-height;
+  overflow: hidden;
+  position: relative;
+
+  &.bigger-left-padding {
+    padding-left: 120px;
+    max-width: 540px;
+  }
+
+  * {
+    position: relative;
+    z-index: 10;
+  }
+
+  // Big image on background
+  .background {
+    width: 600px;
+    position: absolute;
+    top: 50px;
+    right: 58%;
+    z-index: 0;
+    opacity: .3;
+  }
+
+  // Back button
+  .back-btn {
+    display: inline-block;
+    text-decoration: none;
+    margin-top: 20px;
+    position: absolute;
+    z-index: 11;
+
+    &:hover {
+      opacity: .8;
+      cursor: pointer;
+    }
+
+    img {
+      width: 10px;
+      height: 20px;
+    }
+  }
+
+  // Progress circles at the top right corner
+  .progress-wrapper {
+    margin-top: 20px;
+    text-align: right;
+
+    .progress-content {
+      display: inline-block;
+      text-align: center;
+
+      .circles {
+        font-size: 0;
+
+        .circle {
+          width: 16px;
+          height: 16px;
+          display: inline-block;
+          border: 2px solid @wizard-primary-color;
+          border-radius: 50%;
+          position: relative;
+          margin-right: 18px;
+
+          &.filled {
+            background-color: @wizard-primary-color;
+          }
+
+          &.checked:before {
+            content: url("../img/checkmark-half-filled.svg");
+            display: inline-block;
+            width: 19px;
+            height: 15px;
+            position: absolute;
+            bottom: 40%;
+            left: 40%;
+          }
+        
+          &:after {
+            content: "";
+            width: 18px;
+            height: 2px;
+            background-color: @wizard-primary-color;
+            position: absolute;
+            left: calc(100% + 2px);
+            top: calc(50% - 1px);
+          }
+        
+          &:last-child {
+            margin-right: 0;
+        
+            &:after {
+              content: none;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Continue button
+  .button {
+    background-color: @wizard-primary-color;
+    padding: 10px 26px;
+    font-size: 18px;
+    line-height: 18px;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    display: inline-block;
+    margin: 12px 0 6px;
+    border: none;
+
+    &:hover {
+      opacity: .8;
+      cursor: pointer;
+    }
+
+    &[disabled] {
+      opacity: .4;
+
+      &:hover {
+        opacity: .4;
+        cursor: default;
+      }
+    }
+  }
+
+  a {
+    color: @wizard-primary-color;
+    text-decoration: underline;
+  }
+
+  // Small link under the Continue button
+  a.small {
+    color: @wizard-text-color;
+    font-size: 10px;
+    text-decoration: none;
+
+    &:hover {
+      opacity: .8;
+    }
+  }
+
+  // Wizard title
+  .header {
+    margin-top: 30px;
+
+    .title {
+      margin: 0;
+
+      &.primary {
+        color: @wizard-primary-color;
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+    }
+
+    // Small black logo 
+    .logo {
+      width: 60px;
+      position: absolute;
+      top: -60px;
+      left: 130px;
+
+      svg {
+        width: 60px;
+      }
+    }
+  }
+
+  // Regular paragraph
+  p {
+    font-size: @wizard-paragraph-text-size;
+  }
+
+  // Text with checkbox
+  .text-with-checkbox {
+    padding-left: 22px;
+    font-size: 12px;
+    position: relative;
+
+    &:hover {
+      cursor: pointer;
+      opacity: .8;
+    }
+
+    .checkbox-wrapper {
+      width: 10px;
+      height: 10px;
+      border: 1px solid @wizard-primary-color;
+      background-color: #fff;
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 1px;
+      margin: auto;
+
+      &.checked:after {
+        content: url(../img/checkmark.svg);
+        display: block;
+        position: absolute;
+        width: 15px;
+        height: 12px;
+        bottom: 4px;
+        left: 1px;
+      }
+    }
+  }
+
+  // Features block
+  .features {
+    margin-top: 50px;
+
+    .feature {
+      padding-left: 70px;
+      position: relative;
+      margin-bottom: 20px;
+      max-width: 300px;
+
+      .title {
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      .description {
+        margin: 0;
+        margin-top: 4px;
+        font-size: 12px;
+      }
+
+      img {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        width: 40px;
+        border: 1px solid @wizard-primary-color;
+        border-radius: 50%;
+      }
+
+      &.accent {
+        max-width: 100%;
+
+        .title {
+          font-size: 18px;
+        }
+
+        .description {
+          font-size: 15px;
+        }
+
+        img {
+          width: 60px;
+          left: -10px;
+        }
+      }
+    }
+  }
+
+  // Choice between mobile and web on step 2
+  .choice-banner {
+    background-color: @wizard-primary-color;
+    margin: 30px -40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .delimeter {
+      background-color: #fff;
+      width: 3px;
+      height: 200px;
+    }
+
+    .option {
+      text-align: center;
+      margin: 50px 30px;
+      color: #fff;
+
+      .button {
+        color: @wizard-primary-color;
+        background-color: #fff;
+
+        &.filled {
+          color: @wizard-primary-color;
+          background-color: #fff;
+        }
+
+        &.outline {
+          background-color: @wizard-primary-color;
+          color: #fff;
+          border: 2px solid #fff;
+        }
+      }
+    }
+
+    @media screen and (max-width: 500px) {
+      flex-direction: column;
+
+      .delimeter {
+        width: 80%;
+        height: 3px;
+      }
+    }
+  }
+
+  // Footer notes
+  .footer {
+    margin-bottom: 30px;
+  }
+
+  @media screen and (max-width: 975px) {
+    padding-left: 40px !important;
+
+    .header .logo {
+      position: static;
+      margin-bottom: 10px;
+    }
+  }
+}
