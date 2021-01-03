@@ -4,7 +4,7 @@ Step <span data-bind="text: step"></span>
 </div> -->
 
 <div data-bind="visible: step() === 0">
-  <div class="wizard-content">
+  <div class="wizard-content bigger-left-padding">
     <img class="background" src="plugin/thespaghettidetective/static/img/logo-bg.svg" alt="">
 
     <div class="progress-wrapper">
@@ -15,7 +15,7 @@ Step <span data-bind="text: step"></span>
           <div class="circle"></div>
           <div class="circle"></div>
         </div>
-        <button class="button setup-wizard" id="next" data-bind="click: nextStep">CONTINUE</button>
+        <button class="button setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked">CONTINUE</button>
         <br>
         <a href="#" class="small">setup through web-app instead</a>
       </div>
@@ -29,8 +29,8 @@ Step <span data-bind="text: step"></span>
     </div>
     <p><strong>The Spaghetti Detective</strong> is an <strong>open source project</strong> for 3D printing remote monitoring. <br>It uses AI (Deep Learning) to detect print failures in real time and alerts you about them.</p>
     <p>Access your printer anywhere, with the TSD <strong>mobile app</strong></p>
-    <div class="text-with-checkbox" id="user-agreement">
-      <div class="checkbox-wrapper checked"></div>
+    <div class="text-with-checkbox" data-bind="click: toggleCheck">
+      <div class="checkbox-wrapper" data-bind="css: {checked: userAgreementChecked}"></div>
       By proceeding you agree to the <a href="#">terms of service</a> and our <a href="#">privacy policy</a>
     </div>
     <div class="features">
@@ -97,13 +97,3 @@ Enter security code
   <input type="text" class="input-block-level" data-bind="textInput: securityCode">
   <i class="fa fa-spinner fa-spin" data-bind="visible: verifying"></i>
 </div>
-
-<script>
-  document.querySelector('.text-with-checkbox').addEventListener('click', event => {
-    event.target.querySelector('.checkbox-wrapper').classList.toggle('checked');
-  });
-
-  document.querySelector('#user-agreement').addEventListener('click', event => {
-    document.querySelector('#next').toggleAttribute('disabled');
-  });
-</script>

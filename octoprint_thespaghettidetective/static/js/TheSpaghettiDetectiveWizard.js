@@ -6,6 +6,8 @@
  */
 $(function () {
 
+    
+
     function apiCommand(data, success, error) {
         $.ajax("api/plugin/thespaghettidetective", {
             method: "POST",
@@ -26,6 +28,7 @@ $(function () {
         self.step = ko.observable(0);
         self.securityCode = ko.observable('');
         self.verifying = ko.observable(false);
+        self.userAgreementChecked = ko.observable(true);
 
         self.nextStep = function() {
             self.step(self.step() + 1);
@@ -34,6 +37,10 @@ $(function () {
         self.prevStep = function() {
             self.step(self.step() - 1);
         };
+
+        self.toggleCheck = function() {
+            self.userAgreementChecked(!self.userAgreementChecked());
+        }
 
         self.securityCode.subscribe(function(code) {
             self.verifySecurityCode(code);
