@@ -63,8 +63,7 @@ div[id$=_plugin_thespaghettidetective] {
 }
 
 
-
-// Setup Wizard
+// Wizard content
 
 @wizard-primary-color: #9965F4;
 @wizard-text-color: #282828;
@@ -79,7 +78,7 @@ div[id$=_plugin_thespaghettidetective] {
   font-family: 'Roboto', sans-serif;
   padding-left: @padding-left;
   padding-right: @padding-right;
-  width: @wizard-container-width - @padding-left - @padding-right;
+  max-width: @wizard-container-width - @padding-left - @padding-right;
   color: @wizard-text-color;
   min-height: @wizard-container-min-height;
   overflow: hidden;
@@ -95,7 +94,7 @@ div[id$=_plugin_thespaghettidetective] {
     width: 600px;
     position: absolute;
     top: 50px;
-    right: 56%;
+    right: 58%;
     z-index: 0;
     opacity: .3;
   }
@@ -152,17 +151,35 @@ div[id$=_plugin_thespaghettidetective] {
     background-color: @wizard-primary-color;
     padding: 10px 26px;
     font-size: 18px;
+    line-height: 18px;
     color: #fff;
     text-decoration: none;
     border-radius: 10px;
     display: inline-block;
     margin: 12px 0 6px;
+    border: none;
 
     &:hover {
       opacity: .8;
+      cursor: pointer;
+    }
+
+    &[disabled] {
+      opacity: .4;
+
+      &:hover {
+        opacity: .4;
+        cursor: default;
+      }
     }
   }
 
+  a {
+    color: @wizard-primary-color;
+    text-decoration: underline;
+  }
+
+  // Small link under the Continue button
   a.small {
     color: @wizard-text-color;
     font-size: 10px;
@@ -173,25 +190,24 @@ div[id$=_plugin_thespaghettidetective] {
     }
   }
 
-  a {
-    color: @wizard-primary-color;
-    text-decoration: underline;
-  }
-
-  // Small black logo 
-  .logo {
-    padding-left: 130px;
-    margin-top: -30px;
-
-    svg {
-      width: 60px;
-    }
-  }
-
   // Wizard title
   .header {
+    margin-top: 30px;
+
     .title {
       margin: 0;
+    }
+
+    // Small black logo 
+    .logo {
+      width: 60px;
+      position: absolute;
+      top: -60px;
+      left: 130px;
+
+      svg {
+        width: 60px;
+      }
     }
   }
 
@@ -201,16 +217,36 @@ div[id$=_plugin_thespaghettidetective] {
   }
 
   // Text with checkbox
-  .checkmark {
-    padding-left: 24px;
+  .text-with-checkbox {
+    padding-left: 22px;
     font-size: 12px;
     position: relative;
 
-    img {
+    &:hover {
+      cursor: pointer;
+      opacity: .8;
+    }
+
+    .checkbox-wrapper {
+      width: 10px;
+      height: 10px;
+      border: 1px solid @wizard-primary-color;
+      background-color: #fff;
       position: absolute;
       left: 0;
-      top: -6px;
-      width: 20px;
+      top: 0;
+      bottom: 1px;
+      margin: auto;
+
+      &.checked:after {
+        content: url(../img/checkmark.svg);
+        display: block;
+        position: absolute;
+        width: 15px;
+        height: 12px;
+        bottom: 4px;
+        left: 1px;
+      }
     }
   }
 
@@ -262,6 +298,15 @@ div[id$=_plugin_thespaghettidetective] {
           left: -10px;
         }
       }
+    }
+  }
+
+  @media screen and (max-width: 975px) {
+    padding-left: @padding-right;
+
+    .header .logo {
+      position: static;
+      margin-bottom: 10px;
     }
   }
 }

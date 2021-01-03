@@ -48,7 +48,7 @@ div[id$=_plugin_thespaghettidetective] .social-container .social-btns .social {
   font-family: 'Roboto', sans-serif;
   padding-left: 120px;
   padding-right: 40px;
-  width: 540px;
+  max-width: 540px;
   color: #282828;
   min-height: 625px;
   overflow: hidden;
@@ -62,7 +62,7 @@ div[id$=_plugin_thespaghettidetective] .social-container .social-btns .social {
   width: 600px;
   position: absolute;
   top: 50px;
-  right: 56%;
+  right: 58%;
   z-index: 0;
   opacity: 0.3;
 }
@@ -108,14 +108,28 @@ div[id$=_plugin_thespaghettidetective] .social-container .social-btns .social {
   background-color: #9965F4;
   padding: 10px 26px;
   font-size: 18px;
+  line-height: 18px;
   color: #fff;
   text-decoration: none;
   border-radius: 10px;
   display: inline-block;
   margin: 12px 0 6px;
+  border: none;
 }
 .wizard-content .button.setup-wizard:hover {
   opacity: 0.8;
+  cursor: pointer;
+}
+.wizard-content .button.setup-wizard[disabled] {
+  opacity: 0.4;
+}
+.wizard-content .button.setup-wizard[disabled]:hover {
+  opacity: 0.4;
+  cursor: default;
+}
+.wizard-content a {
+  color: #9965F4;
+  text-decoration: underline;
 }
 .wizard-content a.small {
   color: #282828;
@@ -125,33 +139,52 @@ div[id$=_plugin_thespaghettidetective] .social-container .social-btns .social {
 .wizard-content a.small:hover {
   opacity: 0.8;
 }
-.wizard-content a {
-  color: #9965F4;
-  text-decoration: underline;
-}
-.wizard-content .logo {
-  padding-left: 130px;
-  margin-top: -30px;
-}
-.wizard-content .logo svg {
-  width: 60px;
+.wizard-content .header {
+  margin-top: 30px;
 }
 .wizard-content .header .title {
   margin: 0;
 }
+.wizard-content .header .logo {
+  width: 60px;
+  position: absolute;
+  top: -60px;
+  left: 130px;
+}
+.wizard-content .header .logo svg {
+  width: 60px;
+}
 .wizard-content p {
   font-size: 14px;
 }
-.wizard-content .checkmark {
-  padding-left: 24px;
+.wizard-content .text-with-checkbox {
+  padding-left: 22px;
   font-size: 12px;
   position: relative;
 }
-.wizard-content .checkmark img {
+.wizard-content .text-with-checkbox:hover {
+  cursor: pointer;
+  opacity: 0.8;
+}
+.wizard-content .text-with-checkbox .checkbox-wrapper {
+  width: 10px;
+  height: 10px;
+  border: 1px solid #9965F4;
+  background-color: #fff;
   position: absolute;
   left: 0;
-  top: -6px;
-  width: 20px;
+  top: 0;
+  bottom: 1px;
+  margin: auto;
+}
+.wizard-content .text-with-checkbox .checkbox-wrapper.checked:after {
+  content: url(../img/checkmark.svg);
+  display: block;
+  position: absolute;
+  width: 15px;
+  height: 12px;
+  bottom: 4px;
+  left: 1px;
 }
 .wizard-content .features {
   margin-top: 50px;
@@ -193,4 +226,13 @@ div[id$=_plugin_thespaghettidetective] .social-container .social-btns .social {
 .wizard-content .features .feature.accent img {
   width: 60px;
   left: -10px;
+}
+@media screen and (max-width: 975px) {
+  .wizard-content {
+    padding-left: 40px;
+  }
+  .wizard-content .header .logo {
+    position: static;
+    margin-bottom: 10px;
+  }
 }
