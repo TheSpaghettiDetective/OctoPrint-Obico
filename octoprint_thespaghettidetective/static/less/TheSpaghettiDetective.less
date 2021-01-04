@@ -77,18 +77,35 @@ div[id$=_plugin_thespaghettidetective] {
   padding-right: 40px;
   max-width: @wizard-container-width - 80px;
   color: @wizard-text-color;
-  min-height: @wizard-container-min-height;
   overflow: hidden;
   position: relative;
 
-  &.bigger-left-padding {
-    padding-left: 120px;
-    max-width: 540px;
+  // Main elements
+  p {
+    font-size: @wizard-paragraph-text-size;
   }
 
-  * {
-    position: relative;
-    z-index: 10;
+  ul {
+    margin-top: 20px;
+    list-style-type: square;
+    font-size: 16px;
+
+     li {
+       margin-bottom: 4px;
+     }
+
+     a {
+       color: @wizard-text-color;
+
+       &:hover {
+        opacity: .8;
+       }
+     }
+  }
+
+  a {
+    color: @wizard-primary-color;
+    text-decoration: underline;
   }
 
   // Big image on background
@@ -101,34 +118,41 @@ div[id$=_plugin_thespaghettidetective] {
     opacity: .3;
   }
 
-  // Back button
-  .back-btn {
-    display: inline-block;
-    text-decoration: none;
+  // Header at the top of each page
+  .navigation {
     margin-top: 20px;
-    position: absolute;
-    z-index: 11;
+    height: 86px;
+    display: flex;
+    align-items: bottom;
+    justify-content: space-between;
 
-    &:hover {
-      opacity: .8;
-      cursor: pointer;
+    // Back button
+    .back-btn {
+      text-decoration: none;
+
+      &:hover {
+        opacity: .8;
+        cursor: pointer;
+      }
+
+      img {
+        width: 10px;
+        height: 20px;
+      }
     }
 
-    img {
-      width: 10px;
-      height: 20px;
+    // Small black logo
+    .logo {
+      text-align: center;
+      // display: flex;
+
+      svg {
+        width: 60px;
+      }
     }
-  }
 
-  // Progress circles at the top right corner
-  .progress-wrapper {
-    position: absolute;
-    right: 40px;
-    top: 20px;
-    z-index: 11;
-
+    // Progress circles at the top right corner
     .progress-content {
-      display: inline-block;
       text-align: center;
 
       .circles {
@@ -179,11 +203,11 @@ div[id$=_plugin_thespaghettidetective] {
     }
   }
 
-  // Continue button
+  // Main style for buttons
   .button {
     background-color: @wizard-primary-color;
     padding: 10px 26px;
-    font-size: 18px;
+    font-size: 16px;
     line-height: 18px;
     color: #fff;
     text-decoration: none;
@@ -197,6 +221,10 @@ div[id$=_plugin_thespaghettidetective] {
       cursor: pointer;
     }
 
+    &:focus {
+      outline: none;
+    }
+
     &[disabled] {
       opacity: .4;
 
@@ -204,38 +232,6 @@ div[id$=_plugin_thespaghettidetective] {
         opacity: .4;
         cursor: default;
       }
-    }
-  }
-
-  a {
-    color: @wizard-primary-color;
-    text-decoration: underline;
-  }
-
-  // Small link under the Continue button
-  a.small {
-    color: @wizard-text-color;
-    font-size: 10px;
-    text-decoration: none;
-
-    &:hover {
-      opacity: .8;
-    }
-  }
-
-  // Small black logo
-  .logo {
-    text-align: center;
-    margin-left: -80px;
-    margin-top: 30px;
-
-    @media screen and (max-width: 800px) {
-      margin-left: 0;
-      text-align: left;
-    }
-
-    svg {
-      width: 60px;
     }
   }
 
@@ -248,17 +244,10 @@ div[id$=_plugin_thespaghettidetective] {
 
       &.primary {
         color: @wizard-primary-color;
-        font-size: 32px;
         font-weight: bold;
         margin-bottom: 20px;
-        margin-top: 70px;
       }
     }
-  }
-
-  // Regular paragraph
-  p {
-    font-size: @wizard-paragraph-text-size;
   }
 
   // Text with checkbox
@@ -348,7 +337,7 @@ div[id$=_plugin_thespaghettidetective] {
     }
   }
 
-  // Choice between mobile and web on step 2
+  // Choice between mobile and web (step 2)
   .choice-banner {
     background-color: @wizard-primary-color;
     margin: 30px 0;
@@ -397,14 +386,34 @@ div[id$=_plugin_thespaghettidetective] {
   // Footer notes
   .footer {
     margin-bottom: 30px;
+
+    &.primary {
+      background-color: @wizard-primary-color;
+      color: #fff;
+      margin: 30px -40px 0;
+      padding: 30px 40px;
+      text-align: center;
+    }
   }
 
-  @media screen and (max-width: 975px) {
-    padding-left: 40px !important;
+  // Setup illustration at the bottom (step 3.1 - mobile)
+  .bottom-illustration {
+    margin: 20px -40px 0;
 
-    .header .logo {
-      position: static;
-      margin-bottom: 10px;
+    img {
+      width: 100%;
+    }
+  }
+
+  // Gray small link with arrow under title (step 3)
+  a.small {
+    font-size: 14px;
+    color: #9793A0;
+    line-height: 14px;
+    text-decoration: none;
+
+    &:hover {
+      opacity: .8;
     }
   }
 }

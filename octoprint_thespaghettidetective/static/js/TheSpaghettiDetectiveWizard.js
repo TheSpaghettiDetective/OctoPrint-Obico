@@ -25,13 +25,17 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
-        self.step = ko.observable(0);
+        self.step = ko.observable(1);
         self.securityCode = ko.observable('');
         self.verifying = ko.observable(false);
         self.userAgreementChecked = ko.observable(true);
 
         self.nextStep = function() {
             self.step(self.step() + 1);
+        };
+
+        self.toStep = function(step) {
+            self.step(step);
         };
 
         self.prevStep = function() {
