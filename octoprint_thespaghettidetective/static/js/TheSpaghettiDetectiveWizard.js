@@ -25,7 +25,8 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
-        self.step = ko.observable(1);
+        self.step = ko.observable(2);
+        self.mobileFlow = ko.observable(true);
         self.securityCode = ko.observable('');
         self.verifying = ko.observable(false);
         self.userAgreementChecked = ko.observable(true);
