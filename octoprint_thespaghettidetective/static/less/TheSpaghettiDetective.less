@@ -338,37 +338,41 @@ div[id$=_plugin_thespaghettidetective] {
   }
 
   // Choice between mobile and web (step 2)
-  .choice-banner {
+  .choice-container {
     background-color: @wizard-primary-color;
-    margin: 30px 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    padding: 18px;
 
-    .delimeter {
-      background-color: #fff;
-      width: 3px;
-      height: 200px;
-    }
+    .choice-banner {
+      margin: 30px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-    .option {
-      text-align: center;
-      margin: 50px 30px;
-      color: #fff;
-
-      .button {
-        color: @wizard-primary-color;
+      .delimeter {
         background-color: #fff;
+        width: 3px;
+        height: 200px;
+      }
 
-        &.filled {
+      .option {
+        text-align: center;
+        margin: 50px 30px;
+        color: #fff;
+
+        .button {
           color: @wizard-primary-color;
           background-color: #fff;
-        }
 
-        &.outline {
-          background-color: @wizard-primary-color;
-          color: #fff;
-          border: 2px solid #fff;
+          &.filled {
+            color: @wizard-primary-color;
+            background-color: #fff;
+          }
+
+          &.outline {
+            background-color: @wizard-primary-color;
+            color: #fff;
+            border: 2px solid #fff;
+          }
         }
       }
     }
@@ -384,8 +388,9 @@ div[id$=_plugin_thespaghettidetective] {
   }
 
   // Footer notes
-  .footer {
-    margin-bottom: 30px;
+  .notes {
+    color: #fff;
+    // margin-bottom: 30px;
 
     &.primary {
       background-color: @wizard-primary-color;

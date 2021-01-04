@@ -20,7 +20,8 @@ Step <span data-bind="text: step"></span>
           <div class="circle"></div>
           <div class="circle"></div>
         </div>
-        <button class="button setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked">CONTINUE</button>
+        <button class="button setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked">GET STARTED</button>
+        <br>
       </div>
     </div>
     <div class="header">
@@ -35,8 +36,13 @@ and the <a href="https://thespaghettidetective.com/terms.html">Terms of Use</a><
     <div class="features">
       <div class="feature accent">
         <img src="plugin/thespaghettidetective/static/img/icon-connection.svg" alt="">
-        <div class="title">Manage printer anywhere, on your phone</div>
+        <div class="title">Manage printer on your phone</div>
         <p class="description">Start/pause/cancel prints anytime, anywhere! Upload your print files and kick-off prints from your phone, desktop, or tablet.</p>
+      </div>
+      <div class="feature">
+        <img src="plugin/thespaghettidetective/static/img/icon-security.svg" alt="">
+        <div class="title">Secure remote access</div>
+        <p class="description">Access your printer securely from anywhere without opening your home network to the wild internet.</p>
       </div>
       <div class="feature">
         <img src="plugin/thespaghettidetective/static/img/icon-fire.svg" alt="">
@@ -73,22 +79,25 @@ and the <a href="https://thespaghettidetective.com/terms.html">Terms of Use</a><
     <div class="header">
       <h1 class="title primary">How would you like to continue?</h1>
     </div>
-    <p>The Spaghetti Detective needs to <strong>connect to your printer</strong> using a <strong>6-digit verifcation code</strong>. (Just this once!)</p>
-    <p>You may continue in our mobile app (recommended) or in another tab within your web browser.</p>
-    <div class="choice-banner">
-      <div class="option">
-        <img src="plugin/thespaghettidetective/static/img/phone-illustration.svg" alt="">
-        <h2>Mobile Setup</h2>
-        <a href="#" class="button filled" data-bind="click: function(data, event) { toStep(3.1) }">Continue with <strong>Mobile App</strong></a>
+    <p>This wizard will walk you through the process of linking OctoPrint to your The Spaghetti Detective account.</p>
+    <p>You will be asked to sign up a new account if you don't already have one.</p>
+    <H5>Do you want to continue in our mobile app (recommended), or on our web site?</H5>
+    <div class="choice-container">
+      <div class="choice-banner">
+        <div class="option">
+          <img src="plugin/thespaghettidetective/static/img/phone-illustration.svg" alt="">
+          <h2>Mobile Setup</h2>
+          <a href="#" class="button filled" data-bind="click: function(data, event) { toStep(3.1) }">Continue with <strong>Mobile App</strong></a>
+        </div>
+        <div class="delimeter"></div>
+        <div class="option">
+          <img src="plugin/thespaghettidetective/static/img/desktop-illustration.svg" alt="">
+          <h2>Web Setup</h2>
+          <a href="#" class="button outline" data-bind="click: function(data, event) { toStep(3.2) }">Continue with <strong>Web Site</strong></a>
+        </div>
       </div>
-      <div class="delimeter"></div>
-      <div class="option">
-        <img src="plugin/thespaghettidetective/static/img/desktop-illustration.svg" alt="">
-        <h2>Web Setup</h2>
-        <a href="#" class="button outline" data-bind="click: function(data, event) { toStep(3.2) }">Continue with <strong>Web Browser</strong></a>
-      </div>
+      <div class="notes">*Note - you can always switch later.</div>
     </div>
-    <div class="footer">*Note - you can always download the Spaghetti Detective mobile app later.</div>
   </div>
 </div>
 
@@ -165,7 +174,7 @@ and the <a href="https://thespaghettidetective.com/terms.html">Terms of Use</a><
       <li>Recieve <strong>6-Digit Code</strong></li>
       <li>Continue to next step in this setup wizard</li>
     </ul>
-    <div class="footer primary">*You can always download the Spaghetti Detective mobile app later</div>
+    <div class="notes primary">*You can always download the Spaghetti Detective mobile app later</div>
   </div>
 </div>
 

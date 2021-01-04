@@ -6,7 +6,7 @@
  */
 $(function () {
 
-    
+
 
     function apiCommand(data, success, error) {
         $.ajax("api/plugin/thespaghettidetective", {
