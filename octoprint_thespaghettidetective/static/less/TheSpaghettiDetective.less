@@ -342,39 +342,46 @@ div[id$=_plugin_thespaghettidetective] {
   }
 
   // Choice between mobile and web on step 2
-  .choice-banner {
+  .choice-container {
     background-color: @wizard-primary-color;
-    margin: 30px -40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    padding: 18px;
+    .choice-banner {
+      margin: 30px -40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-    .delimeter {
-      background-color: #fff;
-      width: 3px;
-      height: 200px;
-    }
-
-    .option {
-      text-align: center;
-      margin: 50px 30px;
-      color: #fff;
-
-      .button {
-        color: @wizard-primary-color;
+      .delimeter {
         background-color: #fff;
+        width: 3px;
+        height: 200px;
+      }
 
-        &.filled {
+      .option {
+        text-align: center;
+        margin: 50px 30px;
+        color: #fff;
+
+        .button {
           color: @wizard-primary-color;
           background-color: #fff;
-        }
 
-        &.outline {
-          background-color: @wizard-primary-color;
-          color: #fff;
-          border: 2px solid #fff;
+          &.filled {
+            color: @wizard-primary-color;
+            background-color: #fff;
+          }
+
+          &.outline {
+            background-color: @wizard-primary-color;
+            color: #fff;
+            border: 2px solid #fff;
+          }
         }
       }
+    }
+
+    .notes {
+      color: #fff;
     }
 
     @media screen and (max-width: 500px) {
@@ -385,11 +392,6 @@ div[id$=_plugin_thespaghettidetective] {
         height: 3px;
       }
     }
-  }
-
-  // Footer notes
-  .footer {
-    margin-bottom: 30px;
   }
 
   @media screen and (max-width: 975px) {

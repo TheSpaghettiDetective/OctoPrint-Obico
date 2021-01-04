@@ -6,7 +6,7 @@
  */
 $(function () {
 
-    
+
 
     function apiCommand(data, success, error) {
         $.ajax("api/plugin/thespaghettidetective", {
@@ -25,7 +25,7 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
-        self.step = ko.observable(0);
+        self.step = ko.observable(1);
         self.securityCode = ko.observable('');
         self.verifying = ko.observable(false);
         self.userAgreementChecked = ko.observable(true);
