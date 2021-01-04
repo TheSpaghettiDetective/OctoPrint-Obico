@@ -17,7 +17,6 @@ Step <span data-bind="text: step"></span>
         </div>
         <button class="button setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked">CONTINUE</button>
         <br>
-        <a href="#" class="small">setup through web-app instead</a>
       </div>
     </div>
     <div class="header">
@@ -27,16 +26,15 @@ Step <span data-bind="text: step"></span>
       <div class="subtitle">MEET THE</div>
       <h1 class="title">SPAGHETTI DETECTIVE</h1>
     </div>
-    <p><strong>The Spaghetti Detective</strong> is an <strong>open source project</strong> for 3D printing remote monitoring. <br>It uses AI (Deep Learning) to detect print failures in real time and alerts you about them.</p>
-    <p>Access your printer anywhere, with the TSD <strong>mobile app</strong></p>
+    <p><strong>The Spaghetti Detective</strong> is an <a href="https://github.com/TheSpaghettiDetective">open source project</a> that lets you access and monitor OctoPrint <strong>anywhere, on your phone</strong>. <br>It also uses AI (Deep Learning) to detect print failures in real time and send you alerts.</p>
     <div class="text-with-checkbox" data-bind="click: toggleCheck">
       <div class="checkbox-wrapper" data-bind="css: {checked: userAgreementChecked}"></div>
-      By proceeding you agree to the <a href="#">terms of service</a> and our <a href="#">privacy policy</a>
-    </div>
+      By proceeding you agree to our <a href="https://thespaghettidetective.com/privacy.html">Privacy Policy</a>
+and the <a href="https://thespaghettidetective.com/terms.html">Terms of Use</a></div>
     <div class="features">
       <div class="feature accent">
         <img src="plugin/thespaghettidetective/static/img/icon-connection.svg" alt="">
-        <div class="title">Manage printer on your phone</div>
+        <div class="title">Manage printer anywhere, on your phone</div>
         <p class="description">Start/pause/cancel prints anytime, anywhere! Upload your print files and kick-off prints from your phone, desktop, or tablet.</p>
       </div>
       <div class="feature">
