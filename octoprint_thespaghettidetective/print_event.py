@@ -1,6 +1,9 @@
 import logging
 import threading
 from octoprint.filemanager.analysis import QueueEntry
+import re
+
+RE_PRINT_EVENT = re.compile(r'^Print[A-Z]')
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
@@ -16,6 +19,11 @@ class PrintEventTracker:
         with self._mutex:
             if event == 'PrintStarted':
                 self.current_print_ts = int(at)  # TODO increase resolution *100?
+            elif self.current_print_ts == -1 and RE_PRINT_EVENT.match(event):
+                plugin.sentry.captureMessage(
+                    'Got Print<Event> before PrintStarted',
+                    extra={'event': event, 'payload': payload, 'at': at}
+                )
 
         data = self.octoprint_data(plugin, at)
         data['octoprint_event'] = {
