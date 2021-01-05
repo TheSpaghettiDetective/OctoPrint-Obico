@@ -69,33 +69,30 @@ div[id$=_plugin_thespaghettidetective] {
 @wizard-error-color: #F22727;
 @wizard-text-color: #282828;
 @wizard-paragraph-text-size: 14px;
-@wizard-container-width: 700px;
 @wizard-container-min-height: 625px;
 
 .wizard-content {
   font-family: 'Roboto', sans-serif;
-  padding-left: 40px;
-  padding-right: 40px;
-  max-width: @wizard-container-width - 80px;
+  padding-right: 18px;
   color: @wizard-text-color;
   overflow: hidden;
   position: relative;
 
-  &.primary {
-    background-color: @wizard-primary-color;
-    color: #fff;
-  }
-
   // Wizards with big logo as a background
-  &.logo-bg {
+  .bg-logo {
     background-image: url(../img/logo-bg.svg);
     background-repeat: no-repeat;
     background-position: -300px 50px;
     background-size: 600px;
 
-    &.primary {
+    &.bg-primary {
       background-image: url(../img/logo-bg-dark.svg);
     }
+  }
+
+  .bg-primary {
+    background-color: @wizard-primary-color;
+    color: #fff;
   }
 
   // Main elements
@@ -142,6 +139,10 @@ div[id$=_plugin_thespaghettidetective] {
     }
   }
 
+  .indent-content {
+    padding-left: 40px;
+  }
+
   // Header at the top of each page
   .navigation {
     margin-top: 20px;
@@ -153,6 +154,8 @@ div[id$=_plugin_thespaghettidetective] {
     // Back button
     .back-btn {
       text-decoration: none;
+      font-size: 18px;
+      color: #888;
 
       &:hover {
         opacity: .8;
@@ -366,7 +369,6 @@ div[id$=_plugin_thespaghettidetective] {
     padding: 18px;
 
     .choice-banner {
-      margin: 30px 0;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -401,7 +403,7 @@ div[id$=_plugin_thespaghettidetective] {
 
       @media screen and (max-width: 800px) {
         flex-direction: column;
-  
+
         .delimeter {
           width: 80%;
           height: 3px;

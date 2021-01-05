@@ -1,263 +1,197 @@
-<div data-bind="visible: step() === 1">
-  <div class="wizard-content logo-bg">
-    <div class="navigation">
-      <!-- Space holder to fix logo when going to next page -->
-      <div style="width: 34px;"></div>
-      <div class="logo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><style>.cls-1{fill:none;}.cls-2{fill:#373737;}</style></defs><path class="cls-1" d="M256,256H0V0H256Zm-129.58-8.66c13.06-24.28,30.7-43.44,50.37-60.91,7.26-6.44,7.46-6.58,2.87-15.44-2.07-4-1.88-7,1.92-9.25,8.43-5,16.78-10.13,25.58-14.36,6.93-3.33,14.47-5.38,22.32-8.21-11.15-11.72-24.46-19.48-38.88-27.69,3.83-1,6.49-1.64,9.12-2.36,10.63-2.93,21.17-6.15,30.13-12.89,10.32-7.76,10.43-17-.08-24.43-16.55-11.67-36-14.56-55.86-18.14.78,5,1.44,9.16,2.33,14.78-11,1.89-21.62,4.32-32.44,5.47A167,167,0,0,1,81.41,69c-3.44-1-5.29-2.11-4-6.13.89-2.73,1-5.72,1.57-9.51-9.13,2-17.43,3.58-25.62,5.6-11,2.72-21.78,6.36-31,13.36-9.36,7.14-9.51,16-.17,23.09a56.82,56.82,0,0,0,13.37,7.63c8.29,3.26,16.89,5.75,26,8.76C48,119.75,34.42,127.4,23.28,139.38l5.47,1.74c13.62,4.5,27.14,9.24,39,17.68,8.41,6,8.37,6.08,4,15.13a20.33,20.33,0,0,1-1.32,2.69c-1.63,2.37-1.24,3.94,1.15,5.78,4.74,3.65,9.3,7.58,13.67,11.67C101.58,209.39,116.14,226.19,126.42,247.34ZM79.66,53.16C111.22,61.37,142,61.5,173.23,53c-1.71-9.26-3.72-17.84-4.76-26.55-.75-6.31-3.9-10.51-9.43-12.27a135.11,135.11,0,0,0-24.1-5.79c-13.35-1.65-26.72-.53-39.18,4.95-4,1.75-8.93,5.1-10,8.75C82.77,31.9,81.65,42.24,79.66,53.16Z"/><path class="cls-2" d="M126.42,247.34c-10.28-21.15-24.84-38-41.25-53.27-4.37-4.09-8.93-8-13.67-11.67-2.39-1.84-2.78-3.41-1.15-5.78a20.33,20.33,0,0,0,1.32-2.69c4.41-9.05,4.45-9.11-4-15.13-11.82-8.44-25.34-13.18-39-17.68l-5.47-1.74c11.14-12,24.68-19.63,38.3-27.54-9.07-3-17.67-5.5-26-8.76a56.82,56.82,0,0,1-13.37-7.63c-9.34-7.07-9.19-16,.17-23.09,9.19-7,19.93-10.64,31-13.36,8.19-2,16.49-3.62,25.62-5.6-.59,3.79-.68,6.78-1.57,9.51-1.32,4,.53,5.18,4,6.13a167,167,0,0,0,62.39,4.87c10.82-1.15,21.49-3.58,32.44-5.47-.89-5.62-1.55-9.83-2.33-14.78,19.85,3.58,39.31,6.47,55.86,18.14,10.51,7.42,10.4,16.67.08,24.43-9,6.74-19.5,10-30.13,12.89-2.63.72-5.29,1.37-9.12,2.36,14.42,8.21,27.73,16,38.88,27.69-7.85,2.83-15.39,4.88-22.32,8.21-8.8,4.23-17.15,9.4-25.58,14.36-3.8,2.23-4,5.23-1.92,9.25,4.59,8.86,4.39,9-2.87,15.44C157.12,203.9,139.48,223.06,126.42,247.34Zm-39.78-131c7.57,12.92,22.88,14.74,29.52,4.57-4.86-.54-9.67-.9-14.41-1.63S92.05,117.42,86.64,116.35Zm50,5c8.16,10,23.11,7.51,29.14-4.53Z"/><path class="cls-2" d="M79.66,53.16c2-10.92,3.11-21.26,6.06-31,1.11-3.65,6.07-7,10-8.75,12.46-5.48,25.83-6.6,39.18-4.95A135.11,135.11,0,0,1,159,14.21c5.53,1.76,8.68,6,9.43,12.27,1,8.71,3.05,17.29,4.76,26.55C142,61.5,111.22,61.37,79.66,53.16Z"/><path class="cls-1" d="M86.64,116.35c5.41,1.07,10.23,2.19,15.11,2.94s9.55,1.09,14.41,1.63C109.52,131.09,94.21,129.27,86.64,116.35Z"/><path class="cls-1" d="M136.59,121.3l29.14-4.53C159.7,128.81,144.75,131.25,136.59,121.3Z"/></svg>
+<div class="wizard-content">
+  <div class="navigation">
+    <a href="#" class="back-btn" data-bind="click: prevStep, visible: step() !== 1">
+      ❮ Back
+    </a>
+    <div style="width: 54px;" data-bind="visible: step() === 1"></div>
+    <div class="logo">
+      <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><style>.cls-1{fill:none;}.cls-2{fill:#373737;}</style></defs><path class="cls-1" d="M256,256H0V0H256Zm-129.58-8.66c13.06-24.28,30.7-43.44,50.37-60.91,7.26-6.44,7.46-6.58,2.87-15.44-2.07-4-1.88-7,1.92-9.25,8.43-5,16.78-10.13,25.58-14.36,6.93-3.33,14.47-5.38,22.32-8.21-11.15-11.72-24.46-19.48-38.88-27.69,3.83-1,6.49-1.64,9.12-2.36,10.63-2.93,21.17-6.15,30.13-12.89,10.32-7.76,10.43-17-.08-24.43-16.55-11.67-36-14.56-55.86-18.14.78,5,1.44,9.16,2.33,14.78-11,1.89-21.62,4.32-32.44,5.47A167,167,0,0,1,81.41,69c-3.44-1-5.29-2.11-4-6.13.89-2.73,1-5.72,1.57-9.51-9.13,2-17.43,3.58-25.62,5.6-11,2.72-21.78,6.36-31,13.36-9.36,7.14-9.51,16-.17,23.09a56.82,56.82,0,0,0,13.37,7.63c8.29,3.26,16.89,5.75,26,8.76C48,119.75,34.42,127.4,23.28,139.38l5.47,1.74c13.62,4.5,27.14,9.24,39,17.68,8.41,6,8.37,6.08,4,15.13a20.33,20.33,0,0,1-1.32,2.69c-1.63,2.37-1.24,3.94,1.15,5.78,4.74,3.65,9.3,7.58,13.67,11.67C101.58,209.39,116.14,226.19,126.42,247.34ZM79.66,53.16C111.22,61.37,142,61.5,173.23,53c-1.71-9.26-3.72-17.84-4.76-26.55-.75-6.31-3.9-10.51-9.43-12.27a135.11,135.11,0,0,0-24.1-5.79c-13.35-1.65-26.72-.53-39.18,4.95-4,1.75-8.93,5.1-10,8.75C82.77,31.9,81.65,42.24,79.66,53.16Z"/><path class="cls-2" d="M126.42,247.34c-10.28-21.15-24.84-38-41.25-53.27-4.37-4.09-8.93-8-13.67-11.67-2.39-1.84-2.78-3.41-1.15-5.78a20.33,20.33,0,0,0,1.32-2.69c4.41-9.05,4.45-9.11-4-15.13-11.82-8.44-25.34-13.18-39-17.68l-5.47-1.74c11.14-12,24.68-19.63,38.3-27.54-9.07-3-17.67-5.5-26-8.76a56.82,56.82,0,0,1-13.37-7.63c-9.34-7.07-9.19-16,.17-23.09,9.19-7,19.93-10.64,31-13.36,8.19-2,16.49-3.62,25.62-5.6-.59,3.79-.68,6.78-1.57,9.51-1.32,4,.53,5.18,4,6.13a167,167,0,0,0,62.39,4.87c10.82-1.15,21.49-3.58,32.44-5.47-.89-5.62-1.55-9.83-2.33-14.78,19.85,3.58,39.31,6.47,55.86,18.14,10.51,7.42,10.4,16.67.08,24.43-9,6.74-19.5,10-30.13,12.89-2.63.72-5.29,1.37-9.12,2.36,14.42,8.21,27.73,16,38.88,27.69-7.85,2.83-15.39,4.88-22.32,8.21-8.8,4.23-17.15,9.4-25.58,14.36-3.8,2.23-4,5.23-1.92,9.25,4.59,8.86,4.39,9-2.87,15.44C157.12,203.9,139.48,223.06,126.42,247.34Zm-39.78-131c7.57,12.92,22.88,14.74,29.52,4.57-4.86-.54-9.67-.9-14.41-1.63S92.05,117.42,86.64,116.35Zm50,5c8.16,10,23.11,7.51,29.14-4.53Z"/><path class="cls-2" d="M79.66,53.16c2-10.92,3.11-21.26,6.06-31,1.11-3.65,6.07-7,10-8.75,12.46-5.48,25.83-6.6,39.18-4.95A135.11,135.11,0,0,1,159,14.21c5.53,1.76,8.68,6,9.43,12.27,1,8.71,3.05,17.29,4.76,26.55C142,61.5,111.22,61.37,79.66,53.16Z"/><path class="cls-1" d="M86.64,116.35c5.41,1.07,10.23,2.19,15.11,2.94s9.55,1.09,14.41,1.63C109.52,131.09,94.21,129.27,86.64,116.35Z"/><path class="cls-1" d="M136.59,121.3l29.14-4.53C159.7,128.81,144.75,131.25,136.59,121.3Z"/></svg>
+    </div>
+    <div class="progress-content">
+      <div class="circles">
+        <div class="circle" data-bind="css: {filled: step() >= 1, checked: step() > 1}"></div>
+        <div class="circle" data-bind="css: {filled: step() >= 2, checked: step() > 2}"></div>
+        <div class="circle" data-bind="css: {filled: step() >= 3, checked: step() > 3}"></div>
+        <div class="circle" data-bind="css: {filled: step() >= 4, checked: step() > 4}"></div>
       </div>
-      <div class="progress-content">
-        <div class="circles">
-          <div class="circle filled"></div>
-          <div class="circle"></div>
-          <div class="circle"></div>
-          <div class="circle"></div>
+      <button class="button setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked, visible: step() === 1">GET STARTED</button>
+      <button class="button setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked, visible: step() === 3">CONTINUE</button>
+      <br>
+    </div>
+  </div>
+
+  <div class="bg-logo" data-bind="visible: step() === 1">
+    <div class="indent-content">
+      <div class="header">
+        <div class="subtitle">MEET THE</div>
+        <h1 class="title">SPAGHETTI DETECTIVE</h1>
+      </div>
+      <p><strong>The Spaghetti Detective</strong> is an <a href="https://github.com/TheSpaghettiDetective">open source project</a> that lets you access and monitor OctoPrint <strong>anywhere, on your phone</strong>. <br>It also uses AI (Deep Learning) to detect print failures in real time and send you alerts.</p>
+      <div class="text-with-checkbox" data-bind="click: toggleCheck">
+        <div class="checkbox-wrapper" data-bind="css: {checked: userAgreementChecked}"></div>
+        By proceeding you agree to our <a href="https://thespaghettidetective.com/privacy.html">Privacy Policy</a>
+          and the <a href="https://thespaghettidetective.com/terms.html">Terms of Use</a>
+      </div>
+      <div class="features">
+        <div class="feature accent">
+          <img src="plugin/thespaghettidetective/static/img/icon-connection.svg" alt="">
+          <div class="title">Manage printer on your phone</div>
+          <p class="description">Start/pause/cancel prints anytime, anywhere! Upload your print files and kick-off prints from your phone, desktop, or tablet.</p>
         </div>
-        <button class="button setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked">GET STARTED</button>
-      </div>
-    </div>
-    <div class="header">
-      <div class="subtitle">MEET THE</div>
-      <h1 class="title">SPAGHETTI DETECTIVE</h1>
-    </div>
-    <p><strong>The Spaghetti Detective</strong> is an <a href="https://github.com/TheSpaghettiDetective">open source project</a> that lets you access and monitor OctoPrint <strong>anywhere, on your phone</strong>. <br>It also uses AI (Deep Learning) to detect print failures in real time and send you alerts.</p>
-    <div class="text-with-checkbox" data-bind="click: toggleCheck">
-      <div class="checkbox-wrapper" data-bind="css: {checked: userAgreementChecked}"></div>
-      By proceeding you agree to our <a href="https://thespaghettidetective.com/privacy.html">Privacy Policy</a>
-and the <a href="https://thespaghettidetective.com/terms.html">Terms of Use</a></div>
-    <div class="features">
-      <div class="feature accent">
-        <img src="plugin/thespaghettidetective/static/img/icon-connection.svg" alt="">
-        <div class="title">Manage printer on your phone</div>
-        <p class="description">Start/pause/cancel prints anytime, anywhere! Upload your print files and kick-off prints from your phone, desktop, or tablet.</p>
-      </div>
-      <div class="feature">
-        <img src="plugin/thespaghettidetective/static/img/icon-security.svg" alt="">
-        <div class="title">Secure remote access</div>
-        <p class="description">Access your printer securely from anywhere without opening your home network to the wild internet.</p>
-      </div>
-      <div class="feature">
-        <img src="plugin/thespaghettidetective/static/img/icon-fire.svg" alt="">
-        <div class="title">Catch print hazards early</div>
-        <p class="description">Check in your prints in real time to instantly know if the printer is acting up.</p>
-      </div>
-      <div class="feature">
-        <img src="plugin/thespaghettidetective/static/img/icon-money.svg" alt="">
-        <div class="title">Save time and money</div>
-        <p class="description">The Spaghetti Detective watched your prints constantly for problems and intervenes to catch failures early.</p>
+        <div class="feature">
+          <img src="plugin/thespaghettidetective/static/img/icon-security.svg" alt="">
+          <div class="title">Secure remote access</div>
+          <p class="description">Access your printer securely from anywhere without opening your home network to the wild internet.</p>
+        </div>
+        <div class="feature">
+          <img src="plugin/thespaghettidetective/static/img/icon-fire.svg" alt="">
+          <div class="title">Catch print hazards early</div>
+          <p class="description">Check in your prints in real time to instantly know if the printer is acting up.</p>
+        </div>
+        <div class="feature">
+          <img src="plugin/thespaghettidetective/static/img/icon-money.svg" alt="">
+          <div class="title">Save time and money</div>
+          <p class="description">The Spaghetti Detective watched your prints constantly for problems and intervenes to catch failures early.</p>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div data-bind="visible: step() === 2">
-  <div class="wizard-content">
-    <div class="navigation">
-      <a href="#" class="back-button" data-bind="click: prevStep">
-        <img src="plugin/thespaghettidetective/static/img/back.svg" alt="">
-      </a>
-      <div class="logo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><style>.cls-1{fill:none;}.cls-2{fill:#373737;}</style></defs><path class="cls-1" d="M256,256H0V0H256Zm-129.58-8.66c13.06-24.28,30.7-43.44,50.37-60.91,7.26-6.44,7.46-6.58,2.87-15.44-2.07-4-1.88-7,1.92-9.25,8.43-5,16.78-10.13,25.58-14.36,6.93-3.33,14.47-5.38,22.32-8.21-11.15-11.72-24.46-19.48-38.88-27.69,3.83-1,6.49-1.64,9.12-2.36,10.63-2.93,21.17-6.15,30.13-12.89,10.32-7.76,10.43-17-.08-24.43-16.55-11.67-36-14.56-55.86-18.14.78,5,1.44,9.16,2.33,14.78-11,1.89-21.62,4.32-32.44,5.47A167,167,0,0,1,81.41,69c-3.44-1-5.29-2.11-4-6.13.89-2.73,1-5.72,1.57-9.51-9.13,2-17.43,3.58-25.62,5.6-11,2.72-21.78,6.36-31,13.36-9.36,7.14-9.51,16-.17,23.09a56.82,56.82,0,0,0,13.37,7.63c8.29,3.26,16.89,5.75,26,8.76C48,119.75,34.42,127.4,23.28,139.38l5.47,1.74c13.62,4.5,27.14,9.24,39,17.68,8.41,6,8.37,6.08,4,15.13a20.33,20.33,0,0,1-1.32,2.69c-1.63,2.37-1.24,3.94,1.15,5.78,4.74,3.65,9.3,7.58,13.67,11.67C101.58,209.39,116.14,226.19,126.42,247.34ZM79.66,53.16C111.22,61.37,142,61.5,173.23,53c-1.71-9.26-3.72-17.84-4.76-26.55-.75-6.31-3.9-10.51-9.43-12.27a135.11,135.11,0,0,0-24.1-5.79c-13.35-1.65-26.72-.53-39.18,4.95-4,1.75-8.93,5.1-10,8.75C82.77,31.9,81.65,42.24,79.66,53.16Z"/><path class="cls-2" d="M126.42,247.34c-10.28-21.15-24.84-38-41.25-53.27-4.37-4.09-8.93-8-13.67-11.67-2.39-1.84-2.78-3.41-1.15-5.78a20.33,20.33,0,0,0,1.32-2.69c4.41-9.05,4.45-9.11-4-15.13-11.82-8.44-25.34-13.18-39-17.68l-5.47-1.74c11.14-12,24.68-19.63,38.3-27.54-9.07-3-17.67-5.5-26-8.76a56.82,56.82,0,0,1-13.37-7.63c-9.34-7.07-9.19-16,.17-23.09,9.19-7,19.93-10.64,31-13.36,8.19-2,16.49-3.62,25.62-5.6-.59,3.79-.68,6.78-1.57,9.51-1.32,4,.53,5.18,4,6.13a167,167,0,0,0,62.39,4.87c10.82-1.15,21.49-3.58,32.44-5.47-.89-5.62-1.55-9.83-2.33-14.78,19.85,3.58,39.31,6.47,55.86,18.14,10.51,7.42,10.4,16.67.08,24.43-9,6.74-19.5,10-30.13,12.89-2.63.72-5.29,1.37-9.12,2.36,14.42,8.21,27.73,16,38.88,27.69-7.85,2.83-15.39,4.88-22.32,8.21-8.8,4.23-17.15,9.4-25.58,14.36-3.8,2.23-4,5.23-1.92,9.25,4.59,8.86,4.39,9-2.87,15.44C157.12,203.9,139.48,223.06,126.42,247.34Zm-39.78-131c7.57,12.92,22.88,14.74,29.52,4.57-4.86-.54-9.67-.9-14.41-1.63S92.05,117.42,86.64,116.35Zm50,5c8.16,10,23.11,7.51,29.14-4.53Z"/><path class="cls-2" d="M79.66,53.16c2-10.92,3.11-21.26,6.06-31,1.11-3.65,6.07-7,10-8.75,12.46-5.48,25.83-6.6,39.18-4.95A135.11,135.11,0,0,1,159,14.21c5.53,1.76,8.68,6,9.43,12.27,1,8.71,3.05,17.29,4.76,26.55C142,61.5,111.22,61.37,79.66,53.16Z"/><path class="cls-1" d="M86.64,116.35c5.41,1.07,10.23,2.19,15.11,2.94s9.55,1.09,14.41,1.63C109.52,131.09,94.21,129.27,86.64,116.35Z"/><path class="cls-1" d="M136.59,121.3l29.14-4.53C159.7,128.81,144.75,131.25,136.59,121.3Z"/></svg>
-      </div>
-      <div class="progress-content">
-        <div class="circles">
-          <div class="circle filled checked"></div>
-          <div class="circle filled"></div>
-          <div class="circle"></div>
-          <div class="circle"></div>
-        </div>
-      </div>
-    </div>
+  <div data-bind="visible: step() === 2">
     <div class="header">
       <h1 class="title primary">How would you like to continue?</h1>
     </div>
-    <p>This wizard will walk you through the process of linking OctoPrint to your The Spaghetti Detective account.</p>
-    <p>You will be asked to sign up a new account if you don't already have one.</p>
-    <H5>Do you want to continue in our mobile app (recommended), or on our web site?</H5>
-    <br>
+    <ul>
+    <li>This wizard will walk you through the process to link OctoPrint to your The Spaghetti Detective account.</li>
+    <li>You will need to sign up a new account if you don't already have one.</li>
+    </ul>
+    <br />
+    <H5>Do you want to continue in our mobile app (recommended), or in web browser?</H5>
     <div class="choice-container">
       <div class="choice-banner">
         <div class="option">
           <img src="plugin/thespaghettidetective/static/img/phone-illustration.svg" alt="">
           <h2>Mobile Setup</h2>
-          <a href="#" class="button filled" data-bind="click: function(data, event) { toStep(3.1) }">Continue with <strong>Mobile App</strong></a>
+          <a href="#" class="button filled" data-bind="click: function(data, event) { nextStep(); mobileFlow(true); }">Continue with <strong>Mobile App</strong></a>
         </div>
         <div class="delimeter"></div>
         <div class="option">
           <img src="plugin/thespaghettidetective/static/img/desktop-illustration.svg" alt="">
           <h2>Web Setup</h2>
-          <a href="#" class="button outline" data-bind="click: function(data, event) { toStep(3.2) }">Continue with <strong>Web Site</strong></a>
+          <a href="#" class="button outline" data-bind="click: function(data, event) { nextStep(); mobileFlow(false); }">Continue with <strong>Web Site</strong></a>
         </div>
       </div>
       <div class="notes">*Note - you can always switch later.</div>
     </div>
   </div>
-</div>
 
-<div data-bind="visible: step() === 3.1">
-  <div class="wizard-content">
-    <div class="navigation">
-      <a href="#" class="back-button" data-bind="click: function(data, event) { toStep(2) }">
-        <img src="plugin/thespaghettidetective/static/img/back.svg" alt="">
-      </a>
-      <div class="logo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><style>.cls-1{fill:none;}.cls-2{fill:#373737;}</style></defs><path class="cls-1" d="M256,256H0V0H256Zm-129.58-8.66c13.06-24.28,30.7-43.44,50.37-60.91,7.26-6.44,7.46-6.58,2.87-15.44-2.07-4-1.88-7,1.92-9.25,8.43-5,16.78-10.13,25.58-14.36,6.93-3.33,14.47-5.38,22.32-8.21-11.15-11.72-24.46-19.48-38.88-27.69,3.83-1,6.49-1.64,9.12-2.36,10.63-2.93,21.17-6.15,30.13-12.89,10.32-7.76,10.43-17-.08-24.43-16.55-11.67-36-14.56-55.86-18.14.78,5,1.44,9.16,2.33,14.78-11,1.89-21.62,4.32-32.44,5.47A167,167,0,0,1,81.41,69c-3.44-1-5.29-2.11-4-6.13.89-2.73,1-5.72,1.57-9.51-9.13,2-17.43,3.58-25.62,5.6-11,2.72-21.78,6.36-31,13.36-9.36,7.14-9.51,16-.17,23.09a56.82,56.82,0,0,0,13.37,7.63c8.29,3.26,16.89,5.75,26,8.76C48,119.75,34.42,127.4,23.28,139.38l5.47,1.74c13.62,4.5,27.14,9.24,39,17.68,8.41,6,8.37,6.08,4,15.13a20.33,20.33,0,0,1-1.32,2.69c-1.63,2.37-1.24,3.94,1.15,5.78,4.74,3.65,9.3,7.58,13.67,11.67C101.58,209.39,116.14,226.19,126.42,247.34ZM79.66,53.16C111.22,61.37,142,61.5,173.23,53c-1.71-9.26-3.72-17.84-4.76-26.55-.75-6.31-3.9-10.51-9.43-12.27a135.11,135.11,0,0,0-24.1-5.79c-13.35-1.65-26.72-.53-39.18,4.95-4,1.75-8.93,5.1-10,8.75C82.77,31.9,81.65,42.24,79.66,53.16Z"/><path class="cls-2" d="M126.42,247.34c-10.28-21.15-24.84-38-41.25-53.27-4.37-4.09-8.93-8-13.67-11.67-2.39-1.84-2.78-3.41-1.15-5.78a20.33,20.33,0,0,0,1.32-2.69c4.41-9.05,4.45-9.11-4-15.13-11.82-8.44-25.34-13.18-39-17.68l-5.47-1.74c11.14-12,24.68-19.63,38.3-27.54-9.07-3-17.67-5.5-26-8.76a56.82,56.82,0,0,1-13.37-7.63c-9.34-7.07-9.19-16,.17-23.09,9.19-7,19.93-10.64,31-13.36,8.19-2,16.49-3.62,25.62-5.6-.59,3.79-.68,6.78-1.57,9.51-1.32,4,.53,5.18,4,6.13a167,167,0,0,0,62.39,4.87c10.82-1.15,21.49-3.58,32.44-5.47-.89-5.62-1.55-9.83-2.33-14.78,19.85,3.58,39.31,6.47,55.86,18.14,10.51,7.42,10.4,16.67.08,24.43-9,6.74-19.5,10-30.13,12.89-2.63.72-5.29,1.37-9.12,2.36,14.42,8.21,27.73,16,38.88,27.69-7.85,2.83-15.39,4.88-22.32,8.21-8.8,4.23-17.15,9.4-25.58,14.36-3.8,2.23-4,5.23-1.92,9.25,4.59,8.86,4.39,9-2.87,15.44C157.12,203.9,139.48,223.06,126.42,247.34Zm-39.78-131c7.57,12.92,22.88,14.74,29.52,4.57-4.86-.54-9.67-.9-14.41-1.63S92.05,117.42,86.64,116.35Zm50,5c8.16,10,23.11,7.51,29.14-4.53Z"/><path class="cls-2" d="M79.66,53.16c2-10.92,3.11-21.26,6.06-31,1.11-3.65,6.07-7,10-8.75,12.46-5.48,25.83-6.6,39.18-4.95A135.11,135.11,0,0,1,159,14.21c5.53,1.76,8.68,6,9.43,12.27,1,8.71,3.05,17.29,4.76,26.55C142,61.5,111.22,61.37,79.66,53.16Z"/><path class="cls-1" d="M86.64,116.35c5.41,1.07,10.23,2.19,15.11,2.94s9.55,1.09,14.41,1.63C109.52,131.09,94.21,129.27,86.64,116.35Z"/><path class="cls-1" d="M136.59,121.3l29.14-4.53C159.7,128.81,144.75,131.25,136.59,121.3Z"/></svg>
-      </div>
-      <div class="progress-content">
-        <div class="circles">
-          <div class="circle filled checked"></div>
-          <div class="circle filled checked"></div>
-          <div class="circle filled"></div>
-          <div class="circle"></div>
-        </div>
-        <button class="button setup-wizard" id="next" data-bind="click: function(data, event) { toStep(4) }, enable: userAgreementChecked">CONTINUE</button>
-      </div>
-    </div>
+  <div data-bind="visible: step() === 3 && mobileFlow()">
     <div class="header">
-      <h1 class="title primary">Download the <strong>mobile app</strong> to continue.</h1>
-    </div>
-    <a href="" class="small"  data-bind="click: function(data, event) { toStep(3.2) }">
-      Setup through web-browser instead
-      <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
-    </a>
-    <ul>
-      <li>Download The Spaghetti Detective app</li>
-      <li>Create an account/login</li>
-      <li>Follow "Link Printer" setup within app</li>
-      <li>Recieve <strong>6-Digit Code</strong></li>
-      <li>Continue to next step in this setup wizard</li>
-    </ul>
-    <div class="bottom-illustration">
-      <img src="plugin/thespaghettidetective/static/img/phone-setup-illustration.png" alt="">
-    </div>
+      <h1 class="title primary">Download the <strong>mobile app</strong> to continue.&nbsp;
+        <a href="#" class="small"  data-bind="click: function(data, event) { mobileFlow(false); }">
+          Setup through web browser instead
+          <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
+        </a>
+      </h1>
+      </div>
+      <ol>
+        <li>Download The Spaghetti Detective app.</li>
+        <li>Sign up for a The Spaghetti Detective account. Or log in if you already have one.</li>
+        <li>Follow the "Link Printer" setup within app.</li>
+        <li>Recieve the <strong>6-digit verification code</strong>.</li>
+        <li>Come back here and press "Continue".</li>
+      </ol>
+      <div class="bottom-illustration">
+        <img src="plugin/thespaghettidetective/static/img/phone-setup-illustration.png" alt="">
+      </div>
   </div>
-</div>
 
-<div data-bind="visible: step() === 3.2">
-  <div class="wizard-content">
-    <div class="navigation">
-      <a href="#" class="back-button" data-bind="click: function(data, event) { toStep(2) }">
-        <img src="plugin/thespaghettidetective/static/img/back.svg" alt="">
-      </a>
-      <div class="logo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><style>.cls-1{fill:none;}.cls-2{fill:#373737;}</style></defs><path class="cls-1" d="M256,256H0V0H256Zm-129.58-8.66c13.06-24.28,30.7-43.44,50.37-60.91,7.26-6.44,7.46-6.58,2.87-15.44-2.07-4-1.88-7,1.92-9.25,8.43-5,16.78-10.13,25.58-14.36,6.93-3.33,14.47-5.38,22.32-8.21-11.15-11.72-24.46-19.48-38.88-27.69,3.83-1,6.49-1.64,9.12-2.36,10.63-2.93,21.17-6.15,30.13-12.89,10.32-7.76,10.43-17-.08-24.43-16.55-11.67-36-14.56-55.86-18.14.78,5,1.44,9.16,2.33,14.78-11,1.89-21.62,4.32-32.44,5.47A167,167,0,0,1,81.41,69c-3.44-1-5.29-2.11-4-6.13.89-2.73,1-5.72,1.57-9.51-9.13,2-17.43,3.58-25.62,5.6-11,2.72-21.78,6.36-31,13.36-9.36,7.14-9.51,16-.17,23.09a56.82,56.82,0,0,0,13.37,7.63c8.29,3.26,16.89,5.75,26,8.76C48,119.75,34.42,127.4,23.28,139.38l5.47,1.74c13.62,4.5,27.14,9.24,39,17.68,8.41,6,8.37,6.08,4,15.13a20.33,20.33,0,0,1-1.32,2.69c-1.63,2.37-1.24,3.94,1.15,5.78,4.74,3.65,9.3,7.58,13.67,11.67C101.58,209.39,116.14,226.19,126.42,247.34ZM79.66,53.16C111.22,61.37,142,61.5,173.23,53c-1.71-9.26-3.72-17.84-4.76-26.55-.75-6.31-3.9-10.51-9.43-12.27a135.11,135.11,0,0,0-24.1-5.79c-13.35-1.65-26.72-.53-39.18,4.95-4,1.75-8.93,5.1-10,8.75C82.77,31.9,81.65,42.24,79.66,53.16Z"/><path class="cls-2" d="M126.42,247.34c-10.28-21.15-24.84-38-41.25-53.27-4.37-4.09-8.93-8-13.67-11.67-2.39-1.84-2.78-3.41-1.15-5.78a20.33,20.33,0,0,0,1.32-2.69c4.41-9.05,4.45-9.11-4-15.13-11.82-8.44-25.34-13.18-39-17.68l-5.47-1.74c11.14-12,24.68-19.63,38.3-27.54-9.07-3-17.67-5.5-26-8.76a56.82,56.82,0,0,1-13.37-7.63c-9.34-7.07-9.19-16,.17-23.09,9.19-7,19.93-10.64,31-13.36,8.19-2,16.49-3.62,25.62-5.6-.59,3.79-.68,6.78-1.57,9.51-1.32,4,.53,5.18,4,6.13a167,167,0,0,0,62.39,4.87c10.82-1.15,21.49-3.58,32.44-5.47-.89-5.62-1.55-9.83-2.33-14.78,19.85,3.58,39.31,6.47,55.86,18.14,10.51,7.42,10.4,16.67.08,24.43-9,6.74-19.5,10-30.13,12.89-2.63.72-5.29,1.37-9.12,2.36,14.42,8.21,27.73,16,38.88,27.69-7.85,2.83-15.39,4.88-22.32,8.21-8.8,4.23-17.15,9.4-25.58,14.36-3.8,2.23-4,5.23-1.92,9.25,4.59,8.86,4.39,9-2.87,15.44C157.12,203.9,139.48,223.06,126.42,247.34Zm-39.78-131c7.57,12.92,22.88,14.74,29.52,4.57-4.86-.54-9.67-.9-14.41-1.63S92.05,117.42,86.64,116.35Zm50,5c8.16,10,23.11,7.51,29.14-4.53Z"/><path class="cls-2" d="M79.66,53.16c2-10.92,3.11-21.26,6.06-31,1.11-3.65,6.07-7,10-8.75,12.46-5.48,25.83-6.6,39.18-4.95A135.11,135.11,0,0,1,159,14.21c5.53,1.76,8.68,6,9.43,12.27,1,8.71,3.05,17.29,4.76,26.55C142,61.5,111.22,61.37,79.66,53.16Z"/><path class="cls-1" d="M86.64,116.35c5.41,1.07,10.23,2.19,15.11,2.94s9.55,1.09,14.41,1.63C109.52,131.09,94.21,129.27,86.64,116.35Z"/><path class="cls-1" d="M136.59,121.3l29.14-4.53C159.7,128.81,144.75,131.25,136.59,121.3Z"/></svg>
-      </div>
-      <div class="progress-content">
-        <div class="circles">
-          <div class="circle filled checked"></div>
-          <div class="circle filled checked"></div>
-          <div class="circle filled"></div>
-          <div class="circle"></div>
-        </div>
-        <button class="button setup-wizard" id="next" data-bind="click: function(data, event) { toStep(4) }, enable: userAgreementChecked">CONTINUE</button>
-      </div>
-    </div>
+  <div data-bind="visible: step() === 3 && !mobileFlow()">
     <div class="header">
-      <h1 class="title primary">Visit <a href="https://thespaghettidetective.com" target="_blank">thespaghettidetective.com</a> to continue.</h1>
-    </div>
-    <a href="" class="small" data-bind="click: function(data, event) { toStep(3.1) }">
-      Setup through mobile-app instead
-      <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
-    </a>
-    <ul>
-      <li>In a <strong>seperate tab</strong>, Navigate to <a href="https://thespaghettidetective.com" target="_blank">thespaghettidetective.com</a></li>
-      <li>Create an account/login</li>
-      <li>Add printer</li>
-      <li>Follow setup Wizard</li>
-      <li>Recieve <strong>6-Digit Code</strong></li>
-      <li>Continue to next step in this setup wizard</li>
-    </ul>
-    <div class="notes primary">*You can always download the Spaghetti Detective mobile app later</div>
+      <h1 class="title primary">Visit <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">The Spaghetti Detective website</a> to continue.&nbsp;
+        <a href="#" class="small"  data-bind="click: function(data, event) { mobileFlow(true); }">
+          Setup through mobile app instead
+          <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
+        </a>
+      </h1>
+      </div>
+      <ol>
+        <li>Click <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">here</a> to open The Spaghetti Detective website in a separate tab.
+        <li>Sign up for a The Spaghetti Detective account. Or log in if you already have one.</li>
+        <li>Follow the "Link Printer" setup web flow.</li>
+        <li>Recieve the <strong>6-digit verification code</strong>.</li>
+        <li>Come back here and press "Continue".</li>
+      </ol>
+      <div class="notes primary">*You can always download the Spaghetti Detective mobile app later</div>
   </div>
-</div>
 
-<div data-bind="visible: step() === 4">
-  <div class="wizard-content logo-bg">
-    <div class="navigation">
-      <a href="#" class="back-button" data-bind="click: function(data, event) { toStep(3.1) }">
-        <img src="plugin/thespaghettidetective/static/img/back.svg" alt="">
-      </a>
-      <div class="logo">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><style>.cls-1{fill:none;}.cls-2{fill:#373737;}</style></defs><path class="cls-1" d="M256,256H0V0H256Zm-129.58-8.66c13.06-24.28,30.7-43.44,50.37-60.91,7.26-6.44,7.46-6.58,2.87-15.44-2.07-4-1.88-7,1.92-9.25,8.43-5,16.78-10.13,25.58-14.36,6.93-3.33,14.47-5.38,22.32-8.21-11.15-11.72-24.46-19.48-38.88-27.69,3.83-1,6.49-1.64,9.12-2.36,10.63-2.93,21.17-6.15,30.13-12.89,10.32-7.76,10.43-17-.08-24.43-16.55-11.67-36-14.56-55.86-18.14.78,5,1.44,9.16,2.33,14.78-11,1.89-21.62,4.32-32.44,5.47A167,167,0,0,1,81.41,69c-3.44-1-5.29-2.11-4-6.13.89-2.73,1-5.72,1.57-9.51-9.13,2-17.43,3.58-25.62,5.6-11,2.72-21.78,6.36-31,13.36-9.36,7.14-9.51,16-.17,23.09a56.82,56.82,0,0,0,13.37,7.63c8.29,3.26,16.89,5.75,26,8.76C48,119.75,34.42,127.4,23.28,139.38l5.47,1.74c13.62,4.5,27.14,9.24,39,17.68,8.41,6,8.37,6.08,4,15.13a20.33,20.33,0,0,1-1.32,2.69c-1.63,2.37-1.24,3.94,1.15,5.78,4.74,3.65,9.3,7.58,13.67,11.67C101.58,209.39,116.14,226.19,126.42,247.34ZM79.66,53.16C111.22,61.37,142,61.5,173.23,53c-1.71-9.26-3.72-17.84-4.76-26.55-.75-6.31-3.9-10.51-9.43-12.27a135.11,135.11,0,0,0-24.1-5.79c-13.35-1.65-26.72-.53-39.18,4.95-4,1.75-8.93,5.1-10,8.75C82.77,31.9,81.65,42.24,79.66,53.16Z"/><path class="cls-2" d="M126.42,247.34c-10.28-21.15-24.84-38-41.25-53.27-4.37-4.09-8.93-8-13.67-11.67-2.39-1.84-2.78-3.41-1.15-5.78a20.33,20.33,0,0,0,1.32-2.69c4.41-9.05,4.45-9.11-4-15.13-11.82-8.44-25.34-13.18-39-17.68l-5.47-1.74c11.14-12,24.68-19.63,38.3-27.54-9.07-3-17.67-5.5-26-8.76a56.82,56.82,0,0,1-13.37-7.63c-9.34-7.07-9.19-16,.17-23.09,9.19-7,19.93-10.64,31-13.36,8.19-2,16.49-3.62,25.62-5.6-.59,3.79-.68,6.78-1.57,9.51-1.32,4,.53,5.18,4,6.13a167,167,0,0,0,62.39,4.87c10.82-1.15,21.49-3.58,32.44-5.47-.89-5.62-1.55-9.83-2.33-14.78,19.85,3.58,39.31,6.47,55.86,18.14,10.51,7.42,10.4,16.67.08,24.43-9,6.74-19.5,10-30.13,12.89-2.63.72-5.29,1.37-9.12,2.36,14.42,8.21,27.73,16,38.88,27.69-7.85,2.83-15.39,4.88-22.32,8.21-8.8,4.23-17.15,9.4-25.58,14.36-3.8,2.23-4,5.23-1.92,9.25,4.59,8.86,4.39,9-2.87,15.44C157.12,203.9,139.48,223.06,126.42,247.34Zm-39.78-131c7.57,12.92,22.88,14.74,29.52,4.57-4.86-.54-9.67-.9-14.41-1.63S92.05,117.42,86.64,116.35Zm50,5c8.16,10,23.11,7.51,29.14-4.53Z"/><path class="cls-2" d="M79.66,53.16c2-10.92,3.11-21.26,6.06-31,1.11-3.65,6.07-7,10-8.75,12.46-5.48,25.83-6.6,39.18-4.95A135.11,135.11,0,0,1,159,14.21c5.53,1.76,8.68,6,9.43,12.27,1,8.71,3.05,17.29,4.76,26.55C142,61.5,111.22,61.37,79.66,53.16Z"/><path class="cls-1" d="M86.64,116.35c5.41,1.07,10.23,2.19,15.11,2.94s9.55,1.09,14.41,1.63C109.52,131.09,94.21,129.27,86.64,116.35Z"/><path class="cls-1" d="M136.59,121.3l29.14-4.53C159.7,128.81,144.75,131.25,136.59,121.3Z"/></svg>
-      </div>
-      <div class="progress-content">
-        <div class="circles">
-          <div class="circle filled checked"></div>
-          <div class="circle filled checked"></div>
-          <div class="circle filled checked"></div>
-          <div class="circle filled"></div>
-        </div>
-        <button class="button setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked">CONTINUE</button>
-      </div>
-    </div>
-    <div class="mobile-verification-wrapper">
-      <div class="description">
-        <div class="header">
-          <div class="subtitle">MOBILE FLOW</div>
-          <h1 class="title">Link Printer</h1>
-        </div>
-        <p>In order for the Spaghetti Detective to be able to monitor your prints, you will need to verify your account via the mobile app.</p>
-        <div class="verification-wrapper">
-          <label for="verification-code">6-Digit Verification Code:</label>
-          <div class="input-wrapper" id="verification-code" data-bind="click: startTypingCode">
-            <div class="front-layer"></div>
-            <input type="text" class="cell" data-number="1" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
-            <input type="text" class="cell" data-number="2" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
-            <input type="text" class="cell" data-number="3" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
-            <input type="text" class="cell" data-number="4" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
-            <input type="text" class="cell" data-number="5" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
-            <input type="text" class="cell" data-number="6" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
+  <div class="bg-logo" data-bind="visible: step() === 4">
+    <div class="indent-content">
+      <div class="mobile-verification-wrapper">
+        <div class="description">
+          <div class="header">
+            <div class="subtitle">MOBILE FLOW</div>
+            <h1 class="title">Link Printer</h1>
           </div>
-          <small class="error-message">
-            Sorry, that didn't seem to work.<br>
-            Try again with your new code on your mobile device.
-          </small>
-          <small class="success-message">
-            Success!<br>
-            Printer successfully paired.
-          </small>
-          <div class="loader" data-bind="visible: verifying">
-            <svg version="1.1" id="L9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-              viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
-                <path fill="#000" d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50">
-                  <animateTransform 
-                    attributeName="transform" 
-                    attributeType="XML" 
-                    type="rotate"
-                    dur="1s" 
-                    from="0 50 50"
-                    to="360 50 50" 
-                    repeatCount="indefinite" />
-              </path>
-            </svg>
+          <p>In order for the Spaghetti Detective to be able to monitor your prints, you will need to verify your account via the mobile app.</p>
+          <div class="verification-wrapper">
+            <label for="verification-code">6-Digit Verification Code:</label>
+            <div class="input-wrapper" id="verification-code" data-bind="click: startTypingCode">
+              <div class="front-layer"></div>
+              <input type="text" class="cell" data-number="1" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
+              <input type="text" class="cell" data-number="2" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
+              <input type="text" class="cell" data-number="3" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
+              <input type="text" class="cell" data-number="4" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
+              <input type="text" class="cell" data-number="5" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
+              <input type="text" class="cell" data-number="6" maxlength="1" data-bind="valueUpdate: 'afterkeydown', event: { 'keyup': nextCell }">
+            </div>
+            <small class="error-message">
+              Sorry, that didn't seem to work.<br>
+              Try again with your new code on your mobile device.
+            </small>
+            <small class="success-message">
+              Success!<br>
+              Printer successfully paired.
+            </small>
+            <div class="loader" data-bind="visible: verifying">
+              <svg version="1.1" id="L9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
+                  <path fill="#000" d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50">
+                    <animateTransform 
+                      attributeName="transform" 
+                      attributeType="XML" 
+                      type="rotate"
+                      dur="1s" 
+                      from="0 50 50"
+                      to="360 50 50" 
+                      repeatCount="indefinite" />
+                </path>
+              </svg>
+            </div>
           </div>
         </div>
+        <div class="illustration">
+          <img src="plugin/thespaghettidetective/static/img/phone-verification-illustration.svg" class="image" alt="">
+          <img src="plugin/thespaghettidetective/static/img/arrow-left-curved.svg" class="arrow" alt="">
+        </div>
       </div>
-      <!-- <div class="delimeter"></div> -->
-      <div class="illustration">
-        <img src="plugin/thespaghettidetective/static/img/phone-verification-illustration.svg" class="image" alt="">
-        <img src="plugin/thespaghettidetective/static/img/arrow-left-curved.svg" class="arrow" alt="">
-      </div>
-    </div>
-    
-    <br><br><br>
-    <div class="notes text-black">
-      Lost? <a href="#">Click here to start over.</a>
       <br>
-      Need help? Visit our <a href="#">Discord Forum</a>
+      <div class="notes text-black">
+        Lost? <a href="#">Click here to start over.</a>
+        <br>
+        Need help? Visit our <a href="#">Discord Forum</a>
+      </div>
     </div>
   </div>
-</div>
 
-<div data-bind="visible: step() === 5">
-  <div class="wizard-content logo-bg primary">
-    <div class="navigation">
-      <a href="#" class="back-button" data-bind="click: prevStep">
-        <img src="plugin/thespaghettidetective/static/img/back-white.svg" alt="">
-      </a>
-      <!-- Space holder to fix back button at the left -->
-      <div></div>
-    </div>
+  <div class="bg-logo bg-primary" data-bind="visible: step() === 5">
+      <!-- <div class="navigation">
+        <a href="#" class="back-button" data-bind="click: prevStep">
+          <img src="plugin/thespaghettidetective/static/img/back-white.svg" alt="">
+        </a> -->
+        <!-- Space holder to fix back button at the left -->
+        <!-- <div></div> -->
+      <!-- </div> -->
     <div class="flex justify-center">
       <div class="flex col align-center">
         <img src="plugin/thespaghettidetective/static/img/checkmark-circled.svg" class="checkmark-circle" alt="">
