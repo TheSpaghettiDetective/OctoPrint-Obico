@@ -6,8 +6,6 @@
  */
 $(function () {
 
-
-
     function apiCommand(data, success, error) {
         $.ajax("api/plugin/thespaghettidetective", {
             method: "POST",
@@ -50,6 +48,43 @@ $(function () {
             self.verifySecurityCode(code);
         });
 
+        self.startTypingCode = function() {
+            $('.verification-wrapper').removeClass(['error', 'success']);
+            self.securityCode('');
+            $('#verification-code .front-layer').hide();
+            $('#verification-code input').each(function() {
+                $(this).val("");
+            });
+            $('#verification-code input:first-of-type').focus();
+        }
+
+        self.nextCell = function (data, event) {
+            let number = parseInt($(event.target).attr('data-number'));
+
+            if (event.keyCode === 8 && number !== 1) {
+                $(event.target).siblings('input[data-number='+ (number - 1) +']').val('').focus();
+                self.securityCode(self.securityCode().substring(0, -1));
+            } else {
+                let val = $(event.target).val();
+                self.securityCode(self.securityCode() + val);
+
+                if (number === 6) {
+                    $(event.target).blur();
+                    $('#verification-code input').each(function() {
+                        $(this).val("");
+                    });
+                    $('#verification-code .front-layer').show();
+
+                    self.verifying(true);
+                    // TODO: verify code
+                } else {
+                    if (val) {
+                        $(event.target).siblings('input[data-number='+ (number + 1) +']').focus();
+                    }
+                }
+            }
+        }
+
         self.securityCodeUrl = function(code) {
             var prefix = self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix();
             if (!prefix.endsWith('/')) {
@@ -74,6 +109,7 @@ $(function () {
                         auth_token: resp.printer.auth_token},
                         function (apiStatus) {
                             self.verifying(false);
+                            $('.verification-wrapper').addClass('success');
                             console.log(apiStatus);
                         }
                     );
@@ -81,6 +117,7 @@ $(function () {
                 error: function(xhr) {
                     if (xhr.status == 404) {
                         self.verifying(false);
+                        $('.verification-wrapper').addClass('error');
                         console.log('wrong code');
                     }
                 }
