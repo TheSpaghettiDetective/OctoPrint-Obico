@@ -91,7 +91,6 @@ $(function () {
             if (!prefix.endsWith('/')) {
                 prefix += '/';
             }
-            prefix = 'http://localhost:3334/';
             return prefix + 'api/v1/onetimeverificationcodes/verify/?code=' + code;
         };
 
