@@ -320,6 +320,7 @@ div[id$=_plugin_thespaghettidetective] .social-container .social-btns .social {
 }
 .wizard-content .notes {
   color: #fff;
+  text-align: center;
 }
 .wizard-content .notes.primary {
   background-color: #9965F4;
