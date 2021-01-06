@@ -79,10 +79,10 @@ div[id$=_plugin_thespaghettidetective] {
   position: relative;
 
   // Wizards with big logo as a background
-  .bg-logo {
+  &.bg-logo {
     background-image: url(../img/logo-bg.svg);
     background-repeat: no-repeat;
-    background-position: -300px -100px;
+    background-position: -300px -50px;
     background-size: 600px;
 
     &.bg-primary {
@@ -90,9 +90,13 @@ div[id$=_plugin_thespaghettidetective] {
     }
   }
 
-  .bg-primary {
+  &.bg-primary {
     background-color: @wizard-primary-color;
     color: #fff;
+
+    .navigation .back-btn {
+      color: #fff;
+    }
   }
 
   // Main elements
