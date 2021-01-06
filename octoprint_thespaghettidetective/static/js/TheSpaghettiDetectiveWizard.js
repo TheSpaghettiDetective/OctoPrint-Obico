@@ -23,7 +23,7 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
-        self.step = ko.observable(0);
+        self.step = ko.observable(1);
         self.mobileFlow = ko.observable(true);
         self.securityCode = ko.observable('');
         self.verifying = ko.observable(false);
@@ -90,6 +90,11 @@ $(function () {
                 let allCellsFilled = false;
 
                 for (let i = 1; i <= 6; i++) {
+                    if (i === 1) {
+                        // Return input to initial state
+                        $('.verification-wrapper').removeClass(['error', 'success']);
+                    }
+
                     let input = $('#verification-code input[data-number='+ i +']');
                     if (!input.val()) {
                         input.val(e.key);
