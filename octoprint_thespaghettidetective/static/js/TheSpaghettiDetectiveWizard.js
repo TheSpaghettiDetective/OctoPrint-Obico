@@ -23,7 +23,11 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
+<<<<<<< HEAD
         self.step = ko.observable(1);
+=======
+        self.step = ko.observable(5);
+>>>>>>> Small finetunes
         self.mobileFlow = ko.observable(true);
         self.securityCode = ko.observable('');
         self.verifying = ko.observable(false);
