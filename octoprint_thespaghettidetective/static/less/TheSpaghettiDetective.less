@@ -63,13 +63,52 @@ div[id$=_plugin_thespaghettidetective] {
 }
 
 
-// Wizard content
+// Wizard variables
 
 @wizard-primary-color: #9965F4;
 @wizard-error-color: #F22727;
 @wizard-text-color: #282828;
 @wizard-paragraph-text-size: 14px;
 @wizard-container-min-height: 625px;
+
+
+// Main styles for buttons
+
+.button {
+  background-color: @wizard-primary-color;
+  padding: 10px 26px;
+  font-size: 16px;
+  line-height: 18px;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 100px;
+  display: inline-block;
+  margin: 12px 0 6px;
+  border: none;
+
+  &:hover {
+    opacity: .8;
+    cursor: pointer;
+    text-decoration: none;
+    color: #fff;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &[disabled] {
+    opacity: .4;
+
+    &:hover {
+      opacity: .4;
+      cursor: default;
+    }
+  }
+}
+
+
+// Wizard content
 
 .wizard-content {
   font-family: 'Roboto', sans-serif;
@@ -233,37 +272,8 @@ div[id$=_plugin_thespaghettidetective] {
     }
   }
 
+
   // Main style for buttons
-  .button {
-    background-color: @wizard-primary-color;
-    padding: 10px 26px;
-    font-size: 16px;
-    line-height: 18px;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 100px;
-    display: inline-block;
-    margin: 12px 0 6px;
-    border: none;
-
-    &:hover {
-      opacity: .8;
-      cursor: pointer;
-    }
-
-    &:focus {
-      outline: none;
-    }
-
-    &[disabled] {
-      opacity: .4;
-
-      &:hover {
-        opacity: .4;
-        cursor: default;
-      }
-    }
-  }
 
   // Wizard title
   .header {
@@ -690,6 +700,79 @@ div[id$=_plugin_thespaghettidetective] {
 }
 
 
+// Settings content
 
-// Settings
+.settings-wrapper {
+  font-family: 'Roboto', sans-serif;
 
+  // Main styles
+
+  ul {
+    font-size: 18px;
+    margin-top: 10px;
+    padding-left: 10px;
+
+    &.squared-markers {
+      list-style-type: square;
+    }
+  }
+
+  a:not(.button) {
+    color: @wizard-primary-color;
+    text-decoration: underline;
+
+    &:hover {
+      opacity: .8;
+    }
+  }
+
+  // First page with choice of setting tabs
+
+  .settings-header {
+    width: 100%;
+    margin-bottom: 50px;
+  }
+
+  .settings-content {
+    padding: 0 30px;
+  }
+
+  .choice-wrapper {
+    display: flex;
+    justify-content: space-between;
+
+    .choice-option {
+      padding-right: 30px;
+
+      &:last-child {
+        padding-right: 0;
+      }
+    }
+
+    .button {
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    @media screen and (max-width: 700px) {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+
+  .footer {
+    display: flex;
+    margin-top: 80px;
+    font-size: 15px;
+    align-items: center;
+    
+    img {
+      margin-right: 20px;
+    }
+  }
+
+
+  // Page with tabs
+  // ...
+}
