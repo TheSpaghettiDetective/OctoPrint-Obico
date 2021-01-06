@@ -512,7 +512,6 @@ div[id$=_plugin_thespaghettidetective] {
   .mobile-verification-wrapper {
     display: flex;
     justify-content: space-between;
-    align-items: top;
 
     // Left content - text and input
     .description {
@@ -658,26 +657,33 @@ div[id$=_plugin_thespaghettidetective] {
       .description .verification-wrapper {
         margin-top: 70px;
       }
-
+  
       .arrow {
         top: 55%;
         right: 85%;
         width: 120px;
       }
     }
-
+  
     // Hide mobile screen illustration on small screens
     @media screen and (max-width: 800px) {
+      flex-direction: column;
+  
       .description {
         width: 100%;
-
+  
         .verification-wrapper {
           margin-top: 40px;
         }
       }
-
+  
       .illustration {
-        display: none;
+        width: 100%;
+        max-width: 200px;
+  
+        .arrow {
+          display: none;
+        }
       }
     }
   }

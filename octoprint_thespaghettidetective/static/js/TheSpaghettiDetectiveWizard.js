@@ -23,7 +23,7 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
-        self.step = ko.observable(1);
+        self.step = ko.observable(0);
         self.mobileFlow = ko.observable(true);
         self.securityCode = ko.observable('');
         self.verifying = ko.observable(false);
@@ -53,9 +53,6 @@ $(function () {
             $('.verification-wrapper').removeClass(['error', 'success']);
             self.securityCode('');
             $('#verification-code .front-layer').hide();
-            $('#verification-code input').each(function() {
-                $(this).val("");
-            });
             $('#verification-code input:first-of-type').focus();
         }
 
@@ -63,6 +60,7 @@ $(function () {
             let number = parseInt($(event.target).attr('data-number'));
 
             if (event.keyCode === 8 && number !== 1) {
+                // Backspace
                 $(event.target).siblings('input[data-number='+ (number - 1) +']').val('').focus();
                 self.securityCode(self.securityCode().substring(0, -1));
             } else {
@@ -70,6 +68,7 @@ $(function () {
                 self.securityCode(self.securityCode() + val);
 
                 if (number === 6) {
+                    // End of input
                     $(event.target).blur();
                     $('#verification-code input').each(function() {
                         $(this).val("");
@@ -77,14 +76,40 @@ $(function () {
                     $('#verification-code .front-layer').show();
 
                     self.verifying(true);
-                    // TODO: verify code
                 } else {
+                    // Type number and move to next cell
                     if (val) {
                         $(event.target).siblings('input[data-number='+ (number + 1) +']').focus();
                     }
                 }
             }
         }
+
+        $(document).keypress(function(e) {
+            if (self.step() === 4) {
+                let allCellsFilled = false;
+
+                for (let i = 1; i <= 6; i++) {
+                    let input = $('#verification-code input[data-number='+ i +']');
+                    if (!input.val()) {
+                        input.val(e.key);
+                        self.securityCode(self.securityCode() + e.key);
+                        allCellsFilled = (i === 6) ? true : false;
+                        break;
+                    }
+                }
+
+                if (allCellsFilled) {
+                    // End of input
+                    $(event.target).blur();
+                    $('#verification-code input').each(function() {
+                        $(this).val("");
+                    });
+                    $('#verification-code .front-layer').show();
+                    self.verifying(true);
+                }
+            }
+        });
 
         self.securityCodeUrl = function(code) {
             var prefix = self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix();
