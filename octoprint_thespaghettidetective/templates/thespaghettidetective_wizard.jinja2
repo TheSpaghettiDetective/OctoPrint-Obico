@@ -4,7 +4,7 @@
  -->
 <div class="wizard-content" data-bind="css: {'bg-logo': [1, 4, 5].includes(step()), 'bg-primary': [5].includes(step())}">
   <div class="navigation">
-    <a href="#" class="back-btn" data-bind="click: prevStep, visible: step() !== 1">
+    <a href="#" class="back-btn" data-bind="click: prevStep, visible: ![1,5].includes(step())">
       ❮ Back
     </a>
     <div style="width: 70px;" data-bind="visible: step() === 1"></div>
@@ -181,8 +181,8 @@
       </div>
       <br>
       <ul>
-        <li>Not sure where to get the verification code? <a href="#">Go over the process again.</a></li>
-        <li>Need help? Visit our <a href="#">Discord Forum</a></li>
+        <li>Lost? <a href="#">Start over.</a></li>
+        <li>Need help? Visit our <a href="https://discord.com/invite/NcZkQfj" target="_blank">Discord Forum</a></li>
       </ul>
     </div>
   </div>
