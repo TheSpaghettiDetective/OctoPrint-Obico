@@ -23,7 +23,7 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
-        self.step = ko.observable(4);
+        self.step = ko.observable(1);
         self.mobileFlow = ko.observable(true);
         self.securityCode = ko.observable('');
         self.verifying = ko.observable(false);
@@ -147,15 +147,15 @@ $(function () {
                         auth_token: resp.printer.auth_token},
                         function (apiStatus) {
                             self.verifying(false);
-                            $('.verification-wrapper').addClass('text-success');
-                            console.log(apiStatus);
+                            $('.verification-wrapper').addClass('success');
+                            self.nextStep();
                         }
                     );
                 },
                 error: function(xhr) {
                     if (xhr.status == 404) {
                         self.verifying(false);
-                        $('.verification-wrapper').addClass('text-error');
+                        $('.verification-wrapper').addClass('error');
                         console.log('wrong code');
                     }
                 }

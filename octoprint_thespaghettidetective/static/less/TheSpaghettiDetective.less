@@ -66,7 +66,8 @@ div[id$=_plugin_thespaghettidetective] {
 // Wizard variables
 
 @wizard-primary-color: #9965F4;
-@wizard-error-color: #F22727;
+@wizard-error-color: #d9534f;
+@wizard-success-color: #5cb85c;
 @wizard-text-color: #282828;
 @wizard-paragraph-text-size: 14px;
 @wizard-container-min-height: 625px;
@@ -593,7 +594,7 @@ div[id$=_plugin_thespaghettidetective] {
           display: none;
         }
 
-        &.text-error {
+        &.error {
           .input-wrapper {
             border-color: @wizard-error-color;
 
@@ -608,18 +609,18 @@ div[id$=_plugin_thespaghettidetective] {
           }
         }
 
-        &.text-success {
+        &.success {
           .input-wrapper {
-            border-color: @wizard-primary-color;
+            border-color: @wizard-success-color;
 
             input {
-              border-color: rgba(@wizard-primary-color, .5);
+              border-color: rgba(@wizard-success-color, .5);
             }
           }
 
           .success-message {
             display: block;
-            color: @wizard-primary-color;
+            color: @wizard-success-color;
           }
         }
 
