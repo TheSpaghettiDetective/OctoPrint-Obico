@@ -49,77 +49,43 @@ $(function () {
             self.verifySecurityCode(code);
         });
 
-        self.startTypingCode = function() {
-            $('.verification-wrapper').removeClass(['error', 'success']);
-            self.securityCode('');
-            $('#verification-code .front-layer').hide();
-            $('#verification-code input:first-of-type').focus();
-        }
-
-        self.nextCell = function (data, event) {
-            let number = parseInt($(event.target).attr('data-number'));
-
-            if (event.keyCode === 8 && number !== 1) {
-                // Backspace
-                $(event.target).siblings('input[data-number='+ (number - 1) +']').val('').focus();
-                self.securityCode(self.securityCode().substring(0, -1));
-            } else {
-                let val = $(event.target).val();
-                self.securityCode(self.securityCode() + val);
-
-                if (number === 6) {
-                    // End of input
-                    $(event.target).blur();
-                    $('#verification-code input').each(function() {
-                        $(this).val("");
-                    });
-                    $('#verification-code .front-layer').show();
-
-                    self.verifying(true);
-                } else {
-                    // Type number and move to next cell
-                    if (val) {
-                        $(event.target).siblings('input[data-number='+ (number + 1) +']').focus();
-                    }
-                }
-            }
-        }
-
         $(document).keydown(function(e) {
             if (self.step() === 4) {
-                // Backspace
+                let availableInputs = ['0','1','2','3','4','5','6','7','8','9'];
+
                 if (e.keyCode === 8) {
+                    // Backspace
                     for (let i = 6; i >= 1; i--) {
                         let input = $('#verification-code input[data-number='+ i +']');
                         if (input.val()) {
                             input.val('');
-                            self.securityCode(self.securityCode().substring(0, -1));
-                            return;
+                            self.securityCode(self.securityCode().slice(0, -1));
+                            break;
                         }
                     }
-                    return;
-                }
+                } else if (availableInputs.includes(e.key)) {
+                    // Normal input
+                    let allCellsFilled = false;
 
-                let allCellsFilled = false;
-
-                for (let i = 1; i <= 6; i++) {
-                    if (i === 1) {
-                        // Return input to initial state
-                        $('.verification-wrapper').removeClass(['error', 'success']);
+                    for (let i = 1; i <= 6; i++) {
+                        let input = $('#verification-code input[data-number='+ i +']');
+                        if (!input.val()) {
+                            input.val(e.key);
+                            self.securityCode(self.securityCode() + e.key);
+                            allCellsFilled = (i === 6) ? true : false;
+                            break;
+                        }
                     }
 
-                    let input = $('#verification-code input[data-number='+ i +']');
-                    if (!input.val()) {
-                        input.val(e.key);
-                        self.securityCode(self.securityCode() + e.key);
-                        allCellsFilled = (i === 6) ? true : false;
-                        break;
+                    if (allCellsFilled) {
+                        // End of input
+                        self.verifying(true);
                     }
                 }
 
-                if (allCellsFilled) {
-                    // End of input
-                    self.verifying(true);
+                if (self.securityCode().length < 6) {
+                    // Return input to initial state
+                    $('.verification-wrapper').removeClass(['text-error', 'text-success']);
                 }
             }
         });
