@@ -137,7 +137,7 @@
             <div class="subtitle">LINK PRINTER</div>
             <h2 class="title">Verification Code</h2>
           </div>
-          <p>In order for the Spaghetti Detective to be able to monitor your prints, you will need to verify your account via the mobile app.</p>
+          <p>To link printer to your account, you need to obtain the 6-digit verification code in The Spaghetti Detective mobile app or web app, and enter the code below.</p>
           <div class="verification-wrapper">
             <label>6-Digit Verification Code:</label>
             <div class="input-wrapper" id="verification-code">
@@ -152,6 +152,10 @@
             <small class="error-message">
               Wrong code!<br>
               Did you enter an expired code?
+            </small>
+            <small class="unknown-error">
+              Something went wrong!<br>
+              If your Pi is connected to Internet and you still see this, <a href="mailto:support@thespaghettidetective.com">contact us</a> for help.
             </small>
             <small class="success-message">
               Success!<br>
@@ -181,7 +185,7 @@
       </div>
       <br>
       <ul>
-        <li>Lost? <a href="#">Start over.</a></li>
+        <li>Lost? <a href="#" data-bind="click: function(data, event) { toStep(1); }">Start over.</a></li>
         <li>Need help? Visit our <a href="https://discord.com/invite/NcZkQfj" target="_blank">Discord Forum</a></li>
       </ul>
     </div>

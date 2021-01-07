@@ -120,7 +120,7 @@ class TheSpaghettiDetectivePlugin(
 
     def get_api_commands(self):
         return dict(
-            test_auth_token=["auth_token"],
+            verify_code=["code"],
             get_plugin_status=[],
             toggle_sentry_opt=[],
             get_sentry_opt=[],
@@ -131,14 +131,17 @@ class TheSpaghettiDetectivePlugin(
 
     def on_api_command(self, command, data):
         try:
-            if command == "test_auth_token":
-                auth_token = data["auth_token"]
-                succeeded, status_text, _ = self.tsd_api_status(auth_token=auth_token)
+            if command == "verify_code":
+                endpoint = self.canonical_endpoint_prefix() + '/api/v1/onetimeverificationcodes/verify/?code=' + data["code"]
+                resp = requests.get(endpoint, timeout=30)
+                succeeded = resp.ok
+                printer = None
                 if succeeded:
-                    self._settings.set(["auth_token"], auth_token, force=True)
+                    printer = resp.json()['printer']
+                    self._settings.set(["auth_token"], printer['auth_token'], force=True)
                     self._settings.save(force=True)
 
-                return flask.jsonify({'succeeded': succeeded, 'text': status_text})
+                return flask.jsonify({'succeeded': succeeded, 'printer': printer})
 
             if command == "get_plugin_status":
                 results = dict(

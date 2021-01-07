@@ -522,6 +522,7 @@ div[id$=_plugin_thespaghettidetective] {
   .mobile-verification-wrapper {
     display: flex;
     justify-content: space-between;
+    align-items: flex-end;
 
     // Left content - text and input
     .description {
@@ -588,7 +589,7 @@ div[id$=_plugin_thespaghettidetective] {
           }
         }
 
-        .error-message, .success-message {
+        .error-message, .success-message, .unknown-error {
           margin-top: 10px;
           line-height: 1.25;
           display: none;
@@ -624,6 +625,13 @@ div[id$=_plugin_thespaghettidetective] {
           }
         }
 
+        &.unknown {
+          .unknown-error {
+            display: block;
+            color: @wizard-error-color;
+          }
+        }
+
         .loader {
           width: @input-width;
           text-align: center;
@@ -651,7 +659,7 @@ div[id$=_plugin_thespaghettidetective] {
 
       .arrow {
         position: absolute;
-        top: 55%;
+        bottom: 28%;
         right: 85%;
         width: 200px;
         display: block;
@@ -665,7 +673,7 @@ div[id$=_plugin_thespaghettidetective] {
       }
 
       .arrow {
-        top: 55%;
+        bottom: 28%;
         right: 85%;
         width: 120px;
       }

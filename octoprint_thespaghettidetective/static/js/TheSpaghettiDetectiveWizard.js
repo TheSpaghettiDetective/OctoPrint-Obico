@@ -6,13 +6,11 @@
  */
 $(function () {
 
-    function apiCommand(data, success, error) {
-        $.ajax("api/plugin/thespaghettidetective", {
+    function apiCommand(data) {
+        return $.ajax("api/plugin/thespaghettidetective", {
             method: "POST",
             contentType: "application/json",
-            data: JSON.stringify(data),
-            success: success,
-            error: error,
+            data: JSON.stringify(data)
         });
     }
 
@@ -64,39 +62,22 @@ $(function () {
                         }
                     }
                 } else if (availableInputs.includes(e.key)) {
-                    // Normal input
-                    let allCellsFilled = false;
-
                     for (let i = 1; i <= 6; i++) {
                         let input = $('#verification-code input[data-number='+ i +']');
                         if (!input.val()) {
                             input.val(e.key);
                             self.securityCode(self.securityCode() + e.key);
-                            allCellsFilled = (i === 6) ? true : false;
                             break;
                         }
-                    }
-
-                    if (allCellsFilled) {
-                        // End of input
-                        self.verifying(true);
                     }
                 }
 
                 if (self.securityCode().length < 6) {
                     // Return input to initial state
-                    $('.verification-wrapper').removeClass(['error', 'success']);
+                    $('.verification-wrapper').removeClass(['error', 'success', 'unknown']);
                 }
             }
         });
-
-        self.securityCodeUrl = function(code) {
-            var prefix = self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix();
-            if (!prefix.endsWith('/')) {
-                prefix += '/';
-            }
-            return prefix + 'api/v1/onetimeverificationcode/verify/?code=' + code;
-        };
 
         self.verifySecurityCode = function(code) {
             if (code.length !== 6) {
@@ -104,28 +85,23 @@ $(function () {
             }
             self.verifying(true);
 
-            $.ajax(self.securityCodeUrl(code), {
-                method: "GET",
-                contentType: "application/json",
-                success: function(resp) {
-                    apiCommand({
-                        command: "test_auth_token",
-                        auth_token: resp.printer.auth_token},
-                        function (apiStatus) {
-                            self.verifying(false);
-                            $('.verification-wrapper').addClass('success');
-                            self.nextStep();
-                        }
-                    );
-                },
-                error: function(xhr) {
-                    if (xhr.status == 404) {
-                        self.verifying(false);
+            apiCommand({
+                command: "verify_code",
+                code: code})
+                .done(function(apiStatus) {
+                    if (apiStatus.succeeded) {
+                        $('.verification-wrapper').addClass('success');
+                        self.nextStep();
+                    } else {
                         $('.verification-wrapper').addClass('error');
-                        console.log('wrong code');
                     }
-                }
-            });
+                })
+                .fail(function() {
+                    $('.verification-wrapper').addClass('unknown');
+                })
+                .always(function () {
+                    self.verifying(false);
+                });
         };
     }
 
