@@ -85,7 +85,7 @@ $(function () {
 
                 if (self.securityCode().length < 6) {
                     // Return input to initial state
-                    $('.verification-wrapper').removeClass(['text-error', 'text-success']);
+                    $('.verification-wrapper').removeClass(['error', 'success']);
                 }
             }
         });
