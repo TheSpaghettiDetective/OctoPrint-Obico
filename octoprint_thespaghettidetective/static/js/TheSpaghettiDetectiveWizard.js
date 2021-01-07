@@ -85,8 +85,21 @@ $(function () {
             }
         }
 
-        $(document).keypress(function(e) {
+        $(document).keydown(function(e) {
             if (self.step() === 4) {
+                // Backspace
+                if (e.keyCode === 8) {
+                    for (let i = 6; i >= 1; i--) {
+                        let input = $('#verification-code input[data-number='+ i +']');
+                        if (input.val()) {
+                            input.val('');
+                            self.securityCode(self.securityCode().substring(0, -1));
+                            return;
+                        }
+                    }
+                    return;
+                }
+
                 let allCellsFilled = false;
 
                 for (let i = 1; i <= 6; i++) {
@@ -106,11 +119,6 @@ $(function () {
 
                 if (allCellsFilled) {
                     // End of input
-                    $(event.target).blur();
-                    $('#verification-code input').each(function() {
-                        $(this).val("");
-                    });
-                    $('#verification-code .front-layer').show();
                     self.verifying(true);
                 }
             }
