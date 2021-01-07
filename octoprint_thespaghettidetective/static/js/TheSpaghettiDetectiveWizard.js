@@ -23,7 +23,7 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
-        self.step = ko.observable(1);
+        self.step = ko.observable(4);
         self.mobileFlow = ko.observable(true);
         self.securityCode = ko.observable('');
         self.verifying = ko.observable(false);
@@ -129,7 +129,7 @@ $(function () {
             if (!prefix.endsWith('/')) {
                 prefix += '/';
             }
-            return prefix + 'api/v1/onetimeverificationcodes/verify/?code=' + code;
+            return prefix + 'api/v1/onetimeverificationcode/verify/?code=' + code;
         };
 
         self.verifySecurityCode = function(code) {
@@ -147,7 +147,7 @@ $(function () {
                         auth_token: resp.printer.auth_token},
                         function (apiStatus) {
                             self.verifying(false);
-                            $('.verification-wrapper').addClass('success');
+                            $('.verification-wrapper').addClass('text-success');
                             console.log(apiStatus);
                         }
                     );
@@ -155,7 +155,7 @@ $(function () {
                 error: function(xhr) {
                     if (xhr.status == 404) {
                         self.verifying(false);
-                        $('.verification-wrapper').addClass('error');
+                        $('.verification-wrapper').addClass('text-error');
                         console.log('wrong code');
                     }
                 }
