@@ -4,7 +4,7 @@
  -->
 <div class="wizard-content" data-bind="css: {'bg-logo': [1, 4, 5].includes(step()), 'bg-primary': [5].includes(step())}">
   <div class="navigation">
-    <a href="#" class="back-btn" data-bind="click: prevStep, visible: step() !== 1">
+    <a href="#" class="back-btn" data-bind="click: prevStep, visible: ![1,5].includes(step())">
       ❮ Back
     </a>
     <div style="width: 70px;" data-bind="visible: step() === 1"></div>
@@ -150,12 +150,12 @@
               <input type="text" class="cell" data-number="6" maxlength="1">
             </div>
             <small class="error-message">
-              Sorry, that didn't seem to work.<br>
-              Try again with your new code on your mobile device.
+              Wrong code!<br>
+              Did you enter an expired code?
             </small>
             <small class="success-message">
               Success!<br>
-              Printer successfully paired.
+              Printer successfully linked.
             </small>
             <div class="loader" data-bind="visible: verifying">
               <svg version="1.1" id="L9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -181,8 +181,8 @@
       </div>
       <br>
       <ul>
-        <li>Not sure where to get the verification code? <a href="#">Go over the process again.</a></li>
-        <li>Need help? Visit our <a href="#">Discord Forum</a></li>
+        <li>Lost? <a href="#">Start over.</a></li>
+        <li>Need help? Visit our <a href="https://discord.com/invite/NcZkQfj" target="_blank">Discord Forum</a></li>
       </ul>
     </div>
   </div>
