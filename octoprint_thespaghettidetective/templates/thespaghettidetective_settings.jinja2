@@ -54,7 +54,7 @@
           <div class="section-content">
             <div class="test-connection-wrapper">
               <div>
-                <div class="circle">TEST</div>
+                <button class="circle">TEST</button>
               </div>
               <div class="form">
                 <label for="test-connection">Status:</label>
@@ -113,9 +113,7 @@
                 <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam odit alias quas cupiditate. Beatae est suscipit sed quos commodi dolor! Ea maiores voluptatem iure enim facilis, nostrum distinctio fugit aliquid.</li>
               </ul>
               <div>
-                <button class="button">
-                  Setup/Reconfigure
-                </button>
+                <a href="#wizardModal" class="button" data-toggle="modal">Setup/Reconfigure</a>
               </div>
             </div>
           </div>
@@ -144,6 +142,16 @@
     </div>
   </div>
 </div>
-<div class="wizard-wrapper" data-bind="allowBindings: false" style="display: none;">
-{% include "thespaghettidetective_wizard.jinja2" %}
+ 
+<!-- Wizard Modal -->
+<div id="wizardModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Setup/Reconfigure</h3>
+  </div>
+  <div class="modal-body">
+    <div class="wizard-wrapper" data-bind="allowBindings: false">
+      {% include "thespaghettidetective_wizard.jinja2" %}
+    </div>
+  </div>
 </div>
