@@ -781,7 +781,20 @@ div[id$=_plugin_thespaghettidetective] {
   // Container with tabs
   .tabbable {
     // Navigation tabs
-    ul.nav-tabs {
+    ul.nav {
+      // from bootstrap
+      line-height: 20px;
+      list-style: none;
+      &:before, &:after {
+        display: table;
+        line-height: 0;
+        content: "";
+      }
+      &:after {
+        clear: both;
+      }
+
+
       background-color: @wizard-primary-color;
       margin: 0;
       padding: 30px 0 0 76px;
@@ -801,8 +814,9 @@ div[id$=_plugin_thespaghettidetective] {
         margin: auto;
       }
 
-      // Tab (regular tab - on desktop)
-      >li:not(.tabdrop) {
+      // Tab
+      li {
+        float: left;
         margin: 0 5px 0 0;
         position: relative;
         top: 8px;
@@ -878,72 +892,38 @@ div[id$=_plugin_thespaghettidetective] {
           }
         }
       }
+    }
 
-      // Mobile adaptation (styling default elements of TabDrop plugin)
-      >li.tabdrop {
-        margin-right: 20px;
-
-        a.dropdown-toggle {
-          text-decoration: none;
-          border: none;
-          margin: 0;
-          border-radius: 10px 10px 0 0;
-          padding: 10px 20px;
-
-          &:hover {
-            opacity: .8;
-          }
-
-          &:before, &:after {
-            content: "";
-            position: absolute;
-            height: 10px;
-            width: 20px;
-            bottom: 0;
-          }
-
-          &:after {
-            right: -20px;
-            border-radius: 0 0 0 10px;
-            box-shadow: -10px 0 0 0 #fff;
-          }
-
-          &:before {
-            left: -20px;
-            border-radius: 0 0 10px 0;
-            box-shadow: 10px 0 0 0 #fff;
-          }
-        }
-
-        ul.dropdown-menu {
-          padding-right: 10px;
-
-          li {
-            a {
-              padding-top: 5px;
-              padding-bottom: 5px;
-              text-decoration: none;
-              border-radius: 5px;
-              background-image: none;
-            }
-
-            &.active {
-              a {
-                background-color: #9965F4;
-                color: #fff;
-              }
-            }
-          }
-        }
-
-        &.open {
+    // Mobile adaptation
+    @media screen and (max-width: 850px) {
+      ul.nav {
+        padding-bottom: 20px;
+        padding-right: 20px;
+  
+        // Tab
+        li {
+          position: static;
+          margin-bottom: 10px;
+          float: none;
+  
           a {
-            background-color: #fff;
-            color: @wizard-primary-color;
-
-            .caret {
-              border-top-color: #555;
-              border-bottom-color: #555;
+            padding: 5px 20px;
+            border-radius: 10px;
+  
+            &:before, &:after {
+              content: none;
+            }
+          }
+  
+          // Active tab
+          &.active {
+            a {
+              font-size: 16px;
+  
+              span {
+                border-bottom: none;
+                padding-bottom: 10px;
+              }
             }
           }
         }
