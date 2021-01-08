@@ -17,6 +17,34 @@ $(function () {
     function TheSpaghettiDetectiveSettingsViewModel(parameters) {
         var self = this;
 
+        self.settingsPageSelected = ko.observable(false);
+
+        self.selectPage = function(page) {
+            self.settingsPageSelected(true);
+
+            switch (page) {
+                case 'troubleshooting':
+                    $('li[data-page="advanced"]').removeClass('active');
+                    $('#advanced').removeClass('active');
+                    $('li[data-page="troubleshooting"]').addClass('active');
+                    $('#troubleshooting').addClass('active');
+                    break;
+                case 'advanced':
+                    $('li[data-page="troubleshooting"]').removeClass('active');
+                    $('#troubleshooting').removeClass('active');
+                    $('li[data-page="advanced"]').addClass('active');
+                    $('#advanced').addClass('active');
+                    break;
+            }
+        };
+
+        $(function() {
+            $('.settings-wrapper .toggle').click(function() {
+                $(this).toggleClass('opened');
+            })
+        });
+
+
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];

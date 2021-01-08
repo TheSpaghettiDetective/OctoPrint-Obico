@@ -73,7 +73,7 @@ div[id$=_plugin_thespaghettidetective] {
 @wizard-container-min-height: 625px;
 
 
-// Main styles for buttons
+// General styles
 
 .button {
   background-color: @wizard-primary-color;
@@ -105,6 +105,22 @@ div[id$=_plugin_thespaghettidetective] {
       opacity: .4;
       cursor: default;
     }
+  }
+}
+
+.flex {
+  display: flex;
+
+  &.col {
+    flex-direction: column;
+  }
+
+  &.align-center {
+    align-items: center;
+  }
+
+  &.justify-center {
+    justify-content: center;
   }
 }
 
@@ -164,22 +180,6 @@ div[id$=_plugin_thespaghettidetective] {
 
     &:hover {
       opacity: .8;
-    }
-  }
-
-  .flex {
-    display: flex;
-
-    &.col {
-      flex-direction: column;
-    }
-
-    &.align-center {
-      align-items: center;
-    }
-
-    &.justify-center {
-      justify-content: center;
     }
   }
 
@@ -778,7 +778,313 @@ div[id$=_plugin_thespaghettidetective] {
     }
   }
 
+  // Container with tabs
+  .tabbable {
+    // Navigation tabs
+    ul.nav-tabs {
+      background-color: @wizard-primary-color;
+      margin: 0;
+      padding: 30px 0 0 76px;
+      border: none;
+      position: relative;
 
-  // Page with tabs
-  // ...
+      // White logo at the left side on navigation panel
+      &:before {
+        content: url(../img/logo-white.svg);
+        display: block;
+        width: 40px;
+        height: 40px;
+        position: absolute;
+        bottom: 0;
+        top: 0;
+        left: 20px;
+        margin: auto;
+      }
+
+      // Tab (regular tab - on desktop)
+      >li:not(.tabdrop) {
+        margin: 0 5px 0 0;
+        position: relative;
+        top: 8px;
+
+        a {
+          margin: 0;
+          text-decoration: none;
+          border: none;
+          display: block;
+          padding: 5px 30px;
+          border-radius: 10px 10px 0 0;
+          background-color: #B9A0EF;
+          color: #fff;
+          font-weight: bold;
+          font-size: 14px;
+          transition: font-size .1s;
+          position: relative;
+
+          &:hover {
+            opacity: .8;
+          }
+
+          &:before, &:after {
+            content: "";
+            position: absolute;
+            height: 10px;
+            width: 20px;
+            bottom: 0;
+          }
+
+          &:after {
+            right: -20px;
+            border-radius: 0 0 0 10px;
+            box-shadow: -10px 0 0 0 #B9A0EF;
+          }
+
+          &:before {
+            left: -20px;
+            border-radius: 0 0 10px 0;
+            box-shadow: 10px 0 0 0 #B9A0EF;
+          }
+        }
+
+        // Active tab
+        &.active {
+          z-index: 2;
+          top: 0;
+
+          a {
+            color: @wizard-primary-color;
+            background-color: #fff;
+            padding-top: 12px;
+            padding-bottom: 1px;
+            font-size: 18px;
+
+            span {
+              display: inline-block;
+              // border-bottom: 2px solid @wizard-primary-color;
+              padding: 0 0 5px;
+            }
+
+            &:hover {
+              opacity: 1;
+            }
+
+            &:after {
+              box-shadow: -10px 0 0 0 #fff;
+            }
+
+            &:before {
+              box-shadow: 10px 0 0 0 #fff;
+            }
+          }
+        }
+      }
+
+      // Mobile adaptation (styling default elements of TabDrop plugin)
+      >li.tabdrop {
+        margin-right: 20px;
+
+        a.dropdown-toggle {
+          text-decoration: none;
+          border: none;
+          margin: 0;
+          border-radius: 10px 10px 0 0;
+          padding: 10px 20px;
+
+          &:hover {
+            opacity: .8;
+          }
+
+          &:before, &:after {
+            content: "";
+            position: absolute;
+            height: 10px;
+            width: 20px;
+            bottom: 0;
+          }
+
+          &:after {
+            right: -20px;
+            border-radius: 0 0 0 10px;
+            box-shadow: -10px 0 0 0 #fff;
+          }
+
+          &:before {
+            left: -20px;
+            border-radius: 0 0 10px 0;
+            box-shadow: 10px 0 0 0 #fff;
+          }
+        }
+
+        ul.dropdown-menu {
+          padding-right: 10px;
+
+          li {
+            a {
+              padding-top: 5px;
+              padding-bottom: 5px;
+              text-decoration: none;
+              border-radius: 5px;
+              background-image: none;
+            }
+
+            &.active {
+              a {
+                background-color: #9965F4;
+                color: #fff;
+              }
+            }
+          }
+        }
+
+        &.open {
+          a {
+            background-color: #fff;
+            color: @wizard-primary-color;
+
+            .caret {
+              border-top-color: #555;
+              border-bottom-color: #555;
+            }
+          }
+        }
+      }
+    }
+
+    // Tab content
+    .tab-pane {
+			padding: 0 30px 30px;
+			
+			.button {
+				font-weight: bold;
+			}
+
+      // One titled set of settings
+      section {
+        margin-top: 30px;
+
+        // Title of section
+        .section-title {
+          font-size: 26px;
+          color: @wizard-primary-color;
+        }
+
+        // Content of section
+        .section-content {
+          padding-left: 30px;
+
+          // Test connection
+					.test-connection-wrapper {
+						display: flex;
+						align-items: center;
+
+						.circle {
+							width: 100px;
+							height: 100px;
+							border-radius: 50%;
+							background-color: @wizard-primary-color;
+							color: #fff;
+							font-weight: bold;
+							font-size: 22px;
+							text-align: center;
+							line-height: 100px;
+						}
+
+						.form {
+							margin-left: 20px;
+
+							label {
+								color: @wizard-primary-color;
+							}
+
+							input {
+								border: 1px solid @wizard-primary-color;
+								border-radius: 100px;
+								padding: 4px 12px;
+								margin-bottom: 4px;
+							}
+
+							small {
+								color: #757575;
+							}
+            }
+            
+            @media screen and (max-width: 700px) {
+              flex-direction: column;
+              .form {
+                margin-left: 0;
+                align-items: flex-start;
+              }
+            }
+					}
+
+					// Hideble mini-section
+					.toggle {
+						margin-left: 25px;
+
+						.toggle-title {
+							font-size: 20px;
+							border-bottom: 1px solid #757575;
+							position: relative;
+
+							&:before {
+								content: url(../img/toggle-arrow.svg);
+								width: 10px;
+								position: absolute;
+								top: 0;
+								left: -25px;
+							}
+
+							.counter {
+								font-weight: normal;
+
+								&:before {
+									content: "(";
+								}
+
+								&:after {
+									content: ")";
+								}
+							}
+						}
+
+						.toggle-content {
+							height: 0;
+							overflow: hidden;
+						}
+
+						&:hover {
+							.toggle-title {
+								opacity: .8;
+								cursor: pointer;
+							}
+						}
+
+						&.opened {
+							.toggle-title {
+								&:before {
+									transform: rotate(90deg);
+								}
+							}
+
+							.toggle-content {
+								height: auto;
+							}
+						}
+					}
+
+					ul {
+						font-size: 15px;
+						list-style-type: square;
+						margin-left: 0;
+					}
+				}
+      }
+    }
+
+    @media screen and (max-width: 700px) {
+      .flex {
+        flex-direction: column;
+      }
+    }
+  }
 }
