@@ -1,8 +1,4 @@
-<!--
-  class 'bg-logo' adds big logo to wizard's background
-  class 'bg-primary' makes background of wizard of primary color and darkens background logo a little
- -->
-<div class="wizard-content" data-bind="css: {'bg-logo': [1, 4, 5].includes(step()), 'bg-primary': [5].includes(step())}">
+<div id="tsd_wizard" class="wizard-content" data-bind="css: {'bg-logo': [1, 4, 5].includes(step()), 'bg-primary': [5].includes(step())}">
   <div class="navigation">
     <a href="#" class="back-btn" data-bind="click: prevStep, visible: ![1,5].includes(step())">
       ❮ Back
