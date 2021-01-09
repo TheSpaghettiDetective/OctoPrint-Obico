@@ -132,8 +132,7 @@ class TheSpaghettiDetectivePlugin(
     def on_api_command(self, command, data):
         try:
             if command == "verify_code":
-                endpoint = self.canonical_endpoint_prefix() + '/api/v1/onetimeverificationcodes/verify/?code=' + data["code"]
-                resp = requests.get(endpoint, timeout=30)
+                resp = server_request('GET', '/api/v1/onetimeverificationcodes/verify/?code=' + data["code"], self)
                 succeeded = resp.ok
                 printer = None
                 if succeeded:

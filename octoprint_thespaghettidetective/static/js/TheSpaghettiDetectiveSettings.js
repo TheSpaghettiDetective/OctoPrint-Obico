@@ -12,6 +12,7 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
+        self.alertsShown = {};
         self.showDetailPage = ko.observable(false);
         self.streaming = ko.mapping.fromJS({ is_pro: false, is_pi_camera: false });
         self.errorStats = ko.mapping.fromJS({ server: { attempts: 0, error_count: 0, first: null, last: null }, webcam: { attempts: 0, error_count: 0, first: null, last: null }});

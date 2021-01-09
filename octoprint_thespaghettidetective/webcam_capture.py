@@ -22,6 +22,7 @@ import requests
 import backoff
 
 from .lib.error_stats import error_stats
+from .utils import server_request
 
 POST_PIC_INTERVAL_SECONDS = 10.0
 if os.environ.get('DEBUG'):
@@ -114,7 +115,6 @@ class JpegPoster:
 
         self.last_jpg_post_ts = time.time()
 
-        endpoint = self.plugin.canonical_endpoint_prefix() + '/api/v1/octo/pic/'
         try:
             error_stats.attempt('webcam')
             files = {'pic': capture_jpeg(self.plugin._settings.global_get(["webcam"]))}
@@ -122,7 +122,6 @@ class JpegPoster:
             error_stats.add_connection_error('webcam', self.plugin)
             return
 
-        resp = requests.post( endpoint, files=files, headers=self.plugin.auth_headers(), timeout=60)
-        resp.raise_for_status()
+        resp = server_request('POST', '/api/v1/octo/pic/', self.plugin, timeout=60, files=files, headers=self.plugin.auth_headers())
         _logger.debug('Jpeg posted to server')
 

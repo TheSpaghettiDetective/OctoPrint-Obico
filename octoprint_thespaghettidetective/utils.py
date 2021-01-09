@@ -251,5 +251,6 @@ def server_request(method, uri, plugin, timeout=30, **kwargs):
             error_stats.add_connection_error('server', plugin)
     except:
         error_stats.add_connection_error('server', plugin)
+        raise
 
     return resp
