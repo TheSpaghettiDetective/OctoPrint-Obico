@@ -16,8 +16,9 @@ import backoff
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
 from .utils import (
-    ExpoBackoff, error_stats, SentryWrapper, pi_version,
+    ExpoBackoff, SentryWrapper, pi_version,
     get_tags, not_using_pi_camera, OctoPrintSettingsUpdater, server_request)
+from .lib.error_stats import error_stats
 from .lib import alert_queue
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer

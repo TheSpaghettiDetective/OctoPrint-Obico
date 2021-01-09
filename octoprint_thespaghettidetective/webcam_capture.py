@@ -20,7 +20,8 @@ except ImportError:
 from contextlib import closing
 import requests
 import backoff
-from .utils import error_stats
+
+from .lib.error_stats import error_stats
 
 POST_PIC_INTERVAL_SECONDS = 10.0
 if os.environ.get('DEBUG'):
