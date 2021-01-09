@@ -1,6 +1,7 @@
 # coding=utf-8
 
-# module that pushes alerts to OctoPrint javascript to guarantee users can always see them
+### module that pushes alerts to OctoPrint javascript to guarantee users can always see them
+#   all methods should be thread-safe
 
 from collections import deque
 

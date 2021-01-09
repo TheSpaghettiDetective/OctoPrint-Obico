@@ -5,15 +5,6 @@
  * License: AGPLv3
  */
 $(function () {
-
-    function apiCommand(data) {
-        return $.ajax("api/plugin/thespaghettidetective", {
-            method: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(data)
-        });
-    }
-
     function TheSpaghettiDetectiveSettingsViewModel(parameters) {
         var self = this;
 
@@ -23,7 +14,7 @@ $(function () {
 
         self.showDetailPage = ko.observable(false);
         self.streaming = ko.mapping.fromJS({ is_pro: false, is_pi_camera: false });
-        self.errorStats = ko.mapping.fromJS({ server: { attempts: 0, errorCount: 0 }, webcam: { attempts: 0, errorCount: 0 }});
+        self.errorStats = ko.mapping.fromJS({ server: { attempts: 0, error_count: 0, first: null, last: null }, webcam: { attempts: 0, error_count: 0, first: null, last: null }});
 
         self.onStartupComplete = function (plugin, data) {
             self.fetchPluginStatus();
@@ -95,7 +86,131 @@ $(function () {
 
         /*** Plugin error alerts */
 
+        self.displayAlert = function (alertMsg) {
+            var ignoredItemPath = "ignored." + alertMsg.cause + "." + alertMsg.level;
+            if (retrieveFromLocalStorage(ignoredItemPath, false)) {
+                return;
+            }
+
+            var showItemPath = alertMsg.cause + "." + alertMsg.level;
+            if (_.get(self.alertsShown, showItemPath, false)) {
+                return;
+            }
+            _.set(self.alertsShown, showItemPath, true);
+
+            var text = null;
+            var msgType = "error";
+            if (alertMsg.level === "warning") {
+                msgType = "notice";
+            }
+
+            var buttons = [
+                {
+                    text: "Never show again",
+                    click: function (notice) {
+                        saveToLocalStorage(ignoredItemPath, true);
+                        notice.remove();
+                    }
+                },
+                {
+                    text: "OK",
+                    click: function (notice) {
+                        notice.remove();
+                    }
+                },
+                {
+                    text: "Close",
+                    addClass: "remove_button"
+                },
+            ]
+
+            if (alertMsg.level === "error") {
+                buttons.unshift(
+                    {
+                        text: "Details",
+                        click: function (notice) {
+                            self.showDiagnosticReportModal();
+                            notice.remove();
+                        }
+                    }
+                );
+                if (alertMsg.cause === "server") {
+                    text =
+                        "The Spaghetti Detective failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.";
+                } else if (alertMsg.cause === "webcam") {
+                    text =
+                        'The Spaghetti Detective plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.thespaghettidetective.com/docs/webcam-connection-error-popup">this trouble-shooting guide</a>.';
+                }
+            }
+            if (alertMsg.level === "warning") {
+                if (alertMsg.cause === 'streaming') {
+                    text =
+                        '<p>Premium webcam streaming failed to start. The Spaghetti Detective has switched to basic streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/webcam-switched-to-basic-streaming/">Learn more >>></a></p>';
+                }
+                if (alertMsg.cause === 'cpu') {
+                    text =
+                        '<p>Premium streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable premium streaming. <a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/#more-about-cpu-usage-in-compatibility-mode">Learn more >>></a></p>';
+                }
+            }
+
+            if (text) {
+                new PNotify({
+                    title: "The Spaghetti Detective",
+                    text: text,
+                    type: msgType,
+                    hide: false,
+                    confirm: {
+                        confirm: true,
+                        buttons: buttons,
+                    },
+                    history: {
+                        history: false
+                    },
+                    before_open: function (notice) {
+                        notice
+                            .get()
+                            .find(".remove_button")
+                            .remove();
+                    }
+                });
+            }
+        };
+
+        self.showDiagnosticReportModal = function () {
+            $('#diagnosticReportModal').modal();
+        };
     }
+
+
+    // Helper methods
+    function apiCommand(data) {
+        return $.ajax("api/plugin/thespaghettidetective", {
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data)
+        });
+    }
+
+    var LOCAL_STORAGE_KEY = 'plugin.tsd';
+
+    function localStorageObject() {
+        var retrievedObject = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (!retrievedObject) {
+            retrievedObject = '{}';
+        }
+        return JSON.parse(retrievedObject);
+    }
+
+    function retrieveFromLocalStorage(itemPath, defaultValue) {
+        return _.get(localStorageObject(), itemPath, defaultValue);
+    }
+
+    function saveToLocalStorage(itemPath, value) {
+        var retrievedObject = localStorageObject();
+        _.set(retrievedObject, itemPath, value);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(retrievedObject));
+    }
+
 
     /* view model class, parameters for constructor, container to bind to
      * Please see http://docs.octoprint.org/en/master/plugins/viewmodels.html#registering-custom-viewmodels for more details

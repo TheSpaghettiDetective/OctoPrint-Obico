@@ -16,8 +16,8 @@ import backoff
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
 from .utils import (
-    ExpoBackoff, ConnectionErrorStats, SentryWrapper, pi_version,
-    get_tags, not_using_pi_camera, OctoPrintSettingsUpdater)
+    ExpoBackoff, error_stats, SentryWrapper, pi_version,
+    get_tags, not_using_pi_camera, OctoPrintSettingsUpdater, server_request)
 from .lib import alert_queue
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
@@ -54,7 +54,6 @@ class TheSpaghettiDetectivePlugin(
         self.last_status_update_ts = 0
         self.remote_status = RemoteStatus()
         self.commander = Commander()
-        self.error_stats = ConnectionErrorStats(self)
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_event_tracker)
@@ -148,7 +147,7 @@ class TheSpaghettiDetectivePlugin(
                     streaming_status=dict(
                         is_pro=bool(self.user_account.get('is_pro')),
                         is_pi_camera=self.webcam_streamer and bool(self.webcam_streamer.pi_camera)),
-                    error_stats=self.error_stats.as_dict(),
+                    error_stats=error_stats.as_dict(),
                     alerts=alert_queue.fetch_and_clear(),
                     )
                 if self._settings.get(["auth_token"]):     # Ask to opt in sentry only after wizard is done.
@@ -238,7 +237,7 @@ class TheSpaghettiDetectivePlugin(
         while True:
             try:
                 if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
-                    self.error_stats.attempt('server')
+                    error_stats.attempt('server')
                     self.post_printer_status(_print_event_tracker.octoprint_data(self), try_connecting=True)
                     backoff.reset()
 
@@ -246,11 +245,11 @@ class TheSpaghettiDetectivePlugin(
                 time.sleep(1)
 
             except WebSocketClientException as e:
-                self.error_stats.add_connection_error('server')
+                error_stats.add_connection_error('server', self)
                 backoff.more(e)
             except Exception as e:
                 self.sentry.captureException(tags=get_tags())
-                self.error_stats.add_connection_error('server')
+                error_stats.add_connection_error('server', self)
                 backoff.more(e)
 
     def post_printer_status(self, data, try_connecting=False):
@@ -377,12 +376,11 @@ class TheSpaghettiDetectivePlugin(
         return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])
 
     def tsd_api_status(self, auth_token=None):
-        endpoint = self.canonical_endpoint_prefix() + '/api/v1/octo/ping/'
         succeeded = False
         status_text = 'Unknown error.'
         resp = None
         try:
-            resp = requests.get(endpoint, headers=self.auth_headers(auth_token=self.auth_token(auth_token)), timeout=30)
+            resp = resp = server_request('GET', '/api/v1/octo/ping/', self, headers=self.auth_headers(auth_token=self.auth_token(auth_token)))
             succeeded = resp.ok
             if resp.status_code == 200:
                 status_text = 'Secret token is valid. You are awesome!'

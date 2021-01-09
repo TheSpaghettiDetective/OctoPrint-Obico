@@ -57,7 +57,7 @@
               <div class="section-panel">
                 <div class="status-line success"><i class="fa fa-circle"></i>Server connection: Okay</div>
                 <div class="status-line success"><i class="fa fa-circle"></i>Webcam connection: Okay</div>
-                <div style="margin-top: 18px;"><a href="#diagnosticReportModal" onclick="$('#diagnosticReportModal').modal({backdrop: 'static', keyboard: false})">Plugin self-diagnostic report</a></div>
+                <div style="margin-top: 18px;"><a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Plugin self-diagnostic report</a></div>
               </div>
               <div class="section-panel">
                 <button class="circle">TEST</button>
@@ -175,7 +175,7 @@
   </div>
 </div>
 
-<!-- Wizard Modal -->
+<!-- Modals -->
 <div id="wizardModal" class="modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
@@ -194,33 +194,33 @@
   <div class="modal-body">
     <i>*Note: This report is to diagnostic information for potential problems in <b>Access Anywhere - The Spaghetti Detective</b> plugin. It is not a diagnosis for your print failures.</i>
     <br /><br />
-    <b class="text-success" data-bind="visible: (errorStats.webcam.errorCount() + errorStats.server.errorCount()) <= 0">
+    <b class="text-success" data-bind="visible: (errorStats.webcam.error_count() + errorStats.server.error_count()) <= 0">
       There have been no errors since last time OctoPrint rebooted.
     </b>
-    <b class="text-error" data-bind="visible: (errorStats.webcam.errorCount() + errorStats.server.errorCount()) > 0">
+    <b class="text-error" data-bind="visible: (errorStats.webcam.error_count() + errorStats.server.error_count()) > 0">
       The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/connectivity-error-report/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/contact-us-for-support/">reach out to us</a> for help.
     </b>
-    <div data-bind="visible: errorStats.server.errorCount() > 0">
+    <div data-bind="visible: errorStats.server.error_count() > 0">
       <hr />
       <p class="text-error">
-        The plugin has failed to connect to the webcam <b data-bind="text: errorStats.server.errorCount"></b> times (error rate <b data-bind="text: Math.round(errorStats.server.errorCount / errorStats.server.attempts * 100)"></b><b>%</b> since OctoPrint rebooted.
+        The plugin has failed to connect to the server <b data-bind="text: errorStats.server.error_count"></b> times (error rate <b data-bind="text: Math.round(errorStats.server.error_count() / errorStats.server.attempts() * 100)"></b><b>%</b>) since OctoPrint rebooted.
       </p>
       <ul>
-        <li>The first error occurred at: <b data-bind="text: errorStats.server.first"></b>.</li>
-        <li>The most recent error occurred at: <b data-bind="text: errorStats.server.last"></b>.</li>
+        <li>The first error occurred at: <b data-bind="text: new Date(errorStats.server.first())"></b>.</li>
+        <li>The most recent error occurred at: <b data-bind="text: new Date(errorStats.server.last())"></b>.</li>
       </ul>
       <p>
         Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.
       </p>
     </div>
-    <div data-bind="visible: errorStats.webcam.errorCount() > 0">
+    <div data-bind="visible: errorStats.webcam.error_count() > 0">
       <hr />
       <p class="text-error">
-        The plugin has failed to connect to the webcam <b data-bind="text: errorStats.webcam.errorCount"></b> times (error rate <b data-bind="text: Math.round(errorStats.webcam.errorCount / errorStats.webcam.attempts * 100)"></b><b>%</b> since OctoPrint rebooted.
+        The plugin has failed to connect to the webcam <b data-bind="text: errorStats.webcam.error_count"></b> times (error rate <b data-bind="text: Math.round(errorStats.webcam.error_count() / errorStats.webcam.attempts() * 100)"></b><b>%</b>) since OctoPrint rebooted.
       </p>
       <ul>
-        <li>The first error occurred at: <b data-bind="text: errorStats.webcam.first"></b>.</li>
-        <li>The most recent error occurred at: <b data-bind="text: errorStats.webcam.last"></b>.</li>
+        <li>The first error occurred at: <b data-bind="text: new Date(errorStats.webcam.first())"></b>.</li>
+        <li>The most recent error occurred at: <b data-bind="text: new Date(errorStats.webcam.last())"></b>.</li>
       </ul>
       <p>
         Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.

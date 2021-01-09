@@ -20,7 +20,7 @@ except ImportError:
 from contextlib import closing
 import requests
 import backoff
-
+from .utils import error_stats
 
 POST_PIC_INTERVAL_SECONDS = 10.0
 if os.environ.get('DEBUG'):
@@ -115,10 +115,10 @@ class JpegPoster:
 
         endpoint = self.plugin.canonical_endpoint_prefix() + '/api/v1/octo/pic/'
         try:
-            self.plugin.error_stats.attempt('webcam')
+            error_stats.attempt('webcam')
             files = {'pic': capture_jpeg(self.plugin._settings.global_get(["webcam"]))}
         except:
-            self.plugin.error_stats.add_connection_error('webcam')
+            error_stats.add_connection_error('webcam', self.plugin)
             return
 
         resp = requests.post( endpoint, files=files, headers=self.plugin.auth_headers(), timeout=60)
