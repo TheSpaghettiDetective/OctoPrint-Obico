@@ -86,6 +86,16 @@ $(function () {
 
         /*** Plugin error alerts */
 
+        self.onDataUpdaterPluginMessage = function (plugin, data) {
+            if (plugin != "thespaghettidetective") {
+                return;
+            }
+
+            if (data.new_alert) {
+                self.fetchPluginStatus();
+            }
+        }
+
         self.displayAlert = function (alertMsg) {
             var ignoredItemPath = "ignored." + alertMsg.cause + "." + alertMsg.level;
             if (retrieveFromLocalStorage(ignoredItemPath, false)) {
