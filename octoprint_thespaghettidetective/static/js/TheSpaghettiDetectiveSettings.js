@@ -17,10 +17,53 @@ $(function () {
     function TheSpaghettiDetectiveSettingsViewModel(parameters) {
         var self = this;
 
-        self.settingsPageSelected = ko.observable(false);
+        // assign the injected parameters, e.g.:
+        // self.loginStateViewModel = parameters[0];
+        self.settingsViewModel = parameters[0];
+
+        self.showDetailPage = ko.observable(false);
+        self.streaming = ko.mapping.fromJS({ is_pro: false, is_pi_camera: false });
+
+        self.onStartupComplete = function (plugin, data) {
+            self.fetchPluginStatus();
+        }
+
+        self.fetchPluginStatus = function () {
+            apiCommand({
+                command: "get_plugin_status",
+            })
+            .done(function (data) {
+                ko.mapping.fromJS(data.streaming_status, self.streaming);
+
+                if (_.get(data, 'sentry_opt') === "out") {
+                    var sentrynotice = new PNotify({
+                        title: "The Spaghetti Detective",
+                        text: "<p>Turn on bug reporting to help us make TSD plugin better?</p><p>The debugging info included in the report will be anonymized.</p>",
+                        hide: false,
+                        destroy: true,
+                        confirm: {
+                            confirm: true,
+                        },
+                    });
+                    sentrynotice.get().on('pnotify.confirm', function () {
+                        self.toggleSentryOpt();
+                    });
+                }
+                _.get(data, 'alerts', []).forEach(function (alertMsg) {
+                    self.displayAlert(alertMsg);
+                })
+            });
+        }
+
+        self.toggleSentryOpt = function (ev) {
+            apiCommand({
+                command: "toggle_sentry_opt",
+            });
+            return true;
+        };
 
         self.selectPage = function(page) {
-            self.settingsPageSelected(true);
+            self.showDetailPage(true);
 
             switch (page) {
                 case 'troubleshooting':
@@ -44,10 +87,7 @@ $(function () {
             })
         });
 
-
-        // assign the injected parameters, e.g.:
-        // self.loginStateViewModel = parameters[0];
-        self.settingsViewModel = parameters[0];
+        /*** Plugin error alerts */
 
     }
 

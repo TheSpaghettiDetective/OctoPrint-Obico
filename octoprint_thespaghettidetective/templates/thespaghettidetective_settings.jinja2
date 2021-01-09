@@ -1,24 +1,24 @@
 <div class="settings-wrapper">
 
   <!-- Initial page with choice - what settings page (tab) to open? -->
-  <div class="choice-page" data-bind="visible: !settingsPageSelected()">
+  <div class="choice-page" data-bind="visible: !showDetailPage()">
     <img class="settings-header" src="plugin/thespaghettidetective/static/img/settings-header.svg" alt="">
     <div class="settings-content">
       <div class="choice-wrapper">
         <div class="choice-option">
-          <a href="#" class="button" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">Troubleshooting</a>
+          <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('advanced'); }">Settings</a>
           <ul class="squared-markers">
-            <li>Server connection test</li>
-            <li>Webcam streaming issues</li>
-            <li>Re-link OctoPrint to your account</li>
+            <li>Text</li>
+            <li>Text</li>
+            <li>Text</li>
           </ul>
         </div>
         <div class="choice-option">
-          <a href="#" class="button" data-bind="click: function(data, event) { selectPage('advanced'); }">Advanced Configuration</a>
+          <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">Troubleshooting</a>
           <ul class="squared-markers">
-            <li>Text</li>
-            <li>Text</li>
-            <li>Text</li>
+            <li>Server connection status</li>
+            <li>Webcam streaming issues</li>
+            <li>Re-run setup wizard</li>
           </ul>
         </div>
       </div>
@@ -34,16 +34,16 @@
   </div>
 
   <!-- Page with tabs at the top -->
-  <div class="tabbable" data-bind="visible: settingsPageSelected()">
+  <div class="tabbable" data-bind="visible: showDetailPage()">
     <ul class="nav">
+      <li data-page="advanced">
+        <a href="#advanced" data-toggle="tab">
+          <span>Settings</span>
+        </a>
+      </li>
       <li data-page="troubleshooting">
         <a href="#troubleshooting" data-toggle="tab">
           <span>Troubleshooting</span>
-        </a>
-      </li>
-      <li data-page="advanced">
-        <a href="#advanced" data-toggle="tab">
-          <span>Advanced configuration</span>
         </a>
       </li>
     </ul>
@@ -65,56 +65,88 @@
           </div>
         </section>
         <section>
-          <h1 class="section-title">Troubleshooting</h1>
+          <h1 class="section-title">Troubleshooting Tips</h1>
+          <p>Make sure you have followed <a href="https://www.thespaghettidetective.com/docs/octoprint-plugin-setup/">the setup guide</a> to link OctoPrint to your The Spaghetti Detective account successfully.</p>
+          <p>Check out our <a href="https://www.thespaghettidetective.com/help/">help docs</a> for detailed troubleshooting guides.</p>
           <div class="section-content">
             <div class="toggle">
-              <h2 class="toggle-title">
-                Connectivity
+              <h3 class="toggle-title">
+                Webcam Streaming
                 <span class="counter">4</span>
-              </h2>
+              </h3>
               <div class="toggle-content">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestias, aut repellat quidem veritatis maxime, autem natus quod, quaerat sequi id perspiciatis beatae vel. Laborum repellendus quod fugiat iste natus consectetur?
+                <h5>I'm getting laggy webcam streaming.</h5>
+                <ul>
+                  <li>If you have a free The Spaghetti Detective account and it's out of the free trial period, your webcam streaming will be 1 frame per 10 seconds. <a href="https://www.thespaghettidetective.com/docs/upgrade-to-pro/#what-cant-the-detective-just-work-for-free-people-love-free-you-know">25 frames per second webcam streaming is a premium feature for Pro accounts only.</a></li>
+                  <li>Have you restarted OctoPrint and/or your Rasbperry Pi after upgrading to Pro account?</li>
+                  <li>Make sure premium webcam streaming is not disabled in the "Settings" section.</li>
+                </ul>
+                <h5>Webcam streaming doesn't work.</h5>
+                <ul>
+                  <li>Basic webcam streaming (free account) is on only when you are printing. You won't see a webcam feed when the printer is idle.</li>
+                  <li>However, premium webcam streaming is always on. If you have a Pro account, you should see webcam feed even if the printer is idle.</li>
+                  <li>You need to make sure webcam URL is configured correctly in OctoPrint, and can be reached from your Raspberry Pi.</li>
+                  <li>Check out <a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-not-showing/">the detailed help document</a>.</li>
+                </ul>
+                <h5>I got a warning that says "switched to basic streaming".</h5>
+                <ul>
+                  <li>This warning means the premium streaming process failed to start. You will only get the basic streaming, if your account is eligible for the 25fps premium streaming. If you have a Pro account, you can <a href="mailto:support@thespaghettidetective.com">get help from the TSD team</a>.</li>
+                </ul>
+                <h5>I got a warning that says "streaming uses excessive CPU".</h5>
+                <ul>
+                  <li>If you have set streaming compability mode to "always", please set it back to "auto".</li>
+                  <li>If you have to always stream in compability mode, set webcam resolution to 640x480, fps to 10. Then restart the Pi.</li>
+                  <li>Learn more about <a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/">the streaming compability mode</a>.</li>
+                </ul>
               </div>
             </div>
             <div class="toggle">
-              <h2 class="toggle-title">
-                Account
-                <span class="counter">6</span>
-              </h2>
-              <div class="toggle-content">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestias, aut repellat quidem veritatis maxime, autem natus quod, quaerat sequi id perspiciatis beatae vel. Laborum repellendus quod fugiat iste natus consectetur?
-              </div>
-            </div>
-            <div class="toggle opened">
-              <h2 class="toggle-title">
-                Title
+              <h3 class="toggle-title">
+                Failure Detection
                 <span class="counter">2</span>
-              </h2>
+              </h3>
               <div class="toggle-content">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestias, aut repellat quidem veritatis maxime, autem natus quod, quaerat sequi id perspiciatis beatae vel. Laborum repellendus quod fugiat iste natus consectetur?
+                <h5>I got a spaghetti alert but there was nothing wrong.</h5>
+                <ul>
+                  <li>This happens because The Detective is not perfect at her job yet.  <a href="https://www.thespaghettidetective.com/docs/help-the-detective-improve/">Help her improve.</a></li>
+                </ul>
+                <h5>The Detective is "not watching".</h5>
+                <ul>
+                  <li>The Detective is not detecting when your printer is not printing.</li>
+                  <li>You have left "watching for failures" off.</li>
+                  <li>The plugin has trouble connecting to The Spaghetti Detective server</li>
+                  <li>You have run out of  <a href="https://www.thespaghettidetective.com/docs/how-does-detective-hour-work/">Detective Hours</a>.</li>
+                </ul>
               </div>
             </div>
             <div class="toggle">
-              <h2 class="toggle-title">
-                Title
-                <span class="counter">4</span>
-              </h2>
+              <h3 class="toggle-title">
+                Other problems
+                <span class="counter">2</span>
+              </h3>
               <div class="toggle-content">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestias, aut repellat quidem veritatis maxime, autem natus quod, quaerat sequi id perspiciatis beatae vel. Laborum repellendus quod fugiat iste natus consectetur?
+                <h5>My OctoPrint is running, but the page shows "OctoPrint is offline".</h5>
+                <ul>
+                  <li>Your Rasbperry Pi may have issue connecting to the internet. Check the connection status on this page for errors.</li>
+                  <li>The credentials established in the process of linking OctoPrint to your account may have been lost or corrupted. For instance, if you have re-installed OctoPrint, or have a corrupted SD card.</li>
+                  <li>As the last resort, you re-run the setup wizard (below) to re-establish the credentials to link OctoPrint to your account.</li>
+                </ul>
+                <h5>Help! The web page doesn't seem to work correctly.</h5>
+                <ul>
+                  <li>It's almost always a good idea to just try "hard-refreshing" the page. Here is <a href="https://en.scratch-wiki.info/wiki/Help:Hard_Refresh">how you hard-refresh a page</a>.</li>
+                </ul>
               </div>
             </div>
           </div>
         </section>
         <section>
-          <h1 class="section-title">Setup/Reconfigure</h1>
+          <h1 class="section-title">Re-run Setup Wizard</h1>
           <div class="section-content">
-            <div class="flex">
-              <ul>
-                <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam odit alias quas cupiditate. Beatae est suscipit sed quos commodi dolor! Ea maiores voluptatem iure enim facilis, nostrum distinctio fugit aliquid.</li>
-              </ul>
-              <div>
-                <a href="#wizardModal" class="button" data-toggle="modal">Setup/Reconfigure</a>
-              </div>
+            <div>
+            If you can no longer log into your The Spaghetti Detective account, e.g., you don't remember what email you signed up with, you can re-run the setup wizard to link your OctoPrint with a new The Spaghetti Detective account.
+            </div>
+            <div>
+              <a href="#wizardModal" class="button" onclick="$('#wizardModal').modal({backdrop: 'static', keyboard: false})">Re-run Wizard</a>
             </div>
           </div>
         </section>
@@ -146,12 +178,10 @@
 <!-- Wizard Modal -->
 <div id="wizardModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="myModalLabel">Setup/Reconfigure</h3>
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+    <h3>The Spaghetti Detective Setup Wizard</h3>
   </div>
-  <div class="modal-body">
-    <div class="wizard-wrapper" data-bind="allowBindings: false">
-      {% include "thespaghettidetective_wizard.jinja2" %}
-    </div>
+  <div class="modal-body" data-bind="allowBindings: false">
+    {% include "thespaghettidetective_wizard.jinja2" %}
   </div>
 </div>

@@ -737,27 +737,19 @@ div[id$=_plugin_thespaghettidetective] {
     margin-bottom: 30px;
   }
 
-  .settings-content {
-    padding: 0 30px;
-  }
-
   .choice-wrapper {
     display: flex;
     justify-content: space-between;
 
     .choice-option {
-      padding-right: 30px;
-
-      &:last-child {
-        padding-right: 0;
-      }
+      flex-grow: 1;
+      flex-basis: 0;
     }
 
     .button {
       border-radius: 100px;
       font-weight: bold;
       font-size: 18px;
-      width: 240px;
       text-align: center;
     }
 
@@ -932,7 +924,6 @@ div[id$=_plugin_thespaghettidetective] {
 
     // Tab content
     .tab-pane {
-			padding: 0 30px 30px;
 
 			.button {
 				font-weight: bold;
@@ -950,7 +941,7 @@ div[id$=_plugin_thespaghettidetective] {
 
         // Content of section
         .section-content {
-          padding-left: 30px;
+          padding-left: 18px;
 
           // Test connection
 					.test-connection-wrapper {
