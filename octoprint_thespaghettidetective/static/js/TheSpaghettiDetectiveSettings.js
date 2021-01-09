@@ -23,6 +23,7 @@ $(function () {
 
         self.showDetailPage = ko.observable(false);
         self.streaming = ko.mapping.fromJS({ is_pro: false, is_pi_camera: false });
+        self.errorStats = ko.mapping.fromJS({ server: { attempts: 0, errorCount: 0 }, webcam: { attempts: 0, errorCount: 0 }});
 
         self.onStartupComplete = function (plugin, data) {
             self.fetchPluginStatus();
@@ -34,6 +35,7 @@ $(function () {
             })
             .done(function (data) {
                 ko.mapping.fromJS(data.streaming_status, self.streaming);
+                ko.mapping.fromJS(data.error_stats, self.errorStats);
 
                 if (_.get(data, 'sentry_opt') === "out") {
                     var sentrynotice = new PNotify({

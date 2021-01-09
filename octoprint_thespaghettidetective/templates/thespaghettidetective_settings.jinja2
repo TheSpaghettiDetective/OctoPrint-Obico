@@ -51,28 +51,27 @@
     <div class="tab-content">
       <div class="tab-pane" id="troubleshooting">
         <section>
-          <h1 class="section-title">Test Connection</h1>
+          <h1 class="section-title">Plugin Status</h1>
           <div class="section-content">
             <div class="test-connection-wrapper">
-              <div>
-                <button class="circle">TEST</button>
+              <div class="section-panel">
+                <div class="status-line success"><i class="fa fa-circle"></i>Server connection: Okay</div>
+                <div class="status-line success"><i class="fa fa-circle"></i>Webcam connection: Okay</div>
+                <div style="margin-top: 18px;"><a href="#diagnosticReportModal" onclick="$('#diagnosticReportModal').modal({backdrop: 'static', keyboard: false})">Plugin self-diagnostic report</a></div>
               </div>
-              <div class="form">
-                <label for="test-connection">Status:</label>
-                <input type="text"><br>
-                <small>Last test was at 12.27.2020 at 18:54</small>
+              <div class="section-panel">
+                <button class="circle">TEST</button>
               </div>
             </div>
           </div>
         </section>
         <section>
           <h1 class="section-title">Troubleshooting Tips</h1>
-          <p>Make sure you have followed <a href="https://www.thespaghettidetective.com/docs/octoprint-plugin-setup/">the setup guide</a> to link OctoPrint to your The Spaghetti Detective account successfully.</p>
-          <p>Check out our <a href="https://www.thespaghettidetective.com/help/">help docs</a> for detailed troubleshooting guides.</p>
+          <p>Make sure you have followed <a href="https://www.thespaghettidetective.com/docs/octoprint-plugin-setup/">the setup guide</a> to link OctoPrint to your The Spaghetti Detective account successfully. Check out our <a href="https://www.thespaghettidetective.com/help/">help docs</a> for detailed troubleshooting guides.</p>
           <div class="section-content">
             <div class="toggle">
               <h3 class="toggle-title">
-                Webcam Streaming
+                Webcam streaming
                 <span class="counter">4</span>
               </h3>
               <div class="toggle-content">
@@ -103,7 +102,7 @@
             </div>
             <div class="toggle">
               <h3 class="toggle-title">
-                Failure Detection
+                Failure detection
                 <span class="counter">2</span>
               </h3>
               <div class="toggle-content">
@@ -177,12 +176,42 @@
 </div>
 
 <!-- Wizard Modal -->
-<div id="wizardModal" class="modal hide fade wizard-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="wizardModal" class="modal hide fade wizard-modal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
-    <h3>The Spaghetti Detective Setup Wizard</h3>
+    <h3 id="wizardModalLabel">The Spaghetti Detective Setup Wizard</h3>
   </div>
   <div class="modal-body" data-bind="allowBindings: false">
     {% include "thespaghettidetective_wizard.jinja2" %}
+  </div>
+</div>
+
+<div id="diagnosticReportModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="diagnosticReportModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+    <h3 id="diagnosticReportModalLabel">The Spaghetti Detective Diagnostic Report</h3>
+  </div>
+  <div class="modal-body">
+    <i>*Note: This report is to diagnostic information for potential problems in <b>Access Anywhere - The Spaghetti Detective</b> plugin. It is not a diagnosis for your print failures.</i>
+    <br /><br />
+    <b class="text-success" data-bind="visible: (errorStats.webcam.errorCount() + errorStats.server.errorCount()) <= 0">
+      There have been no errors since last time OctoPrint rebooted.
+    </b>
+    <b class="text-error" data-bind="visible: (errorStats.webcam.errorCount() + errorStats.server.errorCount()) > 0">
+      The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/connectivity-error-report/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/contact-us-for-support/">reach out to us</a> for help.
+    </b>
+    <div data-bind="visible: errorStats.webcam.errorCount() > 0">
+      <hr />
+      <p class="text-error">
+        The plugin has failed to connect to the webcam <b> webcamErrors.errorCount </b> times (error rate <b> Math.round(webcamErrors.errorCount / self.errorStats.webcam.attempts * 100) %</b>) since OctoPrint rebooted.
+      </p>
+      <ul>
+        <li>The first error occurred at: <b> webcamErrors.first </b>.</li>
+        <li>The most recent error occurred at: <b>webcamErrors.last </b>.</li>
+      </ul>
+      <p>
+        Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.
+      </p>
+    </div>
   </div>
 </div>

@@ -1,4 +1,14 @@
 // TODO: Put your plugin's LESS here, have it generated to ../css.
+
+// Wizard variables
+
+@primary-color: #9965F4;
+@error-color: #d9534f;
+@success-color: #5cb85c;
+@text-color: #282828;
+@paragraph-text-size: 14px;
+@container-min-height: 625px;
+
 div[id$=_plugin_thespaghettidetective] {
     .header {
         margin-bottom: 1rem;
@@ -62,21 +72,10 @@ div[id$=_plugin_thespaghettidetective] {
     }
 }
 
-
-// Wizard variables
-
-@wizard-primary-color: #9965F4;
-@wizard-error-color: #d9534f;
-@wizard-success-color: #5cb85c;
-@wizard-text-color: #282828;
-@wizard-paragraph-text-size: 14px;
-@wizard-container-min-height: 625px;
-
-
 // General styles
 
 .button {
-  background-color: @wizard-primary-color;
+  background-color: @primary-color;
   padding: 10px 26px;
   font-size: 16px;
   line-height: 18px;
@@ -130,7 +129,7 @@ div[id$=_plugin_thespaghettidetective] {
 .wizard-content {
   font-family: 'Roboto', sans-serif;
   padding-right: 18px;
-  color: @wizard-text-color;
+  color: @text-color;
   overflow: hidden;
   position: relative;
 
@@ -147,7 +146,7 @@ div[id$=_plugin_thespaghettidetective] {
   }
 
   &.bg-primary {
-    background-color: @wizard-primary-color;
+    background-color: @primary-color;
     color: #fff;
 
     .navigation .back-btn {
@@ -157,7 +156,7 @@ div[id$=_plugin_thespaghettidetective] {
 
   // Main elements
   p {
-    font-size: @wizard-paragraph-text-size;
+    font-size: @paragraph-text-size;
   }
 
   ul {
@@ -170,12 +169,12 @@ div[id$=_plugin_thespaghettidetective] {
      }
 
      a {
-       color: @wizard-text-color;
+       color: @text-color;
      }
   }
 
   a {
-    color: @wizard-primary-color;
+    color: @primary-color;
     text-decoration: underline;
 
     &:hover {
@@ -232,13 +231,13 @@ div[id$=_plugin_thespaghettidetective] {
           width: 16px;
           height: 16px;
           display: inline-block;
-          border: 2px solid @wizard-primary-color;
+          border: 2px solid @primary-color;
           border-radius: 50%;
           position: relative;
           margin-right: 18px;
 
           &.filled {
-            background-color: @wizard-primary-color;
+            background-color: @primary-color;
           }
 
           &.checked:before {
@@ -255,7 +254,7 @@ div[id$=_plugin_thespaghettidetective] {
             content: "";
             width: 18px;
             height: 2px;
-            background-color: @wizard-primary-color;
+            background-color: @primary-color;
             position: absolute;
             left: calc(100% + 2px);
             top: calc(50% - 1px);
@@ -284,7 +283,7 @@ div[id$=_plugin_thespaghettidetective] {
       margin: 0;
 
       &.primary {
-        color: @wizard-primary-color;
+        color: @primary-color;
         font-weight: bold;
         margin-bottom: 20px;
       }
@@ -305,7 +304,7 @@ div[id$=_plugin_thespaghettidetective] {
     .checkbox-wrapper {
       width: 10px;
       height: 10px;
-      border: 1px solid @wizard-primary-color;
+      border: 1px solid @primary-color;
       background-color: #fff;
       position: absolute;
       left: 0;
@@ -361,18 +360,18 @@ div[id$=_plugin_thespaghettidetective] {
 
         .title {
           font-size: 18px;
-          color: @wizard-primary-color;
+          color: @primary-color;
         }
 
         .description {
           font-size: 15px;
-          color: @wizard-primary-color;
+          color: @primary-color;
         }
 
         img {
           width: 70px;
           left: -15px;
-          border: 2px solid @wizard-primary-color;
+          border: 2px solid @primary-color;
         }
       }
     }
@@ -380,7 +379,7 @@ div[id$=_plugin_thespaghettidetective] {
 
   // Choice between mobile and web (step 2)
   .choice-container {
-    background-color: @wizard-primary-color;
+    background-color: @primary-color;
     padding: 18px;
 
     .choice-banner {
@@ -400,16 +399,16 @@ div[id$=_plugin_thespaghettidetective] {
         color: #fff;
 
         .button {
-          color: @wizard-primary-color;
+          color: @primary-color;
           background-color: #fff;
 
           &.filled {
-            color: @wizard-primary-color;
+            color: @primary-color;
             background-color: #fff;
           }
 
           &.outline {
-            background-color: @wizard-primary-color;
+            background-color: @primary-color;
             color: #fff;
             border: 2px solid #fff;
           }
@@ -433,7 +432,7 @@ div[id$=_plugin_thespaghettidetective] {
     text-align: center;
 
     &.primary {
-      background-color: @wizard-primary-color;
+      background-color: @primary-color;
       color: #fff;
       margin-top: 60px;
       padding: 18px;
@@ -441,7 +440,7 @@ div[id$=_plugin_thespaghettidetective] {
     }
 
     &.text-black {
-      color: @wizard-text-color;
+      color: @text-color;
     }
   }
 
@@ -597,38 +596,38 @@ div[id$=_plugin_thespaghettidetective] {
 
         &.error {
           .input-wrapper {
-            border-color: @wizard-error-color;
+            border-color: @error-color;
 
             input {
-              border-color: rgba(@wizard-error-color, .5);
+              border-color: rgba(@error-color, .5);
             }
           }
 
           .error-message {
             display: block;
-            color: @wizard-error-color;
+            color: @error-color;
           }
         }
 
         &.success {
           .input-wrapper {
-            border-color: @wizard-success-color;
+            border-color: @success-color;
 
             input {
-              border-color: rgba(@wizard-success-color, .5);
+              border-color: rgba(@success-color, .5);
             }
           }
 
           .success-message {
             display: block;
-            color: @wizard-success-color;
+            color: @success-color;
           }
         }
 
         &.unknown {
           .unknown-error {
             display: block;
-            color: @wizard-error-color;
+            color: @error-color;
           }
         }
 
@@ -722,7 +721,7 @@ div[id$=_plugin_thespaghettidetective] {
   }
 
   a:not(.button) {
-    color: @wizard-primary-color;
+    color: @primary-color;
     text-decoration: underline;
 
     &:hover {
@@ -787,7 +786,7 @@ div[id$=_plugin_thespaghettidetective] {
       }
 
 
-      background-color: @wizard-primary-color;
+      background-color: @primary-color;
       margin: 0;
       padding: 15px 0 0 76px;
       border: none;
@@ -862,7 +861,7 @@ div[id$=_plugin_thespaghettidetective] {
           top: 0;
 
           a {
-            color: @wizard-primary-color;
+            color: @primary-color;
             background-color: #fff;
             padding-top: 12px;
             padding-bottom: 1px;
@@ -870,7 +869,7 @@ div[id$=_plugin_thespaghettidetective] {
 
             span {
               display: inline-block;
-              // border-bottom: 2px solid @wizard-primary-color;
+              // border-bottom: 2px solid @primary-color;
               padding: 0 0 5px;
             }
 
@@ -940,7 +939,7 @@ div[id$=_plugin_thespaghettidetective] {
         // Title of section
         .section-title {
           font-size: 26px;
-          color: @wizard-primary-color;
+          color: @primary-color;
         }
 
         // Content of section
@@ -949,14 +948,30 @@ div[id$=_plugin_thespaghettidetective] {
 
           // Test connection
 					.test-connection-wrapper {
-						display: flex;
-						align-items: center;
+            display: flex;
+            align-items: center;
+
+            .section-panel {
+              flex-grow: 1;
+              flex-basis: 0;
+              padding-right: 18px;
+
+              .status-line {
+                i {
+                  margin-right: 8px;
+                }
+
+                &.success {
+                  color: @success-color;
+                }
+              }
+            }
 
 						.circle {
 							width: 100px;
 							height: 100px;
 							border-radius: 50%;
-							background-color: @wizard-primary-color;
+							background-color: @primary-color;
 							color: #fff;
 							font-weight: bold;
 							font-size: 22px;
@@ -973,25 +988,6 @@ div[id$=_plugin_thespaghettidetective] {
                 outline: none;
               }
 						}
-
-						.form {
-							margin-left: 20px;
-
-							label {
-								color: @wizard-primary-color;
-							}
-
-							input {
-								border: 1px solid @wizard-primary-color;
-								border-radius: 100px;
-								padding: 4px 12px;
-								margin-bottom: 4px;
-							}
-
-							small {
-								color: #757575;
-							}
-            }
 
             @media screen and (max-width: 700px) {
               flex-direction: column;
