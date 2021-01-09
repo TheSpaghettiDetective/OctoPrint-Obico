@@ -81,6 +81,10 @@ $(function () {
             }
         };
 
+        self.returnToSelection = function() {
+            self.showDetailPage(false);
+        }
+
         $(function() {
             $('.settings-wrapper .toggle').click(function() {
                 $(this).toggleClass('opened');

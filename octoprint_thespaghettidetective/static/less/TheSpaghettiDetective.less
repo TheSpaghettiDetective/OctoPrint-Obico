@@ -794,8 +794,7 @@ div[id$=_plugin_thespaghettidetective] {
       position: relative;
 
       // White logo at the left side on navigation panel
-      &:before {
-        content: url(../img/logo-white.svg);
+      .logo {
         display: block;
         width: 40px;
         height: 40px;
@@ -804,6 +803,11 @@ div[id$=_plugin_thespaghettidetective] {
         top: 0;
         left: 20px;
         margin: auto;
+
+        &:hover {
+          cursor: pointer;
+          opacity: .8;
+        }
       }
 
       // Tab
@@ -1068,4 +1072,9 @@ div[id$=_plugin_thespaghettidetective] {
       }
     }
   }
+}
+
+.modal.wizard-modal {
+  width: 700px;
+  margin-left: -350px;
 }

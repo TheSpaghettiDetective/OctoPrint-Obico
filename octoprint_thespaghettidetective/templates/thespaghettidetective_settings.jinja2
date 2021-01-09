@@ -36,6 +36,7 @@
   <!-- Page with tabs at the top -->
   <div class="tabbable" data-bind="visible: showDetailPage()">
     <ul class="nav">
+      <img src="plugin/thespaghettidetective/static/img/logo-white.svg" alt="" class="logo" data-bind="click: returnToSelection">
       <li data-page="advanced">
         <a href="#advanced" data-toggle="tab">
           <span>Settings</span>
@@ -176,7 +177,7 @@
 </div>
 
 <!-- Wizard Modal -->
-<div id="wizardModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="wizardModal" class="modal hide fade wizard-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
     <h3>The Spaghetti Detective Setup Wizard</h3>
