@@ -55,9 +55,24 @@
           <div class="section-content">
             <div class="test-connection-wrapper">
               <div class="section-panel">
-                <div class="status-line success"><i class="fa fa-circle"></i>Server connection: Okay</div>
-                <div class="status-line success"><i class="fa fa-circle"></i>Webcam connection: Okay</div>
-                <div style="margin-top: 18px;"><a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Plugin self-diagnostic report</a></div>
+                <div class="status-line" data-bind="visible: streaming.is_pro">
+                  <i class="fa fa-circle"></i>Account status: <b class="account-pro">Pro</b>
+                </div>
+                <div class="status-line" data-bind="visible: !streaming.is_pro">
+                  <i class="fa fa-circle"></i>Account status: Free
+                </div>
+                <div class="status-line success" data-bind="visible:errorStats.server.error_count() <= 0">
+                  <i class="fa fa-circle"></i>Connection to server: Okay
+                </div>
+                <div class="status-line error" data-bind="visible:errorStats.server.error_count() > 0">
+                  <i class="fa fa-circle"></i>Connection to server: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Error</a>
+                </div>
+                <div class="status-line success" data-bind="visible:errorStats.webcam.error_count() <= 0">
+                  <i class="fa fa-circle"></i>Connection to webcam: Okay
+                </div>
+                <div class="status-line error" data-bind="visible:errorStats.webcam.error_count() > 0">
+                  <i class="fa fa-circle"></i>Connection to webcam: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Error</a>
+                </div>
               </div>
               <div class="section-panel">
                 <button class="circle">TEST</button>

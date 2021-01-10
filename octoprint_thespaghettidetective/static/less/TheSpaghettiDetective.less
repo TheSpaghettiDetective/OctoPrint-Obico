@@ -788,19 +788,19 @@ div[id$=_plugin_thespaghettidetective] {
 
       background-color: @primary-color;
       margin: 0;
-      padding: 15px 0 0 76px;
+      padding: 5px 0 0 116px;
       border: none;
       position: relative;
 
       // White logo at the left side on navigation panel
       .logo {
         display: block;
-        width: 40px;
-        height: 40px;
+        width: 60px;
+        height: 30px;
         position: absolute;
         bottom: 0;
         top: 0;
-        left: 20px;
+        left: 30px;
         margin: auto;
 
         &:hover {
@@ -963,6 +963,16 @@ div[id$=_plugin_thespaghettidetective] {
 
                 &.success {
                   color: @success-color;
+                }
+                &.error {
+                  color: @error-color;
+                  a {
+                    color: @error-color;
+                  }
+                }
+
+                .account-pro {
+                  color: @primary-color;
                 }
               }
             }
