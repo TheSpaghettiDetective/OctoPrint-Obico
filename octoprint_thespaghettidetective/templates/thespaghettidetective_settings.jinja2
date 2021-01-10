@@ -65,28 +65,29 @@
             <div class="test-connection-wrapper">
               <div class="section-panel">
                 <div class="status-line" data-bind="visible: streaming.is_pro">
-                  <i class="fa fa-li fa-circle"></i>Account status: <span class="accountPro">Pro</span>
+                  <i class="fa fa-circle"></i>Account status: <span class="accountPro">Pro</span>
                 </div>
                 <div class="status-line" data-bind="visible: !streaming.is_pro()">
-                  <i class="fa fa-li fa-circle"></i>Account status: Free
+                  <i class="fa fa-circle"></i>Account status: Free
                 </div>
                 <div class="status-line">
-                  <i class="fa fa-li fa-circle"></i>Webcam streaming: <span data-bind="text: streaming.premium_streaming() ? 'Premium (25fps)' : 'Basic', css: {accountPro: streaming.premium_streaming}"></span>
+                  <i class="fa fa-circle"></i>Webcam streaming: <span data-bind="text: streaming.premium_streaming() ? 'Premium (25fps)' : 'Basic', css: {accountPro: streaming.premium_streaming}"></span>
                 </div>
                 <div class="status-line success" data-bind="visible: !hasServerErrors()">
-                  <i class="fa fa-li fa-circle"></i>Connection to server: Okay
+                  <i class="fa fa-circle"></i>Connection to server: Okay
                 </div>
                 <div class="status-line error" data-bind="visible: hasServerErrors()">
-                  <i class="fa fa-li fa-circle"></i>Connection to server: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal, text: serverStatus.is_connected() ? 'Error' : 'Disconnected'"></a>
+                  <i class="fa fa-circle"></i>Connection to server: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal, text: serverStatus.is_connected() ? 'Error' : 'Disconnected'"></a>
                 </div>
                 <div class="status-line success" data-bind="visible: !hasWebcamErrors()">
-                  <i class="fa fa-li fa-circle"></i>Connection to webcam: Okay
+                  <i class="fa fa-circle"></i>Connection to webcam: Okay
                 </div>
                 <div class="status-line error" data-bind="visible: hasWebcamErrors()">
-                  <i class="fa fa-li fa-circle"></i>Connection to webcam: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Error</a>
+                  <i class="fa fa-circle"></i>Connection to webcam: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Error</a>
                 </div>
               </div>
-              <div class="section-panel test-connection">
+              <div style="height: 70px; border-right: gray solid thin;"></div>
+              <div class="section-panel test-connection" style="padding-right: 18px;">
                 <button class="circle" data-bind="click: testServerConnection">
                 <span data-bind="visible: serverTested() != 'testing'">TEST</span>
                 <i data-bind="visible: serverTested() == 'testing'" class="fa fa-spinner fa-spin" style="font-size: 40px;"></i>
@@ -222,7 +223,7 @@
 <!-- Modals -->
 <div id="wizardModal" class="modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel" aria-hidden="true">
   <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
     <h3 id="wizardModalLabel">The Spaghetti Detective Setup Wizard</h3>
   </div>
   <div class="modal-body" data-bind="allowBindings: false">
@@ -232,7 +233,7 @@
 
 <div id="diagnosticReportModal" class="modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="diagnosticReportModalLabel" aria-hidden="true">
   <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">X</button>
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
     <h3 id="diagnosticReportModalLabel">The Spaghetti Detective Diagnostic Report</h3>
   </div>
   <div class="modal-body">
