@@ -15,7 +15,7 @@ $(function () {
         self.alertsShown = {};
         self.showDetailPage = ko.observable(false);
         self.serverStatus = ko.mapping.fromJS({ is_configured: true, is_connected: false, last_status_update_ts: 0 });
-        self.streaming = ko.mapping.fromJS({ is_pro: false, is_pi_camera: false });
+        self.streaming = ko.mapping.fromJS({ is_pro: false, is_pi_camera: false, premium_streaming: false});
         self.errorStats = ko.mapping.fromJS({ server: { attempts: 0, error_count: 0, first: null, last: null }, webcam: { attempts: 0, error_count: 0, first: null, last: null }});
 
         self.onStartupComplete = function (plugin, data) {

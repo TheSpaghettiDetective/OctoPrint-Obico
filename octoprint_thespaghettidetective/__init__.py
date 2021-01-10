@@ -145,13 +145,14 @@ class TheSpaghettiDetectivePlugin(
             if command == "get_plugin_status":
                 results = dict(
                     server_status=dict(
-                        is_configured=self.is_configured(),
-                        is_connected=(self.ss and self.ss.connected()),
+                        is_configured=bool(self.is_configured()),
+                        is_connected=self.ss and self.ss.connected(),
                         last_status_update_ts=self.last_status_update_ts,
                     ),
                     streaming_status=dict(
                         is_pro=bool(self.user_account.get('is_pro')),
-                        is_pi_camera=self.webcam_streamer and bool(self.webcam_streamer.pi_camera)),
+                        is_pi_camera=self.webcam_streamer and bool(self.webcam_streamer.pi_camera),
+                        premium_streaming=self.webcam_streamer and not self.webcam_streamer.shutting_down),
                     error_stats=error_stats.as_dict(),
                     alerts=alert_queue.fetch_and_clear(),
                     )

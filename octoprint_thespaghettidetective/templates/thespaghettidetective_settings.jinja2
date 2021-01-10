@@ -65,10 +65,13 @@
             <div class="test-connection-wrapper">
               <div class="section-panel">
                 <div class="status-line" data-bind="visible: streaming.is_pro">
-                  <i class="fa fa-circle"></i>Account status: <b class="account-pro">Pro</b>
+                  <i class="fa fa-circle"></i>Account status: <span class="accountPro">Pro</span>
                 </div>
-                <div class="status-line" data-bind="visible: !streaming.is_pro">
+                <div class="status-line" data-bind="visible: !streaming.is_pro()">
                   <i class="fa fa-circle"></i>Account status: Free
+                </div>
+                <div class="status-line">
+                  <i class="fa fa-circle"></i>Webcam streaming: <span data-bind="text: streaming.premium_streaming() ? 'Premium (25fps)' : 'Basic', css: {accountPro: streaming.premium_streaming}"></span>
                 </div>
                 <div class="status-line success" data-bind="visible:errorStats.server.error_count() <= 0">
                   <i class="fa fa-circle"></i>Connection to server: Okay
@@ -232,6 +235,7 @@
       <ul>
         <li>The first error occurred at: <b data-bind="text: new Date(errorStats.server.first())"></b>.</li>
         <li>The most recent error occurred at: <b data-bind="text: new Date(errorStats.server.last())"></b>.</li>
+        <li data-bind="visible: serverStatus.last_status_update_ts">The most recent successful server contact occurred at: <b data-bind="text: new Date(serverStatus.last_status_update_ts())"></b>.</li>
       </ul>
       <p>
         Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.
