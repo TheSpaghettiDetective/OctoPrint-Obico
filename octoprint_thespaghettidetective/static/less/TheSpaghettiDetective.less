@@ -982,29 +982,50 @@ div[id$=_plugin_thespaghettidetective] {
                   color: @primary-color;
                 }
               }
+
+              &.test-connection {
+                display: flex;
+
+                .circle {
+                  width: 99px;
+                  height: 99px;
+                  border-radius: 50%;
+                  background-color: @primary-color;
+                  color: #fff;
+                  font-weight: bold;
+                  font-size: 22px;
+                  text-align: center;
+                  line-height: 100px;
+                  border: none;
+
+                  &:hover {
+                    opacity: .8;
+                  }
+
+                  &:focus {
+                    border: none;
+                    outline: none;
+                  }
+                }
+
+                .test-result {
+                  height: 97px;
+                  max-width: 70%;
+                  padding: 0 0 0 50px;
+                  border: @primary-color solid thin;
+                  border-left: 0;
+                  margin-left: -50px;
+                  color: @primary-color;
+                  border-radius: 0 10px 10px 0;
+                  .error {
+                    color: @error-color;
+                  }
+                  .success {
+                    color: @success-color;
+                  }
+                }
+              }
             }
-
-						.circle {
-							width: 100px;
-							height: 100px;
-							border-radius: 50%;
-							background-color: @primary-color;
-							color: #fff;
-							font-weight: bold;
-							font-size: 22px;
-							text-align: center;
-              line-height: 100px;
-              border: none;
-
-              &:hover {
-                opacity: .8;
-              }
-
-              &:focus {
-                border: none;
-                outline: none;
-              }
-						}
 
             @media screen and (max-width: 700px) {
               flex-direction: column;

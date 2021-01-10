@@ -65,29 +65,46 @@
             <div class="test-connection-wrapper">
               <div class="section-panel">
                 <div class="status-line" data-bind="visible: streaming.is_pro">
-                  <i class="fa fa-circle"></i>Account status: <span class="accountPro">Pro</span>
+                  <i class="fa fa-li fa-circle"></i>Account status: <span class="accountPro">Pro</span>
                 </div>
                 <div class="status-line" data-bind="visible: !streaming.is_pro()">
-                  <i class="fa fa-circle"></i>Account status: Free
+                  <i class="fa fa-li fa-circle"></i>Account status: Free
                 </div>
                 <div class="status-line">
-                  <i class="fa fa-circle"></i>Webcam streaming: <span data-bind="text: streaming.premium_streaming() ? 'Premium (25fps)' : 'Basic', css: {accountPro: streaming.premium_streaming}"></span>
+                  <i class="fa fa-li fa-circle"></i>Webcam streaming: <span data-bind="text: streaming.premium_streaming() ? 'Premium (25fps)' : 'Basic', css: {accountPro: streaming.premium_streaming}"></span>
                 </div>
-                <div class="status-line success" data-bind="visible:errorStats.server.error_count() <= 0">
-                  <i class="fa fa-circle"></i>Connection to server: Okay
+                <div class="status-line success" data-bind="visible: !hasServerErrors()">
+                  <i class="fa fa-li fa-circle"></i>Connection to server: Okay
                 </div>
-                <div class="status-line error" data-bind="visible:errorStats.server.error_count() > 0">
-                  <i class="fa fa-circle"></i>Connection to server: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal, text: serverStatus.is_connected() ? 'Error' : 'Disconnected'"></a>
+                <div class="status-line error" data-bind="visible: hasServerErrors()">
+                  <i class="fa fa-li fa-circle"></i>Connection to server: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal, text: serverStatus.is_connected() ? 'Error' : 'Disconnected'"></a>
                 </div>
-                <div class="status-line success" data-bind="visible:errorStats.webcam.error_count() <= 0">
-                  <i class="fa fa-circle"></i>Connection to webcam: Okay
+                <div class="status-line success" data-bind="visible: !hasWebcamErrors()">
+                  <i class="fa fa-li fa-circle"></i>Connection to webcam: Okay
                 </div>
-                <div class="status-line error" data-bind="visible:errorStats.webcam.error_count() > 0">
-                  <i class="fa fa-circle"></i>Connection to webcam: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Error</a>
+                <div class="status-line error" data-bind="visible: hasWebcamErrors()">
+                  <i class="fa fa-li fa-circle"></i>Connection to webcam: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Error</a>
                 </div>
               </div>
-              <div class="section-panel">
-                <button class="circle">TEST</button>
+              <div class="section-panel test-connection">
+                <button class="circle" data-bind="click: testServerConnection">
+                <span data-bind="visible: serverTested() != 'testing'">TEST</span>
+                <i data-bind="visible: serverTested() == 'testing'" class="fa fa-spinner fa-spin" style="font-size: 40px;"></i>
+                </button>
+                <div class="test-result">
+                  <div style="padding: 0 10px; display: flex; flex-direction: column; align-items: center;">
+                    <h5>Server Connection Test</h5>
+                    <div data-bind="visible: serverTested() == 'tested', css: {error: !serverTestSucceeded(), success: serverTestSucceeded()}" style="text-align: center;">
+                      <i data-bind="css: {'fa-exclamation': serverTestSucceeded(), 'fa-check': !serverTestSucceeded()}" class="fa" aria-hidden="true" style="font-size: 24px;"></i>
+                      <div data-bind="visible: serverTestStatusCode() == 200">
+                      Succeeded!
+                      </div>
+                      <div data-bind="visible: serverTestStatusCode() == null">
+                      Failed to contact server. Is OctoPrint connected?
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -221,16 +238,16 @@
   <div class="modal-body">
     <i>*Note: This report is to diagnostic information for potential problems in <b>Access Anywhere - The Spaghetti Detective</b> plugin. It is not a diagnosis for your print failures.</i>
     <br /><br />
-    <b class="text-success" data-bind="visible: (errorStats.webcam.error_count() + errorStats.server.error_count()) <= 0">
+    <b class="text-success" data-bind="visible: !hasServerErrors() && !hasWebcamErrors()">
       There have been no errors since last time OctoPrint rebooted.
     </b>
-    <b class="text-error" data-bind="visible: (errorStats.webcam.error_count() + errorStats.server.error_count()) > 0">
+    <b class="text-error" data-bind="visible: hasServerErrors() || hasWebcamErrors()">
       The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/connectivity-error-report/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/contact-us-for-support/">reach out to us</a> for help.
     </b>
-    <div data-bind="visible: errorStats.server.error_count() > 0">
+    <div data-bind="visible: hasServerErrors()">
       <hr />
       <p class="text-error">
-        The plugin has failed to connect to the server <b data-bind="text: errorStats.server.error_count"></b> times (error rate <b data-bind="text: Math.round(errorStats.server.error_count() / errorStats.server.attempts() * 100)"></b><b>%</b>) since OctoPrint rebooted.
+        The plugin has failed to connect to the server <b data-bind="text: errorStats.server.error_count"></b> times (error rate <b data-bind="text: serverErrorRate() + '%'"></b>) since OctoPrint rebooted.
       </p>
       <ul>
         <li>The first error occurred at: <b data-bind="text: new Date(errorStats.server.first())"></b>.</li>
@@ -241,10 +258,10 @@
         Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.
       </p>
     </div>
-    <div data-bind="visible: errorStats.webcam.error_count() > 0">
+    <div data-bind="visible: hasWebcamErrors()">
       <hr />
       <p class="text-error">
-        The plugin has failed to connect to the webcam <b data-bind="text: errorStats.webcam.error_count"></b> times (error rate <b data-bind="text: Math.round(errorStats.webcam.error_count() / errorStats.webcam.attempts() * 100)"></b><b>%</b>) since OctoPrint rebooted.
+        The plugin has failed to connect to the webcam <b data-bind="text: errorStats.webcam.error_count"></b> times (error rate <b data-bind="text: webcamErrorRate() + '%'"></b>) since OctoPrint rebooted.
       </p>
       <ul>
         <li>The first error occurred at: <b data-bind="text: new Date(errorStats.webcam.first())"></b>.</li>

@@ -5,6 +5,13 @@
  * License: AGPLv3
  */
 $(function () {
+
+    $(function() {
+        $('.settings-wrapper .toggle').click(function() {
+            $(this).toggleClass('opened');
+        })
+    });
+
     function TheSpaghettiDetectiveSettingsViewModel(parameters) {
         var self = this;
 
@@ -17,12 +24,34 @@ $(function () {
         self.serverStatus = ko.mapping.fromJS({ is_configured: true, is_connected: false, last_status_update_ts: 0 });
         self.streaming = ko.mapping.fromJS({ is_pro: false, is_pi_camera: false, premium_streaming: false});
         self.errorStats = ko.mapping.fromJS({ server: { attempts: 0, error_count: 0, first: null, last: null }, webcam: { attempts: 0, error_count: 0, first: null, last: null }});
+        self.serverTestStatusCode = ko.observable(null);
+        self.serverTested = ko.observable('never');
 
         self.onStartupComplete = function (plugin, data) {
             self.fetchPluginStatus();
-        }
+        };
 
-        self.fetchPluginStatus = function () {
+        self.hasServerErrors = function() {
+            return self.errorStats.server.error_count() > 0;
+        };
+
+        self.hasWebcamErrors = function() {
+            return self.errorStats.webcam.error_count() > 0;
+        };
+
+        self.serverErrorRate = function() {
+            return Math.round(self.errorStats.server.error_count() / self.errorStats.server.attempts() * 100);
+        };
+
+        self.webcamErrorRate = function() {
+            return Math.round(self.errorStats.webcam.error_count() / self.errorStats.webcam.attempts() * 100);
+        };
+
+        self.serverTestSucceeded = function() {
+            return self.serverTestStatusCode() == 200;
+        };
+
+        self.fetchPluginStatus = function() {
             apiCommand({
                 command: "get_plugin_status",
             })
@@ -49,7 +78,18 @@ $(function () {
                     self.displayAlert(alertMsg);
                 })
             });
-        }
+        };
+
+        self.testServerConnection = function() {
+            self.serverTested('testing');
+            apiCommand({
+                command: "test_server_connection",
+            })
+            .done(function (data) {
+                self.serverTested('tested');
+                self.serverTestStatusCode(data.status_code);
+            });
+        };
 
         self.toggleSentryOpt = function (ev) {
             apiCommand({
@@ -80,12 +120,6 @@ $(function () {
         self.returnToSelection = function() {
             self.showDetailPage(false);
         }
-
-        $(function() {
-            $('.settings-wrapper .toggle').click(function() {
-                $(this).toggleClass('opened');
-            })
-        });
 
         /*** Plugin error alerts */
 

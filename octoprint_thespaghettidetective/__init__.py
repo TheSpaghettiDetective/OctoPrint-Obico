@@ -123,7 +123,7 @@ class TheSpaghettiDetectivePlugin(
             verify_code=["code"],
             get_plugin_status=[],
             toggle_sentry_opt=[],
-            get_sentry_opt=[],
+            test_server_connection=[],
         )
 
     def is_api_adminonly(self):
@@ -168,6 +168,11 @@ class TheSpaghettiDetectivePlugin(
             if command == "toggle_sentry_opt":
                 self._settings.set(["sentry_opt"], 'out' if self._settings.get(["sentry_opt"]) == 'in' else 'in', force=True)
                 self._settings.save(force=True)
+
+            if command == "test_server_connection":
+                resp = self.tsd_api_status()
+                return flask.jsonify({'status_code': resp and resp.status_code})
+
         except Exception as e:
             self.sentry.captureException()
             raise
@@ -382,31 +387,24 @@ class TheSpaghettiDetectivePlugin(
         return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])
 
     def tsd_api_status(self, auth_token=None):
-        succeeded = False
-        status_text = 'Unknown error.'
         resp = None
         try:
-            resp = resp = server_request('GET', '/api/v1/octo/ping/', self, headers=self.auth_headers(auth_token=self.auth_token(auth_token)))
-            succeeded = resp.ok
-            if resp.status_code == 200:
-                status_text = 'Secret token is valid. You are awesome!'
-            elif resp.status_code == 401:
-                status_text = 'Meh~~~. Invalid secret token.'
+            resp = server_request('GET', '/api/v1/octo/ping/', self, headers=self.auth_headers(auth_token=self.auth_token(auth_token)))
         except:
-            status_text = 'Connection error. Please check OctoPrint\'s internet connection'
+            pass
 
-        return succeeded, status_text, resp
+        return resp
 
     @backoff.on_predicate(backoff.expo, max_value=1200)
     def wait_for_auth_token(self):
         while not self.is_configured():
             time.sleep(1)
 
-        succeeded, _, resp = self.tsd_api_status()
-        if succeeded:
+        resp = self.tsd_api_status()
+        if resp and resp.ok:
             return resp.json()
-
-        return None
+        else:
+            return None
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
