@@ -4,16 +4,16 @@
   <div class="choice-page" data-bind="visible: !showDetailPage()">
     <img class="settings-header" src="plugin/thespaghettidetective/static/img/settings-header.svg" alt="">
     <div class="settings-content">
-      <div class="not-configured" data-bind="visible: !serverStatus.is_configured">
+      <div class="not-configured" data-bind="visible: !settingsViewModel.settings.plugins.thespaghettidetective.auth_token">
         <div>
           <p>
-            <i class="icon-exclamation-sign" style="font-size: 48px;"></i>
+            <i class="fa fa-exclamation" style="font-size: 48px;"></i>
           </p>
           <b>You haven't linked OctoPrint to your The Spaghetti Detective account!</b>
         </div>
         <a class="button primary" onclick="$('#wizardModal').modal({backdrop: 'static', keyboard: false})">Run Setup Wizard to Link OctoPrint</a>
       </div>
-      <div class="choice-wrapper" data-bind="visible: serverStatus.is_configured">
+      <div class="choice-wrapper" data-bind="visible: settingsViewModel.settings.plugins.thespaghettidetective.auth_token">
         <div class="choice-option">
           <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">Troubleshooting</a>
           <ul class="squared-markers">
@@ -101,7 +101,13 @@
                       Succeeded!
                       </div>
                       <div data-bind="visible: serverTestStatusCode() == null">
-                      Failed to contact server. Is OctoPrint connected?
+                      Failed to contact server. Is OctoPrint connected to Internet?
+                      </div>
+                      <div data-bind="visible: serverTestStatusCode() == 401">
+                      Wrong account credentials. <a href="#wizardModal" onclick="$('#wizardModal').modal({backdrop: 'static', keyboard: false})">Re-run wizard</a> to link OctoPrint again.
+                      </div>
+                      <div data-bind="visible: serverTestUnknownError()">
+                      Something went wrong. <a href="mailto:support@thespaghettidetective.com">Contact us</a> for help.
                       </div>
                     </div>
                   </div>

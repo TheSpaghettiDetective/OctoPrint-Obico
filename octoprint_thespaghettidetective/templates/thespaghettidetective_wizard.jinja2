@@ -192,20 +192,15 @@
       <div class="flex col align-center">
         <img src="plugin/thespaghettidetective/static/img/checkmark-circled.svg" class="checkmark-circle" alt="">
         <h1 class="title white">Printer Linked Successfully!</h1>
-        <ul class="circled-checkmarks">
-          <li>
-            <div class="marker"><img src="plugin/thespaghettidetective/static/img/checkmark-circled.svg" alt=""></div>
-            <div class="text">Account created</div>
-          </li>
-          <li>
-            <div class="marker"><img src="plugin/thespaghettidetective/static/img/checkmark-circled.svg" alt=""></div>
-            <div class="text">Plugin installed</div>
-          </li>
-          <li>
-            <div class="marker"><img src="plugin/thespaghettidetective/static/img/checkmark-circled.svg" alt=""></div>
-            <div class="text">Printer linked</div>
-          </li>
-        </ul>
+        <form class="form">
+          <div class="control-group">
+              <label class="control-label">{{ _('Server Address') }}</label>
+              <div class="controls">
+                  <input type="text" class="span8 endpoint-prefix">
+                  <button id="restore-server-address" class="btn" type="button" >Restore Default</button>
+              </div>
+          </div>
+        </form>
       </div>
     </div>
     <div>

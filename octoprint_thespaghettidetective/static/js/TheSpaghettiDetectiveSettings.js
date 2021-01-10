@@ -22,7 +22,7 @@ $(function () {
         self.alertsShown = {};
         self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
         self.showDetailPage = ko.observable(false);
-        self.serverStatus = ko.mapping.fromJS({ is_configured: true, is_connected: false, last_status_update_ts: 0 });
+        self.serverStatus = ko.mapping.fromJS({ is_connected: false, last_status_update_ts: 0 });
         self.streaming = ko.mapping.fromJS({ is_pro: false, is_pi_camera: false, premium_streaming: false});
         self.errorStats = ko.mapping.fromJS({ server: { attempts: 0, error_count: 0, first: null, last: null }, webcam: { attempts: 0, error_count: 0, first: null, last: null }});
         self.serverTestStatusCode = ko.observable(null);
@@ -53,6 +53,10 @@ $(function () {
 
         self.serverTestSucceeded = function() {
             return self.serverTestStatusCode() == 200;
+        };
+
+        self.serverTestUnknownError = function() {
+            return self.serverTestStatusCode() != null && self.serverTestStatusCode() != 401 && self.serverTestStatusCode() != 200;
         };
 
         self.fetchPluginStatus = function() {

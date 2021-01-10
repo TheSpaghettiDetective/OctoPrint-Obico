@@ -145,7 +145,6 @@ class TheSpaghettiDetectivePlugin(
             if command == "get_plugin_status":
                 results = dict(
                     server_status=dict(
-                        is_configured=bool(self.is_configured()),
                         is_connected=self.ss and self.ss.connected(),
                         last_status_update_ts=self.last_status_update_ts,
                     ),
@@ -171,7 +170,7 @@ class TheSpaghettiDetectivePlugin(
 
             if command == "test_server_connection":
                 resp = self.tsd_api_status()
-                return flask.jsonify({'status_code': resp and resp.status_code})
+                return flask.jsonify({'status_code': resp.status_code if resp is not None else None})
 
         except Exception as e:
             self.sentry.captureException()
@@ -387,13 +386,7 @@ class TheSpaghettiDetectivePlugin(
         return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])
 
     def tsd_api_status(self, auth_token=None):
-        resp = None
-        try:
-            resp = server_request('GET', '/api/v1/octo/ping/', self, headers=self.auth_headers(auth_token=self.auth_token(auth_token)))
-        except:
-            pass
-
-        return resp
+        return server_request('GET', '/api/v1/octo/ping/', self, headers=self.auth_headers(auth_token=self.auth_token(auth_token)))
 
     @backoff.on_predicate(backoff.expo, max_value=1200)
     def wait_for_auth_token(self):
@@ -404,7 +397,7 @@ class TheSpaghettiDetectivePlugin(
         if resp and resp.ok:
             return resp.json()
         else:
-            return None
+            return None # Triggers a backoff
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py

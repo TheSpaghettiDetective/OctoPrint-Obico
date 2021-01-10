@@ -242,15 +242,18 @@ def wait_for_port_to_close(host, port):
 
 
 def server_request(method, uri, plugin, timeout=30, **kwargs):
+    '''
+    Return: A requests response object if it reaches the server. Otherwise None. Connections errors are printed to console but NOT raised
+    '''
+
     endpoint = plugin.canonical_endpoint_prefix() + uri
     try:
         error_stats.attempt('server')
         resp = requests.request(method, endpoint, timeout=timeout, **kwargs)
-        resp.raise_for_status()
         if not resp.ok and not resp.status_code == 401:
             error_stats.add_connection_error('server', plugin)
     except:
         error_stats.add_connection_error('server', plugin)
-        raise
+        _logger.exception("{}: {}".format(method, endpoint))
 
     return resp
