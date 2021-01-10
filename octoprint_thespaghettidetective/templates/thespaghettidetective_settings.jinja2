@@ -15,19 +15,19 @@
       </div>
       <div class="choice-wrapper" data-bind="visible: serverStatus.is_configured">
         <div class="choice-option">
-          <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('advanced'); }">Settings</a>
-          <ul class="squared-markers">
-            <li>Text</li>
-            <li>Text</li>
-            <li>Text</li>
-          </ul>
-        </div>
-        <div class="choice-option">
           <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">Troubleshooting</a>
           <ul class="squared-markers">
             <li>Server connection status</li>
             <li>Webcam streaming issues</li>
             <li>Re-run setup wizard</li>
+          </ul>
+        </div>
+        <div class="choice-option">
+          <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('advanced'); }">Advanced Settings</a>
+          <ul class="squared-markers">
+            <li>Premium webcam streaming</li>
+            <li>Configure private TSD server</li>
+            <li>Opt in error reporting</li>
           </ul>
         </div>
       </div>
@@ -46,14 +46,14 @@
   <div class="tabbable" data-bind="visible: showDetailPage()">
     <ul class="nav">
       <img src="plugin/thespaghettidetective/static/img/logo-white.svg" alt="" class="logo" data-bind="click: returnToSelection">
-      <li data-page="advanced">
-        <a href="#advanced" data-toggle="tab">
-          <span>Settings</span>
-        </a>
-      </li>
       <li data-page="troubleshooting">
         <a href="#troubleshooting" data-toggle="tab">
           <span>Troubleshooting</span>
+        </a>
+      </li>
+      <li data-page="advanced">
+        <a href="#advanced" data-toggle="tab">
+          <span>Advanced Settings</span>
         </a>
       </li>
     </ul>
@@ -96,7 +96,7 @@
                   <div style="padding: 0 10px; display: flex; flex-direction: column; align-items: center;">
                     <h5>Server Connection Test</h5>
                     <div data-bind="visible: serverTested() == 'tested', css: {error: !serverTestSucceeded(), success: serverTestSucceeded()}" style="text-align: center;">
-                      <i data-bind="css: {'fa-exclamation': serverTestSucceeded(), 'fa-check': !serverTestSucceeded()}" class="fa" aria-hidden="true" style="font-size: 24px;"></i>
+                      <i data-bind="css: {'fa-exclamation': !serverTestSucceeded(), 'fa-check': serverTestSucceeded()}" class="fa" aria-hidden="true" style="font-size: 24px;"></i>
                       <div data-bind="visible: serverTestStatusCode() == 200">
                       Succeeded!
                       </div>
@@ -198,21 +198,84 @@
       </div>
       <div class="tab-pane" id="advanced">
         <section>
-          <h1 class="section-title">Section 1</h1>
+          <h1 class="section-title">TSD Server</h1>
           <div class="section-content">
-            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Fugiat est ex qui perferendis quo quasi corrupti sit laboriosam totam suscipit nobis neque optio vitae, laudantium aspernatur velit accusamus. Maxime, harum!</p>
+            <form class="form-horizontal">
+              <div class="control-group">
+                  <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
+                  <label class="control-label">{{ _('Server Address') }}</label>
+                  <div class="controls">
+                      <input type="text" class="span8 endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix">
+                      <button id="restore-server-address" class="btn" type="button" data-bind="click: resetEndpointPrefix">Restore Default</button>
+                  </div>
+              </div>
+            </form>
           </div>
         </section>
         <section>
-          <h1 class="section-title">Section 2</h1>
+          <h1 class="section-title">Premium Webcam Streaming</h1>
           <div class="section-content">
-            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Fugiat est ex qui perferendis quo quasi corrupti sit laboriosam totam suscipit nobis neque optio vitae, laudantium aspernatur velit accusamus. Maxime, harum!</p>
+            <form class="form-horizontal">
+              <div data-bind="visible: !streaming.is_pro()">
+                <div class="alert alert-warning" role="alert">
+                  Premium webcam streaming not eligible, for one of the following reasons:
+                  <ul>
+                    <li>Your The Spaghetti Detective account is a Free account. <a href="https://www.thespaghettidetective.com/docs/webcam-streaming-for-human-eyes/">Why is Free account not eligbile?</a></li>
+                    <li>Your OctoPrint is not connected to the TSD server, hence the plugin can't fetch your account status.</li>
+                  </ul>
+                </div>
+              </div>
+              <div data-bind="visible: streaming.is_pro()">
+                <div class="alert alert-warning" role="alert">
+                  <h4>Restart required: </h4>
+                  The changes to any of the following settings won't be effective until OctoPrint is restarted.
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <div class="form-check" style="margin-top: 8px;">
+                          <input id="disable-streaming" class="form-check-input" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming" style="margin-top: 0px;">
+                          <label class="form-check-label" for="disable-streaming" style="display: inline">
+                            Disable premium webcam streaming. <a href="https://www.thespaghettidetective.com/docs/disable-25-fps-streaming/">(Why would I want to do that?)</a>
+                          </label>
+                        </div>
+                    </div>
+                </div>
+                <div data-bind="visible: (streaming.is_pi_camera() && !settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming())" class="control-group" title="{{ _('Pi Camera resolution') }}">
+                    <label class="control-label" for="pi-cam-resolution">{{ _('Resolution') }}</label>
+                    <div class="controls">
+                        <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.thespaghettidetective.pi_cam_resolution" id="pi-cam-resolution"></select>
+                    </div>
+                </div>
+                <div data-bind="visible: !settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming()" class="control-group">
+                    <label class="control-label">Compatibility mode<div><a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/">(What is it?)</a></div></label>
+                    <div class="controls">
+                        <label class="radio">
+                            <input type="radio" name="webcamCompatibleModeGroup" value="auto" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Automatic (default). TSD will automatically switch to compatibility mode if necessary. Select this option if you are not sure.
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="webcamCompatibleModeGroup" value="always" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Always stream in compatibility mode
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="webcamCompatibleModeGroup" value="never" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Never stream in compatibility mode
+                        </label>
+                    </div>
+                </div>
+              </div>
+            </form>
           </div>
         </section>
         <section>
-          <h1 class="section-title">Section 3</h1>
+          <h1 class="section-title">Opt In</h1>
           <div class="section-content">
-            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Fugiat est ex qui perferendis quo quasi corrupti sit laboriosam totam suscipit nobis neque optio vitae, laudantium aspernatur velit accusamus. Maxime, harum!</p>
+            <form class="form-horizontal">
+              <div>Do you want to send anonymized error informtation to The Spaghetti Detective developers to help them improve the plugin?</div>
+              <div class="form-check" style="margin-top: 8px;">
+                <input id="sentry-opt" class="form-check-input" type="checkbox" value="" data-bind="checked: sentryOptedIn, click: toggleSentryOpt" style="margin-top: 0px;">
+                <label class="form-check-label" for="sentry-opt" style="display: inline">
+                  Yes I am in!
+                </label>
+              </div>
+            </form>
           </div>
         </section>
       </div>
