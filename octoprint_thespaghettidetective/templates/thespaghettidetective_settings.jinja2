@@ -4,7 +4,16 @@
   <div class="choice-page" data-bind="visible: !showDetailPage()">
     <img class="settings-header" src="plugin/thespaghettidetective/static/img/settings-header.svg" alt="">
     <div class="settings-content">
-      <div class="choice-wrapper">
+      <div class="not-configured" data-bind="visible: !serverStatus.is_configured">
+        <div>
+          <p>
+            <i class="icon-exclamation-sign" style="font-size: 48px;"></i>
+          </p>
+          <b>You haven't linked OctoPrint to your The Spaghetti Detective account!</b>
+        </div>
+        <a class="button primary" onclick="$('#wizardModal').modal({backdrop: 'static', keyboard: false})">Run Setup Wizard to Link OctoPrint</a>
+      </div>
+      <div class="choice-wrapper" data-bind="visible: serverStatus.is_configured">
         <div class="choice-option">
           <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('advanced'); }">Settings</a>
           <ul class="squared-markers">
@@ -65,7 +74,7 @@
                   <i class="fa fa-circle"></i>Connection to server: Okay
                 </div>
                 <div class="status-line error" data-bind="visible:errorStats.server.error_count() > 0">
-                  <i class="fa fa-circle"></i>Connection to server: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Error</a>
+                  <i class="fa fa-circle"></i>Connection to server: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal, text: serverStatus.is_connected() ? 'Error' : 'Disconnected'"></a>
                 </div>
                 <div class="status-line success" data-bind="visible:errorStats.webcam.error_count() <= 0">
                   <i class="fa fa-circle"></i>Connection to webcam: Okay

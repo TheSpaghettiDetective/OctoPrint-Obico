@@ -50,38 +50,6 @@ $(function () {
         testAuthToken(token, container);
     });
 
-    ko.bindingHandlers.showTrackerModal = {
-        update: function (element, valueAccessor) {
-            var value = valueAccessor();
-            if (ko.utils.unwrapObservable(value)) {
-                $(element).modal("show");
-                // this is to focus input field inside dialog
-            } else {
-                $(element).modal("hide");
-            }
-        }
-    };
-
-    var LOCAL_STORAGE_KEY = 'plugin.tsd';
-
-    function localStorageObject() {
-        var retrievedObject = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (!retrievedObject) {
-            retrievedObject = '{}';
-        }
-        return JSON.parse(retrievedObject);
-    }
-
-    function retrieveFromLocalStorage(itemPath, defaultValue) {
-        return _.get(localStorageObject(), itemPath, defaultValue);
-    }
-
-    function saveToLocalStorage(itemPath, value) {
-        var retrievedObject = localStorageObject();
-        _.set(retrievedObject, itemPath, value);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(retrievedObject));
-    }
-
     function ThespaghettidetectiveViewModel(parameters) {
         var self = this;
 
@@ -93,41 +61,6 @@ $(function () {
         self.sentryOptedIn = ko.pureComputed(function () {
             return self.settingsViewModel.settings.plugins.thespaghettidetective.sentry_opt() === "in";
         }, self);
-
-        self.onStartupComplete = function (plugin, data) {
-            self.fetchPluginStatus();
-        }
-
-        self.fetchPluginStatus = function () {
-            apiCommand({
-                command: "get_plugin_status",
-            }, function (data) {
-                ko.mapping.fromJS(data.streaming_status, self.streaming);
-
-                if (_.get(data, 'sentry_opt') === "out") {
-                    var sentrynotice = new PNotify({
-                        title: "The Spaghetti Detective",
-                        text: "<p>Turn on bug reporting to help us make TSD plugin better?</p><p>The debugging info included in the report will be anonymized.</p>",
-                        hide: false,
-                        destroy: true,
-                        confirm: {
-                            confirm: true,
-                        },
-                    });
-                    sentrynotice.get().on('pnotify.confirm', function () {
-                        self.toggleSentryOpt();
-                    });
-                }
-                _.get(data, 'alerts', []).forEach(function (alertMsg) {
-                    self.displayAlert(alertMsg);
-                })
-            });
-        }
-
-        self.resetEndpointPrefix = function () {
-            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix("https://app.thespaghettidetective.com");
-        }
-    }
 
     /* view model class, parameters for constructor, container to bind to
      * Please see http://docs.octoprint.org/en/master/plugins/viewmodels.html#registering-custom-viewmodels for more details

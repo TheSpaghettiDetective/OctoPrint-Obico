@@ -14,6 +14,7 @@ $(function () {
 
         self.alertsShown = {};
         self.showDetailPage = ko.observable(false);
+        self.serverStatus = ko.mapping.fromJS({ is_configured: true, is_connected: false, last_status_update_ts: 0 });
         self.streaming = ko.mapping.fromJS({ is_pro: false, is_pi_camera: false });
         self.errorStats = ko.mapping.fromJS({ server: { attempts: 0, error_count: 0, first: null, last: null }, webcam: { attempts: 0, error_count: 0, first: null, last: null }});
 
@@ -26,6 +27,7 @@ $(function () {
                 command: "get_plugin_status",
             })
             .done(function (data) {
+                ko.mapping.fromJS(data.server_status, self.serverStatus);
                 ko.mapping.fromJS(data.streaming_status, self.streaming);
                 ko.mapping.fromJS(data.error_stats, self.errorStats);
 
