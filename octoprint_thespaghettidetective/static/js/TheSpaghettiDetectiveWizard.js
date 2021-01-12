@@ -54,7 +54,7 @@ $(function () {
                 if (e.keyCode === 8) {
                     // Backspace
                     for (let i = 6; i >= 1; i--) {
-                        let input = $('#verification-code input[data-number='+ i +']');
+                        let input = $('.verification-code-input input[data-number='+ i +']');
                         if (input.val()) {
                             input.val('');
                             self.securityCode(self.securityCode().slice(0, -1));
@@ -63,7 +63,7 @@ $(function () {
                     }
                 } else if (availableInputs.includes(e.key)) {
                     for (let i = 1; i <= 6; i++) {
-                        let input = $('#verification-code input[data-number='+ i +']');
+                        let input = $('.verification-code-input input[data-number='+ i +']');
                         if (!input.val()) {
                             input.val(e.key);
                             self.securityCode(self.securityCode() + e.key);
