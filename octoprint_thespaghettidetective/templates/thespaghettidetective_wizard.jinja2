@@ -122,7 +122,7 @@
         <li>Recieve the <strong>6-digit verification code</strong>.</li>
         <li>Come back here and press "Continue".</li>
       </ol>
-      <div class="notes primary">*Note: You can always download the Spaghetti Detective mobile app later</div>
+      <div style="color: #aaa; text-align: initial; padding: 28px 0;">*Note: You can always download the Spaghetti Detective mobile app later</div>
   </div>
 
   <div data-bind="visible: step() === 4">
@@ -194,10 +194,10 @@
         <h1 class="title white">Printer Linked Successfully!</h1>
         <form class="form">
           <div class="control-group">
-              <label class="control-label">{{ _('Server Address') }}</label>
+              <label class="control-label">Give your printer a shiny new name (optional)</label>
               <div class="controls">
-                  <input type="text" class="span8 endpoint-prefix">
-                  <button id="restore-server-address" class="btn" type="button" >Restore Default</button>
+                  <input type="text">
+                  <button class="btn" type="button" >Submit</button>
               </div>
           </div>
         </form>

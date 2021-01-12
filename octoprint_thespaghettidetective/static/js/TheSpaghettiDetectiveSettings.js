@@ -140,7 +140,7 @@ $(function () {
                 return;
             }
 
-            if (data.new_alert) {
+            if (data.plugin_updated) {
                 self.fetchPluginStatus();
             }
         }

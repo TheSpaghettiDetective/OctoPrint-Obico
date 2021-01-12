@@ -35,7 +35,7 @@ _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 POST_STATUS_INTERVAL_SECONDS = 15.0
 
-DEFAULT_USER_ACCOUNT = {'is_pro': False, 'dh_balance': 0}
+DEFAULT_LINKED_PRINTER = {'is_pro': False}
 
 _print_event_tracker = PrintEventTracker()
 
@@ -59,7 +59,7 @@ class TheSpaghettiDetectivePlugin(
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_event_tracker)
         self.webcam_streamer = None
-        self.user_account = DEFAULT_USER_ACCOUNT
+        self.linked_printer = DEFAULT_LINKED_PRINTER
         self.local_tunnel = None
 
     # ~~ Wizard plugin mix
@@ -148,8 +148,8 @@ class TheSpaghettiDetectivePlugin(
                         is_connected=self.ss and self.ss.connected(),
                         last_status_update_ts=self.last_status_update_ts,
                     ),
+                    linked_printer=self.linked_printer,
                     streaming_status=dict(
-                        is_pro=bool(self.user_account.get('is_pro')),
                         is_pi_camera=self.webcam_streamer and bool(self.webcam_streamer.pi_camera),
                         premium_streaming=self.webcam_streamer and not self.webcam_streamer.shutting_down),
                     error_stats=error_stats.as_dict(),
@@ -220,12 +220,13 @@ class TheSpaghettiDetectivePlugin(
 
         get_tags()  # init tags to minimize risk of race condition
 
-        self.user_account = self.wait_for_auth_token().get('user', DEFAULT_USER_ACCOUNT)
+        self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
+        plugin._plugin_manager.send_plugin_message(plugin._identifier, {'plugin_updated': True})
         self.sentry.user_context({'id': self.auth_token()})
-        _logger.info('User account: {}'.format(self.user_account))
+        _logger.info('Linked printer: {}'.format(self.linked_printer))
         _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
 
-        if self.user_account.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
+        if self.linked_printer.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
             _logger.info('Starting webcam streamer')
             self.webcam_streamer = WebcamStreamer(self, self.sentry)
             stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)

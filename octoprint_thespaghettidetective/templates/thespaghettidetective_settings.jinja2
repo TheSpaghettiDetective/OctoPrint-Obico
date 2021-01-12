@@ -15,19 +15,20 @@
       </div>
       <div class="choice-wrapper" data-bind="visible: settingsViewModel.settings.plugins.thespaghettidetective.auth_token">
         <div class="choice-option">
+          <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('advanced'); }">Settings</a>
+          <ul class="squared-markers">
+            <li>Change printer name</li>
+            <li>Premium webcam streaming</li>
+            <li>Configure private TSD server</li>
+            <li>Opt in error reporting</li>
+          </ul>
+        </div>
+        <div class="choice-option">
           <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">Troubleshooting</a>
           <ul class="squared-markers">
             <li>Server connection status</li>
             <li>Webcam streaming issues</li>
             <li>Re-run setup wizard</li>
-          </ul>
-        </div>
-        <div class="choice-option">
-          <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('advanced'); }">Advanced Settings</a>
-          <ul class="squared-markers">
-            <li>Premium webcam streaming</li>
-            <li>Configure private TSD server</li>
-            <li>Opt in error reporting</li>
           </ul>
         </div>
       </div>
@@ -46,14 +47,14 @@
   <div class="tabbable" data-bind="visible: showDetailPage()">
     <ul class="nav">
       <img src="plugin/thespaghettidetective/static/img/logo-white.svg" alt="" class="logo" data-bind="click: returnToSelection">
+      <li data-page="advanced">
+        <a href="#advanced" data-toggle="tab">
+          <span>Settings</span>
+        </a>
+      </li>
       <li data-page="troubleshooting">
         <a href="#troubleshooting" data-toggle="tab">
           <span>Troubleshooting</span>
-        </a>
-      </li>
-      <li data-page="advanced">
-        <a href="#advanced" data-toggle="tab">
-          <span>Advanced Settings</span>
         </a>
       </li>
     </ul>
@@ -204,15 +205,15 @@
       </div>
       <div class="tab-pane" id="advanced">
         <section>
-          <h1 class="section-title">TSD Server</h1>
+          <h1 class="section-title">Printer Name</h1>
           <div class="section-content">
             <form class="form-horizontal">
               <div class="control-group">
-                  <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
-                  <label class="control-label">{{ _('Server Address') }}</label>
+                  <p>This printer name is the one you will see when you login The Spaghetti Detective web app or mobile app.</p>
+                  <label class="control-label">Printer name</label>
                   <div class="controls">
-                      <input type="text" class="span8 endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix">
-                      <button id="restore-server-address" class="btn" type="button" data-bind="click: resetEndpointPrefix">Restore Default</button>
+                      <input type="text" class="span8">
+                      <button id="restore-server-address" class="btn" type="button">Update</button>
                   </div>
               </div>
             </form>
@@ -266,6 +267,21 @@
                         </label>
                     </div>
                 </div>
+              </div>
+            </form>
+          </div>
+        </section>
+        <section>
+          <h1 class="section-title">The Spaghetti Detective Server</h1>
+          <div class="section-content">
+            <form class="form-horizontal">
+              <div class="control-group">
+                  <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
+                  <label class="control-label">{{ _('Server Address') }}</label>
+                  <div class="controls">
+                      <input type="text" class="span8 endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix">
+                      <button id="restore-server-address" class="btn" type="button" data-bind="click: resetEndpointPrefix">Restore Default</button>
+                  </div>
               </div>
             </form>
           </div>

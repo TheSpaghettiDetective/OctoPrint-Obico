@@ -12,7 +12,7 @@ def add_alert(alert, plugin):
     if alert in ring_buffer:
         return
     ring_buffer.append(alert)
-    plugin._plugin_manager.send_plugin_message(plugin._identifier, {'new_alert': True})
+    plugin._plugin_manager.send_plugin_message(plugin._identifier, {'plugin_updated': True})
 
 
 def fetch_and_clear():
