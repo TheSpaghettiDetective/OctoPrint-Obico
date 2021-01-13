@@ -188,17 +188,19 @@
   </div>
 
   <div data-bind="visible: step() === 5">
-    <div class="flex justify-center">
+    <div class="flex justify-center successful-setup">
       <div class="flex col align-center">
         <img src="plugin/thespaghettidetective/static/img/checkmark-circled.svg" class="checkmark-circle" alt="">
         <h1 class="title white">Printer Linked Successfully!</h1>
-        <form class="form">
+        
+        <form class="form set-printer-name">
           <div class="control-group">
-              <label class="control-label">Give your printer a shiny new name (optional)</label>
+              <label class="control-label">Give your printer a shiny new name!</label>
               <div class="controls">
-                  <input type="text">
-                  <button class="btn" type="button" >Submit</button>
+                  <input type="text" placeholder="your_awesome_printer_01" data-bind="textInput: printerName">
+                  <button class="btn" type="button" data-bind="enable: printerName, click: savePrinterName">Submit</button>
               </div>
+              <p class="hint">This is optional. You can also just close this wizard, and your printer will have the default name.</p>
           </div>
         </form>
       </div>

@@ -26,6 +26,7 @@ $(function () {
         self.securityCode = ko.observable('');
         self.verifying = ko.observable(false);
         self.userAgreementChecked = ko.observable(true);
+        self.printerName = ko.observable('');
 
         self.nextStep = function() {
             self.step(self.step() + 1);
@@ -103,6 +104,11 @@ $(function () {
                     self.verifying(false);
                 });
         };
+
+        self.savePrinterName = function() {
+            // TODO: save printer name
+            alert('Your printer name: ' + self.printerName());
+        }
     }
 
     /* view model class, parameters for constructor, container to bind to
