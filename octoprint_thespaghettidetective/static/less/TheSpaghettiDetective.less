@@ -643,9 +643,9 @@
 
     form.set-printer-name {
       margin-top: 30px;
+      padding: 0 20px;
 
       .control-group {
-        text-align: center;
 
         .control-label {
           font-size: 18px;
@@ -692,6 +692,16 @@
               background: none;
               color: #fff;
             }
+          }
+        }
+
+        @media screen and (max-width: 570px) {
+          .controls input, .controls button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            height: 35px;
           }
         }
       }
