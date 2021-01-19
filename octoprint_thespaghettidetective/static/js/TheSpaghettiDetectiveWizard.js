@@ -109,6 +109,10 @@ $(function () {
             // TODO: save printer name
             alert('Your printer name: ' + self.printerName());
         }
+
+        self.resetStep = function() {
+            self.step(1);
+        }
     }
 
     /* view model class, parameters for constructor, container to bind to

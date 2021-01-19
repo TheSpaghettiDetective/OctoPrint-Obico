@@ -18,6 +18,7 @@ $(function () {
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
+        self.thespaghettidetectiveWizardViewModel = parameters[1];
 
         self.alertsShown = {};
         self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
@@ -238,6 +239,13 @@ $(function () {
         self.showDiagnosticReportModal = function () {
             $('#diagnosticReportModal').modal();
         };
+
+        self.showWizardModal = function () {
+            $('#wizardModal').modal({backdrop: 'static', keyboard: false});
+            $('#wizardModal').on('hidden.bs.modal', function () {
+                self.thespaghettidetectiveWizardViewModel.resetStep();
+            });
+        };
     }
 
 
@@ -278,7 +286,7 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push({
         construct: TheSpaghettiDetectiveSettingsViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
-        dependencies: ["settingsViewModel"],
+        dependencies: ["settingsViewModel", "thespaghettidetectiveWizardViewModel"],
         // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
         elements: [
             "#settings_plugin_thespaghettidetective",

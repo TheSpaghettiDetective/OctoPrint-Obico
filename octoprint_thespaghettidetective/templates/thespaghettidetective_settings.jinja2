@@ -11,7 +11,7 @@
           </p>
           <b>You haven't linked OctoPrint to your The Spaghetti Detective account!</b>
         </div>
-        <a class="button primary" onclick="$('#wizardModal').modal({backdrop: 'static', keyboard: false})">Run Setup Wizard to Link OctoPrint</a>
+        <a class="button primary" data-bind="click: showWizardModal">Run Setup Wizard to Link OctoPrint</a>
       </div>
       <div class="choice-wrapper" data-bind="visible: settingsViewModel.settings.plugins.thespaghettidetective.auth_token">
         <div class="choice-option">
@@ -105,7 +105,7 @@
                       Failed to contact server. Is OctoPrint connected to Internet?
                       </div>
                       <div data-bind="visible: serverTestStatusCode() == 401">
-                      Wrong account credentials. <a href="#wizardModal" onclick="$('#wizardModal').modal({backdrop: 'static', keyboard: false})">Re-run wizard</a> to link OctoPrint again.
+                      Wrong account credentials. <a href="#" data-bind="click: showWizardModal">Re-run wizard</a> to link OctoPrint again.
                       </div>
                       <div data-bind="visible: serverTestUnknownError()">
                       Something went wrong. <a href="mailto:support@thespaghettidetective.com">Contact us</a> for help.
@@ -198,7 +198,7 @@
             If you can no longer log into your The Spaghetti Detective account, e.g., you don't remember what email you signed up with, you can re-run the setup wizard to link your OctoPrint with a new The Spaghetti Detective account.
             </div>
             <div>
-              <a href="#wizardModal" class="button" onclick="$('#wizardModal').modal({backdrop: 'static', keyboard: false})">Re-run Wizard</a>
+              <a href="#" class="button" data-bind="click: showWizardModal">Re-run Wizard</a>
             </div>
           </div>
         </section>
