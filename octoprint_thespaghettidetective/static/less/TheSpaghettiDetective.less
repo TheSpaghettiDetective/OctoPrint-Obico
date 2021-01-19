@@ -380,10 +380,53 @@
 
   // Setup illustration at the bottom (step 3.1 - mobile)
   .bottom-illustration {
+    background-color: @primary-color;
+    display: flex;
     margin-top: 40px;
+    padding: 40px 40px 0;
+    align-items: flex-end;
 
-    img {
-      width: 100%;
+    & > img {
+      width: 55%;
+    }
+
+    .mobile-links {
+      width: 45%;
+      margin-bottom: 10px;
+
+      .google, .apple {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+
+        img.qr {
+          width: 70px
+        }
+      }
+    }
+
+    @media screen and (max-width: 850px) {
+      flex-direction: column;
+      align-items: center;
+
+      & > img {
+        width: 250px;
+        max-width: 100%;
+      }
+
+      .mobile-links {
+        order: -1;
+        margin-bottom: 50px;
+        width: 250px;
+        max-width: 100%;
+      }
+    }
+
+    @media screen and (max-width: 450px) {
+      .google, .apple {
+        flex-direction: column;
+      }
     }
   }
 
