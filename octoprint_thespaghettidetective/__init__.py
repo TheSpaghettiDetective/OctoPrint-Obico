@@ -221,7 +221,7 @@ class TheSpaghettiDetectivePlugin(
         get_tags()  # init tags to minimize risk of race condition
 
         self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
-        plugin._plugin_manager.send_plugin_message(plugin._identifier, {'plugin_updated': True})
+        self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
         self.sentry.user_context({'id': self.auth_token()})
         _logger.info('Linked printer: {}'.format(self.linked_printer))
         _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
