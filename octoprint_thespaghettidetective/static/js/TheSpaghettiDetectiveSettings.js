@@ -243,7 +243,7 @@ $(function () {
         self.showWizardModal = function () {
             $('#wizardModal').modal({backdrop: 'static', keyboard: false});
             $('#wizardModal').on('hidden.bs.modal', function () {
-                self.thespaghettidetectiveWizardViewModel.resetStep();
+                self.thespaghettidetectiveWizardViewModel.reset();
             });
         };
     }

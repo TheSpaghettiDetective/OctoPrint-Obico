@@ -92,6 +92,7 @@ $(function () {
                 .done(function(apiStatus) {
                     if (apiStatus.succeeded) {
                         $('.verification-wrapper').addClass('success');
+                        self.printerName(apiStatus.printer.name);
                         self.nextStep();
                     } else {
                         $('.verification-wrapper').addClass('error');
@@ -110,8 +111,11 @@ $(function () {
             alert('Your printer name: ' + self.printerName());
         }
 
-        self.resetStep = function() {
+        self.reset = function() {
             self.step(1);
+            self.verifying(false);
+            self.securityCode('');
+            self.printerName('');
         }
     }
 

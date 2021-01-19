@@ -59,7 +59,7 @@
 
   <div data-bind="visible: step() === 2">
     <div class="header">
-      <h1 class="title primary">How would you like to continue?</h1>
+      <h2 class="title primary">How would you like to continue?</h2>
     </div>
     <ul>
         <li>This wizard will walk you through the process of linking OctoPrint to your The Spaghetti Detective account.</li>
@@ -87,17 +87,18 @@
 
   <div data-bind="visible: step() === 3 && mobileFlow()">
     <div class="header">
-      <h1 class="title primary">Download the <strong>mobile app</strong> to continue.&nbsp;
-        <a href="#" class="small"  data-bind="click: function(data, event) { mobileFlow(false); }">
-          Setup through web browser instead
-          <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
-        </a>
-      </h1>
+      <h2 class="title primary">Download the <strong>mobile app</strong></h2>
+        <div>
+          <a href="#" class="small pull-right"  data-bind="click: function(data, event) { mobileFlow(false); }">
+            Setup through web browser instead
+            <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
+          </a>
+        </div>
       </div>
       <ol>
         <li>Download The Spaghetti Detective app.</li>
         <li>Sign up for a The Spaghetti Detective account. Or log in if you already have one.</li>
-        <li>Follow the "Link Printer" setup within the app.</li>
+        <li>Follow the "Link OctoPrint" setup within the app.</li>
         <li>Recieve the <strong>6-digit verification code</strong>.</li>
         <li>Come back here and press "Continue".</li>
       </ol>
@@ -122,17 +123,18 @@
 
   <div data-bind="visible: step() === 3 && !mobileFlow()">
     <div class="header">
-      <h1 class="title primary">Visit <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">The Spaghetti Detective website</a> to continue.&nbsp;
-        <a href="#" class="small"  data-bind="click: function(data, event) { mobileFlow(true); }">
+      <h2 class="title primary">Visit <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">The Spaghetti Detective website</a></h2>
+      <div>
+        <a href="#" class="small pull-right"  data-bind="click: function(data, event) { mobileFlow(true); }">
           Setup through mobile app instead
           <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
         </a>
-      </h1>
+      </div>
       </div>
       <ol>
         <li>Click <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">here</a> to open The Spaghetti Detective website in a separate tab.
         <li>Sign up for a The Spaghetti Detective account. Or log in if you already have one.</li>
-        <li>Follow the "Link Printer" setup within the web flow.</li>
+        <li>Follow the "Link OctoPrint" setup within the web flow.</li>
         <li>Recieve the <strong>6-digit verification code</strong>.</li>
         <li>Come back here and press "Continue".</li>
       </ol>
@@ -144,10 +146,10 @@
       <div class="mobile-verification-wrapper">
         <div class="description">
           <div class="header">
-            <div class="subtitle">LINK PRINTER</div>
+            <div class="subtitle">LINK OCTOPRINT</div>
             <h2 class="title">Verification Code</h2>
           </div>
-          <p>To link printer to your account, you need to obtain the 6-digit verification code in The Spaghetti Detective mobile app or web app, and enter the code below.</p>
+          <p>To link OctoPrint to your account, you need to obtain the 6-digit verification code in The Spaghetti Detective mobile app or web app, and enter the code below.</p>
           <div class="verification-wrapper">
             <label>6-Digit Verification Code:</label>
             <div class="input-wrapper verification-code-input">
@@ -169,7 +171,7 @@
             </small>
             <small class="success-message">
               Success!<br>
-              Printer successfully linked.
+              OctoPrint successfully linked.
             </small>
             <div class="loader" data-bind="visible: verifying">
               <svg version="1.1" id="L9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -205,16 +207,16 @@
     <div class="flex justify-center successful-setup">
       <div class="flex col align-center">
         <img src="plugin/thespaghettidetective/static/img/checkmark-circled.svg" class="checkmark-circle" alt="">
-        <h1 class="title white">Printer Linked Successfully!</h1>
+        <h1 class="title white">OctoPrint Linked Successfully!</h1>
 
         <form class="form set-printer-name">
           <div class="control-group">
               <label class="control-label">Give your printer a shiny new name!</label>
               <div class="controls">
-                  <input type="text" placeholder="your_awesome_printer_01" data-bind="textInput: printerName">
+                  <input type="text" placeholder="My Awesome Cloud Printer" data-bind="textInput: printerName">
                   <button class="btn" type="button" data-bind="enable: printerName, click: savePrinterName">Submit</button>
               </div>
-              <p class="hint">This is optional. You can also just close this wizard, and your printer will have the default name.</p>
+              <p class="hint">You can always change the printer name later.</p>
           </div>
         </form>
       </div>
