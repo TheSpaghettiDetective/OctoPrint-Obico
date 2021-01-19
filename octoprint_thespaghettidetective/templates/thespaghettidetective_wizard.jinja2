@@ -69,16 +69,16 @@
     <H5>Do you want to continue in our mobile app (recommended), or in web browser?</H5>
     <div class="choice-container">
       <div class="choice-banner">
-        <div class="option">
+        <div class="option" data-bind="click: function(data, event) { nextStep(); mobileFlow(true); }">
           <img src="plugin/thespaghettidetective/static/img/phone-illustration.svg" alt="">
           <h2>Mobile Setup</h2>
-          <a href="#" class="button filled" data-bind="click: function(data, event) { nextStep(); mobileFlow(true); }">Continue with <strong>Mobile App</strong></a>
+          <a href="#" class="button filled">Continue with <strong>Mobile App</strong></a>
         </div>
         <div class="delimeter"></div>
-        <div class="option">
+        <div class="option" data-bind="click: function(data, event) { nextStep(); mobileFlow(false); }">
           <img src="plugin/thespaghettidetective/static/img/desktop-illustration.svg" alt="">
           <h2>Web Setup</h2>
-          <a href="#" class="button outline" data-bind="click: function(data, event) { nextStep(); mobileFlow(false); }">Continue with <strong>Web Site</strong></a>
+          <a href="#" class="button outline">Continue with <strong>Web Site</strong></a>
         </div>
       </div>
       <div class="notes">*Note: You can always switch later.</div>
