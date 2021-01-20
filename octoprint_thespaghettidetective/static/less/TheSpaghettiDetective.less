@@ -258,53 +258,128 @@
   // Features block
   .features {
     margin-top: 50px;
+    overflow: hidden;
+    width: 100%;
+    height: 82px;
+    position: relative;
+    padding-right: 40px;
+    box-sizing: border-box;
 
-    .feature {
-      padding-left: 90px;
-      position: relative;
-      margin-bottom: 20px;
-      max-width: 300px;
-
-      .title {
-        font-weight: bold;
-        font-size: 14px;
-      }
-
-      .description {
-        margin: 0;
-        margin-top: 4px;
-        font-size: 12px;
+    .next {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      width: 40px;
+      height: 100%;
+      background-color: #fff;
+      
+      &:hover {
+        cursor: pointer;
+        img {
+          opacity: .8;
+        }
       }
 
       img {
+        width: 30px;
+        height: auto;
         position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        margin: auto;
-        width: 50px;
-        border-radius: 50%;
+        top: 18px;
+        right: 0;
       }
+    }
 
-      &.accent {
-        max-width: 100%;
+    .features-blocks {
+      width: 100%;
+      position: relative;
 
-        .title {
-          font-size: 18px;
-          color: @primary-color;
+      .feature {
+        padding-left: 90px;
+        min-height: 64px;
+        position: absolute;
+        display: inline-block;
+        width: 100%;
+        box-sizing: border-box;
+        top: 0;
+        left: -100%;
+
+        &[data-number="1"] {
+          left: 0;
         }
 
-        .description {
-          font-size: 15px;
-          color: @primary-color;
+        &[data-number="2"] {
+          left: 100%;
         }
 
+
+        .feature-text {
+          min-height: 64px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+
+          .title {
+            font-weight: bold;
+            font-size: 18px;
+            color: @primary-color;
+          }
+    
+          .description {
+            margin: 0;
+            margin-top: 4px;
+            font-size: 15px;
+            color: @text-color;
+          }
+        }
+  
         img {
-          width: 70px;
-          left: -15px;
+          position: absolute;
+          left: 0;
+          top: 0;
+          border-radius: 50%;
+          width: 60px;
           border: 2px solid @primary-color;
         }
       }
+    }
+
+    @media screen and (max-width: 800px) {
+      & {
+        height: 130px;
+      }
+    }
+
+    @media screen and (max-width: 700px) {
+      & {
+        .description {
+          font-size: 13px;
+          line-height: 1.25;
+        }
+      }
+    }
+
+    @media screen and (max-width: 600px) {
+      & {
+        height: 200px;
+
+        .title {
+          font-size: 15px;
+          line-height: 1;
+        }
+      }
+    }
+  }
+
+  .get-started {
+    margin: 30px 0;
+  }
+
+  .footer {
+    margin-bottom: 30px;
+
+    a {
+      text-decoration: none;
     }
   }
 

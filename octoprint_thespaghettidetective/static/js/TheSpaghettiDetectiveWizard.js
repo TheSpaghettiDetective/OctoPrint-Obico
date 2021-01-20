@@ -28,6 +28,7 @@ $(function () {
         self.userAgreementChecked = ko.observable(true);
         self.printerName = ko.observable('');
         self.ctrlDown = ko.observable(false); // Handling Ctrl+V / Cmd+V commands
+        self.currentFeatureSlide = ko.observable(1);
 
         let ctrlKey = 17, cmdKey = 91, vKey = 86;
 
@@ -82,6 +83,37 @@ $(function () {
                 }
             }
         });
+
+        // Next feature in the slider on home screen
+        self.nextFeature = function(item, event) {
+            let container = $(event.target).parents('.features');
+            let slidesCount = container.find('.feature').length;
+            let currentSlide = self.currentFeatureSlide();
+            let nextSlide = currentSlide === slidesCount ? 1 : currentSlide + 1;
+
+            
+            console.log('slides count: ' + slidesCount);
+            console.log('width: ' + container.width());
+
+            console.log('current slide: ' + currentSlide);
+            console.log('next slide: ' + nextSlide);
+
+            
+            container.find('.feature[data-number="'+ currentSlide +'"]').animate({
+                left: '-100%'
+            }, {duration: 500, queue: false});
+
+            container.find('.feature[data-number="'+ nextSlide +'"]').animate({
+                left: '0'
+            },
+            500,
+            function() {
+                let next = nextSlide === slidesCount ? 1 : nextSlide + 1;
+                container.find('.feature[data-number="'+ next +'"]').css('left', '100%');
+            });
+
+            self.currentFeatureSlide(nextSlide);
+        }
 
         
         // Functionality to handle Ctrl+V or Cmd+V commands
