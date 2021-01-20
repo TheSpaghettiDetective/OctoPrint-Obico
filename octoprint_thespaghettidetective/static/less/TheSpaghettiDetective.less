@@ -386,23 +386,30 @@
     margin-top: 40px;
     padding: 40px 40px 0;
     align-items: flex-end;
+    justify-content: space-around;
 
-    & > img {
-      width: 55%;
+    & .mobile-screen {
+      width: 60%;
     }
 
     .mobile-links {
-      width: 45%;
+      width: 25%;
       margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
 
-      .google, .apple {
+      .qr {
+        width: 100%;
+      }
+
+      .buttons {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-top: 20px;
 
-        img.qr {
-          width: 70px
+        a.button {
+          padding: 0;
+          width: 45%;
         }
       }
     }
@@ -411,15 +418,15 @@
       flex-direction: column;
       align-items: center;
 
-      & > img {
-        width: 250px;
+      & .mobile-screen {
+        width: 300px;
         max-width: 100%;
       }
 
       .mobile-links {
         order: -1;
         margin-bottom: 50px;
-        width: 250px;
+        width: 200px;
         max-width: 100%;
       }
     }
