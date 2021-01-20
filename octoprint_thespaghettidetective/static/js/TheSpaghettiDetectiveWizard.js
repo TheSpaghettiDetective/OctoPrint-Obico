@@ -107,8 +107,15 @@ $(function () {
         };
 
         self.savePrinterName = function() {
-            // TODO: save printer name
-            alert('Your printer name: ' + self.printerName());
+            apiCommand({
+                command: "update_printer",
+                name: self.printerName()})
+                .done(function(apiStatus) {
+                    console.log(apiStatus);
+                })
+                .fail(function() {
+                    $('.verification-wrapper').addClass('unknown');
+                });
         }
 
         self.reset = function() {

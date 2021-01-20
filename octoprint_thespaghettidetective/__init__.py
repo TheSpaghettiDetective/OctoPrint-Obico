@@ -4,7 +4,6 @@ import bson
 import logging
 import threading
 import sarge
-import flask
 import json
 import re
 import os
@@ -339,7 +338,7 @@ class TheSpaghettiDetectivePlugin(
         return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])
 
     def tsd_api_status(self, auth_token=None):
-        return server_request('GET', '/api/v1/octo/ping/', self, headers=self.auth_headers(auth_token=self.auth_token(auth_token)))
+        return server_request('GET', '/api/v1/octo/printer/', self, headers=self.auth_headers(auth_token=self.auth_token(auth_token)))
 
     @backoff.on_predicate(backoff.expo, max_value=1200)
     def wait_for_auth_token(self):

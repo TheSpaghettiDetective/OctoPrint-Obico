@@ -6,10 +6,11 @@ from .lib import alert_queue
 
 def get_api_commands():
     return dict(
-        verify_code=["code"],
+        verify_code=['code'],
         get_plugin_status=[],
         toggle_sentry_opt=[],
         test_server_connection=[],
+        update_printer=['name'],
     )
 
 def on_api_command(plugin, command, data):
@@ -54,6 +55,10 @@ def on_api_command(plugin, command, data):
         if command == "test_server_connection":
             resp = plugin.tsd_api_status()
             return flask.jsonify({'status_code': resp.status_code if resp is not None else None})
+
+        if command == "update_printer":
+            resp = server_request('PATCH', '/api/v1/octo/printer/', plugin, headers=plugin.auth_headers(), json=dict(name=data['name']))
+            return flask.jsonify({'succeeded': resp.ok, 'printer': resp.json().get('printer')})
 
     except Exception as e:
         plugin.sentry.captureException()

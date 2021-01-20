@@ -252,8 +252,8 @@ def server_request(method, uri, plugin, timeout=30, **kwargs):
         resp = requests.request(method, endpoint, timeout=timeout, **kwargs)
         if not resp.ok and not resp.status_code == 401:
             error_stats.add_connection_error('server', plugin)
+
+        return resp
     except:
         error_stats.add_connection_error('server', plugin)
         _logger.exception("{}: {}".format(method, endpoint))
-
-    return resp
