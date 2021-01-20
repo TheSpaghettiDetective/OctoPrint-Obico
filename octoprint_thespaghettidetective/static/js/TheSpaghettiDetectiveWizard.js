@@ -27,6 +27,9 @@ $(function () {
         self.verifying = ko.observable(false);
         self.userAgreementChecked = ko.observable(true);
         self.printerName = ko.observable('');
+        self.ctrlDown = ko.observable(false); // Handling Ctrl+V / Cmd+V commands
+
+        let ctrlKey = 17, cmdKey = 91, vKey = 86;
 
         self.nextStep = function() {
             self.step(self.step() + 1);
@@ -79,6 +82,43 @@ $(function () {
                 }
             }
         });
+
+        
+        // Functionality to handle Ctrl+V or Cmd+V commands
+
+        document.addEventListener('keydown', function(e) {
+            if (e.keyCode == ctrlKey || e.keyCode == cmdKey) self.ctrlDown = true;
+        });
+        document.addEventListener('keyup', function(e) {
+            if (e.keyCode == ctrlKey || e.keyCode == cmdKey) self.ctrlDown = false;
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (self.ctrlDown && (e.keyCode == vKey)) {
+                self.pasteFromClipboard();
+            }
+        });
+
+        self.pasteFromClipboard = function() {
+            let format = new RegExp("\\d{6}");
+
+            navigator.clipboard.readText()
+            .then(text => {
+                if (format.test(text)) {
+                    $('.verification-wrapper').removeClass(['error', 'success', 'unknown']);
+                    self.securityCode('');
+                    for (let i = 1; i <= 6; i++) {
+                        let input = $('.verification-code-input input[data-number='+ i +']');
+                        input.val(text[i - 1]);
+                        self.securityCode(self.securityCode() + text[i - 1]);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Failed to read clipboard contents: ', err);
+            });
+        };
+
 
         self.verifySecurityCode = function(code) {
             if (code.length !== 6) {
