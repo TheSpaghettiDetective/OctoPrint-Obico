@@ -19,13 +19,13 @@ from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
     get_tags, not_using_pi_camera, OctoPrintSettingsUpdater, server_request)
 from .lib.error_stats import error_stats
-from .lib import alert_queue
 from .print_event import PrintEventTracker
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster
 from .file_download import FileDownloader
 from .tunnel import LocalTunnel
+from . import plugin_apis
 
 import octoprint.plugin
 
@@ -119,62 +119,14 @@ class TheSpaghettiDetectivePlugin(
     # ~~ plugin APIs
 
     def get_api_commands(self):
-        return dict(
-            verify_code=["code"],
-            get_plugin_status=[],
-            toggle_sentry_opt=[],
-            test_server_connection=[],
-        )
+        return plugin_apis.get_api_commands()
 
     def is_api_adminonly(self):
         return True
 
     def on_api_command(self, command, data):
-        try:
-            if command == "verify_code":
-                resp = server_request('GET', '/api/v1/onetimeverificationcodes/verify/?code=' + data["code"], self)
-                succeeded = resp.ok
-                printer = None
-                if succeeded:
-                    printer = resp.json()['printer']
-                    self._settings.set(["auth_token"], printer['auth_token'], force=True)
-                    self._settings.save(force=True)
+        return plugin_apis.on_api_command(self, command, data)
 
-                return flask.jsonify({'succeeded': succeeded, 'printer': printer})
-
-            if command == "get_plugin_status":
-                results = dict(
-                    server_status=dict(
-                        is_connected=self.ss and self.ss.connected(),
-                        last_status_update_ts=self.last_status_update_ts,
-                    ),
-                    linked_printer=self.linked_printer,
-                    streaming_status=dict(
-                        is_pi_camera=self.webcam_streamer and bool(self.webcam_streamer.pi_camera),
-                        premium_streaming=self.webcam_streamer and not self.webcam_streamer.shutting_down),
-                    error_stats=error_stats.as_dict(),
-                    alerts=alert_queue.fetch_and_clear(),
-                    )
-                if self._settings.get(["auth_token"]):     # Ask to opt in sentry only after wizard is done.
-                    sentry_opt = self._settings.get(["sentry_opt"])
-                    if sentry_opt == 'out':
-                        self._settings.set(["sentry_opt"], 'asked')
-                        self._settings.save(force=True)
-                    results['sentry_opt'] = sentry_opt
-
-                return flask.jsonify(results)
-
-            if command == "toggle_sentry_opt":
-                self._settings.set(["sentry_opt"], 'out' if self._settings.get(["sentry_opt"]) == 'in' else 'in', force=True)
-                self._settings.save(force=True)
-
-            if command == "test_server_connection":
-                resp = self.tsd_api_status()
-                return flask.jsonify({'status_code': resp.status_code if resp is not None else None})
-
-        except Exception as e:
-            self.sentry.captureException()
-            raise
 
     # ~~ Eventhandler mixin
 
