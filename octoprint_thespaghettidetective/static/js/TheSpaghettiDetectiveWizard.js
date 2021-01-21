@@ -85,8 +85,8 @@ $(function () {
         });
 
         // Next feature in the slider on home screen
-        self.nextFeature = function(item, event) {
-            let container = $(event.target).parents('.features');
+        self.nextFeature = function() {
+            let container = $('.features').last();
             let slidesCount = container.find('.feature').length;
             let currentSlide = self.currentFeatureSlide();
             let nextSlide = currentSlide === slidesCount ? 1 : currentSlide + 1;
@@ -106,6 +106,8 @@ $(function () {
 
             self.currentFeatureSlide(nextSlide);
         }
+
+        setInterval(self.nextFeature, 3000);
 
 
         // Functionality to handle Ctrl+V or Cmd+V commands
