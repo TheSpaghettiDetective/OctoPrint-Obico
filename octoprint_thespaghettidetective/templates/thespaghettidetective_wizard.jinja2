@@ -162,11 +162,11 @@
 
   <div data-bind="visible: step() === 4">
     <div class="indent-content">
+      <div class="header">
+        <h2>Verification Code</h2>
+      </div>
       <div class="mobile-verification-wrapper">
         <div class="description">
-          <div class="header">
-            <h2>Verification Code</h2>
-          </div>
           <p>To link OctoPrint to your account, you need to obtain the <strong>6-digit verification code</strong> in The Spaghetti Detective mobile app or web app, and enter the code below.</p>
           <div class="verification-wrapper">
             <label>6-Digit Verification Code:</label>
@@ -213,8 +213,7 @@
           <img src="plugin/thespaghettidetective/static/img/arrow-left-curved.svg" class="arrow" alt="">
         </div>
       </div>
-      <br>
-      <ul>
+      <ul style="margin-top: -10px;">
         <li>Lost? <a href="#" data-bind="click: function(data, event) { toStep(1); }">Start over.</a></li>
         <li>Need help? Visit <a href="https://discord.com/invite/NcZkQfj" target="_blank">TSD discord forum</a></li>
       </ul>

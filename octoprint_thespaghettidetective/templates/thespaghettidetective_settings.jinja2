@@ -88,14 +88,15 @@
                 </div>
               </div>
               <div style="height: 70px; border-right: gray solid thin;"></div>
-              <div class="section-panel test-connection" style="padding-right: 18px;">
+              <div class="section-panel">
+                  <h5 class="test-connection-header">Server Connection Test</h5>
+              <div class="test-connection" style="padding-right: 18px;">
                 <button class="circle" data-bind="click: testServerConnection">
                 <span data-bind="visible: serverTested() != 'testing'">TEST</span>
                 <i data-bind="visible: serverTested() == 'testing'" class="fa fa-spinner fa-spin" style="font-size: 40px;"></i>
                 </button>
                 <div class="test-result">
-                  <div style="padding: 0 10px; display: flex; flex-direction: column; align-items: center;">
-                    <h5>Server Connection Test</h5>
+                  <div style="margin: 10px; display: flex; flex-direction: column; align-items: center;">
                     <div data-bind="visible: serverTested() == 'tested', css: {error: !serverTestSucceeded(), success: serverTestSucceeded()}" style="text-align: center;">
                       <i data-bind="css: {'fa-exclamation': !serverTestSucceeded(), 'fa-check': serverTestSucceeded()}" class="fa" aria-hidden="true" style="font-size: 24px;"></i>
                       <div data-bind="visible: serverTestStatusCode() == 200">
@@ -105,7 +106,8 @@
                       Failed to contact server. Is OctoPrint connected to Internet?
                       </div>
                       <div data-bind="visible: serverTestStatusCode() == 401">
-                      Wrong account credentials. <a href="#" data-bind="click: showWizardModal">Re-run wizard</a> to link OctoPrint again.
+                      <div>Wrong account credentials.</div>
+                      <div><a href="#" data-bind="click: showWizardModal">Re-run wizard</a> to link OctoPrint.</div>
                       </div>
                       <div data-bind="visible: serverTestUnknownError()">
                       Something went wrong. <a href="mailto:support@thespaghettidetective.com">Contact us</a> for help.
@@ -113,6 +115,7 @@
                     </div>
                   </div>
                 </div>
+              </div>
               </div>
             </div>
           </div>
