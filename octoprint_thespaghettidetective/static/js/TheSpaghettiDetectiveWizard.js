@@ -21,12 +21,13 @@ $(function () {
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
 
-        self.step = ko.observable(1);
+        self.step = ko.observable(5);
         self.mobileFlow = ko.observable(true);
         self.securityCode = ko.observable('');
         self.verifying = ko.observable(false);
         self.userAgreementChecked = ko.observable(true);
         self.printerName = ko.observable('');
+        self.printerNameTimeoutId = ko.observable(null);
         self.ctrlDown = ko.observable(false); // Handling Ctrl+V / Cmd+V commands
         self.currentFeatureSlide = ko.observable(1);
 
@@ -51,6 +52,36 @@ $(function () {
         self.securityCode.subscribe(function(code) {
             self.verifySecurityCode(code);
         });
+
+        self.printerName.subscribe(function() {
+            if (self.printerNameTimeoutId()) {
+                clearTimeout(self.printerNameTimeoutId());
+            }
+            let newTimeoutId = setTimeout(self.savePrinterName, 1000);
+            self.printerNameTimeoutId(newTimeoutId);
+        })
+
+        self.savePrinterName = function() {
+
+            // Saving in progress animation
+            $('.printerNameInput').addClass('saving-in-progress');
+
+            apiCommand({
+                command: "update_printer",
+                name: self.printerName()})
+                .done(function(apiStatus) {
+                    console.log(apiStatus);
+
+                    // Feedback about successful saving
+                    $('.printerNameInput').removeClass('saving-in-progress');
+                    $('.printerNameInput').addClass('successfully-saved');
+                    setTimeout(() => $('.printerNameInput').removeClass('successfully-saved'), 2000);
+                })
+                .fail(function() {
+                    $('.printerNameInput').removeClass('saving-in-progress'); // Remove saving loading
+                    $('.verification-wrapper').addClass('unknown');
+                });
+        }
 
         $(document).keydown(function(e) {
             if (self.step() === 4) {
@@ -171,18 +202,6 @@ $(function () {
                     self.verifying(false);
                 });
         };
-
-        self.savePrinterName = function() {
-            apiCommand({
-                command: "update_printer",
-                name: self.printerName()})
-                .done(function(apiStatus) {
-                    console.log(apiStatus);
-                })
-                .fail(function() {
-                    $('.verification-wrapper').addClass('unknown');
-                });
-        }
 
         self.reset = function() {
             self.step(1);

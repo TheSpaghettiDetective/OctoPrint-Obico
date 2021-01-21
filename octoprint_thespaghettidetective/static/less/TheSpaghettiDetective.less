@@ -57,6 +57,41 @@
   }
 }
 
+// API call animation
+.saving-in-progress, .successfully-saved {
+  @indicatorSize: 18px;
+  display: inline-block;
+
+  &:before {
+    content: "";
+    background-size: @indicatorSize @indicatorSize;
+    width: @indicatorSize;
+    height: @indicatorSize;
+    display: block;
+    position: absolute;
+    top: 7px;
+    right: -(@indicatorSize + 8px);
+    margin: auto;
+    z-index: 9;
+  }
+
+  &.saving-in-progress {
+    position: relative;
+  }
+
+    &:before {
+      background-image: url('../img/tail-spin.svg');
+    }
+
+  &.successfully-saved {
+    position: relative;
+
+    &:before {
+      background-image: url('../img/tick.svg');
+    }
+  }
+}
+
 
 // Wizard content
 
@@ -744,11 +779,12 @@
         }
 
         .controls {
+          text-align: center;
           margin: 10px 0;
 
           input {
             margin-bottom: 0;
-            margin-right: 4px;
+            // margin-right: 4px;
             text-align: center;
             font-size: 15px;
             border: 2px solid #fff;
