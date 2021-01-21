@@ -91,14 +91,6 @@ $(function () {
             let currentSlide = self.currentFeatureSlide();
             let nextSlide = currentSlide === slidesCount ? 1 : currentSlide + 1;
 
-            
-            console.log('slides count: ' + slidesCount);
-            console.log('width: ' + container.width());
-
-            console.log('current slide: ' + currentSlide);
-            console.log('next slide: ' + nextSlide);
-
-            
             container.find('.feature[data-number="'+ currentSlide +'"]').animate({
                 left: '-100%'
             }, {duration: 500, queue: false});
@@ -115,7 +107,7 @@ $(function () {
             self.currentFeatureSlide(nextSlide);
         }
 
-        
+
         // Functionality to handle Ctrl+V or Cmd+V commands
 
         document.addEventListener('keydown', function(e) {

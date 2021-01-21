@@ -14,8 +14,6 @@
         <div class="circle" data-bind="css: {filled: step() >= 3, checked: step() > 3}"></div>
         <div class="circle" data-bind="css: {filled: step() >= 4, checked: step() > 4}"></div>
       </div>
-      <button class="button setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked, visible: step() === 3">CONTINUE</button>
-      <br>
     </div>
   </div>
 
@@ -30,6 +28,12 @@
         <div class="checkbox-wrapper" data-bind="css: {checked: userAgreementChecked}"></div>
         By proceeding you agree to our <a href="https://thespaghettidetective.com/privacy.html">Privacy Policy</a>
           and the <a href="https://thespaghettidetective.com/terms.html">Terms of Use</a>
+      </div>
+      <div class="get-started text-center">
+        <button class="button setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked, visible: step() === 1">Setup Plugin</button>
+        <div class="text-center">
+          <div>Complete the setup wizard to link OctoPrint to your account</div>
+        </div>
       </div>
       <div class="features">
         <div class="features-blocks">
@@ -66,27 +70,16 @@
           <img src="plugin/thespaghettidetective/static/img/arrow-right-primary.svg" alt="">
         </div>
       </div>
-      <div class="get-started text-center">
-        <button class="button setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked, visible: step() === 1">GET STARTED</button>
-      </div>
-      <div class="footer text-center">
-        <strong>GET STARTED BY <a href="#" data-bind="click: nextStep">LINKING YOU PRINTER</a></strong>
-        <br>
-        <i>You will need to complete this in order for everything to work</i>
-      </div>
     </div>
   </div>
 
   <div data-bind="visible: step() === 2">
     <div class="header">
-      <h2 class="title primary">How would you like to continue?</h2>
+      <h2 class="title primary">Setup with mobile app or web browser?</h2>
     </div>
-    <ul>
-        <li>This wizard will walk you through the process of linking OctoPrint to your The Spaghetti Detective account.</li>
-        <li>You will need to sign up a new account if you don't already have one.</li>
-    </ul>
+    <div>You will need to sign up for a new The Spaghetti Detective account if you don't already have one.</div>
+    <div>Do  you want to do it in the mobile app or in the web browser?</div>
     <br />
-    <H5>Do you want to continue in our mobile app (recommended), or in web browser?</H5>
     <div class="choice-container">
       <div class="choice-banner">
         <div class="option" data-bind="click: function(data, event) { nextStep(); mobileFlow(true); }">
@@ -107,55 +100,67 @@
 
   <div data-bind="visible: step() === 3 && mobileFlow()">
     <div class="header">
-      <h2 class="title primary">Download the <strong>mobile app</strong></h2>
-        <div>
-          <a href="#" class="small pull-right"  data-bind="click: function(data, event) { mobileFlow(false); }">
+      <h2 class="title primary">Sign into the <strong>mobile app</strong></h2>
+    </div>
+    <div>
+      <ol>
+        <li>Download The Spaghetti Detective mobile app.</li>
+        <li>Sign up for a The Spaghetti Detective account. Or sign in if you already have one.</li>
+        <li>Follow the "Link OctoPrint" setup within the app.</li>
+        <li>Recieve the <strong>6-digit verification code</strong>.</li>
+        <li>Come back here and press "CONTINUE".</li>
+      </ol>
+      <div class="text-center">
+        <button class="button" data-bind="click: nextStep">CONTINUE</button>
+        <div class="text-right">
+          <a href="#" class="small"  data-bind="click: function(data, event) { mobileFlow(false); }">
             Setup through web browser instead
             <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
           </a>
         </div>
       </div>
-      <ol>
-        <li>Download The Spaghetti Detective app.</li>
-        <li>Sign up for a The Spaghetti Detective account. Or log in if you already have one.</li>
-        <li>Follow the "Link OctoPrint" setup within the app.</li>
-        <li>Recieve the <strong>6-digit verification code</strong>.</li>
-        <li>Come back here and press "Continue".</li>
-      </ol>
       <div class="bottom-illustration">
         <img src="plugin/thespaghettidetective/static/img/mobile-setup-illustration.svg" alt="" class="mobile-screen">
         <div class="mobile-links">
           <img src="plugin/thespaghettidetective/static/img/app-qrcode.png" alt="" class="qr">
           <div class="buttons">
-            <a href="https://play.google.com/store/apps/details?id=com.thespaghettidetective.android" class="button" target="_blank">
+            <a href="https://qrco.de/bbuzpv" class="button" target="_blank">
               <img src="plugin/thespaghettidetective/static/img/google-play-btn.svg" alt="">
             </a>
-            <a href="https://apps.apple.com/us/app/the-spaghetti-detective/id1540646623?ign-itsct=apps_box&ign-itscg=30200" class="button" target="_blank">
+            <a href="https://qrco.de/bbuzpv" class="button" target="_blank">
               <img src="plugin/thespaghettidetective/static/img/app-store-btn.svg" alt="">
             </a>
           </div>
         </div>
       </div>
+    </div>
   </div>
 
   <div data-bind="visible: step() === 3 && !mobileFlow()">
     <div class="header">
-      <h2 class="title primary">Visit <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">The Spaghetti Detective website</a></h2>
-      <div>
-        <a href="#" class="small pull-right"  data-bind="click: function(data, event) { mobileFlow(true); }">
-          Setup through mobile app instead
-          <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
-        </a>
-      </div>
-      </div>
+      <h2>Sign into <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">The Spaghetti Detective website</a></h2>
+    </div>
+    <div>
       <ol>
         <li>Click <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">here</a> to open The Spaghetti Detective website in a separate tab.
-        <li>Sign up for a The Spaghetti Detective account. Or log in if you already have one.</li>
+        <li>Sign up for a The Spaghetti Detective account. Or sign in if you already have one.</li>
         <li>Follow the "Link OctoPrint" setup within the web flow.</li>
         <li>Recieve the <strong>6-digit verification code</strong>.</li>
-        <li>Come back here and press "Continue".</li>
+        <li>Come back here and press "CONTINUE".</li>
       </ol>
-      <div style="color: #aaa; text-align: initial; padding: 28px 0;">*Note: You can always download the Spaghetti Detective mobile app later</div>
+      <div class="text-center">
+        <button class="button" data-bind="click: nextStep">CONTINUE</button>
+        <div class="text-right">
+          <a href="#" class="small" data-bind="click: function(data, event) { mobileFlow(true); }">
+            Setup through mobile app instead
+            <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
+          </a>
+          <br /><br />
+          <div class="small">*Note: You can always download The Spaghetti Detective mobile app later</div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <div data-bind="visible: step() === 4">
@@ -163,10 +168,9 @@
       <div class="mobile-verification-wrapper">
         <div class="description">
           <div class="header">
-            <div class="subtitle">LINK OCTOPRINT</div>
-            <h2 class="title">Verification Code</h2>
+            <h2>Verification Code</h2>
           </div>
-          <p>To link OctoPrint to your account, you need to obtain the 6-digit verification code in The Spaghetti Detective mobile app or web app, and enter the code below.</p>
+          <p>To link OctoPrint to your account, you need to obtain the <strong>6-digit verification code</strong> in The Spaghetti Detective mobile app or web app, and enter the code below.</p>
           <div class="verification-wrapper">
             <label>6-Digit Verification Code:</label>
             <div class="input-wrapper verification-code-input">
@@ -215,7 +219,7 @@
       <br>
       <ul>
         <li>Lost? <a href="#" data-bind="click: function(data, event) { toStep(1); }">Start over.</a></li>
-        <li>Need help? Visit <a href="https://discord.com/invite/NcZkQfj" target="_blank">TSDDiscord Forum</a></li>
+        <li>Need help? Visit <a href="https://discord.com/invite/NcZkQfj" target="_blank">TSD discord forum</a></li>
       </ul>
     </div>
   </div>

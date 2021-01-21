@@ -96,7 +96,6 @@
   ul {
     margin-top: 20px;
     list-style-type: square;
-    font-size: 16px;
 
      li {
        margin-bottom: 4px;
@@ -210,21 +209,12 @@
 
   // Wizard title
   .header {
-    margin: 4px 0 28px 0;
-
-    .title {
-      &.primary {
-        color: @primary-color;
-        font-weight: bold;
-        margin: 4px 0;
-      }
-    }
+    margin: 4px 0 10px 0;
   }
 
   // Text with checkbox
   .text-with-checkbox {
     padding-left: 22px;
-    font-size: 12px;
     position: relative;
 
     &:hover {
@@ -273,7 +263,7 @@
       width: 40px;
       height: 100%;
       background-color: #fff;
-      
+
       &:hover {
         cursor: pointer;
         img {
@@ -324,7 +314,7 @@
             font-size: 18px;
             color: @primary-color;
           }
-    
+
           .description {
             margin: 0;
             margin-top: 4px;
@@ -332,7 +322,7 @@
             color: @text-color;
           }
         }
-  
+
         img {
           position: absolute;
           left: 0;
@@ -372,21 +362,19 @@
   }
 
   .get-started {
-    margin: 30px 0;
-  }
+    margin: 20px 0;
 
-  .footer {
-    margin-bottom: 30px;
-
-    a {
-      text-decoration: none;
+    .button {
+      padding: 24px 40px;
+      font-size: 24px;
+      font-weight: bolder;
     }
   }
 
   // Choice between mobile and web (step 2)
   .choice-container {
     background-color: @primary-color;
-    padding: 0 18px;
+    padding: 18px;
 
     .choice-banner {
       display: flex;
@@ -514,7 +502,7 @@
   }
 
   // Small gray link with arrow under title (step 3)
-  a.small {
+  .small {
     font-size: 14px;
     color: #9793A0;
     line-height: 14px;
@@ -712,7 +700,6 @@
 
       .image {
         display: inline-block;
-        margin-top: 30px;
         width: 100%;
       }
 
