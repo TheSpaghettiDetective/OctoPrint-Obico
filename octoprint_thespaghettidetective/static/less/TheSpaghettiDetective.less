@@ -576,20 +576,18 @@
 
   // Verification code page (step 4)
   .mobile-verification-wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    display: table;
+    width: 100%;
 
     // Left content - text and input
     .description {
-      width: 50%;
+      display: table-cell;
+      padding: 0 60px 0 0;
 
       // Input for security code
       .verification-wrapper {
         @input-width: 240px;
         @cell-border-width: 2px;
-
-        margin-top: 90px;
 
         label {
           font-weight: bold;
@@ -704,7 +702,8 @@
 
     // Right content - mobile screen illustration
     .illustration {
-      width: 30%;
+      display: table-cell;
+      width: 180px;
       position: relative;
 
       .image {
@@ -714,7 +713,7 @@
 
       .arrow {
         position: absolute;
-        bottom: 28%;
+        bottom: 32%;
         right: 85%;
         width: 200px;
         display: block;
@@ -722,24 +721,11 @@
       }
     }
 
-    @media screen and (max-width: 900px) {
-      .description .verification-wrapper {
-        margin-top: 70px;
-      }
-
-      .illustration {
-        margin-top: 50px;
-      }
-
-      .arrow {
-        bottom: 28%;
-        right: 85%;
-        width: 120px;
-      }
-    }
-
     // Hide mobile screen illustration on small screens
     @media screen and (max-width: 800px) {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
       flex-direction: column;
 
       .description {
@@ -1118,7 +1104,13 @@
                 }
               }
 
-              &.test-connection {
+              .test-connection-header {
+                margin-top: -24px;
+                text-align: center;
+                color: @primary-color;
+              }
+
+              .test-connection {
                 display: flex;
 
                 .circle {
