@@ -1,4 +1,5 @@
 import logging
+import time
 import threading
 from octoprint.filemanager.analysis import QueueEntry
 
@@ -12,15 +13,15 @@ class PrintEventTracker:
         self.current_print_ts = -1    # timestamp as print_ts coming from octoprint
         self.tsd_gcode_file_id = None
 
-    def on_event(self, plugin, event, payload, at):
+    def on_event(self, plugin, event, payload):
         with self._mutex:
             if event == 'PrintStarted':
-                self.current_print_ts = int(at)  # TODO increase resolution *100?
+                self.current_print_ts = int(time.time())
 
-        data = self.octoprint_data(plugin, at)
+        data = self.octoprint_data(plugin)
         data['octoprint_event'] = {
             'event_type': event,
-            'data': payload,
+            'data': payload
         }
 
         # Unsetting self.current_print_ts should happen after it is captured in payload to make sure last event of a print contains the correct current_print_ts
@@ -31,11 +32,10 @@ class PrintEventTracker:
 
         return data
 
-    def octoprint_data(self, plugin, at):
+    def octoprint_data(self, plugin):
         data = {
             'octoprint_data': plugin._printer.get_current_data(),
             'octoprint_temperatures': plugin._printer.get_current_temperatures(),
-            '_at': at,
         }
         data['octoprint_data']['file_metadata'] = self.get_file_metadata(plugin, data)
 
