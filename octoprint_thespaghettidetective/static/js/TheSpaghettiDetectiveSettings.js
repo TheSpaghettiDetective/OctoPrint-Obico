@@ -247,7 +247,7 @@ $(function () {
 
         self.showWizardModal = function () {
             $('#wizardModal').modal({backdrop: 'static', keyboard: false});
-            $('#wizardModal').on('hidden.bs.modal', function () {
+            $('#wizardModal').on('shown', function(){
                 self.thespaghettidetectiveWizardViewModel.reset();
             });
         };

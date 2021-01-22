@@ -62,13 +62,16 @@ $(function () {
         })
 
         self.savePrinterName = function() {
+            var newName = self.printerName().trim();
+            if (newName.length == 0) {
+                return;
+            }
 
             // Saving in progress animation
             $('.printerNameInput').addClass('saving-in-progress');
-
             apiCommand({
                 command: "update_printer",
-                name: self.printerName()})
+                name: newName})
                 .done(function() {
                     // Feedback about successful saving
                     $('.printerNameInput').removeClass('saving-in-progress');
@@ -205,7 +208,6 @@ $(function () {
             self.step(1);
             self.verifying(false);
             self.securityCode('');
-            self.printerName('');
         }
     }
 
