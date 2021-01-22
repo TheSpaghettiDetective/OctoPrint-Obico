@@ -576,18 +576,20 @@
 
   // Verification code page (step 4)
   .mobile-verification-wrapper {
-    display: table;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
     width: 100%;
 
     // Left content - text and input
     .description {
       @input-width: 240px;
       @cell-border-width: 2px;
-
-      display: table-cell;
+      margin-top: 10px;
 
       p {
         width: @input-width + @cell-border-width * 5;
+        margin-bottom: 30px;
       }
 
       // Input for security code
@@ -606,10 +608,6 @@
           overflow: hidden;
           padding: 10px 0;
           position: relative;
-
-          &:hover {
-            // cursor: text;
-          }
 
           // Imitate input wrapper as one big input
           .front-layer {
@@ -705,7 +703,6 @@
 
     // Right content - mobile screen illustration
     .illustration {
-      display: table-cell;
       width: 180px;
       position: relative;
 
@@ -716,23 +713,49 @@
 
       .arrow {
         position: absolute;
-        bottom: 32%;
-        right: 85%;
-        width: 200px;
+        bottom: 40%;
+        right: 83%;
+        width: 90%;
         display: block;
         z-index: 12;
+        transform: rotate(20deg);
+
+        @media screen and (max-width: 980px) {
+          width: 80%;
+          bottom: 41%;
+        }
+
+        @media screen and (max-width: 960px) {
+          width: 70%;
+          bottom: 42%;
+        }
+
+        @media screen and (max-width: 940px) {
+          width: 60%;
+          bottom: 43%;
+        }
+
+        @media screen and (max-width: 920px) {
+          width: 50%;
+          bottom: 43%;
+        }
+
+        @media screen and (max-width: 900px) {
+          display: none;
+        }
       }
     }
 
     // Hide mobile screen illustration on small screens
     @media screen and (max-width: 800px) {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
       flex-direction: column;
 
       .description {
         width: 100%;
+
+        p {
+          width: 100%;
+        }
 
         .verification-wrapper {
           margin-top: 40px;
@@ -740,12 +763,8 @@
       }
 
       .illustration {
-        width: 100%;
         max-width: 200px;
-
-        .arrow {
-          display: none;
-        }
+        margin: 30px 0;
       }
     }
   }
