@@ -65,10 +65,10 @@
           <div class="section-content">
             <div class="test-connection-wrapper">
               <div class="section-panel">
-                <div class="status-line" data-bind="visible: streaming.is_pro">
+                <div class="status-line" data-bind="visible: linkedPrinter.is_pro">
                   <i class="fa fa-circle"></i>Account status: <span class="accountPro">Pro</span>
                 </div>
-                <div class="status-line" data-bind="visible: !streaming.is_pro()">
+                <div class="status-line" data-bind="visible: !linkedPrinter.is_pro()">
                   <i class="fa fa-circle"></i>Account status: Free
                 </div>
                 <div class="status-line">
@@ -208,25 +208,22 @@
       </div>
       <div class="tab-pane" id="advanced">
         <section>
-          <h1 class="section-title">Printer Name</h1>
-          <div class="section-content">
-            <form class="form-horizontal">
-              <div class="control-group">
-                  <p>This printer name is the one you will see when you login The Spaghetti Detective web app or mobile app.</p>
-                  <label class="control-label">Printer name</label>
-                  <div class="controls">
-                      <input type="text" class="span8">
-                      <button id="restore-server-address" class="btn" type="button">Update</button>
-                  </div>
-              </div>
-            </form>
+          <h1 class="section-title">Linked Printer</h1>
+          <div class="section-content" data-bind="visible: !linkedPrinter.id()">
+            <div class="alert alert-warning" role="alert">
+              Can't determine which TSD account this OctoPrint is linked to. Check to make sure your Rasbperry Pi is connected to the Internet. And refresh this page.
+            </div>
+          </div>
+          <div class="section-content" data-bind="visible: linkedPrinter.id">
+            <p>This OctoPrint is linked to <b data-bind="text: linkedPrinter.name">asdfasd</b> in your TSD account.</p>
+            <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/printers/' + linkedPrinter.id() + '/?source=plugin' }" target="_blank" class="btn">View/Change Settings (Login Required)</a>
           </div>
         </section>
         <section>
           <h1 class="section-title">Premium Webcam Streaming</h1>
           <div class="section-content">
             <form class="form-horizontal">
-              <div data-bind="visible: !streaming.is_pro()">
+              <div data-bind="visible: !linkedPrinter.is_pro()">
                 <div class="alert alert-warning" role="alert">
                   Premium webcam streaming not eligible, for one of the following reasons:
                   <ul>
@@ -235,7 +232,7 @@
                   </ul>
                 </div>
               </div>
-              <div data-bind="visible: streaming.is_pro()">
+              <div data-bind="visible: linkedPrinter.is_pro()">
                 <div class="alert alert-warning" role="alert">
                   <h4>Restart required: </h4>
                   The changes to any of the following settings won't be effective until OctoPrint is restarted.
