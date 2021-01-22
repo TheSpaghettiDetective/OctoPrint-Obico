@@ -4,7 +4,7 @@
   <div class="choice-page" data-bind="visible: !showDetailPage()">
     <img class="settings-header" src="plugin/thespaghettidetective/static/img/settings-header.svg" alt="">
     <div class="settings-content">
-      <div class="not-configured" data-bind="visible: !settingsViewModel.settings.plugins.thespaghettidetective.auth_token">
+      <div class="not-configured" data-bind="visible: !configured">
         <div>
           <p>
             <i class="fa fa-exclamation" style="font-size: 48px;"></i>
@@ -13,7 +13,7 @@
         </div>
         <a class="button primary" data-bind="click: showWizardModal">Run Setup Wizard to Link OctoPrint</a>
       </div>
-      <div class="choice-wrapper" data-bind="visible: settingsViewModel.settings.plugins.thespaghettidetective.auth_token">
+      <div class="choice-wrapper" data-bind="visible: configured">
         <div class="choice-option">
           <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('advanced'); }">Settings</a>
           <ul class="squared-markers">

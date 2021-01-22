@@ -31,6 +31,11 @@ $(function () {
         self.sentryOptedIn = ko.pureComputed(function () {
             return self.settingsViewModel.settings.plugins.thespaghettidetective.sentry_opt() === "in";
         }, self);
+        self.configured = ko.pureComputed(function () {
+            return self.serverStatus.is_connected()
+            || (self.settingsViewModel.settings.plugins.thespaghettidetective.auth_token
+                && self.settingsViewModel.settings.plugins.thespaghettidetective.auth_token());
+        }, self);
 
         self.onStartupComplete = function (plugin, data) {
             self.fetchPluginStatus();

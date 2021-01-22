@@ -69,9 +69,7 @@ $(function () {
             apiCommand({
                 command: "update_printer",
                 name: self.printerName()})
-                .done(function(apiStatus) {
-                    console.log(apiStatus);
-
+                .done(function() {
                     // Feedback about successful saving
                     $('.printerNameInput').removeClass('saving-in-progress');
                     $('.printerNameInput').addClass('successfully-saved');

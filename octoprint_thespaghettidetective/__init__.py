@@ -240,6 +240,7 @@ class TheSpaghettiDetectivePlugin(
         if not self.ss or not self.ss.connected():
             if try_connecting:
                 self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
+                self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
             else:
                 return False
 
@@ -249,6 +250,7 @@ class TheSpaghettiDetectivePlugin(
 
     def on_ws_close(self, ws):
         _logger.error("Server websocket is closing")
+        self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
         self.local_tunnel.close_all_octoprint_ws()
         self.ss = None
 
