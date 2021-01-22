@@ -581,14 +581,17 @@
 
     // Left content - text and input
     .description {
+      @input-width: 240px;
+      @cell-border-width: 2px;
+
       display: table-cell;
-      padding: 0 60px 0 0;
+
+      p {
+        width: @input-width + @cell-border-width * 5;
+      }
 
       // Input for security code
       .verification-wrapper {
-        @input-width: 240px;
-        @cell-border-width: 2px;
-
         label {
           font-weight: bold;
         }
