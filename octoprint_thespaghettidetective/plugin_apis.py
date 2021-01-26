@@ -22,7 +22,7 @@ def on_api_command(plugin, command, data):
             if succeeded:
                 printer = resp.json()['printer']
                 plugin._settings.set(["auth_token"], printer['auth_token'], force=True)
-                plugin._settings.save(force=True, trigger_event=True)
+                plugin._settings.save(force=True)
 
             return flask.jsonify({'succeeded': succeeded, 'printer': printer})
 
@@ -43,7 +43,7 @@ def on_api_command(plugin, command, data):
                 sentry_opt = plugin._settings.get(["sentry_opt"])
                 if sentry_opt == 'out':
                     plugin._settings.set(["sentry_opt"], 'asked')
-                    plugin._settings.save(force=True, trigger_event=True)
+                    plugin._settings.save(force=True)
                 results['sentry_opt'] = sentry_opt
 
             return flask.jsonify(results)
