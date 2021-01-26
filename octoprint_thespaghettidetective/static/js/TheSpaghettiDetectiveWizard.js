@@ -158,10 +158,14 @@ $(function () {
         });
 
         self.pasteFromClipboard = function() {
-            let format = new RegExp("\\d{6}");
+            let clipboardPlaceholder = $('textarea.paste-from-clipboard-placeholder').last();
+            clipboardPlaceholder.val('').focus();
 
-            navigator.clipboard.readText()
-            .then(text => {
+            setTimeout(function() {
+                let text = clipboardPlaceholder.val();
+                clipboardPlaceholder.val('').blur();
+                let format = new RegExp("\\d{6}");
+
                 if (format.test(text)) {
                     $('.verification-wrapper').removeClass(['error', 'success', 'unknown']);
                     self.securityCode('');
@@ -171,10 +175,9 @@ $(function () {
                         self.securityCode(self.securityCode() + text[i - 1]);
                     }
                 }
-            })
-            .catch(err => {
-                console.error('Failed to read clipboard contents: ', err);
-            });
+            }, 100)
+
+            return true;
         };
 
 
