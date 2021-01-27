@@ -35,6 +35,7 @@ GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
+JANUS_DATA_PORT = 8005  # check streaming plugin config
 
 PI_CAM_RESOLUTIONS = {
     'low': ((320, 240), (480, 270)),  # resolution for 4:3 and 16:9
@@ -186,7 +187,7 @@ class WebcamStreamer:
             self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
             while not self.shutting_down:
-                line = to_unicode(self.janus_proc.stdout.readline())
+                line = to_unicode(self.janus_proc.stdout.readline(), errors='replace')
                 if line:
                     _logger.debug('JANUS: ' + line)
                 elif not self.shutting_down:
@@ -222,8 +223,7 @@ class WebcamStreamer:
                 self.start_janus_ws_tunnel()
 
         def on_message(ws, msg):
-            _logger.debug('Relaying Janus msg')
-            if self.plugin.send_ws_msg_to_server(dict(janus=msg)):
+            if self.plugin.process_janus_msg(msg):
                 self.janus_ws_backoff.reset()
 
         self.janus_ws = WebSocketClient('ws://{}:8188/'.format(JANUS_SERVER), on_ws_msg=on_message, on_ws_close=on_close, subprotocols=['janus-protocol'])
