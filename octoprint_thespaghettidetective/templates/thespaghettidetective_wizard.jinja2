@@ -214,10 +214,35 @@
           <img src="plugin/thespaghettidetective/static/img/arrow-left-curved.svg" class="arrow" alt="">
         </div>
       </div>
-      <ul">
-        <li>Lost? <a href="#" data-bind="click: function(data, event) { toStep(1); }">Start over.</a></li>
-        <li>Need help? Visit <a href="https://discord.com/invite/NcZkQfj" target="_blank">TSD discord forum</a></li>
-      </ul>
+      <div class="collapsable">
+        <h4 class="collapsable-title">
+          Advanced Server Configuration
+        </h4>
+        <div class="collapsable-content">
+            <form class="form-horizontal">
+              <div class="control-group">
+                  <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
+                  <label class="control-label">{{ _('Server Address') }}</label>
+                  <div class="controls">
+                      <input id="endpoint_prefix-input" type="text" class="span8 endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix"></input>
+                      <button class="btn" type="button" data-bind="click: resetEndpointPrefix">Restore Default</button>
+                  </div>
+              </div>
+            </form>
+        </div>
+      </div>
+      <div class="collapsable">
+        <h4 class="collapsable-title">
+          Help
+        </h4>
+        <div class="collapsable-content">
+          <ul>
+            <li>Lost? Check out the <a href="https://www.thespaghettidetective.com/docs/octoprint-plugin-setup/" target="_blank">step-by-step setup guide</a>.</li>
+            <li><a href="#" data-bind="click: function(data, event) { toStep(1); }">Walk through this wizard again.</a></li>
+            <li>Need more help? Visit <a href="https://discord.com/invite/NcZkQfj" target="_blank">TSD discord forum</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -189,7 +189,9 @@ $(function () {
 
             apiCommand({
                 command: "verify_code",
-                code: code})
+                code: code,
+                endpoint_prefix: $('#endpoint_prefix-input').val(),
+            })
                 .done(function(apiStatus) {
                     if (apiStatus.succeeded) {
                         $('.verification-wrapper').addClass('success');
@@ -205,6 +207,10 @@ $(function () {
                 .always(function () {
                     self.verifying(false);
                 });
+        };
+
+        self.resetEndpointPrefix = function () {
+            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix("https://app.thespaghettidetective.com");
         };
 
         self.reset = function() {
