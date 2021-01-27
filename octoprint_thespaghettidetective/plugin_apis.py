@@ -6,7 +6,7 @@ from .lib import alert_queue
 
 def get_api_commands():
     return dict(
-        verify_code=['code'],
+        verify_code=['code', 'endpoint_prefix'],
         get_plugin_status=[],
         toggle_sentry_opt=[],
         test_server_connection=[],
@@ -16,6 +16,7 @@ def get_api_commands():
 def on_api_command(plugin, command, data):
     try:
         if command == "verify_code":
+            plugin._settings.set(["endpoint_prefix"], data["endpoint_prefix"], force=True)
             resp = server_request('GET', '/api/v1/onetimeverificationcodes/verify/?code=' + data["code"], plugin)
             succeeded = resp.ok
             printer = None

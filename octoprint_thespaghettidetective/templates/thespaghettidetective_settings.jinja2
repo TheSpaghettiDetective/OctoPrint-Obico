@@ -124,12 +124,12 @@
           <h1 class="section-title">Troubleshooting Tips</h1>
           <p>Make sure you have followed <a href="https://www.thespaghettidetective.com/docs/octoprint-plugin-setup/">the setup guide</a> to link OctoPrint to your The Spaghetti Detective account successfully. Check out our <a href="https://www.thespaghettidetective.com/help/">help docs</a> for detailed troubleshooting guides.</p>
           <div class="section-content">
-            <div class="toggle">
-              <h3 class="toggle-title">
+            <div class="collapsable">
+              <h4 class="collapsable-title">
                 Webcam streaming
                 <span class="counter">4</span>
-              </h3>
-              <div class="toggle-content">
+              </h4>
+              <div class="collapsable-content">
                 <h5>I'm getting laggy webcam streaming.</h5>
                 <ul>
                   <li>If you have a free The Spaghetti Detective account and it's out of the free trial period, your webcam streaming will be 1 frame per 10 seconds. <a href="https://www.thespaghettidetective.com/docs/upgrade-to-pro/#what-cant-the-detective-just-work-for-free-people-love-free-you-know">25 frames per second webcam streaming is a premium feature for Pro accounts only.</a></li>
@@ -155,12 +155,12 @@
                 </ul>
               </div>
             </div>
-            <div class="toggle">
-              <h3 class="toggle-title">
+            <div class="collapsable">
+              <h4 class="collapsable-title">
                 Failure detection
                 <span class="counter">2</span>
-              </h3>
-              <div class="toggle-content">
+              </h4>
+              <div class="collapsable-content">
                 <h5>I got a spaghetti alert but there was nothing wrong.</h5>
                 <ul>
                   <li>This happens because The Detective is not perfect at her job yet.  <a href="https://www.thespaghettidetective.com/docs/help-the-detective-improve/">Help her improve.</a></li>
@@ -174,12 +174,12 @@
                 </ul>
               </div>
             </div>
-            <div class="toggle">
-              <h3 class="toggle-title">
+            <div class="collapsable">
+              <h4 class="collapsable-title">
                 Other problems
                 <span class="counter">2</span>
-              </h3>
-              <div class="toggle-content">
+              </h4>
+              <div class="collapsable-content">
                 <h5>My OctoPrint is running, but the page shows "OctoPrint is offline".</h5>
                 <ul>
                   <li>Your Rasbperry Pi may have issue connecting to the internet. Check the connection status on this page for errors.</li>
@@ -215,7 +215,7 @@
             </div>
           </div>
           <div class="section-content" data-bind="visible: linkedPrinter.id">
-            <p>This OctoPrint is linked to <b data-bind="text: linkedPrinter.name">asdfasd</b> in your TSD account.</p>
+            <p>This OctoPrint is linked to <b data-bind="text: linkedPrinter.name"></b> in your TSD account.</p>
             <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/printers/' + linkedPrinter.id() + '/?source=plugin' }" target="_blank" class="btn">View/Change Settings (Login Required)</a>
           </div>
         </section>
@@ -279,8 +279,8 @@
                   <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
                   <label class="control-label">{{ _('Server Address') }}</label>
                   <div class="controls">
-                      <input type="text" class="span8 endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix">
-                      <button id="restore-server-address" class="btn" type="button" data-bind="click: resetEndpointPrefix">Restore Default</button>
+                      <input type="text" class="span8 endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix"></input>
+                      <button class="btn" type="button" data-bind="click: resetEndpointPrefix">Restore Default</button>
                   </div>
               </div>
             </form>

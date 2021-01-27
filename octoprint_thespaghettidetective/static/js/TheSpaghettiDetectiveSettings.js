@@ -7,8 +7,8 @@
 $(function () {
 
     $(function() {
-        $('.settings-wrapper .toggle').click(function() {
-            $(this).toggleClass('opened');
+        $('.collapsable-title').click(function() {
+            $(this).parent().toggleClass('opened');
         })
     });
 
