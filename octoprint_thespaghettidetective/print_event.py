@@ -8,18 +8,27 @@ _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 class PrintEventTracker:
 
-    def __init__(self):
+    def __init__(self, plugin):
+        self.plugin = plugin
         self._mutex = threading.RLock()
         self.current_print_ts = -1    # timestamp as print_ts coming from octoprint
         self.tsd_gcode_file_id = None
 
-    def on_event(self, plugin, event, payload):
+    def on_event(self, event, payload, at):
         with self._mutex:
             if event == 'PrintStarted':
-                self.current_print_ts = int(time.time())
+                # in some error condition its possible that
+                # plugin receives more than one PrintStarted
+                # in the very same second; let's clean that up here
+                current_print_ts = int(at)
+                if current_print_ts <= self.current_print_ts:
+                    current_print_ts = self.current_print_ts + 1
 
-        data = self.octoprint_data(plugin)
+                self.current_print_ts = current_print_ts
+
+        data = self.octoprint_data()
         data['octoprint_event'] = {
+            'at': at,
             'event_type': event,
             'data': payload
         }
@@ -32,14 +41,15 @@ class PrintEventTracker:
 
         return data
 
-    def octoprint_data(self, plugin):
+    def octoprint_data(self):
         data = {
-            'octoprint_data': plugin._printer.get_current_data(),
-            'octoprint_temperatures': plugin._printer.get_current_temperatures(),
+            'at': time.time(),
+            'octoprint_data': self.plugin._printer.get_current_data(),
+            'octoprint_temperatures': self.plugin._printer.get_current_temperatures(),
         }
-        data['octoprint_data']['file_metadata'] = self.get_file_metadata(plugin, data)
+        data['octoprint_data']['file_metadata'] = self.get_file_metadata(data)
 
-        octo_settings = plugin.octoprint_settings_updater.as_dict()
+        octo_settings = self.plugin.octoprint_settings_updater.as_dict()
         if octo_settings:
             data['octoprint_settings'] = octo_settings
 
@@ -58,7 +68,7 @@ class PrintEventTracker:
         with self._mutex:
             return self.tsd_gcode_file_id
 
-    def get_file_metadata(self, plugin, data):
+    def get_file_metadata(self, data):
         try:
             current_file = data.get('octoprint_data', {}).get('job', {}).get('file', {})
             origin = current_file.get('origin')
@@ -66,7 +76,7 @@ class PrintEventTracker:
             if not origin or not path:
                 return None
 
-            file_metadata = plugin._file_manager._storage_managers.get(origin).get_metadata(path)
+            file_metadata = self.plugin._file_manager._storage_managers.get(origin).get_metadata(path)
             return {'analysis': {'printingArea': file_metadata.get('analysis', {}).get('printingArea')}}
         except Exception as e:
             _logger.exception(e)

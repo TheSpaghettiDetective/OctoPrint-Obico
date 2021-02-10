@@ -44,7 +44,7 @@ POST_STATUS_INTERVAL_SECONDS = 15.0
 
 DEFAULT_LINKED_PRINTER = {'is_pro': False}
 
-_print_event_tracker = PrintEventTracker()
+MAX_EVENT_QUEUE_SIZE = 1000
 
 
 class TheSpaghettiDetectivePlugin(
@@ -58,13 +58,17 @@ class TheSpaghettiDetectivePlugin(
         octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
+        self.shutting_down = False
+        self.print_event_tracker = PrintEventTracker(plugin=self)
+        self.event_q = queue.Queue(maxsize=MAX_EVENT_QUEUE_SIZE)
+        self.force_status_update = threading.Event()
         self.ss = None
         self.last_status_update_ts = 0
         self.remote_status = RemoteStatus()
         self.commander = Commander()
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
-        self.file_downloader = FileDownloader(self, _print_event_tracker)
+        self.file_downloader = FileDownloader(self)
         self.webcam_streamer = None
         self.linked_printer = DEFAULT_LINKED_PRINTER
         self.local_tunnel = None
@@ -142,24 +146,23 @@ class TheSpaghettiDetectivePlugin(
     # ~~ Eventhandler mixin
 
     def on_event(self, event, payload):
-        global _print_event_tracker
+        interesting = (
+            event in ('FirmwareData', 'SettingsUpdated') or
+            event.startswith('Print')
+        )
 
-        try:
-            if event == 'FirmwareData':
-                self.octoprint_settings_updater.update_firmware(payload)
-                self.post_printer_status(_print_event_tracker.octoprint_data(self))
-            elif event == 'SettingsUpdated':
-                self.octoprint_settings_updater.update_settings()
-                self.post_printer_status(_print_event_tracker.octoprint_data(self))
-            elif event.startswith("Print"):
-                event_payload = _print_event_tracker.on_event(self, event, payload)
-                if event_payload:
-                    self.post_printer_status(event_payload)
-        except Exception as e:
-            self.sentry.captureException(tags=get_tags())
+        if interesting:
+            try:
+                self.event_q.put_nowait(
+                    (event, payload, time.time())
+                )
+            except queue.Full:
+                _logger.error('event queue is full')
+
     # ~~Shutdown Plugin
 
     def on_shutdown(self):
+        self.shutting_down = True
         if self.ss is not None:
             self.ss.close()
         if self.janus:
@@ -184,14 +187,63 @@ class TheSpaghettiDetectivePlugin(
         main_thread.daemon = True
         main_thread.start()
 
+        post_status_thread = threading.Thread(
+            target=self.post_printer_status_loop)
+        post_status_thread.daemon = True
+        post_status_thread.start()
+
     # Private methods
+
+    def post_printer_status_loop(self):
+        while True:
+            try:
+                try:
+                    # event processing has priority
+                    (event, payload, at) = self.event_q.get(timeout=1)
+                except queue.Empty:
+                    # status update logic is activated every second (see timeout above)
+                    # when there are no pending events;
+                    (event, payload, at) = (None, None, None)
+
+                    if self.shutting_down:
+                        return
+
+                if event is None:
+                    # status update logic
+                    at = time.time()
+                    cur_delta = abs(at - self.last_status_update_ts)
+                    need_to_post = (
+                        self.ss and
+                        self.ss.connected() and
+                        (
+                            cur_delta >= POST_STATUS_INTERVAL_SECONDS or
+                            self.force_status_update.is_set()
+                        )
+                    )
+                    if need_to_post:
+                        self.force_status_update.clear()
+                        self.post_printer_status(self.print_event_tracker.octoprint_data())
+
+                elif event == 'FirmwareData':
+                    self.octoprint_settings_updater.update_firmware(payload)
+                    self.post_printer_status(self.print_event_tracker.octoprint_data())
+
+                elif event == 'SettingsUpdated':
+                    self.octoprint_settings_updater.update_settings()
+                    self.post_printer_status(self.print_event_tracker.octoprint_data())
+
+                elif event.startswith("Print"):
+                    event_payload = self.print_event_tracker.on_event(event, payload, at)
+                    if event_payload:
+                        self.post_printer_status(event_payload)
+
+            except Exception:
+                self.sentry.captureException(tags=get_tags())
 
     def auth_headers(self, auth_token=None):
         return {"Authorization": "Token " + self.auth_token(auth_token)}
 
     def main_loop(self):
-        global _print_event_tracker
-
         get_tags()  # init tags to minimize risk of race condition
 
         self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
@@ -226,9 +278,13 @@ class TheSpaghettiDetectivePlugin(
         backoff = ExpoBackoff(120)
         while True:
             try:
-                if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
+                if self.shutting_down:
+                    return
+
+                # maintain ws connection here
+                if not self.ss or not self.ss.connected:
                     error_stats.attempt('server')
-                    self.post_printer_status(_print_event_tracker.octoprint_data(self), try_connecting=True)
+                    self.try_connecting()
                     backoff.reset()
 
                 self.jpeg_poster.post_jpeg_if_needed()
@@ -245,6 +301,11 @@ class TheSpaghettiDetectivePlugin(
     def post_printer_status(self, data, try_connecting=False):
         if self.send_ws_msg_to_server(data, try_connecting=try_connecting):
             self.last_status_update_ts = time.time()
+
+    def try_connecting(self):
+        if not self.ss or not self.ss.connected():
+            self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
+            self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
 
     def send_ws_msg_to_server(self, data, try_connecting=False, as_binary=False):
         """
@@ -267,8 +328,7 @@ class TheSpaghettiDetectivePlugin(
 
         if not self.ss or not self.ss.connected():
             if try_connecting:
-                self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
-                self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
+                self.try_connecting()
             else:
                 return False
 
@@ -358,7 +418,7 @@ class TheSpaghettiDetectivePlugin(
                         {'passthru': {'ref': ack_ref, 'ret': ret, '_webrtc': True}})
 
                 time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
-                self.post_printer_status(_print_event_tracker.octoprint_data(self))
+                self.force_status_update.set()
 
             if msg.get('janus') and self.janus:
                 self.janus.pass_to_janus(msg.get('janus'))
@@ -375,7 +435,7 @@ class TheSpaghettiDetectivePlugin(
                 kwargs = msg.get('ws.tunnel')
                 kwargs['type_'] = kwargs.pop('type')
                 self.local_tunnel.send_ws_to_local(**kwargs)
-        except:
+        except Exception:
             self.sentry.captureException(tags=get_tags())
 
     def process_janus_msg(self, raw_msg):
@@ -435,7 +495,7 @@ class TheSpaghettiDetectivePlugin(
         if resp and resp.ok:
             return resp.json()
         else:
-            return None # Triggers a backoff
+            return None  # Triggers a backoff
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py

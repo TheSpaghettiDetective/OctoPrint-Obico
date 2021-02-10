@@ -9,18 +9,17 @@ UPLOAD_FOLDER = 'TheSpaghettiDetectiveUpload'
 
 class FileDownloader:
 
-    def __init__(self, plugin, _print_event_tracker):
+    def __init__(self, plugin):
         self.plugin = plugin
-        self._print_event_tracker = _print_event_tracker
 
     def download(self, gcode_file):
         try:
             _logger.warn('Received download command for {} '.format(gcode_file))
 
-            if self._print_event_tracker.get_tsd_gcode_file_id() or self.plugin._printer.get_current_data().get('state', {}).get('text') != 'Operational':
+            if self.plugin.print_event_tracker.get_tsd_gcode_file_id() or self.plugin._printer.get_current_data().get('state', {}).get('text') != 'Operational':
                 return {'error': 'Currently downloading or printing!'}
 
-            self._print_event_tracker.set_tsd_gcode_file_id(gcode_file['id'])
+            self.plugin.print_event_tracker.set_tsd_gcode_file_id(gcode_file['id'])
 
             self.__ensure_storage__()
             target_path = os.path.join(self.g_code_folder, gcode_file['safe_filename'])
