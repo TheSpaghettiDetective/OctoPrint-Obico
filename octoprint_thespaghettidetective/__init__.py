@@ -24,7 +24,8 @@ from .utils import (
     get_tags, not_using_pi_camera, OctoPrintSettingsUpdater, server_request)
 from .lib.error_stats import error_stats
 from .print_event import PrintEventTracker
-from .webcam_stream import WebcamStreamer, JANUS_SERVER, JANUS_DATA_PORT
+from .janus import JanusTunnel, JANUS_SERVER, JANUS_DATA_PORT
+from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster
 from .file_download import FileDownloader
@@ -69,6 +70,7 @@ class TheSpaghettiDetectivePlugin(
         self.local_tunnel = None
         self.udp_q = queue.Queue(maxsize=1)
         self.udp_client = UDPClient(JANUS_SERVER, JANUS_DATA_PORT, self.udp_q)
+        self.janus = JanusTunnel(self)
         self.seen_refs = deque(maxlen=25)  # contains "last" 25 passthru refs
         self.seen_refs_lock = threading.RLock()
 
@@ -137,7 +139,6 @@ class TheSpaghettiDetectivePlugin(
     def on_api_command(self, command, data):
         return plugin_apis.on_api_command(self, command, data)
 
-
     # ~~ Eventhandler mixin
 
     def on_event(self, event, payload):
@@ -161,6 +162,8 @@ class TheSpaghettiDetectivePlugin(
     def on_shutdown(self):
         if self.ss is not None:
             self.ss.close()
+        if self.janus:
+            self.janus.shutdown()
         if self.webcam_streamer:
             self.webcam_streamer.restore()
         if self.udp_client:
@@ -180,6 +183,7 @@ class TheSpaghettiDetectivePlugin(
         main_thread = threading.Thread(target=self.main_loop)
         main_thread.daemon = True
         main_thread.start()
+
     # Private methods
 
     def auth_headers(self, auth_token=None):
@@ -195,6 +199,11 @@ class TheSpaghettiDetectivePlugin(
         self.sentry.user_context({'id': self.auth_token()})
         _logger.info('Linked printer: {}'.format(self.linked_printer))
         _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
+
+        # starting in thread to make sure it does not block
+        janus_thread = threading.Thread(target=self.janus.start)
+        janus_thread.daemon = True
+        janus_thread.start()
 
         if self.linked_printer.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
             _logger.info('Starting webcam streamer')
@@ -279,7 +288,6 @@ class TheSpaghettiDetectivePlugin(
         except queue.Full:
             _logger.debug("udp queue is full, msg dropped")
 
-
     def on_ws_close(self, ws):
         _logger.error("Server websocket is closing")
         self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
@@ -352,8 +360,8 @@ class TheSpaghettiDetectivePlugin(
                 time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
                 self.post_printer_status(_print_event_tracker.octoprint_data(self))
 
-            if msg.get('janus') and self.webcam_streamer:
-                self.webcam_streamer.pass_to_janus(msg.get('janus'))
+            if msg.get('janus') and self.janus:
+                self.janus.pass_to_janus(msg.get('janus'))
 
             if msg.get('remote_status'):
                 self.remote_status.update(msg.get('remote_status'))
