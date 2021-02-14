@@ -23,19 +23,15 @@ from textwrap import wrap
 import psutil
 from octoprint.util import to_unicode
 
+from .janus import JANUS_SERVER
 from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera, get_image_info, wait_for_port, wait_for_port_to_close
 from .lib import alert_queue
-from .ws import WebSocketClient
 from .webcam_capture import capture_jpeg, webcam_full_url
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
-JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
-
-JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
-JANUS_DATA_PORT = 8005  # check streaming plugin config
 
 PI_CAM_RESOLUTIONS = {
     'low': ((320, 240), (480, 270)),  # resolution for 4:3 and 16:9
@@ -55,6 +51,7 @@ def bitrate_for_dim(img_w, img_h):
         return 20000000
     else:
         return 6000000
+
 
 def cpu_watch_dog(watched_process, plugin, max, interval):
 
@@ -80,13 +77,10 @@ class WebcamStreamer:
         self.plugin = plugin
         self.sentry = sentry
 
-        self.janus_ws_backoff = ExpoBackoff(120)
         self.pi_camera = None
-        self.janus_ws = None
         self.webcam_server = None
         self.gst_proc = None
         self.ffmpeg_proc = None
-        self.janus_proc = None
         self.shutting_down = False
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
@@ -109,10 +103,6 @@ class WebcamStreamer:
                 raise
 
     def video_pipeline(self):
-        if os.getenv('JANUS_SERVER'):  # It's a dev simulator using janus container
-            self.start_janus_ws_tunnel()
-            return
-
         if not pi_version():
             _logger.warn('Not running on a Pi. Quiting video_pipeline.')
             return
@@ -121,7 +111,6 @@ class WebcamStreamer:
             compatible_mode = self.plugin._settings.get(["video_streaming_compatible_mode"])
 
             if compatible_mode == 'always':
-                self.start_janus()
                 self.ffmpeg_from_mjpeg()
                 return
 
@@ -131,11 +120,9 @@ class WebcamStreamer:
 
             # Use GStreamer for USB Camera. When it's used for Pi Camera it has problems (video is not playing. Not sure why)
             if not self.pi_camera:
-                self.start_janus()
-
                 try:
                     self.start_gst()
-                except:
+                except Exception:
                     if compatible_mode == 'never':
                         raise
                     self.ffmpeg_from_mjpeg()
@@ -148,85 +135,20 @@ class WebcamStreamer:
 
             # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
             else:
-                self.start_janus()
                 self.start_ffmpeg('-re -i pipe:0 -flags:v +global_header -c:v copy', via_wrapper=False)  # script wrapper would break stdin pipe
 
                 self.webcam_server = PiCamWebServer(self.pi_camera, self.sentry)
                 self.webcam_server.start()
                 self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, profile='baseline')
                 self.pi_camera.wait_recording(0)
-        except:
+        except Exception:
             not_using_pi_camera()
-            alert_queue.add_alert({'level': 'warning', 'cause':'streaming'}, self.plugin)
+            alert_queue.add_alert({'level': 'warning', 'cause': 'streaming'}, self.plugin)
 
             wait_for_port('127.0.0.1', 8080)  # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
             self.sentry.captureException(tags=get_tags())
             return
-
-    def pass_to_janus(self, msg):
-        if self.janus_ws and self.janus_ws.connected():
-            self.janus_ws.send(msg)
-
-    def start_janus(self):
-
-        def ensure_janus_config():
-            janus_conf_tmp = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg.template')
-            janus_conf_path = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg')
-            with open(janus_conf_tmp, "rt") as fin:
-                with open(janus_conf_path, "wt") as fout:
-                    for line in fin:
-                        line = line.replace('{JANUS_HOME}', JANUS_DIR)
-                        line = line.replace('{TURN_CREDENTIAL}', self.plugin._settings.get(["auth_token"]))
-                        fout.write(line)
-
-        def run_janus():
-            janus_backoff = ExpoBackoff(60*1)
-            janus_cmd = os.path.join(JANUS_DIR, 'run_janus.sh')
-            _logger.debug('Popen: {}'.format(janus_cmd))
-            self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-            while not self.shutting_down:
-                line = to_unicode(self.janus_proc.stdout.readline(), errors='replace')
-                if line:
-                    _logger.debug('JANUS: ' + line)
-                elif not self.shutting_down:
-                    self.janus_proc.wait()
-                    msg = 'Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode)
-                    self.sentry.captureMessage(msg, tags=get_tags())
-                    janus_backoff.more(msg)
-                    self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-        if os.getenv('JANUS_SERVER'):
-            _logger.warning('Using extenal Janus gateway. Not starting Janus.')
-        else:
-            ensure_janus_config()
-            janus_thread = Thread(target=run_janus)
-            janus_thread.daemon = True
-            janus_thread.start()
-
-            self.wait_for_janus()
-
-        self.start_janus_ws_tunnel()
-
-    @backoff.on_exception(backoff.expo, Exception, max_tries=10)
-    def wait_for_janus(self):
-        time.sleep(1)
-        socket.socket().connect((JANUS_SERVER, 8188))
-
-    def start_janus_ws_tunnel(self):
-
-        def on_close(ws):
-            self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
-            if not self.shutting_down:
-                _logger.warn('WS tunnel closed. Restarting janus tunnel.')
-                self.start_janus_ws_tunnel()
-
-        def on_message(ws, msg):
-            if self.plugin.process_janus_msg(msg):
-                self.janus_ws_backoff.reset()
-
-        self.janus_ws = WebSocketClient('ws://{}:8188/'.format(JANUS_SERVER), on_ws_msg=on_message, on_ws_close=on_close, subprotocols=['janus-protocol'])
 
     def ffmpeg_from_mjpeg(self):
 
@@ -259,7 +181,7 @@ class WebcamStreamer:
         def monitor_ffmpeg_process():  # It's pointless to restart ffmpeg without calling pi_camera.record with the new input. Just capture unexpected exits not to see if it's a big problem
             ring_buffer = deque(maxlen=50)
             while True:
-                err = to_unicode(self.ffmpeg_proc.stderr.readline())
+                err = to_unicode(self.ffmpeg_proc.stderr.readline(), errors='replace')
                 if not err:  # EOF when process ends?
                     if self.shutting_down:
                         return
@@ -300,9 +222,9 @@ class WebcamStreamer:
 
         def ensure_gst_process():
             ring_buffer = deque(maxlen=50)
-            gst_backoff = ExpoBackoff(60*10)
+            gst_backoff = ExpoBackoff(60 * 10)
             while True:
-                err = to_unicode(self.gst_proc.stderr.readline())
+                err = to_unicode(self.gst_proc.stderr.readline(), errors='replace')
                 if not err:  # EOF when process ends?
                     if self.shutting_down:
                         return
@@ -329,39 +251,34 @@ class WebcamStreamer:
 
         try:
             requests.post('http://127.0.0.1:8080/shutdown')
-        except:
+        except Exception:
             pass
-        if self.janus_proc:
-            try:
-                self.janus_proc.terminate()
-            except:
-                pass
+
         if self.gst_proc:
             try:
                 self.gst_proc.terminate()
-            except:
+            except Exception:
                 pass
         if self.ffmpeg_proc:
             try:
                 self.ffmpeg_proc.terminate()
-            except:
+            except Exception:
                 pass
         if self.pi_camera:
             # https://github.com/waveform80/picamera/issues/122
             try:
                 self.pi_camera.stop_recording()
-            except:
+            except Exception:
                 pass
             try:
                 self.pi_camera.close()
-            except:
+            except Exception:
                 pass
 
         # wait for WebcamServer to be clear of port 8080. Otherwise mjpg-streamer may fail to bind 127.0.0.1:8080 (it can still bind :::8080)
         wait_for_port_to_close('127.0.0.1', 8080)
         sarge.run('sudo service webcamd start')   # failed to start streaming. falling back to mjpeg-streamer
 
-        self.janus_proc = None
         self.gst_proc = None
         self.ffmpeg_proc = None
         self.pi_camera = None
@@ -385,7 +302,7 @@ class UsbCamWebServer:
             if err.errno not in [errno.ECONNREFUSED, ]:
                 self.sentry.captureException(tags=get_tags())
             raise
-        except:
+        except Exception:
             self.sentry.captureException(tags=get_tags())
             raise
         finally:
@@ -407,15 +324,15 @@ class UsbCamWebServer:
                 raise Exception('Multiart header not found!')
 
             length = int(header.group(1))
-            chunk = bytearray(chunk[header.end()+4:])
+            chunk = bytearray(chunk[header.end() + 4:])
             while length > len(chunk):
-                chunk.extend(s.recv(length-len(chunk)))
+                chunk.extend(s.recv(length - len(chunk)))
             return chunk[:length]
         except (socket.timeout, socket.error):
             exc_type, exc_obj, exc_tb = sys.exc_info()
             _logger.error(exc_obj)
             raise
-        except:
+        except Exception:
             self.sentry.captureException(tags=get_tags())
             raise
         finally:
@@ -464,11 +381,11 @@ class PiCamWebServer:
                 bio.truncate()
 
                 with self._mutex:
-                    last_last_capture = self.last_capture
+                    last_last_capture = self.last_capture  # noqa: F841 for sentry?
                     self.last_capture = time.time()
 
                 self.img_q.put(chunk)
-        except:
+        except Exception:
             self.sentry.captureException(tags=get_tags())
             raise
 
@@ -485,7 +402,7 @@ class PiCamWebServer:
                 time.sleep(0.15)  # slow down mjpeg streaming so that it won't use too much cpu or bandwidth
         except GeneratorExit:
             pass
-        except:
+        except Exception:
             self.sentry.captureException(tags=get_tags())
             raise
 
