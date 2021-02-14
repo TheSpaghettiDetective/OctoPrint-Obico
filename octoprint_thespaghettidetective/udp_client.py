@@ -21,7 +21,7 @@ class UDPClient(object):
                         sock.close()
                     except socket.error as ex:
                         _logger.debug('could not close udp socket (%s)' % ex)
-                    return
+                return
 
             if sock is None:
                 try:
