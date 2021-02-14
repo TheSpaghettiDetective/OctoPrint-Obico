@@ -11,8 +11,11 @@ import sys
 import time
 import requests
 import backoff
-import queue
 from collections import deque
+try:
+    import queue
+except ImportError:
+    import Queue as queue
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
