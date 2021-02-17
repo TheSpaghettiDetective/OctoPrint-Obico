@@ -11,6 +11,11 @@ import sys
 import time
 import requests
 import backoff
+from collections import deque
+try:
+    import queue
+except ImportError:
+    import Queue as queue
 
 from .ws import WebSocketClient, WebSocketClientException
 from .commander import Commander
@@ -19,12 +24,15 @@ from .utils import (
     get_tags, not_using_pi_camera, OctoPrintSettingsUpdater, server_request)
 from .lib.error_stats import error_stats
 from .print_event import PrintEventTracker
+from .janus import JanusTunnel, JANUS_SERVER, JANUS_DATA_PORT
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster
 from .file_download import FileDownloader
 from .tunnel import LocalTunnel
 from . import plugin_apis
+from .udp_client import UDPClient
+
 
 import octoprint.plugin
 
@@ -60,6 +68,11 @@ class TheSpaghettiDetectivePlugin(
         self.webcam_streamer = None
         self.linked_printer = DEFAULT_LINKED_PRINTER
         self.local_tunnel = None
+        self.udp_q = queue.Queue(maxsize=1)
+        self.udp_client = UDPClient(JANUS_SERVER, JANUS_DATA_PORT, self.udp_q)
+        self.janus = JanusTunnel(self)
+        self.seen_refs = deque(maxlen=25)  # contains "last" 25 passthru refs
+        self.seen_refs_lock = threading.RLock()
 
     # ~~ Wizard plugin mix
 
@@ -126,7 +139,6 @@ class TheSpaghettiDetectivePlugin(
     def on_api_command(self, command, data):
         return plugin_apis.on_api_command(self, command, data)
 
-
     # ~~ Eventhandler mixin
 
     def on_event(self, event, payload):
@@ -150,17 +162,28 @@ class TheSpaghettiDetectivePlugin(
     def on_shutdown(self):
         if self.ss is not None:
             self.ss.close()
+        if self.janus:
+            self.janus.shutdown()
         if self.webcam_streamer:
             self.webcam_streamer.restore()
+        if self.udp_client:
+            self.udp_client.close()
+
         not_using_pi_camera()
 
     # ~~Startup Plugin
 
     def on_after_startup(self):
         not_using_pi_camera()
+
+        udp_thread = threading.Thread(target=self.udp_client.run)
+        udp_thread.daemon = True
+        udp_thread.start()
+
         main_thread = threading.Thread(target=self.main_loop)
         main_thread.daemon = True
         main_thread.start()
+
     # Private methods
 
     def auth_headers(self, auth_token=None):
@@ -176,6 +199,11 @@ class TheSpaghettiDetectivePlugin(
         self.sentry.user_context({'id': self.auth_token()})
         _logger.info('Linked printer: {}'.format(self.linked_printer))
         _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
+
+        # starting in thread to make sure it does not block
+        janus_thread = threading.Thread(target=self.janus.start)
+        janus_thread.daemon = True
+        janus_thread.start()
 
         if self.linked_printer.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
             _logger.info('Starting webcam streamer')
@@ -248,6 +276,18 @@ class TheSpaghettiDetectivePlugin(
 
         return True
 
+    def send_janus_msg_to_browser(self, data):
+        _logger.debug("Sending to browser: \n{}".format(data))
+        if __python_version__ == 3:
+            raw = json.dumps(data, default=str)
+        else:
+            raw = json.dumps(data, encoding='iso-8859-1', default=str)
+
+        try:
+            self.udp_q.put_nowait(bytes(raw.encode()))
+        except queue.Full:
+            _logger.debug("udp queue is full, msg dropped")
+
     def on_ws_close(self, ws):
         _logger.error("Server websocket is closing")
         self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
@@ -255,8 +295,6 @@ class TheSpaghettiDetectivePlugin(
         self.ss = None
 
     def process_server_msg(self, ws, raw_data):
-        global _print_event_tracker
-
         try:
             # raw_data can be both json or bson
             # no py2 compat way to properly detect type here
@@ -269,6 +307,14 @@ class TheSpaghettiDetectivePlugin(
                 _logger.debug(
                     'received binary message ({} bytes)'.format(len(raw_data)))
 
+            self._process_server_msg(msg)
+        except:
+            self.sentry.captureException(tags=get_tags())
+
+    def _process_server_msg(self, msg):
+        global _print_event_tracker
+
+        try:
             for command in msg.get('commands', []):
                 if command["cmd"] == "pause":
                     self.commander.prepare_to_pause(
@@ -284,24 +330,38 @@ class TheSpaghettiDetectivePlugin(
                 if command["cmd"] == 'print':
                     self.start_print(**command.get('args'))
 
-            passsthru = msg.get('passthru')
-            if passsthru:
-                target = getattr(self, passsthru.get('target'))
-                func = getattr(target, passsthru['func'], None)
+            passthru = msg.get('passthru')
+            if passthru:
+                target = getattr(self, passthru.get('target'))
+                func = getattr(target, passthru['func'], None)
                 if not func:
                     return
 
-                ack_ref = passsthru.get('ref')
-                ret = func(*(passsthru.get("args", [])))
+                ack_ref = passthru.get('ref')
+                if ack_ref is not None:
+                    # same msg may arrive through both ws and datachannel
+                    with self.seen_refs_lock:
+                        if ack_ref in self.seen_refs:
+                            _logger.debug('Got duplicate ref, ignoring msg')
+                            return
+                        # no need to remove item or check fullness
+                        # as deque manages that when maxlen is set
+                        self.seen_refs.append(ack_ref)
+
+                ret = func(*(passthru.get("args", [])))
 
                 if ack_ref:
-                    self.send_ws_msg_to_server({'passthru': {'ref': ack_ref, 'ret': ret}})
+                    self.send_ws_msg_to_server(
+                        {'passthru': {'ref': ack_ref, 'ret': ret}})
+                    # for fair play let ws go first
+                    self.send_janus_msg_to_browser(
+                        {'passthru': {'ref': ack_ref, 'ret': ret, '_webrtc': True}})
 
                 time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
                 self.post_printer_status(_print_event_tracker.octoprint_data(self))
 
-            if msg.get('janus') and self.webcam_streamer:
-                self.webcam_streamer.pass_to_janus(msg.get('janus'))
+            if msg.get('janus') and self.janus:
+                self.janus.pass_to_janus(msg.get('janus'))
 
             if msg.get('remote_status'):
                 self.remote_status.update(msg.get('remote_status'))
@@ -317,6 +377,30 @@ class TheSpaghettiDetectivePlugin(
                 self.local_tunnel.send_ws_to_local(**kwargs)
         except:
             self.sentry.captureException(tags=get_tags())
+
+    def process_janus_msg(self, raw_msg):
+        try:
+            msg = json.loads(raw_msg)
+        except ValueError:
+            return False
+
+        to_plugin = msg.get(
+            'plugindata', {}
+        ).get(
+            'data', {}
+        ).get(
+            'thespaghettidetective', {}
+        )
+
+        if to_plugin:
+            _logger.debug('Processing Janus msg')
+            _logger.debug(msg)
+            self._process_server_msg(to_plugin)
+            return True
+
+        _logger.debug('Relaying Janus msg')
+        _logger.debug(msg)
+        return self.send_ws_msg_to_server(dict(janus=raw_msg))
 
     # ~~ helper methods
 
