@@ -1,0 +1,12 @@
+test:
+    active: true
+    apikey: null
+    groups:
+    - admins
+    - users
+    password: 261f17870fea1f8337db03a48b150d09f64be251b32d5012e283cb6fd7b9fb7b94129298497f8f760efc1042994a133c8868513ed01121ed072c3a86524fa7ff
+    permissions: []
+    roles:
+    - user
+    - admin
+    settings: {}

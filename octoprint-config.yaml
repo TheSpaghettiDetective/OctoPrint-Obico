@@ -1,70 +1,67 @@
 accessControl:
     enabled: false
+    salt: 4fa5glqoqruGhWOxOdKnUhEHjXQlHEHa
 api:
-    key: 6CDB7AD1ED944C18B1FF82E6AACC7105
+    key: 96ABF309D50B40458FE380AE270D690C
 devel:
     cache:
         enabled: false
         preemptive: false
     stylesheet: css
-    virtualPrinter:
-        brokenM29: true
-        commandBuffer: 4
-        echoOnM117: true
-        enabled: true
-        extendedSdFileList: false
-        forceChecksum: false
-        hasBed: true
-        includeCurrentToolInTemps: true
-        includeFilenameInOpened: true
-        movementSpeed:
-            e: 300
-            x: 6000
-            y: 6000
-            z: 200
-        numExtruders: 1
-        okAfterResend: false
-        okWithLinenumber: false
-        repetierStyleResends: false
-        repetierStyleTargetTemperature: false
-        rxBuffer: 64
-        sendWait: false
-        smoothieTemperatureReporting: false
-        supportM112: true
-        throttle: 0.01
-        waitInterval: 1
     webassets:
         bundle: false
         clean_on_startup: true
         minify: true
+feature:
+    modelSizeDetection: false
 plugins:
     announcements:
         _config_version: 1
         channels:
             _blog:
-                read_until: 1593102540
+                read_until: 1612178700
             _important:
                 read_until: 1521111600
             _octopi:
-                read_until: 1573722900
+                read_until: 1611568800
             _plugins:
-                read_until: 1593320400
+                read_until: 1613541600
             _releases:
-                read_until: 1583322300
+                read_until: 1611052200
     cura:
         cura_engine: /usr/bin/CuraEngine
     discovery:
         upnpUuid: 17f58ec6-03a1-4594-98dc-435676ebf2ca
     errortracking:
         unique_id: af8924dc-a122-4b7d-9d4e-fed7e98b188a
+    gcodeviewer:
+        _config_version: 1
     softwareupdate:
-        _config_version: 7
+        _config_version: 9
     thespaghettidetective:
-        endpoint_prefix: http://docker.for.mac.host.internal:3334
-        sentry_opt: asked
+        auth_token: b7588cf3a16c787c7203
+        # endpoint_prefix: https://app.stg.thespaghettidetective.com
+        # endpoint_prefix: http://192.168.0.235:3334
+        # endpoint_prefix: http://docker.for.mac.host.internal:3334
+        sentry_opt: in
+    thespaghettidetective_beta:
+        auth_token: 7365a421913674d3299b
+        endpoint_prefix: http://app.stg.thespaghettidetective.com
+        webrtc_alpha: true
     tracking:
         enabled: false
         unique_id: e6b528a5-a4c9-4ecd-bbd6-b0fc3abb8c4a
+    virtual_printer:
+        _config_version: 1
+        enabled: true
+        movementSpeed:
+            e: 300
+            x: 6000
+            y: 6000
+            z: 200
+        okWithLinenumber: false
+        repetierStyleResends: false
+        sendWait: false
 printerProfiles:
     default: _default
 server:
