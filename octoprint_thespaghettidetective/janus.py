@@ -26,7 +26,7 @@ JANUS_WS_PORT = 8188
 JANUS_DATA_PORT = 8005  # check streaming plugin config
 
 
-class JanusTunnel:
+class JanusConn:
 
     def __init__(self, plugin):
         self.plugin = plugin
@@ -43,7 +43,7 @@ class JanusTunnel:
         if USE_EXTERNAL_JANUS:
             # Maybe it's a dev simulator using janus container
             _logger.warning('Using extenal Janus gateway. Not starting Janus.')
-            self.start_janus_ws_tunnel()
+            self.start_janus_ws()
             return
 
         def ensure_janus_config():
@@ -65,7 +65,7 @@ class JanusTunnel:
             while not self.shutting_down:
                 line = to_unicode(self.janus_proc.stdout.readline(), errors='replace')
                 if line:
-                    _logger.debug('JANUS: ' + line)
+                    _logger.debug('JANUS: ' + line.rstrip())
                 elif not self.shutting_down:
                     self.janus_proc.wait()
                     msg = 'Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode)
@@ -79,24 +79,23 @@ class JanusTunnel:
         janus_proc_thread.start()
 
         self.wait_for_janus()
-
-        self.start_janus_ws_tunnel()
+        self.start_janus_ws()
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=10)
     def wait_for_janus(self):
         time.sleep(1)
         socket.socket().connect((JANUS_SERVER, JANUS_WS_PORT))
 
-    def start_janus_ws_tunnel(self):
+    def start_janus_ws(self):
 
         def on_close(ws):
             self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
             if not self.shutting_down:
                 _logger.warn('WS tunnel closed. Restarting janus tunnel.')
-                self.start_janus_ws_tunnel()
+                self.start_janus_ws()
 
         def on_message(ws, msg):
-            if self.plugin.process_janus_msg(msg):
+            if self.process_janus_msg(msg):
                 self.janus_ws_backoff.reset()
 
         self.janus_ws = WebSocketClient(
@@ -120,3 +119,29 @@ class JanusTunnel:
                 pass
 
         self.janus_proc = None
+
+    def process_janus_msg(self, raw_msg):
+        try:
+            msg = json.loads(raw_msg)
+
+            # when plugindata.data.thespaghettidetective is set, this is a incoming message from webrtc data channel
+            # https://github.com/TheSpaghettiDetective/janus-gateway/commit/e0bcc6b40f145ce72e487204354486b2977393ea
+            to_plugin = msg.get(
+                'plugindata', {}
+            ).get(
+                'data', {}
+            ).get(
+                'thespaghettidetective', {}
+            )
+
+            if to_plugin:
+                _logger.debug('Processing Janus msg')
+                _logger.debug(msg)
+                self.plugin.client_conn.on_message_to_plugin(to_plugin)
+                return
+
+            _logger.debug('Relaying Janus msg')
+            _logger.debug(msg)
+            self.plugin.send_ws_msg_to_server(dict(janus=raw_msg))
+        except:
+            self.plugin.sentry.captureException(tags=get_tags())
