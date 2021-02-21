@@ -19,15 +19,15 @@ plugins:
         _config_version: 1
         channels:
             _blog:
-                read_until: 1612178700
+                read_until: 2612178700
             _important:
-                read_until: 1521111600
+                read_until: 2521111600
             _octopi:
-                read_until: 1611568800
+                read_until: 2611568800
             _plugins:
-                read_until: 1613541600
+                read_until: 2613541600
             _releases:
-                read_until: 1611052200
+                read_until: 2611052200
     cura:
         cura_engine: /usr/bin/CuraEngine
     discovery:
