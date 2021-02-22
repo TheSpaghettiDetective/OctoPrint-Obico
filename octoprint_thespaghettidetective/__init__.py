@@ -27,6 +27,7 @@ from .file_download import FileDownloader
 from .tunnel import LocalTunnel
 from . import plugin_apis
 from .client_conn import ClientConn
+import zlib
 
 
 import octoprint.plugin
@@ -313,7 +314,9 @@ class TheSpaghettiDetectivePlugin(
                     self.jpeg_poster.post_jpeg_if_needed(force=True)
 
             if msg.get('http.tunnel') and self.local_tunnel:
-                self.local_tunnel.send_http_to_local(**msg.get('http.tunnel'))
+                tunnel_thread = threading.Thread(target=self.local_tunnel.send_http_to_local, kwargs=msg.get('http.tunnel'))
+                tunnel_thread.is_daemon = True
+                tunnel_thread.start()
 
             if msg.get('ws.tunnel') and self.local_tunnel:
                 kwargs = msg.get('ws.tunnel')
