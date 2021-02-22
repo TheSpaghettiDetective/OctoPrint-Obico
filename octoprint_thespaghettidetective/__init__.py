@@ -139,14 +139,14 @@ class TheSpaghettiDetectivePlugin(
         try:
             if event == 'FirmwareData':
                 self.octoprint_settings_updater.update_firmware(payload)
-                self.post_printer_status(_print_event_tracker.octoprint_data(self))
+                self.post_printer_status()
             elif event == 'SettingsUpdated':
                 self.octoprint_settings_updater.update_settings()
-                self.post_printer_status(_print_event_tracker.octoprint_data(self))
+                self.post_printer_status()
             elif event.startswith("Print"):
                 event_payload = _print_event_tracker.on_event(self, event, payload)
                 if event_payload:
-                    self.post_printer_status(event_payload)
+                    self.post_printer_status(data=event_payload)
         except Exception as e:
             self.sentry.captureException(tags=get_tags())
     # ~~Shutdown Plugin
@@ -216,7 +216,7 @@ class TheSpaghettiDetectivePlugin(
             try:
                 if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
                     error_stats.attempt('server')
-                    self.post_printer_status(_print_event_tracker.octoprint_data(self), try_connecting=True)
+                    self.post_printer_status(try_connecting=True)
                     backoff.reset()
 
                 self.jpeg_poster.post_jpeg_if_needed()
@@ -230,7 +230,9 @@ class TheSpaghettiDetectivePlugin(
                 error_stats.add_connection_error('server', self)
                 backoff.more(e)
 
-    def post_printer_status(self, data, try_connecting=False):
+    def post_printer_status(self, data=None, try_connecting=False):
+        if not data:
+            data = _print_event_tracker.octoprint_data(self)
         if self.send_ws_msg_to_server(data, try_connecting=try_connecting):
             self.last_status_update_ts = time.time()
 

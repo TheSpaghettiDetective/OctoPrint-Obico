@@ -3,6 +3,7 @@ import logging
 import json
 import socket
 import threading
+import time
 import sys
 from collections import deque
 
@@ -37,7 +38,6 @@ class ClientConn:
                 # as deque manages that when maxlen is set
                 self.seen_refs.append(ack_ref)
 
-        print('running...', msg)
         ret = func(*(msg.get("args", [])))
 
         if ack_ref:
@@ -47,12 +47,12 @@ class ClientConn:
                 {'ref': ack_ref, 'ret': ret, '_webrtc': True})
 
         time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
-        self.post_printer_status(_print_event_tracker.octoprint_data(self))
+        self.plugin.post_printer_status()
 
     def send_msg_to_client(self, data):
         _logger.debug("Sending to client: \n{}".format(data))
         if __python_version__ == 3:
-            raw = json.dumps(data, default=str)
+            raw = json.dumps(data, default=str).encode("utf8")
         else:
             raw = json.dumps(data, encoding='iso-8859-1', default=str)
 
