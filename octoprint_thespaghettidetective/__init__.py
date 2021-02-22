@@ -183,12 +183,14 @@ class TheSpaghettiDetectivePlugin(
         get_tags()  # init tags to minimize risk of race condition
 
         self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
-        self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
         self.sentry.user_context({'id': self.auth_token()})
         _logger.info('Linked printer: {}'.format(self.linked_printer))
         _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
 
-        # starting in thread to make sure it does not block
+        # Notify plugin UI about the server connection status change
+        self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
+
+        # Janus may take a while to start, or fail to start. Put it in thread to make sure it does not block
         janus_thread = threading.Thread(target=self.janus.start)
         janus_thread.daemon = True
         janus_thread.start()
@@ -211,6 +213,10 @@ class TheSpaghettiDetectivePlugin(
             data_dir=self.get_plugin_data_folder(),
             sentry=self.sentry)
 
+        jpeg_post_thread = threading.Thread(target=self.jpeg_poster.jpeg_post_loop)
+        jpeg_post_thread.daemon = True
+        jpeg_post_thread.start()
+
         backoff = ExpoBackoff(120)
         while True:
             try:
@@ -219,7 +225,6 @@ class TheSpaghettiDetectivePlugin(
                     self.post_printer_status(try_connecting=True)
                     backoff.reset()
 
-                self.jpeg_poster.post_jpeg_if_needed()
                 time.sleep(1)
 
             except WebSocketClientException as e:

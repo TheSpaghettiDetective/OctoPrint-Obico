@@ -22,7 +22,8 @@ import requests
 import backoff
 
 from .lib.error_stats import error_stats
-from .utils import server_request
+from .utils import server_request, get_tags
+
 
 POST_PIC_INTERVAL_SECONDS = 10.0
 if os.environ.get('DEBUG'):
@@ -126,3 +127,10 @@ class JpegPoster:
         resp.raise_for_status()
         _logger.debug('Jpeg posted to server')
 
+    def jpeg_post_loop(self):
+        while True:
+            try:
+                self.post_jpeg_if_needed()
+                time.sleep(1)
+            except:
+                self.plugin.sentry.captureException(tags=get_tags())
