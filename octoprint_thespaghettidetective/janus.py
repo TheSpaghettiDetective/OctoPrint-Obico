@@ -14,7 +14,7 @@ try:
 except ImportError:
     import Queue as queue
 
-from .utils import ExpoBackoff, get_tags
+from .utils import ExpoBackoff, get_tags, pi_version
 from .ws import WebSocketClient
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
@@ -35,14 +35,10 @@ class JanusConn:
         self.janus_proc = None
         self.shutting_down = False
 
-    def pass_to_janus(self, msg):
-        if self.janus_ws and self.janus_ws.connected():
-            self.janus_ws.send(msg)
-
     def start(self):
-        if USE_EXTERNAL_JANUS:
+        if USE_EXTERNAL_JANUS or not pi_version():
             # Maybe it's a dev simulator using janus container
-            _logger.warning('Using extenal Janus gateway. Not starting Janus.')
+            _logger.warning('Using external Janus gateway or not on a Pi. Not starting Janus.')
             self.start_janus_ws()
             return
 
@@ -80,6 +76,10 @@ class JanusConn:
 
         self.wait_for_janus()
         self.start_janus_ws()
+
+    def pass_to_janus(self, msg):
+        if self.janus_ws and self.janus_ws.connected():
+            self.janus_ws.send(msg)
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=10)
     def wait_for_janus(self):
