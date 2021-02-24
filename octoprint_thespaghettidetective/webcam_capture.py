@@ -124,8 +124,7 @@ class JpegPoster:
             return
 
         resp = server_request('POST', '/api/v1/octo/pic/', self.plugin, timeout=60, files=files, headers=self.plugin.auth_headers())
-        resp.raise_for_status()
-        _logger.debug('Jpeg posted to server')
+        _logger.debug('Jpeg posted to server - {0}'.format(resp))
 
     def jpeg_post_loop(self):
         while True:
