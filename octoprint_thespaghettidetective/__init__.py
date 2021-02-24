@@ -35,7 +35,7 @@ __python_version__ = 3 if sys.version_info >= (3, 0) else 2
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
-POST_STATUS_INTERVAL_SECONDS = 15.0
+POST_STATUS_INTERVAL_SECONDS = 50.0
 
 DEFAULT_LINKED_PRINTER = {'is_pro': False}
 
@@ -55,6 +55,8 @@ class TheSpaghettiDetectivePlugin(
     def __init__(self):
         self.ss = None
         self.last_status_update_ts = 0
+        self.status_update_booster = 0    # update status at higher frequency when self.status_update_booster > 0
+        self.status_update_lock = threading.RLock()
         self.remote_status = RemoteStatus()
         self.commander = Commander()
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
@@ -136,17 +138,19 @@ class TheSpaghettiDetectivePlugin(
     def on_event(self, event, payload):
         global _print_event_tracker
 
+        self.boost_status_update()
+
         try:
             if event == 'FirmwareData':
                 self.octoprint_settings_updater.update_firmware(payload)
-                self.post_printer_status()
+                self.post_update_to_server()
             elif event == 'SettingsUpdated':
                 self.octoprint_settings_updater.update_settings()
-                self.post_printer_status()
+                self.post_update_to_server()
             elif event.startswith("Print"):
                 event_payload = _print_event_tracker.on_event(self, event, payload)
                 if event_payload:
-                    self.post_printer_status(data=event_payload)
+                    self.post_update_to_server(data=event_payload)
         except Exception as e:
             self.sentry.captureException(tags=get_tags())
     # ~~Shutdown Plugin
@@ -217,12 +221,20 @@ class TheSpaghettiDetectivePlugin(
         jpeg_post_thread.daemon = True
         jpeg_post_thread.start()
 
+        status_update_thread = threading.Thread(target=self.status_update_to_client_loop)
+        status_update_thread.daemon = True
+        status_update_thread.start()
+
         backoff = ExpoBackoff(120)
         while True:
             try:
-                if self.last_status_update_ts < time.time() - POST_STATUS_INTERVAL_SECONDS:
+                interval_in_seconds = POST_STATUS_INTERVAL_SECONDS
+                if self.status_update_booster > 0:
+                    interval_in_seconds /= 5
+
+                if self.last_status_update_ts < time.time() - interval_in_seconds:
                     error_stats.attempt('server')
-                    self.post_printer_status(try_connecting=True)
+                    self.post_update_to_server(try_connecting=True)
                     backoff.reset()
 
                 time.sleep(1)
@@ -235,7 +247,7 @@ class TheSpaghettiDetectivePlugin(
                 error_stats.add_connection_error('server', self)
                 backoff.more(e)
 
-    def post_printer_status(self, data=None, try_connecting=False):
+    def post_update_to_server(self, data=None, try_connecting=False):
         if not data:
             data = _print_event_tracker.octoprint_data(self)
         if self.send_ws_msg_to_server(data, try_connecting=try_connecting):
@@ -291,6 +303,7 @@ class TheSpaghettiDetectivePlugin(
                 _logger.debug(
                     'received binary message ({} bytes)'.format(len(raw_data)))
 
+            need_status_boost = False
             for command in msg.get('commands', []):
                 if command["cmd"] == "pause":
                     self.commander.prepare_to_pause(
@@ -308,6 +321,7 @@ class TheSpaghettiDetectivePlugin(
 
             if msg.get('passthru'):
                 self.client_conn.on_message_to_plugin(msg.get('passthru'))
+                need_status_boost = True
 
             if msg.get('janus') and self.janus:
                 self.janus.pass_to_janus(msg.get('janus'))
@@ -316,6 +330,7 @@ class TheSpaghettiDetectivePlugin(
                 self.remote_status.update(msg.get('remote_status'))
                 if self.remote_status['viewing']:
                     self.jpeg_poster.post_jpeg_if_needed(force=True)
+                need_status_boost = True
 
             if msg.get('http.tunnel') and self.local_tunnel:
                 self.local_tunnel.send_http_to_local(**msg.get('http.tunnel'))
@@ -324,9 +339,28 @@ class TheSpaghettiDetectivePlugin(
                 kwargs = msg.get('ws.tunnel')
                 kwargs['type_'] = kwargs.pop('type')
                 self.local_tunnel.send_ws_to_local(**kwargs)
+
+            if need_status_boost:
+                self.boost_status_update()
         except:
             self.sentry.captureException(tags=get_tags())
 
+
+    def status_update_to_client_loop(self):
+        while True:
+            interval = 0.75 if self.status_update_booster > 0 else 2
+            time.sleep(interval)
+            self.post_printer_status_to_client()
+            with self.status_update_lock:
+                self.status_update_booster -= 1
+
+    def post_printer_status_to_client(self):
+        self.client_conn.send_msg_to_client(_print_event_tracker.octoprint_data(self, status_only=True))
+
+    def boost_status_update(self):
+        self.post_printer_status_to_client()
+        with self.status_update_lock:
+            self.status_update_booster = 20
 
     # ~~ helper methods
 

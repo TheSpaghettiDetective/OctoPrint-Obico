@@ -32,21 +32,28 @@ class PrintEventTracker:
 
         return data
 
-    def octoprint_data(self, plugin):
+    def octoprint_data(self, plugin, status_only=False):
         data = {
-            'octoprint_data': plugin._printer.get_current_data(),
-            'octoprint_temperatures': plugin._printer.get_current_temperatures(),
+            'octoprint_data': plugin._printer.get_current_data()
         }
+
+        with self._mutex:
+            data['current_print_ts'] = self.current_print_ts
+            if self.tsd_gcode_file_id:
+                data['tsd_gcode_file_id'] = self.tsd_gcode_file_id
+
+        data['octoprint_data']['temperatures'] = plugin._printer.get_current_temperatures()
+        data['octoprint_data']['_ts'] = int(time.time())
+
+        if status_only:
+            return data
+
         data['octoprint_data']['file_metadata'] = self.get_file_metadata(plugin, data)
 
         octo_settings = plugin.octoprint_settings_updater.as_dict()
         if octo_settings:
             data['octoprint_settings'] = octo_settings
 
-        with self._mutex:
-            data['current_print_ts'] = self.current_print_ts
-            if self.tsd_gcode_file_id:
-                data['tsd_gcode_file_id'] = self.tsd_gcode_file_id
 
         return data
 

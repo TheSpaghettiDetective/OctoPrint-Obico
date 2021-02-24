@@ -47,10 +47,9 @@ class ClientConn:
                 {'ref': ack_ref, 'ret': ret, '_webrtc': True})
 
         time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
-        self.plugin.post_printer_status()
+        self.plugin.post_update_to_server()
 
     def send_msg_to_client(self, data):
-        _logger.debug("Sending to client: \n{}".format(data))
         if __python_version__ == 3:
             raw = json.dumps(data, default=str).encode("utf8")
         else:
