@@ -96,11 +96,7 @@ class WebcamStreamer:
             _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, self.bitrate, self.pi_camera.resolution))
         except picamera.exc.PiCameraError:
             not_using_pi_camera()
-            if os.path.exists('/dev/video0'):
-                _logger.debug('v4l2 device found! Streaming as USB camera.')
-                return
-            else:
-                raise
+            return
 
     def video_pipeline(self):
         if not pi_version():
@@ -120,6 +116,11 @@ class WebcamStreamer:
 
             # Use GStreamer for USB Camera. When it's used for Pi Camera it has problems (video is not playing. Not sure why)
             if not self.pi_camera:
+                if not os.path.exists('/dev/video0'):
+                    _logger.warn('No camera detected. Skipping webcam streaming')
+                    return
+
+                _logger.debug('v4l2 device found! Streaming as USB camera.')
                 try:
                     self.start_gst()
                 except Exception:
