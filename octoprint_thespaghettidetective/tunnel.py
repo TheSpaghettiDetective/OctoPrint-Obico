@@ -5,6 +5,7 @@ import threading
 import time
 import os
 import sys
+import zlib
 try:
     from urllib.parse import urljoin
 except ImportError:
@@ -14,6 +15,7 @@ from .ws import WebSocketClient
 
 WRITE_MODE = 'w' if sys.version_info[0] < 3 else 'wb'
 READ_MODE = 'r' if sys.version_info[0] < 3 else 'rb'
+COMPRESS_THRESHOLD = 1000
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
@@ -61,9 +63,11 @@ class LocalTunnel(object):
                 with open(self.cj_path, WRITE_MODE) as fp:
                     pickle.dump(self.request_session.cookies, fp)
 
+            compress = len(resp.content) >= COMPRESS_THRESHOLD
             resp_data = {
                 'status': resp.status_code,
-                'content': resp.content,
+                'compressed': compress,
+                'content': zlib.compress(resp.content) if compress else resp.content,
                 'headers': {k: v for k, v in resp.headers.items()},
             }
         except Exception as ex:
