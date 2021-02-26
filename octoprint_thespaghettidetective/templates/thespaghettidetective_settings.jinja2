@@ -15,7 +15,10 @@
       </div>
       <div class="choice-wrapper" data-bind="visible: configured">
         <div class="choice-option" data-bind="click: function(data, event) { selectPage('advanced'); }">
-          <a href="#" class="button btn-block">Settings</a>
+          <a href="#" class="button btn-block">
+            <span>Settings</span>
+            <img src="plugin/thespaghettidetective/static/img/arrow-right.svg">
+          </a>
           <ul class="squared-markers">
             <li>View linked printer name</li>
             <li>Premium webcam streaming</li>
@@ -24,7 +27,10 @@
           </ul>
         </div>
         <div class="choice-option" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">
-          <a href="#" class="button btn-block">Troubleshooting</a>
+          <a href="#" class="button btn-block">
+            <span>Troubleshooting</span>
+            <img src="plugin/thespaghettidetective/static/img/arrow-right.svg">
+          </a>
           <ul class="squared-markers">
             <li>Server connection status</li>
             <li>Webcam streaming issues</li>
