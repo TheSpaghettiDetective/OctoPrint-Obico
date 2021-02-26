@@ -14,8 +14,8 @@
         <a class="button primary" data-bind="click: showWizardModal">Run Setup Wizard to Link OctoPrint</a>
       </div>
       <div class="choice-wrapper" data-bind="visible: configured">
-        <div class="choice-option">
-          <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('advanced'); }">Settings</a>
+        <div class="choice-option" data-bind="click: function(data, event) { selectPage('advanced'); }">
+          <a href="#" class="button btn-block">Settings</a>
           <ul class="squared-markers">
             <li>View linked printer name</li>
             <li>Premium webcam streaming</li>
@@ -23,8 +23,8 @@
             <li>Opt in error reporting</li>
           </ul>
         </div>
-        <div class="choice-option">
-          <a href="#" class="button btn-block" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">Troubleshooting</a>
+        <div class="choice-option" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">
+          <a href="#" class="button btn-block">Troubleshooting</a>
           <ul class="squared-markers">
             <li>Server connection status</li>
             <li>Webcam streaming issues</li>

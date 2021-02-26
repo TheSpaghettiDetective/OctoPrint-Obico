@@ -951,20 +951,39 @@
     justify-content: space-between;
 
     .choice-option {
-      flex-grow: 1;
-      flex-basis: 0;
-    }
+      flex: 0 0 48%;
+      transition: color .3s ease-out;
 
-    .button {
-      border-radius: 100px;
-      font-weight: bold;
-      font-size: 18px;
-      text-align: center;
+      .button {
+        border-radius: 100px;
+        font-weight: bold;
+        font-size: 18px;
+        text-align: center;
+        border: 3px solid @primary-color;
+        color: @primary-color;
+        background-color: #fff;
+        transition: box-shadow .3s ease-out;
+      }
+
+      &:hover {
+        color: @primary-color;
+        cursor: pointer;
+
+        .button {
+          background-color: @primary-color;
+          color: #fff;
+          box-shadow: 0 4px darken(@primary-color, 30%);
+        }
+      }
     }
 
     @media screen and (max-width: 700px) {
       flex-direction: column;
       align-items: center;
+
+      .choice-option {
+        flex-basis: 100%;
+      }
     }
   }
 
