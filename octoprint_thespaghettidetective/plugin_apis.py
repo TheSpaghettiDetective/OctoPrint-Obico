@@ -18,7 +18,7 @@ def on_api_command(plugin, command, data):
         if command == "verify_code":
             plugin._settings.set(["endpoint_prefix"], data["endpoint_prefix"], force=True)
             resp = server_request('GET', '/api/v1/onetimeverificationcodes/verify/?code=' + data["code"], plugin)
-            succeeded = resp.ok
+            succeeded = resp.ok if resp is not None else None
             printer = None
             if succeeded:
                 printer = resp.json()['printer']
@@ -59,7 +59,7 @@ def on_api_command(plugin, command, data):
 
         if command == "update_printer":
             resp = server_request('PATCH', '/api/v1/octo/printer/', plugin, headers=plugin.auth_headers(), json=dict(name=data['name']))
-            return flask.jsonify({'succeeded': resp.ok, 'printer': resp.json().get('printer')})
+            return flask.jsonify({'succeeded': resp.ok if resp is not None else None, 'printer': resp.json().get('printer')})
 
     except Exception as e:
         plugin.sentry.captureException()
