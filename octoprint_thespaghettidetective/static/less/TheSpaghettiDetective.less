@@ -663,6 +663,7 @@
           overflow: hidden;
           padding: 10px 0;
           position: relative;
+          text-align: center;
 
           // Imitate input wrapper as one big input
           .front-layer {
@@ -676,11 +677,12 @@
           // Cells of input wrapper
           input {
             box-shadow: none;
-            width: @input-width / 6;
+            width: @input-width / 6 - 2px;
             border: none;
             border-radius: 0;
             margin: 0;
             padding: 0;
+            padding-left: 2px;
             height: 100%;
             border-right: @cell-border-width solid rgba(#000, .5);
             text-align: center;
@@ -695,6 +697,27 @@
 
             &:last-child {
               border-right: none;
+            }
+
+            &.active {
+              animation-name: cursor;
+              animation-iteration-count: infinite;
+              animation-duration: 1s;
+            }
+
+            @keyframes cursor {
+              0% {
+                color: #000;
+              }
+              49% {
+                color: #000;
+              }
+              51% {
+                color: #fff;
+              }
+              100% {
+                color: #fff;
+              }
             }
           }
         }

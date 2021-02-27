@@ -92,8 +92,13 @@ $(function () {
                     // Backspace
                     for (let i = 6; i >= 1; i--) {
                         let input = $('.verification-code-input input[data-number='+ i +']');
-                        if (input.val()) {
-                            input.val('');
+                        if (input.val() && input.val() !== '|') {
+                            input.val('|').addClass('active');
+
+                            if (i < 6) {
+                                $('.verification-code-input input[data-number='+ (i + 1) +']').val("").removeClass('active');
+                            }
+
                             self.securityCode(self.securityCode().slice(0, -1));
                             break;
                         }
@@ -101,8 +106,14 @@ $(function () {
                 } else if (availableInputs.includes(e.key)) {
                     for (let i = 1; i <= 6; i++) {
                         let input = $('.verification-code-input input[data-number='+ i +']');
-                        if (!input.val()) {
+                        if (!input.val() || input.val() === '|') {
                             input.val(e.key);
+                            input.removeClass('active');
+
+                            if (i < 6) {
+                                $('.verification-code-input input[data-number='+ (i + 1) +']').val("|").addClass('active');
+                            }
+
                             self.securityCode(self.securityCode() + e.key);
                             break;
                         }
@@ -171,7 +182,7 @@ $(function () {
                     self.securityCode('');
                     for (let i = 1; i <= 6; i++) {
                         let input = $('.verification-code-input input[data-number='+ i +']');
-                        input.val(text[i - 1]);
+                        input.val(text[i - 1]).removeClass('active');
                         self.securityCode(self.securityCode() + text[i - 1]);
                     }
                 }
