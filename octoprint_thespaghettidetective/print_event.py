@@ -74,7 +74,7 @@ class PrintEventTracker:
                 return None
 
             file_metadata = plugin._file_manager._storage_managers.get(origin).get_metadata(path)
-            return {'analysis': {'printingArea': file_metadata.get('analysis', {}).get('printingArea')}}
+            return {'analysis': {'printingArea': file_metadata.get('analysis', {}).get('printingArea')}} if file_metadata else None
         except Exception as e:
             _logger.exception(e)
             return None
