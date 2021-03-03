@@ -86,6 +86,12 @@ $(function () {
 
         $(document).keydown(function(e) {
             if (self.step() === 4) {
+                // Check if user isn't trying to input into specific input
+                let focusedElem = document.activeElement;
+                if (focusedElem instanceof HTMLInputElement && focusedElem.type === 'text') {
+                    return true;
+                }
+
                 let availableInputs = ['0','1','2','3','4','5','6','7','8','9'];
 
                 if (e.keyCode === 8) {
@@ -164,7 +170,15 @@ $(function () {
 
         document.addEventListener('keydown', function(e) {
             if (self.ctrlDown && (e.keyCode == vKey)) {
+                // Check if user isn't trying to input into specific input
+                let focusedElem = document.activeElement;
+                if (focusedElem instanceof HTMLInputElement && focusedElem.type === 'text') {
+                    return true;
+                }
+
                 self.pasteFromClipboard();
+            } else {
+                return true;
             }
         });
 
