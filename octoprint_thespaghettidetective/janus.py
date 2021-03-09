@@ -23,7 +23,7 @@ JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'jan
 USE_EXTERNAL_JANUS = os.getenv('JANUS_SERVER', '').strip() != ''
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 JANUS_WS_PORT = 8188
-JANUS_DATA_PORT = 8005  # check streaming plugin config
+JANUS_DATA_PORT = 8009  # check streaming plugin config
 
 
 class JanusConn:
