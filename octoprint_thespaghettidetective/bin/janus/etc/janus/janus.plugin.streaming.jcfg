@@ -138,13 +138,16 @@ h264-sample: {
 	#id = 10
 	description = "H.264 live stream coming from gstreamer"
 	audio = false
+	audioiface = "127.0.0.1"
 	video = true
 	videoport = 8004
+	videoiface = "127.0.0.1"
 	videopt = 96
 	videortpmap = "H264/90000"
 	videofmtp = "profile-level-id=42e01f;packetization-mode=1"
 	data = true
-	dataport = 8005
+	dataport = 8009
+	dataiface = "127.0.0.1"
 	databuffermsg = false
 }
 

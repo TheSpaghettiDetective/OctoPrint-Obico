@@ -59,7 +59,10 @@ def on_api_command(plugin, command, data):
 
         if command == "update_printer":
             resp = server_request('PATCH', '/api/v1/octo/printer/', plugin, headers=plugin.auth_headers(), json=dict(name=data['name']))
-            return flask.jsonify({'succeeded': resp.ok if resp is not None else None, 'printer': resp.json().get('printer')})
+            if resp:
+                return flask.jsonify({'succeeded': resp.ok, 'printer': resp.json().get('printer')})
+            else:
+                return flask.jsonify({'succeeded': False})
 
     except Exception as e:
         plugin.sentry.captureException()
