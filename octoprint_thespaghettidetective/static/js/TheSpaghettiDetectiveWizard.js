@@ -228,7 +228,10 @@ $(function () {
                 endpoint_prefix: $('#endpoint_prefix-input').val(),
             })
                 .done(function(apiStatus) {
-                    if (apiStatus.succeeded) {
+                    if (apiStatus.succeeded == null) {
+                        $('.verification-wrapper').addClass('unknown');
+                    }
+                    else if (apiStatus.succeeded) {
                         $('.verification-wrapper').addClass('success');
                         self.printerName(apiStatus.printer.name);
                         self.nextStep();
