@@ -58,7 +58,7 @@
 }
 
 // API call animation
-.saving-in-progress, .successfully-saved {
+.saving-in-progress, .successfully-saved, .error-occurred {
   @indicatorSize: 18px;
   display: inline-block;
 
@@ -88,6 +88,14 @@
 
     &:before {
       background-image: url('../img/tick.svg');
+    }
+  }
+
+  &.error-occurred {
+    position: relative;
+
+    &:before {
+      background-image: url('../img/cross.svg');
     }
   }
 }
@@ -914,6 +922,13 @@
               background: none;
               color: #fff;
             }
+          }
+
+          .error-message {
+            color: lighten(@error-color, 20%);
+            max-width: 300px;
+            margin-top: 10px;
+            display: none;
           }
         }
 

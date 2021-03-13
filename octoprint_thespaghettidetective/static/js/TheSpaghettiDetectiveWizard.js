@@ -69,18 +69,28 @@ $(function () {
 
             // Saving in progress animation
             $('.printerNameInput').addClass('saving-in-progress');
+            $('.printerNameInput .error-message').hide();
+
             apiCommand({
                 command: "update_printer",
                 name: newName})
-                .done(function() {
-                    // Feedback about successful saving
+                .done(function(result) {
                     $('.printerNameInput').removeClass('saving-in-progress');
-                    $('.printerNameInput').addClass('successfully-saved');
-                    setTimeout(() => $('.printerNameInput').removeClass('successfully-saved'), 2000);
+
+                    if (result.succeeded) {
+                        $('.printerNameInput').addClass('successfully-saved');
+                        setTimeout(() => $('.printerNameInput').removeClass('successfully-saved'), 2000);
+                    } else {
+                        $('.printerNameInput').addClass('error-occurred');
+                        setTimeout(() => $('.printerNameInput').removeClass('error-occurred'), 2000);
+                        $('.printerNameInput .error-message').show();
+                    }
                 })
                 .fail(function() {
-                    $('.printerNameInput').removeClass('saving-in-progress'); // Remove saving loading
-                    $('.verification-wrapper').addClass('unknown');
+                    $('.printerNameInput').removeClass('saving-in-progress');
+                    $('.printerNameInput').addClass('error-occurred');
+                    setTimeout(() => $('.printerNameInput').removeClass('error-occurred'), 2000);
+                    $('.printerNameInput .error-message').show();
                 });
         }
 
@@ -218,7 +228,10 @@ $(function () {
                 endpoint_prefix: $('#endpoint_prefix-input').val(),
             })
                 .done(function(apiStatus) {
-                    if (apiStatus.succeeded) {
+                    if (apiStatus.succeeded == null) {
+                        $('.verification-wrapper').addClass('unknown');
+                    }
+                    else if (apiStatus.succeeded) {
                         $('.verification-wrapper').addClass('success');
                         self.printerName(apiStatus.printer.name);
                         self.nextStep();
@@ -242,6 +255,20 @@ $(function () {
             self.step(1);
             self.verifying(false);
             self.securityCode('');
+
+            let verificationWrapper = $('.verification-wrapper');
+            verificationWrapper.removeClass('success error unknown');
+
+            for (let i = 1; i <= 6; i++) {
+                let input = verificationWrapper.find('.verification-code-input input[data-number='+ i +']');
+
+                // Clear cells and insert visual cursor in first cell
+                if (i === 1) {
+                    input.val('|').addClass('active');
+                } else {
+                    input.val('')
+                }
+            }
         }
     }
 
