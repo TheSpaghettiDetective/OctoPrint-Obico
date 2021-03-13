@@ -135,7 +135,7 @@ class JanusConn:
             )
 
             if to_plugin:
-                _logger.debug('Processing Janus msg')
+                _logger.debug('Processing WebRTC data channel msg from client:')
                 _logger.debug(msg)
                 self.plugin.client_conn.on_message_to_plugin(to_plugin)
                 return
