@@ -1075,42 +1075,152 @@ html.themeify {
   .tabbable {
     // Navigation tabs
     ul.nav {
+      // from bootstrap
+      line-height: 20px;
+      list-style: none;
+      &:before, &:after {
+        display: table;
+        line-height: 0;
+        content: "";
+      }
+      &:after {
+        clear: both;
+      }
+
+      background-color: @primary-color;
+      margin: 0;
+      padding: 5px 0 0 116px;
+      border: none;
+      position: relative;
+      border-bottom: 5px solid #fff;
+
       // White logo at the left side on navigation panel
-      .logo svg {
+      .logo {
+        display: block;
         width: 60px;
         height: 30px;
-        position: relative;
-        top: 2px;
+        position: absolute;
+        bottom: 0;
+        top: 0;
+        left: 30px;
+        margin: auto;
 
         &:hover {
           cursor: pointer;
           opacity: .8;
         }
-
-        .cls-1 {
-          fill: none;
-        }
-
-        .cls-2 {
-          fill: @primary-color;
-        }
       }
 
       // Tab
       li {
+        float: left;
+        margin: 0 5px 0 0;
+        position: relative;
+        top: 8px;
+
         a {
-          color: @primary-color;
+          margin: 0;
+          text-decoration: none;
+          border: none;
+          display: block;
+          padding: 5px 30px;
+          border-radius: 10px 10px 0 0;
+          background-color: #B9A0EF;
+          color: #fff;
+          font-weight: bold;
+          font-size: 14px;
+          transition: font-size .1s;
+          position: relative;
+
+          &:hover {
+            opacity: .8;
+          }
+
+          &:before, &:after {
+            content: "";
+            position: absolute;
+            height: 10px;
+            width: 20px;
+            bottom: 0;
+          }
+
+          &:after {
+            right: -20px;
+            border-radius: 0 0 0 10px;
+            box-shadow: -10px 0 0 0 #B9A0EF;
+          }
+
+          &:before {
+            left: -20px;
+            border-radius: 0 0 10px 0;
+            box-shadow: 10px 0 0 0 #B9A0EF;
+          }
         }
 
         // Active tab
         &.active {
+          z-index: 2;
+          top: 0;
 
           a {
-            color: #fff;
-            background-color: @primary-color;
+            color: @primary-color;
+            background-color: #fff;
+            padding-top: 12px;
+            padding-bottom: 1px;
+            font-size: 18px;
+
+            span {
+              display: inline-block;
+              // border-bottom: 2px solid @primary-color;
+              padding: 0 0 5px;
+            }
 
             &:hover {
-              background-color: @primary-color;
+              opacity: 1;
+            }
+
+            &:after {
+              box-shadow: -10px 0 0 0 #fff;
+            }
+
+            &:before {
+              box-shadow: 10px 0 0 0 #fff;
+            }
+          }
+        }
+      }
+    }
+
+    // Mobile adaptation
+    @media screen and (max-width: 850px) {
+      ul.nav {
+        padding-top: 10px;
+        padding-right: 20px;
+
+        // Tab
+        li {
+          position: static;
+          margin-bottom: 10px;
+          float: none;
+
+          a {
+            padding: 5px 20px;
+            border-radius: 10px;
+
+            &:before, &:after {
+              content: none;
+            }
+          }
+
+          // Active tab
+          &.active {
+            a {
+              font-size: 16px;
+
+              span {
+                border-bottom: none;
+                padding-bottom: 10px;
+              }
             }
           }
         }
