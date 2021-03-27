@@ -54,19 +54,19 @@
     <ul class="nav">
       <img src="plugin/thespaghettidetective/static/img/logo-white.svg" alt="" class="logo" data-bind="click: returnToSelection">
       <li data-page="advanced">
-        <a href="#advanced" data-toggle="tab">
+        <a href="#tsd-advanced" data-toggle="tab">
           <span>Settings</span>
         </a>
       </li>
       <li data-page="troubleshooting">
-        <a href="#troubleshooting" data-toggle="tab">
+        <a href="#tsd-troubleshooting" data-toggle="tab">
           <span>Troubleshooting</span>
         </a>
       </li>
     </ul>
 
     <div class="tab-content">
-      <div class="tab-pane active" id="advanced">
+      <div class="tab-pane active" id="tsd-advanced">
         <section>
           <h1 class="section-title">Linked Printer</h1>
           <div class="section-content" data-bind="visible: !linkedPrinter.id()">
@@ -162,7 +162,7 @@
         </section>
       </div>
 
-      <div class="tab-pane" id="troubleshooting">
+      <div class="tab-pane" id="tsd-troubleshooting">
         <section>
           <h1 class="section-title">Plugin Status</h1>
           <div class="section-content">

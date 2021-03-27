@@ -124,15 +124,15 @@ $(function () {
             switch (page) {
                 case 'troubleshooting':
                     $('li[data-page="advanced"]').removeClass('active');
-                    $('#advanced').removeClass('active');
+                    $('#tsd-advanced').removeClass('active');
                     $('li[data-page="troubleshooting"]').addClass('active');
-                    $('#troubleshooting').addClass('active');
+                    $('#tsd-troubleshooting').addClass('active');
                     break;
                 case 'advanced':
                     $('li[data-page="troubleshooting"]').removeClass('active');
-                    $('#troubleshooting').removeClass('active');
+                    $('#tsd-troubleshooting').removeClass('active');
                     $('li[data-page="advanced"]').addClass('active');
-                    $('#advanced').addClass('active');
+                    $('#tsd-advanced').addClass('active');
                     break;
             }
         };
