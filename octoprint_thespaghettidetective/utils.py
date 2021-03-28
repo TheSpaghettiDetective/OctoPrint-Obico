@@ -92,9 +92,13 @@ class SentryWrapper:
             ignore_exceptions = [
                 'BrokenPipeError',
                 'SSLError',
+                'SSLEOFError',
                 'ConnectionResetError',
+                'ConnectionError',
+                'ConnectionRefusedError',
+                'WebSocketConnectionClosedException',
+                'ReadTimeout',
                 'OSError',
-                'ConnectionResetError',
             ]
         )
         self.plugin = plugin
