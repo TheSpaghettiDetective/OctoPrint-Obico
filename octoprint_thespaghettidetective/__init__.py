@@ -308,7 +308,9 @@ class TheSpaghettiDetectivePlugin(
             for command in msg.get('commands', []):
                 if command["cmd"] == "pause":
                     self.commander.prepare_to_pause(
-                        self._printer, **command.get('args'))
+                        self._printer,
+                        self._printer_profile_manager.get_current(),
+                        **command.get('args'))
                     self._printer.pause_print()
 
                 if command["cmd"] == 'cancel':

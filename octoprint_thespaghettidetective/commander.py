@@ -39,7 +39,7 @@ class Commander:
 
         return None
 
-    def prepare_to_pause(self, printer, retract=0, lift_z=0, tools_off=False, bed_off=False):
+    def prepare_to_pause(self, printer, printer_profile, retract=0, lift_z=0, tools_off=False, bed_off=False):
         with self.mutex:
             self.pause_scripts = []
             self.resume_scripts = []
@@ -92,8 +92,12 @@ class Commander:
 
             if tools_off:
 
-                if 'tool1' in current_temps:  # Multiple hotends
-                    for tool_num in range(3):  # most 3 hotends, I guess?
+                extruder = printer_profile.get('extruder')
+                extruder_count = extruder.get('count', 1)
+
+                # When printer has multiple extruders, and they are not shared (MMU has shared extruders)
+                if extruder_count > 1 and not extruder.get('sharedNozzle', False):
+                    for tool_num in range(extruder_count):
                         heater = 'tool%d' % tool_num
                         if heater in current_temps and current_temps[heater]['target'] is not None and current_temps[heater]['offset'] is not None:
                             target_temp = current_temps[heater]['target'] + current_temps[heater]['offset']
