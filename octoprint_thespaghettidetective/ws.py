@@ -7,12 +7,16 @@ import threading
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
+CONNECT_TIMEOUT_SECS = 5
+
+
 class WebSocketClientException(Exception):
     pass
 
+
 class WebSocketClient:
 
-    def __init__(self, url, token=None, on_ws_msg=None, on_ws_close=None, on_ws_error=None, subprotocols=None):
+    def __init__(self, url, token=None, on_ws_msg=None, on_ws_close=None, on_ws_error=None, subprotocols=None, connect_timeout=CONNECT_TIMEOUT_SECS):
         self._mutex = threading.RLock()
 
         def on_error(ws, error):
@@ -30,27 +34,28 @@ class WebSocketClient:
 
         _logger.debug('Connecting to websocket: {}'.format(url))
         header = ["authorization: bearer " + token] if token else None
-        self.ws = websocket.WebSocketApp(url,
-                                  on_message = on_message,
-                                  on_close = on_close,
-                                  on_error = on_error,
-                                  header = header,
-                                  subprotocols=subprotocols
+        self.ws = websocket.WebSocketApp(
+            url,
+            on_message=on_message,
+            on_close=on_close,
+            on_error=on_error,
+            header=header,
+            subprotocols=subprotocols
         )
 
-        wst = threading.Thread(target=self.ws.run_forever)
+        wst = threading.Thread(target=self.run, kwargs={'connect_timeout': connect_timeout + 2})  # added some extra delay to avoid race condition
         wst.daemon = True
         wst.start()
 
-        for i in range(50):      # Wait for up to 5 seconds
+        for i in range(int(connect_timeout / 0.1)):
             if self.connected():
                 return
             time.sleep(0.1)
         self.ws.close()
-        raise WebSocketClientException('Not connected to websocket server after 5s')
+        raise WebSocketClientException('Not connected to websocket server after %ss' % connect_timeout)
 
-
-    def run(self):
+    def run(self, connect_timeout):
+        websocket.setdefaulttimeout(connect_timeout)
         self.ws.run_forever()
 
     def send(self, data, as_binary=False):
@@ -69,6 +74,7 @@ class WebSocketClient:
         with self._mutex:
             self.ws.keep_running = False
             self.ws.close()
+
 
 if __name__ == "__main__":
     import yaml
