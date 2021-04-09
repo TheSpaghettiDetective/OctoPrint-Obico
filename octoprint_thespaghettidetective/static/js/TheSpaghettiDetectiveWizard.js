@@ -31,10 +31,13 @@ $(function () {
         self.ctrlDown = ko.observable(false); // Handling Ctrl+V / Cmd+V commands
         self.currentFeatureSlide = ko.observable(1);
 
-        let ctrlKey = 17, cmdKey = 91, vKey = 86;
-
         self.nextStep = function() {
             self.step(self.step() + 1);
+
+            // Verification code - focus on first cell
+            if (self.step() === 4) {
+                $('.verification-code-input input[data-number=1]').trigger('focus');
+            }
         };
 
         self.toStep = function(step) {
@@ -94,27 +97,21 @@ $(function () {
                 });
         }
 
-        $(document).keydown(function(e) {
+        $(document).on('keydown', function(e) {
             if (self.step() === 4) {
-                // Check if user isn't trying to input into specific input
+                // Check if user focused on verification code cell
                 let focusedElem = document.activeElement;
-                if (focusedElem instanceof HTMLInputElement && focusedElem.type === 'text') {
+                if (!$(focusedElem).hasClass('cell')) {
                     return true;
                 }
 
                 let availableInputs = ['0','1','2','3','4','5','6','7','8','9'];
 
-                if (e.keyCode === 8) {
-                    // Backspace
+                if (e.key === 'Backspace') {
                     for (let i = 6; i >= 1; i--) {
                         let input = $('.verification-code-input input[data-number='+ i +']');
-                        if (input.val() && input.val() !== '|') {
-                            input.val('|').addClass('active');
-
-                            if (i < 6) {
-                                $('.verification-code-input input[data-number='+ (i + 1) +']').val("").removeClass('active');
-                            }
-
+                        if (input.val()) {
+                            input.val('').trigger('focus');
                             self.securityCode(self.securityCode().slice(0, -1));
                             break;
                         }
@@ -122,24 +119,28 @@ $(function () {
                 } else if (availableInputs.includes(e.key)) {
                     for (let i = 1; i <= 6; i++) {
                         let input = $('.verification-code-input input[data-number='+ i +']');
-                        if (!input.val() || input.val() === '|') {
+
+                        if (!input.val()) {
                             input.val(e.key);
-                            input.removeClass('active');
 
                             if (i < 6) {
-                                $('.verification-code-input input[data-number='+ (i + 1) +']').val("|").addClass('active');
+                                $('.verification-code-input input[data-number='+ (i + 1) +']').trigger('focus');
                             }
 
                             self.securityCode(self.securityCode() + e.key);
                             break;
                         }
                     }
+                } else {
+                    return true;
                 }
 
                 if (self.securityCode().length < 6) {
                     // Return input to initial state
                     $('.verification-wrapper').removeClass(['error', 'success', 'unknown']);
                 }
+
+                return false;
             }
         });
 
@@ -169,36 +170,37 @@ $(function () {
         setInterval(self.nextFeature, 3000);
 
 
-        // Functionality to handle Ctrl+V or Cmd+V commands
+        // Handle Ctrl+V or Cmd+V commands
 
         document.addEventListener('keydown', function(e) {
-            if (e.keyCode == ctrlKey || e.keyCode == cmdKey) self.ctrlDown = true;
+            if (e.key == 'Control' || e.key == 'Meta') self.ctrlDown = true;
         });
         document.addEventListener('keyup', function(e) {
-            if (e.keyCode == ctrlKey || e.keyCode == cmdKey) self.ctrlDown = false;
+            if (e.key == 'Control' || e.key == 'Meta') self.ctrlDown = false;
         });
 
         document.addEventListener('keydown', function(e) {
-            if (self.ctrlDown && (e.keyCode == vKey)) {
+            if (self.ctrlDown && (e.code == 'KeyV')) {
+
                 // Check if user isn't trying to input into specific input
                 let focusedElem = document.activeElement;
-                if (focusedElem instanceof HTMLInputElement && focusedElem.type === 'text') {
+                if (!$(focusedElem).hasClass('cell')) {
                     return true;
                 }
 
                 self.pasteFromClipboard();
-            } else {
-                return true;
             }
+
+            return true;
         });
 
         self.pasteFromClipboard = function() {
             let clipboardPlaceholder = $('textarea.paste-from-clipboard-placeholder').last();
-            clipboardPlaceholder.val('').focus();
+            clipboardPlaceholder.val('').trigger('focus');
 
             setTimeout(function() {
                 let text = clipboardPlaceholder.val();
-                clipboardPlaceholder.val('').blur();
+                clipboardPlaceholder.val('').trigger('blur');
                 let format = new RegExp("\\d{6}");
 
                 if (format.test(text)) {
@@ -206,13 +208,11 @@ $(function () {
                     self.securityCode('');
                     for (let i = 1; i <= 6; i++) {
                         let input = $('.verification-code-input input[data-number='+ i +']');
-                        input.val(text[i - 1]).removeClass('active');
+                        input.val(text[i - 1]);
                         self.securityCode(self.securityCode() + text[i - 1]);
                     }
                 }
             }, 100)
-
-            return true;
         };
 
 
@@ -260,14 +260,7 @@ $(function () {
             verificationWrapper.removeClass('success error unknown');
 
             for (let i = 1; i <= 6; i++) {
-                let input = verificationWrapper.find('.verification-code-input input[data-number='+ i +']');
-
-                // Clear cells and insert visual cursor in first cell
-                if (i === 1) {
-                    input.val('|').addClass('active');
-                } else {
-                    input.val('')
-                }
+                verificationWrapper.find('.verification-code-input input[data-number='+ i +']').val('');
             }
         }
     }
