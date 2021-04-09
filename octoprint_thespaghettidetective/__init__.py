@@ -275,7 +275,7 @@ class TheSpaghettiDetectivePlugin(
 
         if not self.ss or not self.ss.connected():
             if try_connecting:
-                self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
+                self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/?lookmeup=1", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
                 self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
             else:
                 return False
@@ -389,7 +389,7 @@ class TheSpaghettiDetectivePlugin(
         return self._settings.get(["endpoint_prefix"]) and self._settings.get(["auth_token"])
 
     def tsd_api_status(self, auth_token=None):
-        return server_request('GET', '/api/v1/octo/printer/', self, headers=self.auth_headers(auth_token=self.auth_token(auth_token)))
+        return server_request('GET', '/api/v1/octo/printer/?lookmeup=1', self, headers=self.auth_headers(auth_token=self.auth_token(auth_token)))
 
     @backoff.on_predicate(backoff.expo, max_value=1200)
     def wait_for_auth_token(self):
