@@ -1,7 +1,7 @@
 # coding=utf-8
 
 import time
-import websocket
+from . import websocket
 import logging
 import threading
 
@@ -43,7 +43,7 @@ class WebSocketClient:
             subprotocols=subprotocols
         )
 
-        wst = threading.Thread(target=self.run, kwargs={'connect_timeout': connect_timeout + 2})  # added some extra delay to avoid race condition
+        wst = threading.Thread(target=self.run, kwargs={'connect_timeout': connect_timeout + 2})
         wst.daemon = True
         wst.start()
 
@@ -51,7 +51,7 @@ class WebSocketClient:
             if self.connected():
                 return
             time.sleep(0.1)
-        self.ws.close()
+
         raise WebSocketClientException('Not connected to websocket server after %ss' % connect_timeout)
 
     def run(self, connect_timeout):
