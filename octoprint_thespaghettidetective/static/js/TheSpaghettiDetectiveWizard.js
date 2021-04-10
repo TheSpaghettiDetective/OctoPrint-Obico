@@ -28,25 +28,112 @@ $(function () {
         self.userAgreementChecked = ko.observable(true);
         self.printerName = ko.observable('');
         self.printerNameTimeoutId = ko.observable(null);
-        self.ctrlDown = ko.observable(false); // Handling Ctrl+V / Cmd+V commands
         self.currentFeatureSlide = ko.observable(1);
 
-        self.nextStep = function() {
-            self.step(self.step() + 1);
 
-            // Verification code - focus on first cell
+        // Handle verification code typing:
+
+        $.find('.verification-code-input input').forEach(function(input) {
+            // Add event listener for paste event
+            $(input).on('paste', handlePaste);
+
+            // Handle typing in verification code to automatically move cursor back/forward
+            $(input).on('keydown', handleKeydown);
+        });
+
+        // Paste verification code digit by digit
+        function handlePaste(event) {
+            let text = (event.originalEvent.clipboardData || window.clipboardData).getData('text');
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                appendToVerificationCode(char);
+            }
+
+            event.preventDefault();
+        }
+
+        // Move cursor back/forward
+        function handleKeydown(event) {
+            
+            // Skip Paste event
+            if (event.key === 'Meta' || event.key === 'Control' || event.originalEvent.code === 'KeyV') {
+                return true;
+            }
+
+            if (event.key === 'Backspace') {
+                for (let i = 6; i >= 1; i--) {
+                    let input = $('.verification-code-input input[data-number='+ i +']');
+                    if (input.val()) {
+                        input.val('').trigger('focus');
+                        self.securityCode(self.securityCode().slice(0, -1));
+                        clearVerificationCodeMessages();
+                        break;
+                    }
+                }
+            } else {
+                appendToVerificationCode(event.key);
+            }
+
+            return false;
+        }
+
+        // Append digit to verification code
+        function appendToVerificationCode(char) {
+            let availableInputs = ['0','1','2','3','4','5','6','7','8','9'];
+
+            if (!availableInputs.includes(char)) {
+                return false;
+            }
+
+            for (let i = 1; i <= 6; i++) {
+                let input = $('.verification-code-input input[data-number='+ i +']');
+
+                if (!input.val()) {
+                    // Put value to input visible to user
+                    input.val(char);
+
+                    // Move cursor forward
+                    if (i < 6) {
+                        $('.verification-code-input input[data-number='+ (i + 1) +']').trigger('focus');
+                    }
+
+                    // Append char to inner code
+                    self.securityCode(self.securityCode() + char);
+
+                    // Clear all error and other messages for the input
+                    if (self.securityCode().length < 6) {
+                        clearVerificationCodeMessages();
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Clear error messages from verification code
+        function clearVerificationCodeMessages() {
+            $('.verification-wrapper').removeClass(['error', 'success', 'unknown']);
+        }
+
+
+        self.nextStep = function() {
+            self.toStep(self.step() + 1);
+
             if (self.step() === 4) {
-                $('.verification-code-input input[data-number=1]').trigger('focus');
+                $('.modal[aria-hidden="false"] .verification-code-input input[data-number=1]').trigger('focus');
             }
         };
 
-        self.toStep = function(step) {
-            self.step(step);
+        self.prevStep = function() {
+            self.toStep(self.step() - 1);
         };
 
-        self.prevStep = function() {
-            self.step(self.step() - 1);
+        self.toStep = function(nextStep) {
+            self.step(nextStep);
         };
+
 
         self.toggleCheck = function() {
             self.userAgreementChecked(!self.userAgreementChecked());
@@ -97,125 +184,6 @@ $(function () {
                 });
         }
 
-        $(document).on('keydown', function(e) {
-            if (self.step() === 4) {
-                // Check if user focused on verification code cell
-                let focusedElem = document.activeElement;
-                if (!$(focusedElem).hasClass('cell')) {
-                    return true;
-                }
-
-                let availableInputs = ['0','1','2','3','4','5','6','7','8','9'];
-
-                if (e.key === 'Backspace') {
-                    for (let i = 6; i >= 1; i--) {
-                        let input = $('.verification-code-input input[data-number='+ i +']');
-                        if (input.val()) {
-                            input.val('').trigger('focus');
-                            self.securityCode(self.securityCode().slice(0, -1));
-                            break;
-                        }
-                    }
-                } else if (availableInputs.includes(e.key)) {
-                    for (let i = 1; i <= 6; i++) {
-                        let input = $('.verification-code-input input[data-number='+ i +']');
-
-                        if (!input.val()) {
-                            input.val(e.key);
-
-                            if (i < 6) {
-                                $('.verification-code-input input[data-number='+ (i + 1) +']').trigger('focus');
-                            }
-
-                            self.securityCode(self.securityCode() + e.key);
-                            break;
-                        }
-                    }
-                } else {
-                    return true;
-                }
-
-                if (self.securityCode().length < 6) {
-                    // Return input to initial state
-                    $('.verification-wrapper').removeClass(['error', 'success', 'unknown']);
-                }
-
-                return false;
-            }
-        });
-
-        // Next feature in the slider on home screen
-        self.nextFeature = function() {
-            let container = $('.features').last();
-            let slidesCount = container.find('.feature').length;
-            let currentSlide = self.currentFeatureSlide();
-            let nextSlide = currentSlide === slidesCount ? 1 : currentSlide + 1;
-
-            container.find('.feature[data-number="'+ currentSlide +'"]').animate({
-                left: '-100%'
-            }, {duration: 500, queue: false});
-
-            container.find('.feature[data-number="'+ nextSlide +'"]').animate({
-                left: '0'
-            },
-            500,
-            function() {
-                let next = nextSlide === slidesCount ? 1 : nextSlide + 1;
-                container.find('.feature[data-number="'+ next +'"]').css('left', '100%');
-            });
-
-            self.currentFeatureSlide(nextSlide);
-        }
-
-        setInterval(self.nextFeature, 3000);
-
-
-        // Handle Ctrl+V or Cmd+V commands
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key == 'Control' || e.key == 'Meta') self.ctrlDown = true;
-        });
-        document.addEventListener('keyup', function(e) {
-            if (e.key == 'Control' || e.key == 'Meta') self.ctrlDown = false;
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (self.ctrlDown && (e.code == 'KeyV')) {
-
-                // Check if user isn't trying to input into specific input
-                let focusedElem = document.activeElement;
-                if (!$(focusedElem).hasClass('cell')) {
-                    return true;
-                }
-
-                self.pasteFromClipboard();
-            }
-
-            return true;
-        });
-
-        self.pasteFromClipboard = function() {
-            let clipboardPlaceholder = $('textarea.paste-from-clipboard-placeholder').last();
-            clipboardPlaceholder.val('').trigger('focus');
-
-            setTimeout(function() {
-                let text = clipboardPlaceholder.val();
-                clipboardPlaceholder.val('').trigger('blur');
-                let format = new RegExp("\\d{6}");
-
-                if (format.test(text)) {
-                    $('.verification-wrapper').removeClass(['error', 'success', 'unknown']);
-                    self.securityCode('');
-                    for (let i = 1; i <= 6; i++) {
-                        let input = $('.verification-code-input input[data-number='+ i +']');
-                        input.val(text[i - 1]);
-                        self.securityCode(self.securityCode() + text[i - 1]);
-                    }
-                }
-            }, 100)
-        };
-
-
         self.verifySecurityCode = function(code) {
             if (code.length !== 6) {
                 return;
@@ -263,6 +231,31 @@ $(function () {
                 verificationWrapper.find('.verification-code-input input[data-number='+ i +']').val('');
             }
         }
+
+        // Next feature in the slider on home screen
+        self.nextFeature = function() {
+            let container = $('.features').last();
+            let slidesCount = container.find('.feature').length;
+            let currentSlide = self.currentFeatureSlide();
+            let nextSlide = currentSlide === slidesCount ? 1 : currentSlide + 1;
+
+            container.find('.feature[data-number="'+ currentSlide +'"]').animate({
+                left: '-100%'
+            }, {duration: 500, queue: false});
+
+            container.find('.feature[data-number="'+ nextSlide +'"]').animate({
+                left: '0'
+            },
+            500,
+            function() {
+                let next = nextSlide === slidesCount ? 1 : nextSlide + 1;
+                container.find('.feature[data-number="'+ next +'"]').css('left', '100%');
+            });
+
+            self.currentFeatureSlide(nextSlide);
+        }
+
+        setInterval(self.nextFeature, 3000);
     }
 
     /* view model class, parameters for constructor, container to bind to
