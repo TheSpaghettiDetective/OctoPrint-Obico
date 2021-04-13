@@ -250,14 +250,21 @@ class TheSpaghettiDetectivePlugin(
 
     def message_to_server_loop(self):
 
-        def on_server_ws_close():
-            _logger.error("Server websocket is closing")
-            self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
-            self.local_tunnel.close_all_octoprint_ws()
-            self.ss = None
+        def on_server_ws_close(ws):
+            if self.ss and self.ss.ws and self.ss.ws == ws:
+                self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
+                self.local_tunnel.close_all_octoprint_ws()
+                self.ss = None
 
-        def on_server_ws_open():
-            self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
+        def on_server_ws_open(ws):
+            if self.ss and self.ss.ws and self.ss.ws == ws:
+                self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
+
+        def server_websocket_connected(ss):
+            for i in range(100): # Give it up to 10s for ws hand-shaking to finish
+                if ss.connected():
+                    return True
+            return False
 
         while True:
             try:
@@ -271,11 +278,13 @@ class TheSpaghettiDetectivePlugin(
                     _logger.warning("auth_token is not validated. Not sending message to server...")
                     continue
 
+                error_stats.attempt('server')
+
                 if not self.ss or not self.ss.connected():
                     self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=on_server_ws_close, on_ws_open=on_server_ws_open)
-                    time.sleep(2)  # Give it some time for ws hand-shaking to finish
-
-                error_stats.attempt('server')
+                    if not server_websocket_connected(self.ss):
+                        error_stats.add_connection_error('server', self)
+                        continue
 
                 if as_binary:
                     raw = bson.dumps(data)

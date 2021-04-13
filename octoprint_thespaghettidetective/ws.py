@@ -13,7 +13,7 @@ class WebSocketClient:
         self._mutex = threading.RLock()
 
         def on_error(ws, error):
-            _logger.warn('WS ERROR: {}'.format(error))
+            _logger.warn('Server WS ERROR: {}'.format(error))
             self.close()
 
         def on_message(ws, msg):
@@ -21,10 +21,12 @@ class WebSocketClient:
                 on_ws_msg(ws, msg)
 
         def on_close(ws):
+            _logger.debug('WS Closed')
             if on_ws_close:
                 on_ws_close(ws)
 
         def on_open(ws):
+            _logger.debug('WS Opened')
             if on_ws_open:
                 on_ws_open(ws)
 
