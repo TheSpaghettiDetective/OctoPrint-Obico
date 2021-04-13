@@ -260,12 +260,6 @@ class TheSpaghettiDetectivePlugin(
             if self.ss and self.ss.ws and self.ss.ws == ws:
                 self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
 
-        def server_websocket_connected(ss):
-            for i in range(100): # Give it up to 10s for ws hand-shaking to finish
-                if ss.connected():
-                    return True
-            return False
-
         while True:
             try:
                 (data, as_binary) = self.message_queue_to_server.get()
@@ -282,9 +276,6 @@ class TheSpaghettiDetectivePlugin(
 
                 if not self.ss or not self.ss.connected():
                     self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=on_server_ws_close, on_ws_open=on_server_ws_open)
-                    if not server_websocket_connected(self.ss):
-                        error_stats.add_connection_error('server', self)
-                        continue
 
                 if as_binary:
                     raw = bson.dumps(data)

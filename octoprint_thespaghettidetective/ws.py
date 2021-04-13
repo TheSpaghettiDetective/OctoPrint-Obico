@@ -44,6 +44,13 @@ class WebSocketClient:
         wst.daemon = True
         wst.start()
 
+        for i in range(100): # Give it up to 10s for ws hand-shaking to finish
+            if self.connected():
+                return
+            time.sleep(0.1)
+        self.ws.close()
+        raise Exception('Not connected to websocket server after 10s')
+
     def send(self, data, as_binary=False):
         with self._mutex:
             if self.connected():
