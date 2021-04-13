@@ -350,7 +350,7 @@
       <ul>
         <li>The first error occurred at: <b data-bind="text: new Date(errorStats.server.first())"></b>.</li>
         <li>The most recent error occurred at: <b data-bind="text: new Date(errorStats.server.last())"></b>.</li>
-        <li data-bind="visible: serverStatus.last_status_update_ts">The most recent successful server contact occurred at: <b data-bind="text: new Date(serverStatus.last_status_update_ts())"></b>.</li>
+        <li data-bind="visible: serverStatus.status_posted_to_server_ts">The most recent attempted server contact occurred at: <b data-bind="text: new Date(serverStatus.status_posted_to_server_ts())"></b>.</li>
       </ul>
       <p>
         Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.

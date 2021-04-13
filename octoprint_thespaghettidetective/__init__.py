@@ -11,8 +11,12 @@ import sys
 import time
 import requests
 import backoff
+try:
+    import queue
+except ImportError:
+    import Queue as queue
 
-from .ws import WebSocketClient, WebSocketClientException
+from .ws import WebSocketClient
 from .commander import Commander
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
@@ -55,7 +59,8 @@ class TheSpaghettiDetectivePlugin(
 
     def __init__(self):
         self.ss = None
-        self.last_status_update_ts = 0
+        self.status_posted_to_server_ts = 0
+        self.message_queue_to_server = queue.Queue(maxsize=1000)
         self.status_update_booster = 0    # update status at higher frequency when self.status_update_booster > 0
         self.status_update_lock = threading.RLock()
         self.remote_status = RemoteStatus()
@@ -222,73 +227,79 @@ class TheSpaghettiDetectivePlugin(
         jpeg_post_thread.daemon = True
         jpeg_post_thread.start()
 
-        status_update_thread = threading.Thread(target=self.status_update_to_client_loop)
-        status_update_thread.daemon = True
-        status_update_thread.start()
+        status_update_to_client_thread = threading.Thread(target=self.status_update_to_client_loop)
+        status_update_to_client_thread.daemon = True
+        status_update_to_client_thread.start()
 
-        backoff = ExpoBackoff(120)
+        message_to_server_thread = threading.Thread(target=self.message_to_server_loop)
+        message_to_server_thread.daemon = True
+        message_to_server_thread.start()
+
         while True:
             try:
                 interval_in_seconds = POST_STATUS_INTERVAL_SECONDS
                 if self.status_update_booster > 0:
                     interval_in_seconds /= 5
 
-                if self.last_status_update_ts < time.time() - interval_in_seconds:
-                    error_stats.attempt('server')
-                    self.post_update_to_server(try_connecting=True)
-                    backoff.reset()
+                if self.status_posted_to_server_ts < time.time() - interval_in_seconds:
+                    self.post_update_to_server()
 
                 time.sleep(1)
+            except Exception as e:
+                self.sentry.captureException(tags=get_tags())
 
-            except WebSocketClientException as e:
-                error_stats.add_connection_error('server', self)
-                backoff.more(e)
+    def message_to_server_loop(self):
+
+        def on_server_ws_close():
+            _logger.error("Server websocket is closing")
+            self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
+            self.local_tunnel.close_all_octoprint_ws()
+            self.ss = None
+
+        def on_server_ws_open():
+            self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
+
+        while True:
+            try:
+                (data, as_binary) = self.message_queue_to_server.get()
+
+                if not self.is_configured():
+                    _logger.warning("Plugin not configured. Not sending message to server...")
+                    continue
+
+                if not self.linked_printer.get('id'): # id is present only when auth_token is validated by the server
+                    _logger.warning("auth_token is not validated. Not sending message to server...")
+                    continue
+
+                if not self.ss or not self.ss.connected():
+                    self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=on_server_ws_close, on_ws_open=on_server_ws_open)
+                    time.sleep(2)  # Give it some time for ws hand-shaking to finish
+
+                error_stats.attempt('server')
+
+                if as_binary:
+                    raw = bson.dumps(data)
+                    _logger.debug("Sending binary ({} bytes) to server".format(len(raw)))
+                else:
+                    _logger.debug("Sending to server: \n{}".format(data))
+                    if __python_version__ == 3:
+                        raw = json.dumps(data, default=str)
+                    else:
+                        raw = json.dumps(data, encoding='iso-8859-1', default=str)
+                self.ss.send(raw, as_binary=as_binary)
+
             except Exception as e:
                 self.sentry.captureException(tags=get_tags())
                 error_stats.add_connection_error('server', self)
-                backoff.more(e)
 
-    def post_update_to_server(self, data=None, try_connecting=False):
+    def post_update_to_server(self, data=None):
         if not data:
             data = _print_event_tracker.octoprint_data(self)
-        if self.send_ws_msg_to_server(data, try_connecting=try_connecting):
-            self.last_status_update_ts = time.time()
+        self.send_ws_msg_to_server(data)
+        self.status_posted_to_server_ts = time.time()
 
-    def send_ws_msg_to_server(self, data, try_connecting=False, as_binary=False):
-        """
-            try_connecting: should try to connect to websocket server is not already. Only the one in the main loop should set it to True to avoid race condition
-            Returns: True if message is sent successfully. Otherwise returns False.
-        """
-        if not self.is_configured():
-            _logger.warning("Plugin not configured. Not sending message to server...")
-            return False
-
-        if as_binary:
-            raw = bson.dumps(data)
-            _logger.debug("Sending binary ({} bytes) to server".format(len(raw)))
-        else:
-            _logger.debug("Sending to server: \n{}".format(data))
-            if __python_version__ == 3:
-                raw = json.dumps(data, default=str)
-            else:
-                raw = json.dumps(data, encoding='iso-8859-1', default=str)
-
-        if not self.ss or not self.ss.connected():
-            if try_connecting:
-                self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=self.on_ws_close)
-                self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
-            else:
-                return False
-
-        self.ss.send(raw, as_binary=as_binary)
-
-        return True
-
-    def on_ws_close(self, ws):
-        _logger.error("Server websocket is closing")
-        self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
-        self.local_tunnel.close_all_octoprint_ws()
-        self.ss = None
+    def send_ws_msg_to_server(self, data, as_binary=False):
+        self.message_queue_to_server.put_nowait((data, as_binary))
 
     def process_server_msg(self, ws, raw_data):
         global _print_event_tracker
