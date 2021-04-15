@@ -98,10 +98,6 @@ class LocalTunnel(object):
             ws.send(data)
 
     def connect_octoprint_ws(self, ref, path):
-        def on_ws_error(ws, ex):
-            _logger.error("OctoPrint WS error %s", ex)
-            ws.close()
-
         def on_ws_close(ws):
             _logger.info("OctoPrint WS is closing")
             if ref in self.ref_to_ws:
@@ -129,7 +125,6 @@ class LocalTunnel(object):
             token=None,
             on_ws_msg=on_ws_msg,
             on_ws_close=on_ws_close,
-            on_ws_error=on_ws_error
         )
         self.ref_to_ws[ref] = ws
 

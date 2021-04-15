@@ -23,7 +23,7 @@ $(function () {
         self.alertsShown = {};
         self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
         self.showDetailPage = ko.observable(false);
-        self.serverStatus = ko.mapping.fromJS({ is_connected: false, last_status_update_ts: 0 });
+        self.serverStatus = ko.mapping.fromJS({ is_connected: false, status_posted_to_server_ts: 0 });
         self.streaming = ko.mapping.fromJS({ is_pi_camera: false, premium_streaming: false});
         self.linkedPrinter = ko.mapping.fromJS({ is_pro: false, id: null, name: null});
         self.errorStats = ko.mapping.fromJS({ server: { attempts: 0, error_count: 0, first: null, last: null }, webcam: { attempts: 0, error_count: 0, first: null, last: null }});

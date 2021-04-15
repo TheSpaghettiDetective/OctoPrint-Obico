@@ -31,7 +31,7 @@ def on_api_command(plugin, command, data):
             results = dict(
                 server_status=dict(
                     is_connected=plugin.ss and plugin.ss.connected(),
-                    last_status_update_ts=plugin.last_status_update_ts,
+                    status_posted_to_server_ts=plugin.status_posted_to_server_ts,
                 ),
                 linked_printer=plugin.linked_printer,
                 streaming_status=dict(
