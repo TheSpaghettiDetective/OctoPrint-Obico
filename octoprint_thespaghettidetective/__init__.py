@@ -292,7 +292,7 @@ class TheSpaghettiDetectivePlugin(
             except Exception as e:
                 self.sentry.captureException(tags=get_tags())
                 error_stats.add_connection_error('server', self)
-                server_ws_backoff.more(str(e))
+                server_ws_backoff.more(e)
 
     def post_update_to_server(self, data=None):
         if not data:
