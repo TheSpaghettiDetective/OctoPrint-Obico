@@ -260,6 +260,7 @@ class TheSpaghettiDetectivePlugin(
             if self.ss and self.ss.ws and self.ss.ws == ws:
                 self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
 
+        server_ws_backoff = ExpoBackoff(300)
         while True:
             try:
                 (data, as_binary) = self.message_queue_to_server.get()
@@ -287,10 +288,11 @@ class TheSpaghettiDetectivePlugin(
                     else:
                         raw = json.dumps(data, encoding='iso-8859-1', default=str)
                 self.ss.send(raw, as_binary=as_binary)
-
+                server_ws_backoff.reset()
             except Exception as e:
                 self.sentry.captureException(tags=get_tags())
                 error_stats.add_connection_error('server', self)
+                server_ws_backoff.more(str(e))
 
     def post_update_to_server(self, data=None):
         if not data:
