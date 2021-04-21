@@ -44,7 +44,7 @@ class WebSocketClient:
         wst.daemon = True
         wst.start()
 
-        for i in range(100): # Give it up to 10s for ws hand-shaking to finish
+        for i in range(300): # Give it up to 30s for ws hand-shaking to finish
             if self.connected():
                 return
             time.sleep(0.1)
