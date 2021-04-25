@@ -49,7 +49,7 @@ class WebSocketClient:
                 return
             time.sleep(0.1)
         self.ws.close()
-        raise Exception('Not connected to websocket server after 10s')
+        raise Exception('Not connected to websocket server after 120s')
 
     def send(self, data, as_binary=False):
         with self._mutex:
