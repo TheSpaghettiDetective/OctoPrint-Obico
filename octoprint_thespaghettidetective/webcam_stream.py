@@ -100,7 +100,7 @@ class WebcamStreamer:
 
     def video_pipeline(self):
         if not pi_version():
-            _logger.warn('Not running on a Pi. Quiting video_pipeline.')
+            _logger.warning('Not running on a Pi. Quiting video_pipeline.')
             return
 
         try:
@@ -117,7 +117,7 @@ class WebcamStreamer:
             # Use GStreamer for USB Camera. When it's used for Pi Camera it has problems (video is not playing. Not sure why)
             if not self.pi_camera:
                 if not os.path.exists('/dev/video0'):
-                    _logger.warn('No camera detected. Skipping webcam streaming')
+                    _logger.warning('No camera detected. Skipping webcam streaming')
                     return
 
                 _logger.debug('v4l2 device found! Streaming as USB camera.')

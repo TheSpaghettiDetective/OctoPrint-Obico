@@ -15,7 +15,7 @@ class FileDownloader:
 
     def download(self, gcode_file):
         try:
-            _logger.warn('Received download command for {} '.format(gcode_file))
+            _logger.warning('Received download command for {} '.format(gcode_file))
 
             if self._print_event_tracker.get_tsd_gcode_file_id() or self.plugin._printer.get_current_data().get('state', {}).get('text') != 'Operational':
                 return {'error': 'Currently downloading or printing!'}
@@ -39,7 +39,7 @@ class FileDownloader:
         r.raise_for_status()
         open(target_path, "wb").write(r.content)
 
-        _logger.warn('Finished downloading to target_path: {}'.format(target_path))
+        _logger.warning('Finished downloading to target_path: {}'.format(target_path))
         self.plugin._printer.select_file(target_path, False, printAfterSelect=True)
 
     def __ensure_storage__(self):

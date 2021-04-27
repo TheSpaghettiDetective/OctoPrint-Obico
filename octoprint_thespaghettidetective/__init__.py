@@ -301,7 +301,10 @@ class TheSpaghettiDetectivePlugin(
         self.status_posted_to_server_ts = time.time()
 
     def send_ws_msg_to_server(self, data, as_binary=False):
-        self.message_queue_to_server.put_nowait((data, as_binary))
+        try:
+            self.message_queue_to_server.put_nowait((data, as_binary))
+        except queue.Full:
+            _logger.warning("Server message queue is full, msg dropped")
 
     def process_server_msg(self, ws, raw_data):
         global _print_event_tracker
