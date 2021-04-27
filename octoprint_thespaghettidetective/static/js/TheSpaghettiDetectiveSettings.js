@@ -206,13 +206,13 @@ $(function () {
                         "The Spaghetti Detective failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.";
                 } else if (alertMsg.cause === "webcam") {
                     text =
-                        'The Spaghetti Detective plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.thespaghettidetective.com/docs/webcam-connection-error-popup">this trouble-shooting guide</a>.';
+                        'The Spaghetti Detective plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://help.thespaghettidetective.com/kb/guide/en/webcam-connection-error-message-popup-8ZhVi9Vbo2/">this trouble-shooting guide</a>.';
                 }
             }
             if (alertMsg.level === "warning") {
                 if (alertMsg.cause === 'streaming') {
                     text =
-                        '<p>Premium webcam streaming failed to start. The Spaghetti Detective has switched to basic streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/webcam-switched-to-basic-streaming/">Learn more >>></a></p>';
+                        '<p>Premium webcam streaming failed to start. The Spaghetti Detective has switched to basic streaming.</p><p><a href="https://help.thespaghettidetective.com/kb/guide/en/error-message-webcam-has-switched-to-the-basic-streaming-frf6btS6DJ/">Learn more >>></a></p>';
                 }
                 if (alertMsg.cause === 'cpu') {
                     text =
