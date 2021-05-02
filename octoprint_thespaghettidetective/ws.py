@@ -7,6 +7,9 @@ import threading
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
+class WebSocketConnectionException(Exception):
+    pass
+
 class WebSocketClient:
 
     def __init__(self, url, token=None, on_ws_msg=None, on_ws_close=None, on_ws_open=None, subprotocols=None):
@@ -49,7 +52,7 @@ class WebSocketClient:
                 return
             time.sleep(0.1)
         self.ws.close()
-        raise Exception('Not connected to websocket server after 120s')
+        raise WebSocketConnectionException('Not connected to websocket server after 120s')
 
     def send(self, data, as_binary=False):
         with self._mutex:

@@ -16,7 +16,7 @@ try:
 except ImportError:
     import Queue as queue
 
-from .ws import WebSocketClient
+from .ws import WebSocketClient, WebSocketConnectionException
 from .commander import Commander
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
@@ -289,6 +289,8 @@ class TheSpaghettiDetectivePlugin(
                         raw = json.dumps(data, encoding='iso-8859-1', default=str)
                 self.ss.send(raw, as_binary=as_binary)
                 server_ws_backoff.reset()
+            except WebSocketConnectionException as e:
+                _logger.warning(e)
             except Exception as e:
                 self.sentry.captureException(tags=get_tags())
                 error_stats.add_connection_error('server', self)
