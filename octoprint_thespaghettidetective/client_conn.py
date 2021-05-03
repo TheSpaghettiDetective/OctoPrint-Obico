@@ -53,13 +53,8 @@ class ClientConn:
         self.plugin.post_update_to_server()
 
     def send_msg_to_client(self, data):
-        if __python_version__ == 3:
-            raw = json.dumps(data, default=str)
-            compressed = self.compressor.compressToBase64(raw).encode('utf8')
-        else:
-            raw = json.dumps(data, encoding='iso-8859-1', default=str)
-            compressed = self.compressor.compressToBase64(raw)
-
+        raw = json.dumps(data, default=str)
+        compressed = self.compressor.compressToUTF16(raw).encode('utf16')
         self.data_channel_conn.send(compressed)
 
     def close(self):
