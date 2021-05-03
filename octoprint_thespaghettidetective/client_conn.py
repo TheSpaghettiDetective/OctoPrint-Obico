@@ -5,9 +5,11 @@ import socket
 import threading
 import time
 import sys
+import zlib
 from collections import deque
+import lzstring
 
-from .janus import JANUS_SERVER, JANUS_DATA_PORT
+from .janus import JANUS_SERVER, JANUS_DATA_PORT, MAX_PAYLOAD_SIZE
 
 __python_version__ = 3 if sys.version_info >= (3, 0) else 2
 
@@ -20,6 +22,7 @@ class ClientConn:
         self.data_channel_conn = DataChannelConn(JANUS_SERVER, JANUS_DATA_PORT)
         self.seen_refs = deque(maxlen=25)  # contains "last" 25 passthru refs
         self.seen_refs_lock = threading.RLock()
+        self.compressor = lzstring.LZString()
 
     def on_message_to_plugin(self, msg):
         target = getattr(self.plugin, msg.get('target'))
@@ -51,14 +54,17 @@ class ClientConn:
 
     def send_msg_to_client(self, data):
         if __python_version__ == 3:
-            raw = json.dumps(data, default=str).encode("utf8")
+            raw = json.dumps(data, default=str)
+            compressed = self.compressor.compressToBase64(raw).encode('utf8')
         else:
             raw = json.dumps(data, encoding='iso-8859-1', default=str)
+            compressed = self.compressor.compressToBase64(raw)
 
-        self.data_channel_conn.send(raw)
+        self.data_channel_conn.send(compressed)
 
     def close(self):
         self.data_channel_conn.close()
+
 
 class DataChannelConn(object):
 
@@ -69,6 +75,10 @@ class DataChannelConn(object):
         self.sock_lock = threading.RLock()
 
     def send(self, payload):
+        if len(payload) > MAX_PAYLOAD_SIZE:
+            _logger.error('datachannel payload too big (%s)' % (len(payload), ))
+            return
+
         with self.sock_lock:
             if self.sock is None:
                 try:
