@@ -7,7 +7,6 @@ import time
 import sys
 import zlib
 from collections import deque
-import lzstring
 
 from .janus import JANUS_SERVER, JANUS_DATA_PORT, MAX_PAYLOAD_SIZE
 
@@ -22,7 +21,6 @@ class ClientConn:
         self.data_channel_conn = DataChannelConn(JANUS_SERVER, JANUS_DATA_PORT)
         self.seen_refs = deque(maxlen=25)  # contains "last" 25 passthru refs
         self.seen_refs_lock = threading.RLock()
-        self.compressor = lzstring.LZString()
 
     def on_message_to_plugin(self, msg):
         target = getattr(self.plugin, msg.get('target'))
@@ -53,9 +51,20 @@ class ClientConn:
         self.plugin.post_update_to_server()
 
     def send_msg_to_client(self, data):
-        raw = json.dumps(data, default=str)
-        compressed = self.compressor.compressToUTF16(raw).encode('utf16')
-        self.data_channel_conn.send(compressed)
+        payload = json.dumps(data, default=str).encode('utf8')
+        if __python_version__ == 3:
+            compressor  = zlib.compressobj(
+                level=zlib.Z_DEFAULT_COMPRESSION, method=zlib.DEFLATED,
+                wbits=15, memLevel=8, strategy=zlib.Z_DEFAULT_STRATEGY)
+        else:
+            # no kw args
+            compressor  = zlib.compressobj(
+                zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, 15, 8, zlib.Z_DEFAULT_STRATEGY)
+
+        compressed_data = compressor.compress(payload)
+        compressed_data += compressor.flush()
+
+        self.data_channel_conn.send(compressed_data)
 
     def close(self):
         self.data_channel_conn.close()
