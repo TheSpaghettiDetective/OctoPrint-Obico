@@ -147,6 +147,7 @@ h264-sample: {
 	videofmtp = "profile-level-id=42e01f;packetization-mode=1"
 	data = true
 	dataport = 8009
+	datatype = "binary"
 	dataiface = "127.0.0.1"
 	databuffermsg = false
 }

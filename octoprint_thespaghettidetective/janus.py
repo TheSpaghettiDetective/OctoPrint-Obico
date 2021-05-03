@@ -24,6 +24,7 @@ USE_EXTERNAL_JANUS = os.getenv('JANUS_SERVER', '').strip() != ''
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 JANUS_WS_PORT = 8188
 JANUS_DATA_PORT = 8009  # check streaming plugin config
+MAX_PAYLOAD_SIZE = 1500  # hardcoded in streaming plugin
 
 
 class JanusConn:
