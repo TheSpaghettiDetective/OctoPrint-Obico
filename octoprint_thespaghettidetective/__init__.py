@@ -175,6 +175,9 @@ class TheSpaghettiDetectivePlugin(
 
     # ~~Startup Plugin
 
+    def on_startup(self, host, port):
+        self.octoprint_port = port if port else self._settings.getInt(["server", "port"])
+
     def on_after_startup(self):
         not_using_pi_camera()
 
@@ -212,10 +215,7 @@ class TheSpaghettiDetectivePlugin(
             stream_thread.daemon = True
             stream_thread.start()
 
-        server_host = '127.0.0.1'  # FIXME
-        server_port = self._settings.global_get(['server', 'port'])
-
-        url = 'http://{}:{}'.format(server_host, server_port)
+        url = 'http://{}:{}'.format('127.0.0.1', self.octoprint_port)
         self.local_tunnel = LocalTunnel(
             base_url=url,
             on_http_response=self.send_ws_msg_to_server,
