@@ -79,7 +79,7 @@
             <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/printers/' + linkedPrinter.id() + '/?source=plugin' }" target="_blank" class="btn">View/Change Settings (Login Required)</a>
           </div>
         </section>
-        <section>
+        <section data-bind="visible: linkedPrinter.id">
           <h1 class="section-title">Premium Webcam Streaming</h1>
           <div class="section-content">
             <form class="form-horizontal">
@@ -167,7 +167,12 @@
           <h1 class="section-title">Plugin Status</h1>
           <div class="section-content">
             <div class="test-connection-wrapper">
-              <div class="section-panel">
+              <div class="section-panel plugin-status" data-bind="visible: !linkedPrinter.id()">
+                <div class="error">
+                  Plugin can't reach The Spaghetti Detective server. Press the "TEST" button to further diagnose the problem.
+                </div>
+              </div>
+              <div class="section-panel plugin-status" data-bind="visible: linkedPrinter.id">
                 <div class="status-line" data-bind="visible: linkedPrinter.is_pro">
                   <i class="fa fa-circle"></i>Account status: <span class="accountPro">Pro</span>
                 </div>

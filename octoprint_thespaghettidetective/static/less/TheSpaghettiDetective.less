@@ -1217,6 +1217,13 @@ html.themeify {
         .section-content {
           padding-left: 18px;
 
+          .error {
+            color: @error-color;
+          }
+          .success {
+            color: @success-color;
+          }
+
           // Test connection
 					.test-connection-wrapper {
             display: flex;
@@ -1224,6 +1231,9 @@ html.themeify {
             justify-content: space-between;
 
             .section-panel {
+              &.plugin-status {
+                max-width: 40%;
+              }
               .status-line {
                 i {
                   margin-right: 8px;
@@ -1285,12 +1295,6 @@ html.themeify {
                   margin-left: -50px;
                   color: @primary-color;
                   border-radius: 0 10px 10px 0;
-                  .error {
-                    color: @error-color;
-                  }
-                  .success {
-                    color: @success-color;
-                  }
                 }
               }
             }
