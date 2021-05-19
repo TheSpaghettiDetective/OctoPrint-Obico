@@ -186,13 +186,13 @@
                   <i class="fa fa-circle"></i>Connection to server: Okay
                 </div>
                 <div class="status-line error" data-bind="visible: hasServerErrors()">
-                  <i class="fa fa-circle"></i>Connection to server: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal, text: serverStatus.is_connected() ? 'Error' : 'Disconnected'"></a>
+                  <i class="fa fa-circle"></i><a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Connection to server: <span data-bind="text: serverStatus.is_connected() ? 'Error' : 'Disconnected'"></span></a>
                 </div>
                 <div class="status-line success" data-bind="visible: !hasWebcamErrors()">
                   <i class="fa fa-circle"></i>Connection to webcam: Okay
                 </div>
                 <div class="status-line error" data-bind="visible: hasWebcamErrors()">
-                  <i class="fa fa-circle"></i>Connection to webcam: <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Error</a>
+                  <i class="fa fa-circle"></i><a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Connection to webcam: Error</a>
                 </div>
               </div>
               <div style="height: 70px; border-right: gray solid thin;"></div>
