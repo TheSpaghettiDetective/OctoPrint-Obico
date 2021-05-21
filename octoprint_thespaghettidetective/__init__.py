@@ -291,6 +291,8 @@ class TheSpaghettiDetectivePlugin(
                 server_ws_backoff.reset()
             except WebSocketConnectionException as e:
                 _logger.warning(e)
+                error_stats.add_connection_error('server', self)
+                server_ws_backoff.more(e)
             except Exception as e:
                 self.sentry.captureException(tags=get_tags())
                 error_stats.add_connection_error('server', self)

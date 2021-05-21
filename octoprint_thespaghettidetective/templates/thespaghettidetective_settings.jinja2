@@ -214,7 +214,7 @@
                       Failed to contact server. Is OctoPrint connected to Internet?
                       </div>
                       <div data-bind="visible: serverTestStatusCode() == 401">
-                      <div>Wrong account credentials.</div>
+                      <div>Invalid account credentials.</div>
                       <div><a href="#" data-bind="click: showWizardModal">Re-run wizard</a> to link OctoPrint.</div>
                       </div>
                       <div data-bind="visible: serverTestUnknownError()">
@@ -358,7 +358,7 @@
         <li data-bind="visible: serverStatus.status_posted_to_server_ts">The most recent attempted server contact occurred at: <b data-bind="text: new Date(serverStatus.status_posted_to_server_ts())"></b>.</li>
       </ul>
       <p>
-        Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.
+        The Spaghetti Detective failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.
       </p>
     </div>
     <div data-bind="visible: hasWebcamErrors()">
