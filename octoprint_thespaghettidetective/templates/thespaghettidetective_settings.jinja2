@@ -210,8 +210,8 @@
                       <div data-bind="visible: serverTestStatusCode() == 200">
                       Succeeded!
                       </div>
-                      <div data-bind="visible: serverTestStatusCode() == null">
-                      Failed to contact server. Is OctoPrint connected to Internet?
+                      <div class="status-line error" data-bind="visible: serverTestStatusCode() == null">
+                      <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Failed to contact server. Is OctoPrint connected to Internet?</a>
                       </div>
                       <div data-bind="visible: serverTestStatusCode() == 401">
                       <div>Invalid account credentials.</div>
