@@ -82,6 +82,7 @@ class WebcamStreamer:
         self.gst_proc = None
         self.ffmpeg_proc = None
         self.shutting_down = False
+        self.compat_streaming = False
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
     def __init_camera__(self):
@@ -149,7 +150,6 @@ class WebcamStreamer:
             wait_for_port('127.0.0.1', 8080)  # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
             self.sentry.captureException(tags=get_tags())
-            return
 
     def ffmpeg_from_mjpeg(self):
 
@@ -167,7 +167,7 @@ class WebcamStreamer:
         self.bitrate = bitrate_for_dim(img_w, img_h)
 
         self.start_ffmpeg('-re -i {} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, self.bitrate, img_w, img_h), via_wrapper=True)
-        return
+        self.compat_streaming = True
 
     def start_ffmpeg(self, ffmpeg_args, via_wrapper=False):
         ffmpeg_cmd = '{} {} -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
