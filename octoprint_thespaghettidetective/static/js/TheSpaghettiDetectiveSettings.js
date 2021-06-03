@@ -216,7 +216,7 @@ $(function () {
                 }
                 if (alertMsg.cause === 'cpu') {
                     text =
-                        '<p>Premium streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable premium streaming. <a href="https://help.thespaghettidetective.com/kb/guide/en/compatibility-mode-streaming-GaERh2rUjr/Steps/300081,300084,300082,300083,300088">Learn more >>></a></p>';
+                        '<p>Premium streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable premium streaming. <a href="https://help.thespaghettidetective.com/kb/guide/en/premium-streaming-in-compatibility-mode-GaERh2rUjr/Steps/300086">Learn more >>></a></p>';
                 }
             }
 
