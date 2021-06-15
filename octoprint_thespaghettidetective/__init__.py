@@ -32,7 +32,7 @@ from .tunnel import LocalTunnel
 from . import plugin_apis
 from .client_conn import ClientConn
 import zlib
-
+from .linkhelper import LinkHelper
 
 import octoprint.plugin
 
@@ -195,7 +195,18 @@ class TheSpaghettiDetectivePlugin(
 
         get_tags()  # init tags to minimize risk of race condition
 
+        lhelper = None
+        if not self.is_configured():
+            lhelper = LinkHelper(plugin=self)
+            lhelper_thread = threading.Thread(target=lhelper.start)
+            lhelper_thread.daemon = True
+            lhelper_thread.start()
+
         self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
+
+        if lhelper:
+            lhelper.stop()
+
         self.sentry.user_context({'id': self.auth_token()})
         _logger.info('Linked printer: {}'.format(self.linked_printer))
         _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
@@ -269,7 +280,7 @@ class TheSpaghettiDetectivePlugin(
                     _logger.warning("Plugin not configured. Not sending message to server...")
                     continue
 
-                if not self.linked_printer.get('id'): # id is present only when auth_token is validated by the server
+                if not self.linked_printer.get('id'):  # id is present only when auth_token is validated by the server
                     _logger.warning("auth_token is not validated. Not sending message to server...")
                     continue
 
@@ -370,7 +381,6 @@ class TheSpaghettiDetectivePlugin(
         except:
             self.sentry.captureException(tags=get_tags())
 
-
     def status_update_to_client_loop(self):
         while True:
             interval = 0.75 if self.status_update_booster > 0 else 2
@@ -420,7 +430,7 @@ class TheSpaghettiDetectivePlugin(
         if resp and resp.ok:
             return resp.json()
         else:
-            return None # Triggers a backoff
+            return None  # Triggers a backoff
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py

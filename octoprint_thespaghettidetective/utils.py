@@ -37,14 +37,19 @@ class ExpoBackoff:
 
     def more(self, e):
         self.attempts += 1
-        delay = 2 ** self.attempts
-        if delay > self.max_seconds:
-            delay = self.max_seconds
-        delay *= 0.5 + random.random()
-
+        delay = self.get_delay(self.attempts, self.max_seconds)
         _logger.error('Backing off %f seconds: %s' % (delay, e))
 
         time.sleep(delay)
+
+    @classmethod
+    def get_delay(cls, attempts, max_seconds):
+        delay = 2 ** attempts
+        if delay > max_seconds:
+            delay = max_seconds
+        delay *= 0.5 + random.random()
+        return delay
+
 
 class OctoPrintSettingsUpdater:
 
