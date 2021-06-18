@@ -198,14 +198,9 @@ class TheSpaghettiDetectivePlugin(
         lhelper = None
         if not self.is_configured():
             lhelper = LinkHelper(plugin=self)
-            lhelper_thread = threading.Thread(target=lhelper.start)
-            lhelper_thread.daemon = True
-            lhelper_thread.start()
+            lhelper.start()
 
         self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
-
-        if lhelper:
-            lhelper.stop()
 
         self.sentry.user_context({'id': self.auth_token()})
         _logger.info('Linked printer: {}'.format(self.linked_printer))
