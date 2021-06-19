@@ -54,7 +54,6 @@ class TheSpaghettiDetectivePlugin(
         octoprint.plugin.EventHandlerPlugin,
         octoprint.plugin.AssetPlugin,
         octoprint.plugin.SimpleApiPlugin,
-        octoprint.plugin.WizardPlugin,
         octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
@@ -73,14 +72,6 @@ class TheSpaghettiDetectivePlugin(
         self.local_tunnel = None
         self.janus = JanusConn(self)
         self.client_conn = ClientConn(self)
-
-    # ~~ Wizard plugin mix
-
-    def is_wizard_required(self):
-        return not self._settings.get(["auth_token"])
-
-    def get_wizard_version(self):
-        return 2
 
     # ~~ SettingsPlugin mixin
 

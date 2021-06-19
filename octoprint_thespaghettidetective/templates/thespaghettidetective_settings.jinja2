@@ -323,13 +323,15 @@
 <div id="wizardModal" class="modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-    <h3 id="wizardModalLabel">The Spaghetti Detective Setup Wizard</h3>
+    <h4 style="text-align: center;">The Spaghetti Detective Setup Wizard</h4>
   </div>
-  <div class="modal-body" data-bind="allowBindings: false">
-    <div class="alert alert-warning" role="alert">
+  <div class="modal-body">
+    <div class="alert alert-warning" role="alert" data-bind="visible: configured">
       You are re-linking OctoPrint to your TSD account. Don't forget to <strong>restart OctoPrint</strong> when you are done.
     </div>
+    <div data-bind="allowBindings: false">
     {% include "thespaghettidetective_wizard.jinja2" %}
+    </div>
   </div>
 </div>
 
