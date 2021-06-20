@@ -48,8 +48,8 @@ class LinkHelper(object):
             octopi_version=read('/etc/octopi_version'),
         )
 
-    def start(self) -> None:
-        _logger.info(f'linkhelper started, device_id: {self.device_id}')
+    def start(self):
+        _logger.info('linkhelper started, device_id: {}'.format(self.device_id))
 
         self.started_at = time.time()
         next_connect_at = 0.0  # -inf
