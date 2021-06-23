@@ -5,6 +5,7 @@ import os
 import uuid
 import io
 import json
+import socket
 
 import octoprint.server
 from octoprint.util.platform import (
@@ -13,7 +14,7 @@ from octoprint.util.platform import (
 )
 
 from .plugin_apis import verify_code
-from .utils import ExpoBackoff, server_request
+from .utils import ExpoBackoff, server_request, OctoPrintSettingsUpdater
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
@@ -46,7 +47,10 @@ class LinkHelper(object):
             arch=os.uname()[4],
             rpi_model=read('/proc/device-tree/model'),
             octopi_version=read('/etc/octopi_version'),
+            port=get_port(self.plugin) or 80,
         )
+
+        self.ip = None
 
     def start(self):
         _logger.info('linkhelper started, device_id: {}'.format(self.device_id))
@@ -139,6 +143,13 @@ class LinkHelper(object):
         if hasattr(octoprint.server, 'printerProfileManager'):
             printerprofile = octoprint.server.printerProfileManager.get_current()
             info['printerprofile'] = printerprofile.get('name', '') if printerprofile else ''
+
+        if not self.ip:
+            self.ip = get_ip_addr()
+
+        info['ip'] = self.ip or ''
+        info['machine_type'] = get_machine_type(self.plugin.octoprint_settings_updater) or ''
+
         return info
 
 
@@ -155,3 +166,39 @@ def read(path):  # type: (str) -> str
             return f.readline().strip('\0').strip()
     except Exception:
         return ''
+
+
+def get_ip_addr():  # type () -> Optional[str]
+    primary_ip = None
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(2)
+    try:
+        s.connect(('10.255.255.255', 1))
+        primary_ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        try:
+            s.connect(('8.8.8.8', 53))   # None of these 2 ways are 100%. Double them to maximize the chance
+            primary_ip = s.getsockname()[0]
+            s.close()
+        except Exception:
+            pass
+
+    return primary_ip
+
+
+def get_port(plugin):
+    try:
+        return plugin.octoprint_port
+    except Exception:
+        return None
+
+
+def get_machine_type(
+    octoprint_settings_updater
+):  # type: (OctoPrintSettingsUpdater) -> Optional[str]
+    try:
+        meta = octoprint_settings_updater.printer_metadata
+        return (meta or {}).get('MACHINE_TYPE', None)
+    except Exception:
+        return None
