@@ -64,9 +64,7 @@ class LinkHelper(object):
                 break
 
             if self.plugin.is_configured():
-                # TODO if any token is set, let's never try to overwrite that
-                # for now.
-                # Question: what to do when existing token is invalid?
+                # if any token is set, let's stop
                 break
 
             if time.time() - self.started_at > self.deadline_secs:
@@ -120,9 +118,7 @@ class LinkHelper(object):
         _logger.info('linkhelper incoming msg: {}'.format(msg))
 
         if msg['type'] == 'verify_code':
-            # TODO if any token is set, let's never try to overwrite that
-            # for now.
-            # Question: what to do when existing token is invalid?
+            # if any token is set, let's stop
             if self.plugin.is_configured():
                 return
 
