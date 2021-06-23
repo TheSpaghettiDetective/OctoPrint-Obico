@@ -42,11 +42,11 @@ class LinkHelper(object):
         self.device_id = uuid.uuid4().hex  # type: str
         self.static_info = dict(
             device_id=self.device_id,
-            hostname=os.uname()[1],
-            os=get_os(),
-            arch=os.uname()[4],
-            rpi_model=read('/proc/device-tree/model'),
-            octopi_version=read('/etc/octopi_version'),
+            hostname=os.uname()[1][:253],
+            os=get_os()[:253],
+            arch=os.uname()[4][:253],
+            rpi_model=read('/proc/device-tree/model')[:253],
+            octopi_version=read('/etc/octopi_version')[:253],
             port=get_port(self.plugin) or 80,
         )
 
@@ -140,15 +140,13 @@ class LinkHelper(object):
 
     def _collect_device_info(self):
         info = dict(**self.static_info)
-        if hasattr(octoprint.server, 'printerProfileManager'):
-            printerprofile = octoprint.server.printerProfileManager.get_current()
-            info['printerprofile'] = printerprofile.get('name', '') if printerprofile else ''
+        info['printerprofile'] = get_printerprofile_name()[:253]
 
         if not self.ip:
             self.ip = get_ip_addr()
+        info['ip'] = self.ip
 
-        info['ip'] = self.ip or ''
-        info['machine_type'] = get_machine_type(self.plugin.octoprint_settings_updater) or ''
+        info['machine_type'] = get_machine_type(self.plugin.octoprint_settings_updater)[:253]
 
         return info
 
@@ -168,8 +166,8 @@ def read(path):  # type: (str) -> str
         return ''
 
 
-def get_ip_addr():  # type () -> Optional[str]
-    primary_ip = None
+def get_ip_addr():  # type () -> str
+    primary_ip = ''
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(2)
     try:
@@ -196,9 +194,19 @@ def get_port(plugin):
 
 def get_machine_type(
     octoprint_settings_updater
-):  # type: (OctoPrintSettingsUpdater) -> Optional[str]
+):  # type: (OctoPrintSettingsUpdater) -> str
     try:
-        meta = octoprint_settings_updater.printer_metadata
-        return (meta or {}).get('MACHINE_TYPE', None)
+        meta = octoprint_settings_updater.printer_metadata or {}
+        return meta.get('MACHINE_TYPE', '')
     except Exception:
-        return None
+        return ''
+
+
+def get_printerprofile_name():  # type: () -> str
+    try:
+        printerprofile = octoprint.server.printerProfileManager.get_current()
+        return printerprofile.get('name', '') if printerprofile else ''
+    except Exception:
+        pass
+
+    return ''
