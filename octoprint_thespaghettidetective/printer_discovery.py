@@ -23,7 +23,7 @@ DEADLINE_SECS = 1800
 MAX_BACKOFF_SECS = 300
 
 
-class LinkHelper(object):
+class PrinterDiscovery(object):
 
     def __init__(self,
                  plugin,
@@ -53,7 +53,7 @@ class LinkHelper(object):
         self.ip = None
 
     def start(self):
-        _logger.info('linkhelper started, device_id: {}'.format(self.device_id))
+        _logger.info('printer_discovery started, device_id: {}'.format(self.device_id))
 
         self.started_at = time.time()
         next_connect_at = 0.0  # -inf
@@ -68,7 +68,7 @@ class LinkHelper(object):
                 break
 
             if time.time() - self.started_at > self.deadline_secs:
-                _logger.info('linkhelper deadline reached')
+                _logger.info('printer_discovery deadline reached')
                 self.stop()
                 break
 
@@ -81,20 +81,20 @@ class LinkHelper(object):
                     backoff_time = ExpoBackoff.get_delay(
                         connect_attempts, self.max_backoff_secs)
                     _logger.debug(
-                        'linkhelper error ({}), will retry after {}s'.format(
+                        'printer_discovery error ({}), will retry after {}s'.format(
                             ex, backoff_time))
 
                     connect_attempts += 1
                     next_connect_at = time.time() + backoff_time
 
             time.sleep(2)
-        _logger.info('linkhelper stopped')
+        _logger.info('printer_discovery stopped')
 
     def stop(self):
         self.stopped = True
 
     def _call(self):
-        _logger.debug('linkhelper calls server')
+        _logger.debug('printer_discovery calls server')
         data = self._collect_device_info()
 
         resp = server_request(
@@ -115,7 +115,7 @@ class LinkHelper(object):
             self._process_message(msg)
 
     def _process_message(self, msg):
-        _logger.info('linkhelper incoming msg: {}'.format(msg))
+        _logger.info('printer_discovery incoming msg: {}'.format(msg))
 
         if msg['type'] == 'verify_code':
             # if any token is set, let's stop
@@ -123,15 +123,15 @@ class LinkHelper(object):
                 return
 
             if msg['device_id'] != self.device_id:
-                _logger.debug('linkhelper got message for different device_id')
+                _logger.debug('printer_discovery got message for different device_id')
                 return
 
             result = verify_code(self.plugin, msg['data'])
             if result['succeeded'] is True:
-                _logger.info('linkhelper verified code succesfully')
+                _logger.info('printer_discovery verified code succesfully')
                 self.stop()
             else:
-                _logger.warn('linkhelper could not verify code')
+                _logger.warn('printer_discovery could not verify code')
             return
 
     def _collect_device_info(self):

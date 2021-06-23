@@ -32,7 +32,7 @@ from .tunnel import LocalTunnel
 from . import plugin_apis
 from .client_conn import ClientConn
 import zlib
-from .linkhelper import LinkHelper
+from .printer_discovery import PrinterDiscovery
 
 import octoprint.plugin
 
@@ -195,10 +195,10 @@ class TheSpaghettiDetectivePlugin(
 
         get_tags()  # init tags to minimize risk of race condition
 
-        lhelper = None
+        pdiscovery = None
         if not self.is_configured():
-            lhelper = LinkHelper(plugin=self)
-            lhelper.start()
+            pdiscovery = PrinterDiscovery(plugin=self)
+            pdiscovery.start()
 
         self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
 
