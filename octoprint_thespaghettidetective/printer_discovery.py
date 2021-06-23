@@ -50,7 +50,7 @@ class PrinterDiscovery(object):
             port=get_port(self.plugin) or 80,
         )
 
-        self.ip = None
+        self.host_or_ip = None
 
     def start(self):
         _logger.info('printer_discovery started, device_id: {}'.format(self.device_id))
@@ -138,9 +138,9 @@ class PrinterDiscovery(object):
         info = dict(**self.static_info)
         info['printerprofile'] = get_printerprofile_name()[:253]
 
-        if not self.ip:
-            self.ip = get_ip_addr()
-        info['ip'] = self.ip
+        if not self.host_or_ip:
+            self.host_or_ip = get_host_or_ip(self.plugin)
+        info['host_or_ip'] = self.host_or_ip
 
         info['machine_type'] = get_machine_type(self.plugin.octoprint_settings_updater)[:253]
 
@@ -181,11 +181,20 @@ def get_ip_addr():  # type () -> str
     return primary_ip
 
 
+def get_host_or_ip(plugin):
+    try:
+        discovery_settings = plugin._settings.global_get(['plugins', 'discovery'])
+        return discovery_settings.get('publicHost', get_ip_addr())
+    except Exception:
+        return ''
+
+
 def get_port(plugin):
     try:
-        return plugin.octoprint_port
+        discovery_settings = plugin._settings.global_get(['plugins', 'discovery'])
+        return discovery_settings.get('publicPort', plugin.octoprint_port)
     except Exception:
-        return None
+        return ''
 
 
 def get_machine_type(
