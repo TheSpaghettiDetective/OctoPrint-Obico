@@ -844,82 +844,71 @@
       color: #fff;
     }
 
-    form.set-printer-name {
-      margin-top: 30px;
-      padding: 0 20px;
+    .tsd-button-wrapper {
+      padding-top: 50px;
+    }
 
-      .control-group {
-
-        .control-label {
-          font-size: 18px;
-          margin-bottom: 15px;
+    .tsd-auto-close {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      padding: 0;
+      margin: 0;
+      border: none;
+      background: none;
+      
+      .text {
+        position: absolute;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        line-height: 100px;
+        left: 0;
+        top: 0;
+        font-size: 1.125rem;
+        border-radius: 100%;
+        background-color: #fff;
+        color: @primary-color;
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+      
+      .progress-border {
+        position: absolute;
+        z-index: 0;
+        vertical-align: middle;
+        width: 120px;
+        height: 120px;
+        left: -10px;
+        top: -10px;
+        transform: rotate(-90deg);
+    
+        .under {
+          stroke: #fff;
+          fill: none;
         }
-
-        .controls {
-          text-align: center;
-          margin: 10px 0;
-
-          input {
-            margin-bottom: 0;
-            text-align: center;
-            font-size: 15px;
-            border: 2px solid #fff;
-            color: @primary-color;
-            box-shadow: none;
-            background-color: #fff;
-
-            &::placeholder {
-              color: @primary-color;
-              opacity: .8;
-              font-style: italic;
-            }
-
-            &:focus {
-              box-shadow: none;
-            }
-          }
-
-          button.btn {
-            text-shadow: none;
-            font-weight: bold;
-            background-color: #fff;
-            box-shadow: none;
-            background-image: none;
-            color: @primary-color;
-            border: 2px solid #fff;
-
-            &:focus {
-              outline: none;
-            }
-
-            &[disabled] {
-              background: none;
-              color: #fff;
-            }
-          }
-
-          .error-message {
-            color: lighten(@error-color, 20%);
-            max-width: 300px;
-            margin-top: 10px;
-            display: none;
-          }
-        }
-
-        @media screen and (max-width: 570px) {
-          .controls input, .controls button {
-            display: block;
-            width: 100%;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-            height: 35px;
-          }
+        
+        .progress {
+          /*
+            2 * π * r = 2 * 3.141592 * 21 = 131.526864
+            do not use 'calc(2 * 3.141592 * 21)' - it doesn't work in Firefox
+          */
+          stroke-dasharray: 131.526864;
+          stroke-dashoffset: 131.526864;
+          stroke: lighten(@primary-color, 20%);
+          transition: all 10s linear;
+          fill: none;
         }
       }
-
-      .hint {
-        max-width: 400px;
-        opacity: .7;
+      
+      &.active {
+        .progress {
+          stroke-dashoffset: 0;
+        }
+      }
+    
+      &:hover {
+        cursor: pointer;
       }
     }
   }
