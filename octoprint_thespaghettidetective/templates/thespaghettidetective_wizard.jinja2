@@ -252,18 +252,17 @@
         <img src="plugin/thespaghettidetective/static/img/checkmark-circled.svg" class="checkmark-circle" alt="">
         <h1 class="title white">OctoPrint Linked Successfully!</h1>
 
-        <form class="form set-printer-name">
-          <div class="control-group">
-              <label class="control-label">Give your printer a shiny new name!</label>
-              <div class="controls">
-                <div class="printerNameInput">
-                  <input type="text" onClick="this.select();" placeholder="My Awesome Cloud Printer" data-bind="textInput: printerName">
-                  <div class="error-message">Failed to change the printer name. Make sure your OctoPrint is connected to the Internet.</div>
-                </div>
-              </div>
-              <p class="hint">You can always change the printer name later.</p>
-          </div>
-        </form>
+        <div class="tsd-button-wrapper">
+          <button class="tsd-auto-close" data-bind="click: hideWizardModal">
+            <svg class="progress-border" viewBox="0 0 50 50">
+              <g>
+                <circle class="under" cx="25" cy="25" r="20.9" stroke-width="4" />
+                <circle class="progress" cx="25" cy="25" r="21" stroke-width="4" />
+              </g>
+            </svg>
+            <span class="text">Close</span>
+          </button>
+        </div>
       </div>
     </div>
     <div>

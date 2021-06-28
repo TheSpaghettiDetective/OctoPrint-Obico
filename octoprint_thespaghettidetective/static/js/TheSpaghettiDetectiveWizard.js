@@ -123,6 +123,12 @@ $(function () {
 
             if (self.step() === 4) {
                 $('.modal[aria-hidden="false"] .verification-code-input input[data-number=1]').trigger('focus');
+            } else if (self.step() === 5) {
+                // Close button with countdown animation
+                setTimeout(function() {
+                    $('.tsd-auto-close').addClass('active'); 
+                    setTimeout(function() { self.hideWizardModal(); }, 10000); // auto-close in 10s
+                }, 500) // Add .5s delay to make transition visible
             }
         };
 
@@ -223,6 +229,7 @@ $(function () {
             self.step(1);
             self.verifying(false);
             self.securityCode('');
+            $('.tsd-auto-close').removeClass('active');
 
             let verificationWrapper = $('.verification-wrapper');
             verificationWrapper.removeClass('success error unknown');
@@ -230,6 +237,11 @@ $(function () {
             for (let i = 1; i <= 6; i++) {
                 verificationWrapper.find('.verification-code-input input[data-number='+ i +']').val('');
             }
+        }
+
+        self.hideWizardModal = function() {
+            $('.tsd-auto-close').removeClass('active');
+            $('#wizardModal').modal('hide');
         }
 
         // Next feature in the slider on home screen
