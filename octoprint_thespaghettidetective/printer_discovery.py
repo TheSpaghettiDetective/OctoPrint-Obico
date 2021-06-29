@@ -20,7 +20,7 @@ from .utils import ExpoBackoff, server_request, OctoPrintSettingsUpdater, get_ta
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 POLL_PERIOD_SECS = 5
-DEADLINE_SECS = 1800
+DEADLINE_SECS = 3600
 MAX_BACKOFF_SECS = 300
 
 
