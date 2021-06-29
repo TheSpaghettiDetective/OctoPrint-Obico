@@ -7,7 +7,7 @@
 $(function () {
 
     $(function() {
-        $('.collapsable-title').click(function() {
+        $('.tsd-collapsable-title').click(function() {
             $(this).parent().toggleClass('opened');
         })
     });

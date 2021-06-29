@@ -7,7 +7,7 @@
 
 // General styles
 
-.button {
+.tsd-button {
   background-color: @primary-color;
   padding: 10px 26px;
   font-size: 16px;
@@ -40,24 +40,24 @@
   }
 }
 
-.flex {
+.tsd-flex {
   display: flex;
 
-  &.col {
+  &.tsd-col {
     flex-direction: column;
   }
 
-  &.align-center {
+  &.tsd-align-center {
     align-items: center;
   }
 
-  &.justify-center {
+  &.tsd-justify-center {
     justify-content: center;
   }
 }
 
 // API call animation
-.saving-in-progress, .successfully-saved, .error-occurred {
+.tsd-saving-in-progress, .tsd-successfully-saved, .tsd-error-occurred {
   @indicatorSize: 18px;
   display: inline-block;
 
@@ -74,7 +74,7 @@
     z-index: 9;
   }
 
-  &.saving-in-progress {
+  &.tsd-saving-in-progress {
     position: relative;
   }
 
@@ -82,7 +82,7 @@
       background-image: url('../img/tail-spin.svg');
     }
 
-  &.successfully-saved {
+  &.tsd-successfully-saved {
     position: relative;
 
     &:before {
@@ -90,7 +90,7 @@
     }
   }
 
-  &.error-occurred {
+  &.tsd-error-occurred {
     position: relative;
 
     &:before {
@@ -100,10 +100,10 @@
 }
 
 // Hideble mini-section
-.collapsable {
+.tsd-collapsable {
   margin-left: 25px;
 
-  .collapsable-title {
+  .tsd-collapsable-title {
     font-size: 20px;
     border-bottom: 1px solid #757575;
     position: relative;
@@ -116,7 +116,7 @@
       left: -25px;
     }
 
-    .counter {
+    .tsd-counter {
       font-weight: normal;
 
       &:before {
@@ -129,26 +129,26 @@
     }
   }
 
-  .collapsable-content {
+  .tsd-collapsable-content {
     height: 0;
     overflow: hidden;
   }
 
   &:hover {
-    .collapsable-title {
+    .tsd-collapsable-title {
       opacity: .8;
       cursor: pointer;
     }
   }
 
   &.opened {
-    .collapsable-title {
+    .tsd-collapsable-title {
       &:before {
         transform: rotate(90deg);
       }
     }
 
-    .collapsable-content {
+    .tsd-collapsable-content {
       height: auto;
     }
   }
@@ -156,29 +156,29 @@
 
 // Wizard content
 
-.wizard-content {
+.tsd-wizard-content {
   font-family: 'Roboto', sans-serif;
   padding-right: 18px;
   overflow: hidden;
   position: relative;
 
   // Wizards with big logo as a background
-  &.bg-logo {
+  &.tsd-bg-logo {
     background-image: url(../img/logo-bg.svg);
     background-repeat: no-repeat;
     background-position: -250px 0px;
     background-size: 500px;
 
-    &.bg-primary {
+    &.tsd-bg-primary {
       background-image: url(../img/logo-bg-dark.svg);
     }
   }
 
-  &.bg-primary {
+  &.tsd-bg-primary {
     background-color: @primary-color;
     color: #fff;
 
-    .navigation .back-btn {
+    .tsd-navigation .tsd-back-btn {
       color: #fff;
     }
   }
@@ -210,19 +210,19 @@
     }
   }
 
-  .indent-content {
+  .tsd-indent-content {
     padding-left: 80px;
   }
 
   // Header at the top of each page
-  .navigation {
+  .tsd-navigation {
     height: 54px;
     display: flex;
     align-items: bottom;
     justify-content: space-between;
 
     // Back button
-    .back-btn {
+    .tsd-back-btn {
       text-decoration: none;
       font-size: 18px;
       color: #888;
@@ -239,7 +239,7 @@
     }
 
     // Small black logo
-    .logo {
+    .tsd-logo {
       text-align: center;
 
       svg {
@@ -248,13 +248,13 @@
     }
 
     // Progress circles at the top right corner
-    .progress-content {
+    .tsd-progress-content {
       text-align: center;
 
-      .circles {
+      .tsd-circles {
         font-size: 0;
 
-        .circle {
+        .tsd-circle {
           width: 16px;
           height: 16px;
           display: inline-block;
@@ -303,12 +303,12 @@
   // Main style for buttons
 
   // Wizard title
-  .header {
+  .tsd-header {
     margin: 4px 0 10px 0;
   }
 
   // Text with checkbox
-  .text-with-checkbox {
+  .tsd-text-with-checkbox {
     padding-left: 22px;
     position: relative;
 
@@ -317,13 +317,13 @@
       opacity: .8;
     }
 
-    .checkbox-wrapper {
+    .tsd-checkbox-wrapper {
       width: 10px;
       height: 10px;
       border: 1px solid @primary-color;
       background-color: #fff;
       position: absolute;
-      left: 0;
+      left: 0;  
       top: 0;
       bottom: 1px;
       margin: auto;
@@ -341,7 +341,7 @@
   }
 
   // Features block
-  .features {
+  .tsd-features {
     margin-top: 50px;
     overflow: hidden;
     width: 100%;
@@ -349,11 +349,11 @@
     position: relative;
     box-sizing: border-box;
 
-    .features-blocks {
+    .tsd-features-blocks {
       width: 100%;
       position: relative;
 
-      .feature {
+      .tsd-feature {
         padding-left: 90px;
         min-height: 64px;
         position: absolute;
@@ -372,19 +372,19 @@
         }
 
 
-        .feature-text {
+        .tsd-feature-text {
           min-height: 64px;
           display: flex;
           flex-direction: column;
           justify-content: center;
 
-          .title {
+          .tsd-title {
             font-weight: bold;
             font-size: 18px;
             color: @primary-color;
           }
 
-          .description {
+          .tsd-description {
             margin: 0;
             margin-top: 4px;
             font-size: 15px;
@@ -410,7 +410,7 @@
 
     @media screen and (max-width: 700px) {
       & {
-        .description {
+        .tsd-description {
           font-size: 13px;
           line-height: 1.25;
         }
@@ -421,7 +421,7 @@
       & {
         height: 200px;
 
-        .title {
+        .tsd-title {
           font-size: 15px;
           line-height: 1;
         }
@@ -429,10 +429,10 @@
     }
   }
 
-  .get-started {
+  .tsd-get-started {
     margin: 20px 0;
 
-    .button {
+    .tsd-button {
       padding: 24px 40px;
       font-size: 24px;
       font-weight: bolder;
@@ -440,22 +440,22 @@
   }
 
   // Choice between mobile and web (step 2)
-  .choice-container {
+  .tsd-choice-container {
     background-color: @primary-color;
     padding: 18px;
 
-    .choice-banner {
+    .tsd-choice-banner {
       display: flex;
       justify-content: center;
       align-items: center;
 
-      .delimeter {
+      .tsd-delimeter {
         background-color: #fff;
         width: 3px;
         height: 200px;
       }
 
-      .option {
+      .tsd-option {
         text-align: center;
         margin: 30px 30px;
         color: #fff;
@@ -468,16 +468,16 @@
           color: #fff;
         }
 
-        .button {
+        .tsd-button {
           color: @primary-color;
           background-color: #fff;
 
-          &.filled {
+          &.tsd-filled {
             color: @primary-color;
             background-color: #fff;
           }
 
-          &.outline {
+          &.tsd-outline {
             background-color: @primary-color;
             color: #fff;
             border: 2px solid #fff;
@@ -488,7 +488,7 @@
       @media screen and (max-width: 800px) {
         flex-direction: column;
 
-        .delimeter {
+        .tsd-delimeter {
           width: 80%;
           height: 3px;
         }
@@ -497,11 +497,11 @@
   }
 
   // Footer notes
-  .notes {
+  .tsd-notes {
     color: #fff;
     text-align: center;
 
-    &.primary {
+    &.tsd-primary {
       background-color: @primary-color;
       color: #fff;
       margin-top: 60px;
@@ -509,13 +509,13 @@
       text-align: center;
     }
 
-    &.text-black {
+    &.tsd-text-black {
       color: @text-color;
     }
   }
 
   // Setup illustration at the bottom (step 3.1 - mobile)
-  .bottom-illustration {
+  .tsd-bottom-illustration {
     background-color: @primary-color;
     display: flex;
     margin-top: 40px;
@@ -523,26 +523,26 @@
     align-items: flex-end;
     justify-content: space-around;
 
-    & .mobile-screen {
+    & .tsd-mobile-screen {
       width: 60%;
     }
 
-    .mobile-links {
+    .tsd-mobile-links {
       width: 25%;
       margin-bottom: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
 
-      .qr {
+      .tsd-qr {
         width: 100%;
       }
 
-      .buttons {
+      .tsd-buttons {
         display: flex;
         justify-content: space-between;
 
-        a.button {
+        a.tsd-button {
           padding: 0;
           width: 45%;
         }
@@ -553,12 +553,12 @@
       flex-direction: column;
       align-items: center;
 
-      & .mobile-screen {
+      & .tsd-mobile-screen {
         width: 300px;
         max-width: 100%;
       }
 
-      .mobile-links {
+      .tsd-mobile-links {
         order: -1;
         margin-bottom: 50px;
         width: 200px;
@@ -567,14 +567,14 @@
     }
 
     @media screen and (max-width: 450px) {
-      .google, .apple {
+      .tsd-google, .tsd-apple {
         flex-direction: column;
       }
     }
   }
 
   // Small gray link with arrow under title (step 3)
-  .small {
+  .tsd-small {
     font-size: 14px;
     color: #9793A0;
     line-height: 14px;
@@ -586,13 +586,13 @@
   }
 
   // Big checkmark in the circle (final step)
-  .checkmark-circle {
+  .tsd-checkmark-circle {
     width: 115px;
     margin-bottom: 20px;
   }
 
   // List with circled checkmarks markers
-  ul.circled-checkmarks {
+  ul.tsd-circled-checkmarks {
     font-size: 18px;
     list-style-type: none;
 
@@ -611,7 +611,7 @@
   }
 
   // Link to discord at the bottom (final step)
-  .discord-link {
+  .tsd-discord-link {
     text-decoration: none;
     margin: 50px 20px 20px;
     display: inline-block;
@@ -620,7 +620,7 @@
       width: 30px;
     }
 
-    .text {
+    .tsd-text {
       display: inline-block;
       margin-left: 8px;
       border-bottom: 1px solid #fff;
@@ -631,21 +631,21 @@
     &:hover {
       opacity: .8;
 
-      .text {
+      .tsd-text {
         border-bottom: none;
       }
     }
   }
 
   // Verification code page (step 4)
-  .mobile-verification-wrapper {
+  .tsd-mobile-verification-wrapper {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     width: 100%;
 
     // Left content - text and input
-    .description {
+    .tsd-description {
       @input-width: 240px;
       @cell-border-width: 2px;
       margin-top: 10px;
@@ -656,12 +656,12 @@
       }
 
       // Input for security code
-      .verification-wrapper {
+      .tsd-verification-wrapper {
         label {
           font-weight: bold;
         }
 
-        .input-wrapper {
+        .tsd-input-wrapper {
           width: @input-width + @cell-border-width * 5;
           height: 20px;
           display: flex;
@@ -703,7 +703,7 @@
           }
         }
 
-        textarea.paste-from-clipboard-placeholder {
+        textarea.tsd-paste-from-clipboard-placeholder {
           border: none;
           margin: 0;
           padding: 0;
@@ -712,14 +712,14 @@
           opacity: 0;
         }
 
-        .error-message, .success-message, .unknown-error {
+        .tsd-error-message, .tsd-success-message, .tsd-unknown-error {
           margin-top: 10px;
           line-height: 1.25;
           display: none;
         }
 
         &.error {
-          .input-wrapper {
+          .tsd-input-wrapper {
             border-color: @error-color;
 
             input {
@@ -727,14 +727,14 @@
             }
           }
 
-          .error-message {
+          .tsd-error-message {
             display: block;
             color: @error-color;
           }
         }
 
         &.success {
-          .input-wrapper {
+          .tsd-input-wrapper {
             border-color: @success-color;
 
             input {
@@ -742,20 +742,20 @@
             }
           }
 
-          .success-message {
+          .tsd-success-message {
             display: block;
             color: @success-color;
           }
         }
 
         &.unknown {
-          .unknown-error {
+          .tsd-unknown-error {
             display: block;
             color: @error-color;
           }
         }
 
-        .loader {
+        .tsd-loader {
           width: @input-width;
           text-align: center;
 
@@ -770,16 +770,16 @@
 
 
     // Right content - mobile screen illustration
-    .illustration {
+    .tsd-illustration {
       width: 180px;
       position: relative;
 
-      .image {
+      .tsd-image {
         display: inline-block;
         width: 100%;
       }
 
-      .arrow {
+      .tsd-arrow {
         position: absolute;
         bottom: 40%;
         right: 83%;
@@ -818,19 +818,19 @@
     @media screen and (max-width: 800px) {
       flex-direction: column;
 
-      .description {
+      .tsd-description {
         width: 100%;
 
         p {
           width: 100%;
         }
 
-        .verification-wrapper {
+        .tsd-verification-wrapper {
           margin-top: 40px;
         }
       }
 
-      .illustration {
+      .tsd-illustration {
         max-width: 200px;
         margin: 30px 0;
       }
@@ -838,8 +838,8 @@
   }
 
   // Last step - setup printer's name
-  .successful-setup {
-    .title {
+  .tsd-successful-setup {
+    .tsd-title {
       text-align: center;
       color: #fff;
     }
@@ -857,7 +857,7 @@
       border: none;
       background: none;
       
-      .text {
+      .tsd-text {
         position: absolute;
         z-index: 1;
         width: 100%;
@@ -873,7 +873,7 @@
         font-weight: bold;
       }
       
-      .progress-border {
+      .tsd-progress-border {
         position: absolute;
         z-index: 0;
         vertical-align: middle;
@@ -883,12 +883,12 @@
         top: -10px;
         transform: rotate(-90deg);
     
-        .under {
+        .tsd-under {
           stroke: #fff;
           fill: none;
         }
         
-        .progress {
+        .tsd-progress {
           /*
             2 * π * r = 2 * 3.141592 * 21 = 131.526864
             do not use 'calc(2 * 3.141592 * 21)' - it doesn't work in Firefox
@@ -902,7 +902,7 @@
       }
       
       &.active {
-        .progress {
+        .tsd-progress {
           stroke-dashoffset: 0;
         }
       }
@@ -917,20 +917,20 @@
 
 html.themeify {
   // Hide by default (for unknown themes)
-  .wizard-content .bg-logo {
+  .tsd-wizard-content .tsd-bg-logo {
     background-image: none;
   }
 
   // Light background themes
   &.material_ui_light, &.dyl {
-    .wizard-content.bg-logo {
+    .tsd-wizard-content.tsd-bg-logo {
       background-image: url(../img/logo-bg.svg);
     }
   }
 
   // Dark background themes
   &.discorded, &.cyborg, &.discoranged, &.nighttime {
-    .wizard-content.bg-logo {
+    .tsd-wizard-content.tsd-bg-logo {
       background-image: url(../img/logo-bg-dark.svg);
     }
   }
@@ -938,13 +938,13 @@ html.themeify {
 
 // Settings content
 
-.settings-wrapper {
+.tsd-settings-wrapper {
   font-family: 'Roboto', sans-serif;
 
   // Main styles
 
   ul {
-    &.squared-markers {
+    &.tsd-squared-markers {
       list-style-type: square;
       font-size: 18px;
       margin-top: 10px;
@@ -954,20 +954,20 @@ html.themeify {
 
   // First page with choice of setting tabs
 
-  .settings-header {
+  .tsd-settings-header {
     width: 100%;
     margin-bottom: 30px;
   }
 
-  .choice-wrapper {
+  .tsd-choice-wrapper {
     display: flex;
     justify-content: space-between;
 
-    .choice-option {
+    .tsd-choice-option {
       flex: 0 0 42%;
       transition: color .3s ease-out;
 
-      .button {
+      .tsd-button {
         border-radius: 100px;
         font-weight: bold;
         font-size: 18px;
@@ -990,7 +990,7 @@ html.themeify {
         color: @primary-color;
         cursor: pointer;
 
-        .button {
+        .tsd-button {
           background-color: @primary-color;
           color: #fff;
           opacity: 1;
@@ -1006,20 +1006,20 @@ html.themeify {
       flex-direction: column;
       align-items: center;
 
-      .choice-option {
+      .tsd-choice-option {
         flex-basis: 100%;
       }
     }
   }
 
-  .not-configured {
+  .tsd-not-configured {
     text-align: center;
     i {
       color: @error-color;
     }
   }
 
-  .help-link-section {
+  .tsd-help-link-section {
     display: flex;
     margin-top: 90px;
     font-size: 15px;
@@ -1054,7 +1054,7 @@ html.themeify {
       border-bottom: 8px solid #fff;
 
       // White logo at the left side on navigation panel
-      .logo {
+      .tsd-logo {
         display: block;
         width: 60px;
         height: 30px;
@@ -1152,7 +1152,7 @@ html.themeify {
 
     // Mobile adaptation
     @media screen and (max-width: 850px) {
-      ul.nav {
+      ul.tsd-nav {
         padding-top: 10px;
         padding-right: 20px;
 
@@ -1172,7 +1172,7 @@ html.themeify {
           }
 
           // Active tab
-          &.active {
+          &.tsd-active {
             a {
               font-size: 16px;
 
@@ -1189,7 +1189,7 @@ html.themeify {
     // Tab content
     .tab-pane {
 
-			.button {
+			.tsd-button {
 				font-weight: bold;
 			}
 
@@ -1198,12 +1198,12 @@ html.themeify {
         margin-top: 30px;
 
         // Title of section
-        .section-title {
+        .tsd-section-title {
           font-size: 26px;
         }
 
         // Content of section
-        .section-content {
+        .tsd-section-content {
           padding-left: 18px;
 
           .error {
@@ -1214,16 +1214,16 @@ html.themeify {
           }
 
           // Test connection
-					.test-connection-wrapper {
+					.tsd-test-connection-wrapper {
             display: flex;
             align-items: center;
             justify-content: space-between;
 
-            .section-panel {
-              &.plugin-status {
+            .tsd-section-panel {
+              &.tsd-plugin-status {
                 max-width: 40%;
               }
-              .status-line {
+              .tsd-status-line {
                 i {
                   margin-right: 8px;
                 }
@@ -1238,21 +1238,21 @@ html.themeify {
                   }
                 }
 
-                .accountPro {
+                .tsd-accountPro {
                   color: @primary-color;
                 }
               }
 
-              .test-connection-header {
+              .tsd-test-connection-header {
                 margin-top: -24px;
                 text-align: center;
                 color: @primary-color;
               }
 
-              .test-connection {
+              .tsd-test-connection {
                 display: flex;
 
-                .circle {
+                .tsd-circle {
                   width: 99px;
                   height: 99px;
                   border-radius: 50%;
@@ -1274,7 +1274,7 @@ html.themeify {
                   }
                 }
 
-                .test-result {
+                .tsd-test-result {
                   height: 97px;
                   width: 230px;
                   max-width: 70%;
@@ -1290,7 +1290,7 @@ html.themeify {
 
             @media screen and (max-width: 700px) {
               flex-direction: column;
-              .form {
+              .tsd-form {
                 margin-left: 0;
                 align-items: flex-start;
               }
@@ -1306,7 +1306,7 @@ html.themeify {
             }
 					}
 
-          .rerun-wizard {
+          .tsd-rerun-wizard {
             color: #fff;
           }
 				}
@@ -1314,14 +1314,14 @@ html.themeify {
     }
 
     @media screen and (max-width: 700px) {
-      .flex {
+      .tsd-flex {
         flex-direction: column;
       }
     }
   }
 }
 
-.modal.secondary-modal {
+.tsd-modal.secondary-modal {
   width: 700px;
   margin-left: -350px;
 }

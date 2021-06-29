@@ -1,46 +1,46 @@
-<div class="settings-wrapper">
+<div class="tsd-settings-wrapper">
 
   <!-- Initial page with choice - what settings page (tab) to open? -->
-  <div class="choice-page" data-bind="visible: !showDetailPage()">
-    <img class="settings-header" src="plugin/thespaghettidetective/static/img/settings-header.svg" alt="">
-    <div class="settings-content">
-      <div class="not-configured" data-bind="visible: !configured()">
+  <div class="tsd-choice-page" data-bind="visible: !showDetailPage()">
+    <img class="tsd-settings-header" src="plugin/thespaghettidetective/static/img/settings-header.svg" alt="">
+    <div class="tsd-settings-content">
+      <div class="tsd-not-configured" data-bind="visible: !configured()">
         <div>
           <p>
             <i class="fa fa-exclamation" style="font-size: 48px;"></i>
           </p>
           <b>You haven't linked OctoPrint to your The Spaghetti Detective account!</b>
         </div>
-        <a class="button primary" data-bind="click: showWizardModal">Run Setup Wizard to Link OctoPrint</a>
+        <a class="tsd-button tsd-primary" data-bind="click: showWizardModal">Run Setup Wizard to Link OctoPrint</a>
       </div>
-      <div class="choice-wrapper" data-bind="visible: configured">
-        <div class="choice-option" data-bind="click: function(data, event) { selectPage('advanced'); }">
-          <a href="#" class="button btn-block">
+      <div class="tsd-choice-wrapper" data-bind="visible: configured">
+        <div class="tsd-choice-option" data-bind="click: function(data, event) { selectPage('advanced'); }">
+          <a href="#" class="tsd-button btn-block">
             <span>Settings</span>
             <img src="plugin/thespaghettidetective/static/img/arrow-right.svg">
           </a>
-          <ul class="squared-markers">
+          <ul class="tsd-squared-markers">
             <li>View linked printer name</li>
             <li>Premium webcam streaming</li>
             <li>Configure private TSD server</li>
             <li>Opt in error reporting</li>
           </ul>
         </div>
-        <div class="choice-option" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">
-          <a href="#" class="button btn-block">
+        <div class="tsd-choice-option" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">
+          <a href="#" class="tsd-button btn-block">
             <span>Troubleshooting</span>
             <img src="plugin/thespaghettidetective/static/img/arrow-right.svg">
           </a>
-          <ul class="squared-markers">
+          <ul class="tsd-squared-markers">
             <li>Server connection status</li>
             <li>Webcam streaming issues</li>
             <li>Re-run setup wizard</li>
           </ul>
         </div>
       </div>
-      <div class="help-link-section">
+      <div class="tsd-help-link-section">
         <img src="plugin/thespaghettidetective/static/img/chat.svg" alt="">
-        <div class="notes">
+        <div class="tsd-notes">
           Join <a href="https://discord.com/invite/NcZkQfj" target="_blank">our Discord server</a><br>
           Visit <a href="https://thespaghettidetective.com/" target="_blank">thespaghettidetective.com</a><br>
           Download the app through the <a href="https://play.google.com/store/apps/details?id=com.thespaghettidetective.android" target="_blank">Google Playstore</a> or <a href="https://apps.apple.com/us/app/the-spaghetti-detective/id1540646623?ign-itsct=apps_box&ign-itscg=30200" target="_blank">App Store</a>
@@ -52,7 +52,7 @@
   <!-- Page with tabs at the top -->
   <div class="tabbable" data-bind="visible: showDetailPage()">
     <ul class="nav">
-      <img src="plugin/thespaghettidetective/static/img/logo-white.svg" alt="" class="logo" data-bind="click: returnToSelection">
+      <img src="plugin/thespaghettidetective/static/img/logo-white.svg" alt="" class="tsd-logo" data-bind="click: returnToSelection">
       <li data-page="advanced">
         <a href="#tsd-advanced" data-toggle="tab">
           <span>Settings</span>
@@ -68,20 +68,20 @@
     <div class="tab-content">
       <div class="tab-pane active" id="tsd-advanced">
         <section>
-          <h1 class="section-title">Linked Printer</h1>
-          <div class="section-content" data-bind="visible: !linkedPrinter.id()">
+          <h1 class="tsd-section-title">Linked Printer</h1>
+          <div class="tsd-section-content" data-bind="visible: !linkedPrinter.id()">
             <div class="alert alert-warning" role="alert">
               Can't determine which TSD account this OctoPrint is linked to. Check to make sure your Rasbperry Pi is connected to the Internet. And refresh this page.
             </div>
           </div>
-          <div class="section-content" data-bind="visible: linkedPrinter.id">
+          <div class="tsd-section-content" data-bind="visible: linkedPrinter.id">
             <p>This OctoPrint is linked to <b data-bind="text: linkedPrinter.name"></b> in your TSD account.</p>
             <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/printers/' + linkedPrinter.id() + '/?source=plugin' }" target="_blank" class="btn">View/Change Settings (Login Required)</a>
           </div>
         </section>
         <section data-bind="visible: linkedPrinter.id">
-          <h1 class="section-title">Premium Webcam Streaming</h1>
-          <div class="section-content">
+          <h1 class="tsd-section-title">Premium Webcam Streaming</h1>
+          <div class="tsd-section-content">
             <form class="form-horizontal">
               <div data-bind="visible: !linkedPrinter.is_pro()">
                 <div class="alert alert-warning" role="alert">
@@ -132,14 +132,14 @@
           </div>
         </section>
         <section>
-          <h1 class="section-title">The Spaghetti Detective Server</h1>
-          <div class="section-content">
+          <h1 class="tsd-section-title">The Spaghetti Detective Server</h1>
+          <div class="tsd-section-content">
             <form class="form-horizontal">
               <div class="control-group">
                   <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
                   <label class="control-label">{{ _('Server Address') }}</label>
                   <div class="controls">
-                      <input type="text" class="span8 endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix"></input>
+                      <input type="text" class="span8 tsd-endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix"></input>
                       <button class="btn" type="button" data-bind="click: resetEndpointPrefix">Restore Default</button>
                   </div>
               </div>
@@ -147,8 +147,8 @@
           </div>
         </section>
         <section>
-          <h1 class="section-title">Opt In</h1>
-          <div class="section-content">
+          <h1 class="tsd-section-title">Opt In</h1>
+          <div class="tsd-section-content">
             <form class="form-horizontal">
               <div>Do you want to send anonymized error informtation to The Spaghetti Detective developers to help them improve the plugin?</div>
               <div class="form-check" style="margin-top: 8px;">
@@ -164,53 +164,53 @@
 
       <div class="tab-pane" id="tsd-troubleshooting">
         <section>
-          <h1 class="section-title">Plugin Status</h1>
-          <div class="section-content">
-            <div class="test-connection-wrapper">
-              <div class="section-panel plugin-status" data-bind="visible: !linkedPrinter.id()">
+          <h1 class="tsd-section-title">Plugin Status</h1>
+          <div class="tsd-section-content">
+            <div class="tsd-test-connection-wrapper">
+              <div class="tsd-section-panel tsd-plugin-status" data-bind="visible: !linkedPrinter.id()">
                 <div class="error">
                   Plugin can't reach The Spaghetti Detective server. Press the "TEST" button to further diagnose the problem.
                 </div>
               </div>
-              <div class="section-panel plugin-status" data-bind="visible: linkedPrinter.id">
-                <div class="status-line" data-bind="visible: linkedPrinter.is_pro">
-                  <i class="fa fa-circle"></i>Account status: <span class="accountPro">Pro</span>
+              <div class="tsd-section-panel tsd-plugin-status" data-bind="visible: linkedPrinter.id">
+                <div class="tsd-status-line" data-bind="visible: linkedPrinter.is_pro">
+                  <i class="fa fa-circle"></i>Account status: <span class="tsd-accountPro">Pro</span>
                 </div>
-                <div class="status-line" data-bind="visible: !linkedPrinter.is_pro()">
+                <div class="tsd-status-line" data-bind="visible: !linkedPrinter.is_pro()">
                   <i class="fa fa-circle"></i>Account status: Free
                 </div>
-                <div class="status-line">
-                  <i class="fa fa-circle"></i>Webcam streaming: <span data-bind="text: streaming.premium_streaming() ? (streaming.compat_streaming() ?  'Premium (compatibility)' : 'Premium (25fps)') : 'Basic', css: {accountPro: streaming.premium_streaming}"></span>
+                <div class="tsd-status-line">
+                  <i class="fa fa-circle"></i>Webcam streaming: <span data-bind="text: streaming.premium_streaming() ? (streaming.compat_streaming() ?  'Premium (compatibility)' : 'Premium (25fps)') : 'Basic', css: {'tsd-accountPro': streaming.premium_streaming}"></span>
                 </div>
-                <div class="status-line success" data-bind="visible: !hasServerErrors()">
+                <div class="tsd-status-line success" data-bind="visible: !hasServerErrors()">
                   <i class="fa fa-circle"></i>Connection to server: Okay
                 </div>
-                <div class="status-line error" data-bind="visible: hasServerErrors()">
+                <div class="tsd-status-line error" data-bind="visible: hasServerErrors()">
                   <i class="fa fa-circle"></i><a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Connection to server: <span data-bind="text: serverStatus.is_connected() ? 'Error' : 'Disconnected'"></span></a>
                 </div>
-                <div class="status-line success" data-bind="visible: !hasWebcamErrors()">
+                <div class="tsd-status-line success" data-bind="visible: !hasWebcamErrors()">
                   <i class="fa fa-circle"></i>Connection to webcam: Okay
                 </div>
-                <div class="status-line error" data-bind="visible: hasWebcamErrors()">
+                <div class="tsd-status-line error" data-bind="visible: hasWebcamErrors()">
                   <i class="fa fa-circle"></i><a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Connection to webcam: Error</a>
                 </div>
               </div>
               <div style="height: 70px; border-right: gray solid thin;"></div>
-              <div class="section-panel">
-                  <h5 class="test-connection-header">Server Connection Test</h5>
-              <div class="test-connection" style="padding-right: 18px;">
-                <button class="circle" data-bind="click: testServerConnection">
+              <div class="tsd-section-panel">
+                  <h5 class="tsd-test-connection-header">Server Connection Test</h5>
+              <div class="tsd-test-connection" style="padding-right: 18px;">
+                <button class="tsd-circle" data-bind="click: testServerConnection">
                 <span data-bind="visible: serverTested() != 'testing'">TEST</span>
                 <i data-bind="visible: serverTested() == 'testing'" class="fa fa-spinner fa-spin" style="font-size: 40px;"></i>
                 </button>
-                <div class="test-result">
+                <div class="tsd-test-result">
                   <div style="margin: 10px; display: flex; flex-direction: column; align-items: center;">
                     <div data-bind="visible: serverTested() == 'tested', css: {error: !serverTestSucceeded(), success: serverTestSucceeded()}" style="text-align: center;">
                       <i data-bind="css: {'fa-exclamation': !serverTestSucceeded(), 'fa-check': serverTestSucceeded()}" class="fa" aria-hidden="true" style="font-size: 24px;"></i>
                       <div data-bind="visible: serverTestStatusCode() == 200">
                       Succeeded!
                       </div>
-                      <div class="status-line error" data-bind="visible: serverTestStatusCode() == null">
+                      <div class="tsd-status-line error" data-bind="visible: serverTestStatusCode() == null">
                       <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Failed to contact server. Is OctoPrint connected to Internet?</a>
                       </div>
                       <div data-bind="visible: serverTestStatusCode() == 401">
@@ -229,15 +229,15 @@
           </div>
         </section>
         <section>
-          <h1 class="section-title">Troubleshooting Tips</h1>
+          <h1 class="tsd-section-title">Troubleshooting Tips</h1>
           <p>Make sure you have followed <a href="https://help.thespaghettidetective.com/kb/guide/en/setup-the-spaghetti-detective-using-the-web-app-dbCcgiR0Tr/">the setup guide</a> to link OctoPrint to your The Spaghetti Detective account successfully. Check out our <a href="https://help.thespaghettidetective.com/">help docs</a> for detailed troubleshooting guides.</p>
-          <div class="section-content">
-            <div class="collapsable">
-              <h4 class="collapsable-title">
+          <div class="tsd-section-content">
+            <div class="tsd-collapsable">
+              <h4 class="tsd-collapsable-title">
                 Webcam streaming
-                <span class="counter">4</span>
+                <span class="tsd-counter">4</span>
               </h4>
-              <div class="collapsable-content">
+              <div class="tsd-collapsable-content">
                 <h5>I'm getting laggy webcam streaming.</h5>
                 <ul>
                   <li>If you have a free The Spaghetti Detective account and it's out of the free trial period, your webcam streaming will be 1 frame per 10 seconds. <a href="https://help.thespaghettidetective.com/kb/guide/en/premium-versus-basic-streaming-QHLFp22YVM/">25 frames per second webcam streaming is a premium feature for Pro accounts only.</a></li>
@@ -263,12 +263,12 @@
                 </ul>
               </div>
             </div>
-            <div class="collapsable">
-              <h4 class="collapsable-title">
+            <div class="tsd-collapsable">
+              <h4 class="tsd-collapsable-title">
                 Failure detection
-                <span class="counter">2</span>
+                <span class="tsd-counter">2</span>
               </h4>
-              <div class="collapsable-content">
+              <div class="tsd-collapsable-content">
                 <h5>I got a spaghetti alert but there was nothing wrong.</h5>
                 <ul>
                   <li>This happens because The Detective is not perfect at her job yet.  <a href="https://help.thespaghettidetective.com/kb/guide/en/help-the-detective-improve-PVq4Iul0df/">Help her improve.</a></li>
@@ -282,12 +282,12 @@
                 </ul>
               </div>
             </div>
-            <div class="collapsable">
-              <h4 class="collapsable-title">
+            <div class="tsd-collapsable">
+              <h4 class="tsd-collapsable-title">
                 Other problems
-                <span class="counter">2</span>
+                <span class="tsd-counter">2</span>
               </h4>
-              <div class="collapsable-content">
+              <div class="tsd-collapsable-content">
                 <h5>My OctoPrint is running, but the page shows "OctoPrint is offline".</h5>
                 <ul>
                   <li>Your Rasbperry Pi may have issue connecting to the internet. Check the connection status on this page for errors.</li>
@@ -303,13 +303,13 @@
           </div>
         </section>
         <section>
-          <h1 class="section-title">Re-run Setup Wizard</h1>
-          <div class="section-content">
+          <h1 class="tsd-section-title">Re-run Setup Wizard</h1>
+          <div class="tsd-section-content">
             <div>
             If you can no longer log into your The Spaghetti Detective account, e.g., you don't remember what email you signed up with, you can re-run the setup wizard to link your OctoPrint with a new The Spaghetti Detective account.
             </div>
             <div>
-              <a href="#" class="button rerun-wizard" data-bind="click: showWizardModal">Re-run Wizard</a>
+              <a href="#" class="tsd-button tsd-rerun-wizard" data-bind="click: showWizardModal">Re-run Wizard</a>
             </div>
           </div>
         </section>
@@ -320,7 +320,7 @@
 
 
 <!-- Modals -->
-<div id="wizardModal" class="modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel" aria-hidden="true">
+<div id="wizardModal" class="tsd-modal modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
     <h3 id="wizardModalLabel">The Spaghetti Detective Setup Wizard</h3>
@@ -333,7 +333,7 @@
   </div>
 </div>
 
-<div id="diagnosticReportModal" class="modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="diagnosticReportModalLabel" aria-hidden="true">
+<div id="diagnosticReportModal" class="tsd-modal modal hide fade tsd-secondary-modal" tabindex="-1" role="dialog" aria-labelledby="diagnosticReportModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
     <h3 id="diagnosticReportModalLabel">The Spaghetti Detective Diagnostic Report</h3>
