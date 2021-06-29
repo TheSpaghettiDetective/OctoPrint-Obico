@@ -6,6 +6,7 @@ import uuid
 import io
 import json
 import socket
+from requests.exceptions import HTTPError
 
 import octoprint.server
 from octoprint.util.platform import (
@@ -14,7 +15,7 @@ from octoprint.util.platform import (
 )
 
 from .plugin_apis import verify_code
-from .utils import ExpoBackoff, server_request, OctoPrintSettingsUpdater, get_tags
+from .utils import ExpoBackoff, server_request, OctoPrintSettingsUpdater, get_tags, raise_for_status
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
@@ -90,8 +91,16 @@ class PrinterDiscovery(object):
                     connect_attempts = 0
                     next_connect_at = time.time() + self.poll_period_secs
                 except (IOError, OSError) as ex:
-                    # catching only http request related errors here,
+                    # tyring to catch only network related errors here,
                     # all other errors must bubble up.
+
+                    # http4xx can be an actionable bug, let it bubble up
+                    if isinstance(ex, HTTPError):
+                        status_code = ex.response.status_code
+                        if 400 <= status_code < 500:
+                            raise
+
+                    # issues with network / ssl / dns / server (http 5xx) ... those might go away
                     backoff_time = ExpoBackoff.get_delay(
                         connect_attempts, self.max_backoff_secs)
                     _logger.debug(
@@ -121,7 +130,7 @@ class PrinterDiscovery(object):
             raise_exception=True,
         )
 
-        resp.raise_for_status()
+        raise_for_status(resp, with_content=True)
         data = resp.json()
         for msg in data['messages']:
             self._process_message(msg)
@@ -140,6 +149,7 @@ class PrinterDiscovery(object):
 
             code = msg['data']['code']
             result = verify_code(self.plugin, {'code': code})
+
             if result['succeeded'] is True:
                 _logger.info('printer_discovery verified code succesfully')
             else:

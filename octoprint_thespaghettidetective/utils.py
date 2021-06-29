@@ -275,3 +275,21 @@ def server_request(method, uri, plugin, timeout=30, raise_exception=False, **kwa
         _logger.exception("{}: {}".format(method, endpoint))
         if raise_exception:
             raise
+
+
+def raise_for_status(resp, with_content=False, **kwargs):
+    # puts reponse content into exception
+    if with_content:
+        try:
+            resp.raise_for_status()
+        except Exception as exc:
+            args = exc.args
+            if not args:
+                arg0 = ''
+            else:
+                arg0 = args[0]
+            arg0 = u"{} {}".format(arg0, resp.content)
+            exc.args = (arg0, ) + args[1:]
+            exc.kwargs = kwargs
+            raise
+    resp.raise_for_status()
