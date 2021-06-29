@@ -323,7 +323,7 @@
       border: 1px solid @primary-color;
       background-color: #fff;
       position: absolute;
-      left: 0;  
+      left: 0;
       top: 0;
       bottom: 1px;
       margin: auto;
@@ -841,11 +841,13 @@
   .tsd-successful-setup {
     .tsd-title {
       text-align: center;
-      color: #fff;
+      padding-bottom: 28px;
     }
 
-    .tsd-button-wrapper {
-      padding-top: 50px;
+    .tsd-sub-title {
+      padding: 0px 48px 22px;
+      text-align: center;
+      max-width: 450px;
     }
 
     .tsd-auto-close {
@@ -856,7 +858,7 @@
       margin: 0;
       border: none;
       background: none;
-      
+
       .tsd-text {
         position: absolute;
         z-index: 1;
@@ -872,7 +874,7 @@
         text-transform: uppercase;
         font-weight: bold;
       }
-      
+
       .tsd-progress-border {
         position: absolute;
         z-index: 0;
@@ -882,12 +884,12 @@
         left: -10px;
         top: -10px;
         transform: rotate(-90deg);
-    
+
         .tsd-under {
           stroke: #fff;
           fill: none;
         }
-        
+
         .tsd-progress {
           /*
             2 * π * r = 2 * 3.141592 * 21 = 131.526864
@@ -900,17 +902,14 @@
           fill: none;
         }
       }
-      
+
       &.active {
         .tsd-progress {
           stroke-dashoffset: 0;
         }
       }
-    
-      &:hover {
-        cursor: pointer;
-      }
     }
+
   }
 }
 

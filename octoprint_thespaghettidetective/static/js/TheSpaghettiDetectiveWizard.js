@@ -54,7 +54,7 @@ $(function () {
 
         // Move cursor back/forward
         function handleKeydown(event) {
-            
+
             // Skip Paste event
             if (event.key === 'Meta' || event.key === 'Control' || event.originalEvent.code === 'KeyV') {
                 return true;
@@ -126,7 +126,7 @@ $(function () {
             } else if (self.step() === 5) {
                 // Close button with countdown animation
                 setTimeout(function() {
-                    $('.tsd-auto-close').addClass('active'); 
+                    $('.tsd-auto-close').addClass('active');
                     setTimeout(function() { self.hideWizardModal(); }, 10000); // auto-close in 10s
                 }, 500) // Add .5s delay to make transition visible
             }
