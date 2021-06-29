@@ -52,17 +52,21 @@ class PrinterDiscovery(object):
 
         self.host_or_ip = None
 
+    def get_tags(self):  # type: () -> dict
+        return dict(device_id=self.device_id, **get_tags())
+
     def start(self):
+        _logger.info('printer_discovery started, device_id: {}'.format(self.device_id))
+
         try:
             self._start()
         except Exception:
-            _logger.exception('printer_discovery error')
             self.stop()
-            self.plugin.captureException(tags=get_tags())
+            self.plugin.sentry.captureException(tags=self.get_tags())
+
+        _logger.debug('printer_discovery quit')
 
     def _start(self):
-        _logger.info('printer_discovery started, device_id: {}'.format(self.device_id))
-
         self.started_at = time.time()
         next_connect_at = 0.0  # -inf
         connect_attempts = 0
@@ -98,10 +102,10 @@ class PrinterDiscovery(object):
                     next_connect_at = time.time() + backoff_time
 
             time.sleep(2)
-        _logger.info('printer_discovery stopped')
 
     def stop(self):
         self.stopped = True
+        _logger.info('printer_discovery is stopping')
 
     def _call(self):
         _logger.debug('printer_discovery calls server')
@@ -134,14 +138,16 @@ class PrinterDiscovery(object):
                 _logger.debug('printer_discovery got message for different device_id')
                 return
 
-            result = verify_code(self.plugin, msg['data'])
+            code = msg['data']['code']
+            result = verify_code(self.plugin, {'code': code})
             if result['succeeded'] is True:
                 _logger.info('printer_discovery verified code succesfully')
             else:
                 _logger.warn('printer_discovery could not verify code')
                 self.plugin.sentry.captureMessage(
                     'printer_discovery could not verify code',
-                    tags=get_tags())
+                    tags=self.get_tags(),
+                    extra={'code': code})
 
             # stop after first verify attempt
             self.stop()
