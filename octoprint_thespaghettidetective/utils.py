@@ -257,7 +257,7 @@ def wait_for_port_to_close(host, port):
             time.sleep(0.5)
 
 
-def server_request(method, uri, plugin, timeout=30, **kwargs):
+def server_request(method, uri, plugin, timeout=30, raise_exception=False, **kwargs):
     '''
     Return: A requests response object if it reaches the server. Otherwise None. Connections errors are printed to console but NOT raised
     '''
@@ -270,6 +270,8 @@ def server_request(method, uri, plugin, timeout=30, **kwargs):
             error_stats.add_connection_error('server', plugin)
 
         return resp
-    except:
+    except Exception:
         error_stats.add_connection_error('server', plugin)
         _logger.exception("{}: {}".format(method, endpoint))
+        if raise_exception:
+            raise
