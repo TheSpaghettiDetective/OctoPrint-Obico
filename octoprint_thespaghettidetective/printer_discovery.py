@@ -85,7 +85,9 @@ class PrinterDiscovery(object):
                     self._call()
                     connect_attempts = 0
                     next_connect_at = time.time() + self.poll_period_secs
-                except Exception as ex:
+                except (IOError, OSError) as ex:
+                    # catching only http request related errors here,
+                    # all other errors must bubble up.
                     backoff_time = ExpoBackoff.get_delay(
                         connect_attempts, self.max_backoff_secs)
                     _logger.debug(
@@ -111,11 +113,9 @@ class PrinterDiscovery(object):
             self.plugin,
             timeout=5,
             data=json.dumps(data),
-            headers={'Content-Type': 'application/json'}
+            headers={'Content-Type': 'application/json'},
+            raise_exception=True,
         )
-
-        if resp is None:
-            raise Exception('network error')
 
         resp.raise_for_status()
         data = resp.json()
@@ -225,6 +225,4 @@ def get_printerprofile_name():  # type: () -> str
         printerprofile = octoprint.server.printerProfileManager.get_current()
         return printerprofile.get('name', '') if printerprofile else ''
     except Exception:
-        pass
-
-    return ''
+        return ''
