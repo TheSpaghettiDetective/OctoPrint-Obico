@@ -137,13 +137,14 @@ class PrinterDiscovery(object):
             result = verify_code(self.plugin, msg['data'])
             if result['succeeded'] is True:
                 _logger.info('printer_discovery verified code succesfully')
-                self.stop()
             else:
                 _logger.warn('printer_discovery could not verify code')
                 self.plugin.sentry.captureMessage(
                     'printer_discovery could not verify code',
                     tags=get_tags())
 
+            # stop after first verify attempt
+            self.stop()
             return
 
     def _collect_device_info(self):
