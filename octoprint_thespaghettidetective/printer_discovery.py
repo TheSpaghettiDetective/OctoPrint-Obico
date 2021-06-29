@@ -53,9 +53,6 @@ class PrinterDiscovery(object):
 
         self.host_or_ip = None
 
-    def get_tags(self):  # type: () -> dict
-        return dict(device_id=self.device_id, **get_tags())
-
     def start(self):
         _logger.info('printer_discovery started, device_id: {}'.format(self.device_id))
 
@@ -63,7 +60,7 @@ class PrinterDiscovery(object):
             self._start()
         except Exception:
             self.stop()
-            self.plugin.sentry.captureException(tags=self.get_tags())
+            self.plugin.sentry.captureException(tags=get_tags())
 
         _logger.debug('printer_discovery quit')
 
@@ -156,7 +153,7 @@ class PrinterDiscovery(object):
                 _logger.warn('printer_discovery could not verify code')
                 self.plugin.sentry.captureMessage(
                     'printer_discovery could not verify code',
-                    tags=self.get_tags(),
+                    tags=get_tags(),
                     extra={'code': code})
 
             # stop after first verify attempt
