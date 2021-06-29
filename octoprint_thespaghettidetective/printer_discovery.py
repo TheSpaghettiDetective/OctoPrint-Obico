@@ -14,7 +14,7 @@ from octoprint.util.platform import (
 )
 
 from .plugin_apis import verify_code
-from .utils import ExpoBackoff, server_request, OctoPrintSettingsUpdater
+from .utils import ExpoBackoff, server_request, OctoPrintSettingsUpdater, get_tags
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
@@ -53,6 +53,14 @@ class PrinterDiscovery(object):
         self.host_or_ip = None
 
     def start(self):
+        try:
+            self._start()
+        except Exception:
+            _logger.exception('printer_discovery error')
+            self.stop()
+            self.plugin.captureException(tags=get_tags())
+
+    def _start(self):
         _logger.info('printer_discovery started, device_id: {}'.format(self.device_id))
 
         self.started_at = time.time()
@@ -132,6 +140,10 @@ class PrinterDiscovery(object):
                 self.stop()
             else:
                 _logger.warn('printer_discovery could not verify code')
+                self.plugin.sentry.captureMessage(
+                    'printer_discovery could not verify code',
+                    tags=get_tags())
+
             return
 
     def _collect_device_info(self):
