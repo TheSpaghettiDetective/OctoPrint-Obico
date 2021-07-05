@@ -47,8 +47,7 @@ class PrinterDiscovery(object):
             os=get_os()[:253],
             arch=os.uname()[4][:253],
             rpi_model=read('/proc/device-tree/model')[:253],
-            octopi_version=read('/etc/octopi_version')[:253],
-            port=get_port(self.plugin) or 80,
+            octopi_version=read('/etc/octopi_version')[:253]
         )
 
         self.host_or_ip = None
@@ -211,14 +210,6 @@ def get_host_or_ip(plugin):
     try:
         discovery_settings = plugin._settings.global_get(['plugins', 'discovery'])
         return discovery_settings.get('publicHost', get_ip_addr())
-    except Exception:
-        return ''
-
-
-def get_port(plugin):
-    try:
-        discovery_settings = plugin._settings.global_get(['plugins', 'discovery'])
-        return discovery_settings.get('publicPort', plugin.octoprint_port)
     except Exception:
         return ''
 
