@@ -32,7 +32,7 @@ from .tunnel import LocalTunnel
 from . import plugin_apis
 from .client_conn import ClientConn
 import zlib
-
+from .printer_discovery import PrinterDiscovery
 
 import octoprint.plugin
 
@@ -54,7 +54,6 @@ class TheSpaghettiDetectivePlugin(
         octoprint.plugin.EventHandlerPlugin,
         octoprint.plugin.AssetPlugin,
         octoprint.plugin.SimpleApiPlugin,
-        octoprint.plugin.WizardPlugin,
         octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
@@ -73,14 +72,6 @@ class TheSpaghettiDetectivePlugin(
         self.local_tunnel = None
         self.janus = JanusConn(self)
         self.client_conn = ClientConn(self)
-
-    # ~~ Wizard plugin mix
-
-    def is_wizard_required(self):
-        return not self._settings.get(["auth_token"])
-
-    def get_wizard_version(self):
-        return 2
 
     # ~~ SettingsPlugin mixin
 
@@ -195,7 +186,13 @@ class TheSpaghettiDetectivePlugin(
 
         get_tags()  # init tags to minimize risk of race condition
 
+        pdiscovery = None
+        if not self.is_configured():
+            pdiscovery = PrinterDiscovery(plugin=self)
+            pdiscovery.start()
+
         self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
+
         self.sentry.user_context({'id': self.auth_token()})
         _logger.info('Linked printer: {}'.format(self.linked_printer))
         _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
@@ -269,7 +266,7 @@ class TheSpaghettiDetectivePlugin(
                     _logger.warning("Plugin not configured. Not sending message to server...")
                     continue
 
-                if not self.linked_printer.get('id'): # id is present only when auth_token is validated by the server
+                if not self.linked_printer.get('id'):  # id is present only when auth_token is validated by the server
                     _logger.warning("auth_token is not validated. Not sending message to server...")
                     continue
 
@@ -370,7 +367,6 @@ class TheSpaghettiDetectivePlugin(
         except:
             self.sentry.captureException(tags=get_tags())
 
-
     def status_update_to_client_loop(self):
         while True:
             interval = 0.75 if self.status_update_booster > 0 else 2
@@ -420,7 +416,7 @@ class TheSpaghettiDetectivePlugin(
         if resp and resp.ok:
             return resp.json()
         else:
-            return None # Triggers a backoff
+            return None  # Triggers a backoff
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py

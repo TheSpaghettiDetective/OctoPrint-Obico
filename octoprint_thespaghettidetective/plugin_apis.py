@@ -13,19 +13,23 @@ def get_api_commands():
         update_printer=['name'],
     )
 
+
+def verify_code(plugin, data):
+    resp = server_request('GET', '/api/v1/onetimeverificationcodes/verify/?code=' + data["code"], plugin)
+    succeeded = resp.ok if resp is not None else None
+    printer = None
+    if succeeded:
+        printer = resp.json()['printer']
+        plugin._settings.set(["auth_token"], printer['auth_token'], force=True)
+        plugin._settings.save(force=True)
+    return {'succeeded': succeeded, 'printer': printer}
+
+
 def on_api_command(plugin, command, data):
     try:
         if command == "verify_code":
             plugin._settings.set(["endpoint_prefix"], data["endpoint_prefix"], force=True)
-            resp = server_request('GET', '/api/v1/onetimeverificationcodes/verify/?code=' + data["code"], plugin)
-            succeeded = resp.ok if resp is not None else None
-            printer = None
-            if succeeded:
-                printer = resp.json()['printer']
-                plugin._settings.set(["auth_token"], printer['auth_token'], force=True)
-                plugin._settings.save(force=True)
-
-            return flask.jsonify({'succeeded': succeeded, 'printer': printer})
+            return flask.jsonify(verify_code(plugin, data))
 
         if command == "get_plugin_status":
             results = dict(

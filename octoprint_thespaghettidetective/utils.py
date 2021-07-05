@@ -37,14 +37,19 @@ class ExpoBackoff:
 
     def more(self, e):
         self.attempts += 1
-        delay = 2 ** self.attempts
-        if delay > self.max_seconds:
-            delay = self.max_seconds
-        delay *= 0.5 + random.random()
-
+        delay = self.get_delay(self.attempts, self.max_seconds)
         _logger.error('Backing off %f seconds: %s' % (delay, e))
 
         time.sleep(delay)
+
+    @classmethod
+    def get_delay(cls, attempts, max_seconds):
+        delay = 2 ** attempts
+        if delay > max_seconds:
+            delay = max_seconds
+        delay *= 0.5 + random.random()
+        return delay
+
 
 class OctoPrintSettingsUpdater:
 
@@ -252,7 +257,7 @@ def wait_for_port_to_close(host, port):
             time.sleep(0.5)
 
 
-def server_request(method, uri, plugin, timeout=30, **kwargs):
+def server_request(method, uri, plugin, timeout=30, raise_exception=False, **kwargs):
     '''
     Return: A requests response object if it reaches the server. Otherwise None. Connections errors are printed to console but NOT raised
     '''
@@ -265,6 +270,26 @@ def server_request(method, uri, plugin, timeout=30, **kwargs):
             error_stats.add_connection_error('server', plugin)
 
         return resp
-    except:
+    except Exception:
         error_stats.add_connection_error('server', plugin)
         _logger.exception("{}: {}".format(method, endpoint))
+        if raise_exception:
+            raise
+
+
+def raise_for_status(resp, with_content=False, **kwargs):
+    # puts reponse content into exception
+    if with_content:
+        try:
+            resp.raise_for_status()
+        except Exception as exc:
+            args = exc.args
+            if not args:
+                arg0 = ''
+            else:
+                arg0 = args[0]
+            arg0 = u"{} {}".format(arg0, resp.content)
+            exc.args = (arg0, ) + args[1:]
+            exc.kwargs = kwargs
+            raise
+    resp.raise_for_status()
