@@ -288,8 +288,9 @@ def raise_for_status(resp, with_content=False, **kwargs):
                 arg0 = ''
             else:
                 arg0 = args[0]
-            arg0 = u"{} {}".format(arg0, resp.content)
+            arg0 = "{} {}".format(arg0, resp.text)
             exc.args = (arg0, ) + args[1:]
             exc.kwargs = kwargs
+
             raise
     resp.raise_for_status()
