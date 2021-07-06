@@ -21,6 +21,7 @@ $(function () {
         self.settingsViewModel = parameters[1];
         self.wizardViewModel = parameters[2];
 
+        self.disableWizardAutoPopUp = localStorage.getItem('disableWizardAutoPopUp') === 'true';
         self.alertsShown = {};
         self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
         self.isWizardShown = ko.observable(false);
@@ -67,6 +68,16 @@ $(function () {
             return self.serverTestStatusCode() != null && self.serverTestStatusCode() != 401 && self.serverTestStatusCode() != 200;
         };
 
+        self.toggleAutoPopUp = function() {
+            // Small timeout to get changed input value
+            setTimeout(() => {
+                localStorage.setItem('disableWizardAutoPopUp', $('#toggleAutoPopUp').prop('checked'));
+                self.disableWizardAutoPopUp = localStorage.getItem('disableWizardAutoPopUp') === 'true';
+            }, 100);
+            
+            return true;
+        };
+
         self.fetchPluginStatus = function() {
             apiCommand({
                 command: "get_plugin_status",
@@ -77,8 +88,8 @@ $(function () {
                 ko.mapping.fromJS(data.error_stats, self.errorStats);
                 ko.mapping.fromJS(data.linked_printer, self.linkedPrinter);
 
-                if (!self.configured() && !self.isWizardShown() && !self.wizardViewModel.isDialogActive()) {
-                    self.showWizardModal();
+                if (!self.configured() && !self.isWizardShown() && !self.wizardViewModel.isDialogActive() && !self.disableWizardAutoPopUp) {
+                    self.showWizardModal(true);
                     self.isWizardShown(true);
                     return;
                 }
@@ -254,7 +265,8 @@ $(function () {
             $('#diagnosticReportModal').modal();
         };
 
-        self.showWizardModal = function () {
+        self.showWizardModal = function (showAutoPopUpToggle = false) {
+            showAutoPopUpToggle === true ? $('#toggleAutoPopUpLabel').show(): $('#toggleAutoPopUpLabel').hide();
             $('#wizardModal').modal({backdrop: 'static', keyboard: false});
             $('#wizardModal').on('shown', function(){
                 self.thespaghettidetectiveWizardViewModel.reset();

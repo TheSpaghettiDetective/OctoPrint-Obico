@@ -333,6 +333,18 @@
     {% include "thespaghettidetective_wizard.jinja2" %}
     </div>
   </div>
+  <div class="modal-footer">
+    <div class="row-fluid">
+      <div class="span6 tsd-dontshow-wrapper">
+        <label class="checkbox" data-bind="click: toggleAutoPopUp" id="toggleAutoPopUpLabel">
+          <input type="checkbox" id="toggleAutoPopUp" data-bind="checked: disableWizardAutoPopUp"> Don't show again
+        </label>
+      </div>
+      <div class="span6">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="diagnosticReportModal" class="tsd-modal modal hide fade tsd-secondary-modal" tabindex="-1" role="dialog" aria-labelledby="diagnosticReportModalLabel" aria-hidden="true">
