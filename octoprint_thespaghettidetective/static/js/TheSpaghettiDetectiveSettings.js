@@ -21,10 +21,11 @@ $(function () {
         self.settingsViewModel = parameters[1];
         self.wizardViewModel = parameters[2];
 
-        self.disableWizardAutoPopUp = localStorage.getItem('disableWizardAutoPopUp') === 'true';
         self.alertsShown = {};
         self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
-        self.isWizardShown = ko.observable(false);
+        self.isWizardShown = ko.observable(
+            retrieveFromLocalStorage('disableTSDWizardAutoPopupUntil', 0) > new Date().getTime()
+        );
         self.showDetailPage = ko.observable(false);
         self.serverStatus = ko.mapping.fromJS({ is_connected: false, status_posted_to_server_ts: 0 });
         self.streaming = ko.mapping.fromJS({ is_pi_camera: false, premium_streaming: false, compat_streaming: false});
@@ -39,6 +40,8 @@ $(function () {
             return self.settingsViewModel.settings.plugins.thespaghettidetective.auth_token
                 && self.settingsViewModel.settings.plugins.thespaghettidetective.auth_token();
         }, self);
+        self.wizardAutoPoppedup = ko.observable(false);
+        self.disableWizardAutoPopUp = ko.observable(false);
 
         self.onStartupComplete = function (plugin, data) {
             self.fetchPluginStatus();
@@ -68,16 +71,6 @@ $(function () {
             return self.serverTestStatusCode() != null && self.serverTestStatusCode() != 401 && self.serverTestStatusCode() != 200;
         };
 
-        self.toggleAutoPopUp = function() {
-            // Small timeout to get changed input value
-            setTimeout(() => {
-                localStorage.setItem('disableWizardAutoPopUp', $('#toggleAutoPopUp').prop('checked'));
-                self.disableWizardAutoPopUp = localStorage.getItem('disableWizardAutoPopUp') === 'true';
-            }, 100);
-            
-            return true;
-        };
-
         self.fetchPluginStatus = function() {
             apiCommand({
                 command: "get_plugin_status",
@@ -88,8 +81,8 @@ $(function () {
                 ko.mapping.fromJS(data.error_stats, self.errorStats);
                 ko.mapping.fromJS(data.linked_printer, self.linkedPrinter);
 
-                if (!self.configured() && !self.isWizardShown() && !self.wizardViewModel.isDialogActive() && !self.disableWizardAutoPopUp) {
-                    self.showWizardModal(true);
+                if (!self.configured() && !self.isWizardShown() && !self.wizardViewModel.isDialogActive()) {
+                    self.showWizardModal();
                     self.isWizardShown(true);
                     return;
                 }
@@ -265,13 +258,19 @@ $(function () {
             $('#diagnosticReportModal').modal();
         };
 
-        self.showWizardModal = function (showAutoPopUpToggle = false) {
-            showAutoPopUpToggle === true ? $('#toggleAutoPopUpLabel').show(): $('#toggleAutoPopUpLabel').hide();
+        self.showWizardModal = function (maybeViewModel) {
+            self.wizardAutoPoppedup(!Boolean(maybeViewModel)); // When it's triggered by user click, maybeViewModel is not undefined
             $('#wizardModal').modal({backdrop: 'static', keyboard: false});
-            $('#wizardModal').on('shown', function(){
-                self.thespaghettidetectiveWizardViewModel.reset();
-            });
         };
+
+        $('#wizardModal').on('shown', function(){
+            self.thespaghettidetectiveWizardViewModel.reset();
+        });
+        $('#wizardModal').on('hidden', function(){
+            if (self.disableWizardAutoPopUp()) {
+                saveToLocalStorage('disableTSDWizardAutoPopupUntil', (new Date()).getTime() + 1000*60*60*24*30); // Not show for 30 days
+            }
+        });
     }
 
 

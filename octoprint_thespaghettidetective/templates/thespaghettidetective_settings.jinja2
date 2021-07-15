@@ -335,10 +335,12 @@
   </div>
   <div class="modal-footer">
     <div class="row-fluid">
-      <div class="span6 tsd-dontshow-wrapper">
-        <label class="checkbox" data-bind="click: toggleAutoPopUp" id="toggleAutoPopUpLabel">
-          <input type="checkbox" id="toggleAutoPopUp" data-bind="checked: disableWizardAutoPopUp"> Don't show again
-        </label>
+      <div class="span6" style="text-align: left;">
+        <div class="controls" data-bind="visible: wizardAutoPoppedup">
+            <label class="checkbox">
+                <input type="checkbox" data-bind="checked: disableWizardAutoPopUp" id="toggleAutoPopUp"> Don't show again
+            </label>
+        </div>
       </div>
       <div class="span6">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
