@@ -19,8 +19,8 @@ from .utils import ExpoBackoff, server_request, OctoPrintSettingsUpdater, get_ta
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
-POLL_PERIOD_SECS = 5
-DEADLINE_SECS = 3600
+POLL_PERIOD = 5
+DEADLINE = 3600
 MAX_BACKOFF_SECS = 300
 
 
@@ -28,16 +28,16 @@ class PrinterDiscovery(object):
 
     def __init__(self,
                  plugin,
-                 poll_period_secs=POLL_PERIOD_SECS,
-                 deadline_secs=DEADLINE_SECS,
+                 poll_period=POLL_PERIOD,
+                 deadline=DEADLINE,
                  max_backoff_secs=MAX_BACKOFF_SECS
                  ):
         self.plugin = plugin
-        self.poll_period_secs = poll_period_secs  # type: int
-        self.deadline_secs = deadline_secs  # type: int
+        self.poll_period = poll_period  # type: int
+        self.deadline = deadline  # type: int
         self.max_backoff_secs = max_backoff_secs  # type: int
         self.stopped = False
-        self.started_at = None  # type: Optional[float]
+        self.cur_step = None  # type: Optional[int]
 
         # device_id is different every time plugin starts
         self.device_id = uuid.uuid4().hex  # type: str
@@ -64,8 +64,8 @@ class PrinterDiscovery(object):
         _logger.debug('printer_discovery quit')
 
     def _start(self):
-        self.started_at = time.time()
-        next_connect_at = 0.0  # -inf
+        self.cur_step = 0
+        next_connect_at = 0
         connect_attempts = 0
 
         while True:
@@ -76,16 +76,16 @@ class PrinterDiscovery(object):
                 # if any token is set, let's stop
                 break
 
-            if time.time() - self.started_at > self.deadline_secs:
+            if self.cur_step > self.deadline:
                 _logger.info('printer_discovery deadline reached')
                 self.stop()
                 break
 
-            if time.time() > next_connect_at:
+            if self.cur_step >= next_connect_at:
                 try:
                     self._call()
                     connect_attempts = 0
-                    next_connect_at = time.time() + self.poll_period_secs
+                    next_connect_at = self.cur_step + self.poll_period
                 except (IOError, OSError) as ex:
                     # tyring to catch only network related errors here,
                     # all other errors must bubble up.
@@ -104,9 +104,10 @@ class PrinterDiscovery(object):
                             ex, backoff_time))
 
                     connect_attempts += 1
-                    next_connect_at = time.time() + backoff_time
+                    next_connect_at = self.cur_step + max(1, int(backoff_time))
 
-            time.sleep(2)
+            self.cur_step += 1
+            time.sleep(1)
 
     def stop(self):
         self.stopped = True
