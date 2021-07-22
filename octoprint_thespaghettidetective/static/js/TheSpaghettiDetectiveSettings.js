@@ -223,11 +223,11 @@ $(function () {
             if (alertMsg.level === "warning") {
                 if (alertMsg.cause === 'streaming') {
                     text =
-                        '<p>Premium webcam streaming failed to start. The Spaghetti Detective has switched to basic streaming.</p><p><a href="https://help.thespaghettidetective.com/kb/guide/en/error-message-webcam-has-switched-to-the-basic-streaming-frf6btS6DJ/">Learn more >>></a></p>';
+                        '<p>The Premium Webcam Streaming failed to start. The Spaghetti Detective has switched to the Basic Streaming.</p><p><a href="https://help.thespaghettidetective.com/kb/guide/en/error-message-webcam-has-switched-to-the-basic-streaming-frf6btS6DJ/">Learn more >>></a></p>';
                 }
                 if (alertMsg.cause === 'cpu') {
                     text =
-                        '<p>Premium streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable premium streaming. <a href="https://help.thespaghettidetective.com/kb/guide/en/premium-streaming-in-compatibility-mode-GaERh2rUjr/Steps/300086">Learn more >>></a></p>';
+                        '<p>The Premium Webcam Streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the Premium Streaming. <a href="https://help.thespaghettidetective.com/kb/guide/en/premium-streaming-in-compatibility-mode-GaERh2rUjr/Steps/300086">Learn more >>></a></p>';
                 }
             }
 
