@@ -15,7 +15,7 @@ def get_api_commands():
 
 
 def verify_code(plugin, data):
-    resp = server_request('GET', '/api/v1/onetimeverificationcodes/verify/?code=' + data["code"], plugin)
+    resp = server_request('POST', '/api/v1/octo/verify/?code=' + data["code"], plugin)
     succeeded = resp.ok if resp is not None else None
     printer = None
     if succeeded:
