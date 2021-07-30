@@ -147,7 +147,7 @@ certificates: {
 # times, but may not work in case the RTT of the user is high: as such,
 # you should pick a reasonable trade-off (usually 2*max expected RTT).
 media: {
-	#ipv6 = true
+	ipv6 = true
 	#max_nack_queue = 500
 	#rfc_4588 = true
 	#rtp_port_range = "20000-40000"
