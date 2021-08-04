@@ -13,4 +13,4 @@ or manually using this URL:
 
 ## Configuration
 
-Follow [The Spaghetti Detective Setup Guide](https://help.thespaghettidetective.com/kb/guide/en/setup-the-spaghetti-detective-using-the-web-app-dbCcgiR0Tr/) to set up this plugin.
+Follow [The Spaghetti Detective Setup Guide](https://www.thespaghettidetective.com/docs/octoprint-plugin-setup/) to set up this plugin.
