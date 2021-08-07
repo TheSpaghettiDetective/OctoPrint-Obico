@@ -12,6 +12,10 @@ try:
     import queue
 except ImportError:
     import Queue as queue
+try:
+    ModuleNotFoundError
+except NameError:
+    ModuleNotFoundError = ImportError
 from threading import Thread, RLock
 import requests
 import backoff
