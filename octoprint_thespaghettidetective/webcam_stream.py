@@ -92,18 +92,19 @@ class WebcamStreamer:
     def __init_camera__(self):
         try:
             import picamera
-            using_pi_camera()
-            self.pi_camera = picamera.PiCamera()
-            self.pi_camera.framerate = 20
-            (res_43, res_169) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
-            self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
-            self.bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
-            _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, self.bitrate, self.pi_camera.resolution))
+            try:
+                using_pi_camera()
+                self.pi_camera = picamera.PiCamera()
+                self.pi_camera.framerate = 20
+                (res_43, res_169) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
+                self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
+                self.bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
+                _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, self.bitrate, self.pi_camera.resolution))
+            except picamera.exc.PiCameraError:
+                not_using_pi_camera()
+                return
         except ModuleNotFoundError:
             _logger.warning('picamera module is not found on a Pi. Seems like an installation error.')
-            return
-        except picamera.exc.PiCameraError:
-            not_using_pi_camera()
             return
 
     def video_pipeline(self):
