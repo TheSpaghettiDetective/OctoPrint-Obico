@@ -121,7 +121,7 @@ class WebcamStreamer:
 
             sarge.run('sudo service webcamd stop')
 
-            self. __init_camera__()
+            self.__init_camera__()
 
             # Use GStreamer for USB Camera. When it's used for Pi Camera it has problems (video is not playing. Not sure why)
             if not self.pi_camera:
