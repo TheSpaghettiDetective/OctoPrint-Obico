@@ -40,7 +40,7 @@ plugins:
         _config_version: 9
     thespaghettidetective:
         auth_token: b7588cf3a16c787c7203
-        # endpoint_prefix: https://app.stg.thespaghettidetective.com
+        # endpoint_prefix: https://app-stg.thespaghettidetective.com
         # endpoint_prefix: http://192.168.0.235:3334
         # endpoint_prefix: http://docker.for.mac.host.internal:3334
         sentry_opt: in
