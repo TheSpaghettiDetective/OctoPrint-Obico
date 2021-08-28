@@ -7,15 +7,27 @@ import io
 import json
 import socket
 from requests.exceptions import HTTPError
+import random
+import string
+
+try:
+    from secrets import token_hex
+except ImportError:
+    def token_hex(n):
+        letters = string.ascii_letters + string.digits
+        return "".join([random.choice(letters) for i in range(n)])
 
 import octoprint.server
+from octoprint.util.net import is_lan_address
 from octoprint.util.platform import (
     get_os as octoprint_get_os,
     OPERATING_SYSTEM_UNMAPPED
 )
 
 from .plugin_apis import verify_code
-from .utils import ExpoBackoff, server_request, OctoPrintSettingsUpdater, get_tags, raise_for_status
+from .utils import (
+    ExpoBackoff, server_request, OctoPrintSettingsUpdater,
+    get_tags, raise_for_status)
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
@@ -38,22 +50,15 @@ class PrinterDiscovery(object):
         self.max_backoff_secs = max_backoff_secs  # type: int
         self.stopped = False
         self.cur_step = None  # type: Optional[int]
+        self.device_secret = None
+        self.static_info = {}
 
         # device_id is different every time plugin starts
         self.device_id = uuid.uuid4().hex  # type: str
-        self.static_info = dict(
-            device_id=self.device_id,
-            hostname=os.uname()[1][:253],
-            os=get_os()[:253],
-            arch=os.uname()[4][:253],
-            rpi_model=read('/proc/device-tree/model')[:253],
-            octopi_version=read('/etc/octopi_version')[:253]
-        )
 
-        self.host_or_ip = None
-
-    def start(self):
-        _logger.info('printer_discovery started, device_id: {}'.format(self.device_id))
+    def start_and_block(self):
+        _logger.info(
+            'printer_discovery started, device_id: {}'.format(self.device_id))
 
         try:
             self._start()
@@ -61,23 +66,42 @@ class PrinterDiscovery(object):
             self.stop()
             self.plugin.sentry.captureException(tags=get_tags())
 
-        _logger.debug('printer_discovery quit')
+        _logger.debug('printer_discovery quits')
 
     def _start(self):
+        self.device_secret = token_hex(32)
         self.cur_step = 0
         next_connect_at = 0
         connect_attempts = 0
 
-        while True:
-            if self.stopped:
-                break
+        host_or_ip = get_local_ip_or_host()
+
+        self.static_info = dict(
+            device_id=self.device_id,
+            hostname=os.uname()[1][:253],
+            host_or_ip=host_or_ip,
+            port=get_port(self.plugin),
+            os=get_os()[:253],
+            arch=os.uname()[4][:253],
+            rpi_model=read('/proc/device-tree/model')[:253],
+            octopi_version=read('/etc/octopi_version')[:253],
+            plugin_version=self.plugin._plugin_version,
+        )
+
+        if not host_or_ip:
+            _logger.info('printer_discovery could not find out local ip')
+            self.stop()
+            return
+
+        while not self.stopped:
 
             if self.plugin.is_configured():
-                # if any token is set, let's stop
+                _logger.info('printer_discovery detected a configuration')
+                self.stop()
                 break
 
             if self.cur_step > self.deadline:
-                _logger.info('printer_discovery deadline reached')
+                _logger.info('printer_discovery got deadline reached')
                 self.stop()
                 break
 
@@ -96,11 +120,13 @@ class PrinterDiscovery(object):
                         if 400 <= status_code < 500:
                             raise
 
-                    # issues with network / ssl / dns / server (http 5xx) ... those might go away
+                    # issues with network / ssl / dns / server (http 5xx)
+                    # ... those might go away
                     backoff_time = ExpoBackoff.get_delay(
                         connect_attempts, self.max_backoff_secs)
                     _logger.debug(
-                        'printer_discovery error ({}), will retry after {}s'.format(
+                        'printer_discovery got an error ({}), '
+                        'will retry after {}s'.format(
                             ex, backoff_time))
 
                     connect_attempts += 1
@@ -133,15 +159,37 @@ class PrinterDiscovery(object):
             self._process_message(msg)
 
     def _process_message(self, msg):
-        _logger.info('printer_discovery incoming msg: {}'.format(msg))
+        # Stops after first verify attempt
+        _logger.info('printer_discovery got incoming msg: {}'.format(msg))
 
         if msg['type'] == 'verify_code':
             # if any token is set, let's stop
             if self.plugin.is_configured():
+                self.stop()
+                return
+
+            if (
+                not self.device_secret or
+                'secret' not in msg['data'] or
+                msg['data']['secret'] != self.device_secret
+            ):
+                _logger.error('printer_discovery got unmatching secret')
+                self.plugin.sentry.captureMessage(
+                    'printer_discovery got unmatching secret',
+                    tags=get_tags(),
+                    extra={'secret': self.device_secret, 'msg': msg}
+                )
+                self.stop()
                 return
 
             if msg['device_id'] != self.device_id:
-                _logger.debug('printer_discovery got message for different device_id')
+                _logger.error('printer_discovery got unmatching device_id')
+                self.plugin.sentry.captureMessage(
+                    'printer_discovery got unmatching device_id',
+                    tags=get_tags(),
+                    extra={'device_id': self.device_id, 'msg': msg}
+                )
+                self.stop()
                 return
 
             code = msg['data']['code']
@@ -150,26 +198,27 @@ class PrinterDiscovery(object):
             if result['succeeded'] is True:
                 _logger.info('printer_discovery verified code succesfully')
             else:
-                _logger.warn('printer_discovery could not verify code')
+                _logger.error('printer_discovery could not verify code')
                 self.plugin.sentry.captureMessage(
                     'printer_discovery could not verify code',
                     tags=get_tags(),
                     extra={'code': code})
 
-            # stop after first verify attempt
             self.stop()
             return
+
+        _logger.error('printer_discovery got unexpected message')
+        self.plugin.sentry.captureMessage(
+            'printer_discovery got unexpected message',
+            tags=get_tags(),
+            extra={'msg': msg}
+        )
 
     def _collect_device_info(self):
         info = dict(**self.static_info)
         info['printerprofile'] = get_printerprofile_name()[:253]
-
-        if not self.host_or_ip:
-            self.host_or_ip = get_host_or_ip(self.plugin)
-        info['host_or_ip'] = self.host_or_ip
-
-        info['machine_type'] = get_machine_type(self.plugin.octoprint_settings_updater)[:253]
-
+        info['machine_type'] = get_machine_type(
+            self.plugin.octoprint_settings_updater)[:253]
         return info
 
 
@@ -188,7 +237,7 @@ def read(path):  # type: (str) -> str
         return ''
 
 
-def get_ip_addr():  # type () -> str
+def _get_ip_addr():  # type () -> str
     primary_ip = ''
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(2)
@@ -198,21 +247,14 @@ def get_ip_addr():  # type () -> str
         s.close()
     except Exception:
         try:
-            s.connect(('8.8.8.8', 53))   # None of these 2 ways are 100%. Double them to maximize the chance
+            # None of these 2 ways are 100%. Double them to maximize the chance
+            s.connect(('8.8.8.8', 53))
             primary_ip = s.getsockname()[0]
             s.close()
         except Exception:
             pass
 
     return primary_ip
-
-
-def get_host_or_ip(plugin):
-    try:
-        discovery_settings = plugin._settings.global_get(['plugins', 'discovery'])
-        return discovery_settings.get('publicHost', get_ip_addr())
-    except Exception:
-        return ''
 
 
 def get_machine_type(
@@ -231,3 +273,33 @@ def get_printerprofile_name():  # type: () -> str
         return printerprofile.get('name', '') if printerprofile else ''
     except Exception:
         return ''
+
+
+def get_port(plugin):
+    try:
+        discovery_settings = plugin._settings.global_get(
+            ['plugins', 'discovery'])
+        return discovery_settings.get('publicPort') or plugin.octoprint_port
+    except Exception:
+        return ''
+
+
+def get_local_ip_or_host():  # type () -> str
+    ip = _get_ip_addr()
+    if ip and is_lan_address(ip):
+        return ip
+
+    addresses = list(set([
+        addr
+        for addr in octoprint.util.interface_addresses()
+        if is_lan_address(addr)
+    ]))
+
+    if addresses:
+        return addresses[0]
+
+    hostname = os.uname()[1][:253]
+    if '.' in hostname:
+        return hostname
+    # let's try...
+    return hostname + '.local'

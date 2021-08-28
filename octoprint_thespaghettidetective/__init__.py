@@ -11,6 +11,8 @@ import sys
 import time
 import requests
 import backoff
+import flask
+
 try:
     import queue
 except ImportError:
@@ -34,6 +36,7 @@ from .client_conn import ClientConn
 import zlib
 from .printer_discovery import PrinterDiscovery
 
+from octoprint.util.net import is_lan_address
 import octoprint.plugin
 
 __python_version__ = 3 if sys.version_info >= (3, 0) else 2
@@ -54,6 +57,7 @@ class TheSpaghettiDetectivePlugin(
         octoprint.plugin.EventHandlerPlugin,
         octoprint.plugin.AssetPlugin,
         octoprint.plugin.SimpleApiPlugin,
+        octoprint.plugin.BlueprintPlugin,
         octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
@@ -72,6 +76,7 @@ class TheSpaghettiDetectivePlugin(
         self.local_tunnel = None
         self.janus = JanusConn(self)
         self.client_conn = ClientConn(self)
+        self.discovery = None
 
     # ~~ SettingsPlugin mixin
 
@@ -186,10 +191,10 @@ class TheSpaghettiDetectivePlugin(
 
         get_tags()  # init tags to minimize risk of race condition
 
-        pdiscovery = None
         if not self.is_configured():
-            pdiscovery = PrinterDiscovery(plugin=self)
-            pdiscovery.start()
+            self.discovery = PrinterDiscovery(plugin=self)
+            self.discovery.start_and_block()
+            self.discovery = None
 
         self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
 
@@ -417,6 +422,48 @@ class TheSpaghettiDetectivePlugin(
             return resp.json()
         else:
             return None  # Triggers a backoff
+
+    @octoprint.plugin.BlueprintPlugin.route('/grab-discovery-secret', methods=['get', 'options'])
+    def grab_discovery_secret(self):
+        if self.discovery and self.discovery.device_secret:
+            remote_address = self.get_remote_address(flask.request)
+            is_lan = is_lan_address(remote_address)
+            req_device_id = flask.request.args.get('device_id')
+
+            if is_lan and req_device_id == self.discovery.device_id:
+                accept = flask.request.headers.get('Accept', '')
+                if 'application/json' in accept:
+                    resp = flask.Response(
+                        json.dumps(
+                            {'device_secret': self.discovery.device_secret}
+                        ),
+                        mimetype='application/json'
+                    )
+                else:
+                    resp = flask.Response(
+                        flask.render_template(
+                            'thespaghettidetective_discovery.jinja2',
+                            device_secret=self.discovery.device_secret
+                        )
+                    )
+                resp.headers['Access-Control-Allow-Origin'] = '*'
+                resp.headers['Access-Control-Allow-Methods'] =\
+                    'GET, HEAD, OPTIONS'
+                return resp
+
+            return flask.abort(403)
+
+        return flask.abort(403)
+
+    def is_blueprint_protected(self):
+        # !! HEADSUP bluprint endpoints does not require authentication
+        return False
+
+    def get_remote_address(self, request):
+        forwardedFor = request.headers.get('X-Forwarded-For')
+        if forwardedFor:
+            return forwardedFor.split(',')[0]
+        return request.remote_addr
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
