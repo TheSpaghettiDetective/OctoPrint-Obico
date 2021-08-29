@@ -1,4 +1,4 @@
-FROM kennethjiang/octopi:python3
+FROM kennethjiang/octopi-1.6.0:python3
 
 RUN apt-get install -y netcat
 
