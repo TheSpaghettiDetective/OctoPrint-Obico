@@ -33,7 +33,7 @@ from .utils import (
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 POLL_PERIOD = 5
-DEADLINE = 3600
+DEADLINE = 600
 MAX_BACKOFF_SECS = 300
 
 
