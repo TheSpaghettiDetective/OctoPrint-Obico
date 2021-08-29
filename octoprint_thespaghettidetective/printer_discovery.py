@@ -238,6 +238,15 @@ def read(path):  # type: (str) -> str
 
 
 def _get_ip_addr():  # type () -> str
+    addresses = list(set([
+        addr
+        for addr in octoprint.util.interface_addresses()
+        if is_lan_address(addr)
+    ]))
+
+    if addresses:
+        return addresses[0]
+
     primary_ip = ''
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(2)
@@ -288,15 +297,6 @@ def get_local_ip_or_host():  # type () -> str
     ip = _get_ip_addr()
     if ip and is_lan_address(ip):
         return ip
-
-    addresses = list(set([
-        addr
-        for addr in octoprint.util.interface_addresses()
-        if is_lan_address(addr)
-    ]))
-
-    if addresses:
-        return addresses[0]
 
     hostname = os.uname()[1][:253]
     if '.' in hostname:
