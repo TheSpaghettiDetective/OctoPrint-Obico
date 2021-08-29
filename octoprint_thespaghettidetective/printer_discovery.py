@@ -9,6 +9,7 @@ import socket
 from requests.exceptions import HTTPError
 import random
 import string
+import flask
 
 try:
     from secrets import token_hex
@@ -138,6 +139,40 @@ class PrinterDiscovery(object):
     def stop(self):
         self.stopped = True
         _logger.info('printer_discovery is stopping')
+
+    def id_for_secret(self):
+
+        def get_remote_address(request):
+            forwardedFor = request.headers.get('X-Forwarded-For')
+            if forwardedFor:
+                return forwardedFor.split(',')[0]
+            return request.remote_addr
+
+        if self.device_secret \
+            and is_lan_address(get_remote_address(flask.request)) \
+            and flask.request.args.get('device_id') == self.device_id:
+
+            accept = flask.request.headers.get('Accept', '')
+            if 'application/json' in accept:
+                resp = flask.Response(
+                    json.dumps(
+                        {'device_secret': self.device_secret}
+                    ),
+                    mimetype='application/json'
+                )
+            else:
+                resp = flask.Response(
+                    flask.render_template(
+                        'thespaghettidetective_discovery.jinja2',
+                        device_secret=self.device_secret
+                    )
+                )
+            resp.headers['Access-Control-Allow-Origin'] = '*'
+            resp.headers['Access-Control-Allow-Methods'] =\
+                'GET, HEAD, OPTIONS'
+            return resp
+
+        return flask.abort(403)
 
     def _call(self):
         _logger.debug('printer_discovery calls server')
