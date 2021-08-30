@@ -34,7 +34,7 @@ _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 POLL_PERIOD = 5
 DEADLINE = 600
-MAX_BACKOFF_SECS = 300
+MAX_BACKOFF_SECS = 30
 
 
 class PrinterDiscovery(object):
