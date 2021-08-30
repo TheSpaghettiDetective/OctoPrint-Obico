@@ -1,0 +1,9 @@
+<html>
+<body>
+<p>Handshake succeeded!</p>
+<p>You can close this window now.</p>
+<script>
+  window.opener.postMessage({device_secret: '{{device_secret}}'}, '*')
+</script>
+</body>
+</html>

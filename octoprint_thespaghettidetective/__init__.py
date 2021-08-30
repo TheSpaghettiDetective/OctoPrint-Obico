@@ -11,6 +11,7 @@ import sys
 import time
 import requests
 import backoff
+
 try:
     import queue
 except ImportError:
@@ -54,6 +55,7 @@ class TheSpaghettiDetectivePlugin(
         octoprint.plugin.EventHandlerPlugin,
         octoprint.plugin.AssetPlugin,
         octoprint.plugin.SimpleApiPlugin,
+        octoprint.plugin.BlueprintPlugin,
         octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
@@ -72,6 +74,7 @@ class TheSpaghettiDetectivePlugin(
         self.local_tunnel = None
         self.janus = JanusConn(self)
         self.client_conn = ClientConn(self)
+        self.discovery = None
 
     # ~~ SettingsPlugin mixin
 
@@ -186,10 +189,10 @@ class TheSpaghettiDetectivePlugin(
 
         get_tags()  # init tags to minimize risk of race condition
 
-        pdiscovery = None
         if not self.is_configured():
-            pdiscovery = PrinterDiscovery(plugin=self)
-            pdiscovery.start()
+            self.discovery = PrinterDiscovery(plugin=self)
+            self.discovery.start_and_block()
+            self.discovery = None
 
         self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
 
@@ -417,6 +420,15 @@ class TheSpaghettiDetectivePlugin(
             return resp.json()
         else:
             return None  # Triggers a backoff
+
+    @octoprint.plugin.BlueprintPlugin.route('/grab-discovery-secret', methods=['get', 'options'])
+    def grab_discovery_secret(self):
+        if self.discovery:
+            return self.discovery.id_for_secret()
+
+    def is_blueprint_protected(self):
+        # !! HEADSUP bluprint endpoints does not require authentication
+        return False
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py

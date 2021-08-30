@@ -1,4 +1,4 @@
-FROM kennethjiang/octopi:python2
+FROM kennethjiang/octopi-1.6.0:python2
 
 RUN apt-get install -y netcat
 
