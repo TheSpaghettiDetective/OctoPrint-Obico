@@ -53,7 +53,7 @@ class JanusConn:
                         line = line.replace('{TURN_CREDENTIAL}', self.plugin._settings.get(["auth_token"]))
                         fout.write(line)
 
-            video_enabled = 'true' if self.plugin._settings.get(["disable_video_streaming"]) not in ('true', True) else 'false'
+            video_enabled = 'true' if self.plugin._settings.get(["disable_video_streaming"]) is not True else 'false'
             streaming_conf_tmp = os.path.join(JANUS_DIR, 'etc/janus/janus.plugin.streaming.jcfg.template')
             streaming_conf_path = os.path.join(JANUS_DIR, 'etc/janus/janus.plugin.streaming.jcfg')
             with open(streaming_conf_tmp, "rt") as fin:
