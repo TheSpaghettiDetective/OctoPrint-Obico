@@ -148,10 +148,11 @@ class PrinterDiscovery(object):
                 return forwardedFor.split(',')[0]
             return request.remote_addr
 
-        if self.device_secret \
-            and is_lan_address(get_remote_address(flask.request)) \
-            and flask.request.args.get('device_id') == self.device_id:
-
+        if (
+            self.device_secret and
+            is_lan_address(get_remote_address(flask.request)) and
+            flask.request.args.get('device_id') == self.device_id
+        ):
             accept = flask.request.headers.get('Accept', '')
             if 'application/json' in accept:
                 resp = flask.Response(
@@ -314,9 +315,12 @@ def get_port(plugin):
     try:
         discovery_settings = plugin._settings.global_get(
             ['plugins', 'discovery'])
-        return discovery_settings.get('publicPort') or plugin.octoprint_port
+        public_port = discovery_settings.get(
+            'publicPort') if discovery_settings else ''
     except Exception:
-        return ''
+        public_port = ''
+
+    return public_port or plugin.octoprint_port
 
 
 def get_local_ip_or_host():  # type () -> str
