@@ -12,7 +12,7 @@ class WebSocketConnectionException(Exception):
 
 class WebSocketClient:
 
-    def __init__(self, url, token=None, on_ws_msg=None, on_ws_close=None, on_ws_open=None, subprotocols=None):
+    def __init__(self, url, token=None, on_ws_msg=None, on_ws_close=None, on_ws_open=None, subprotocols=None, waitsecs=120):
         self._mutex = threading.RLock()
 
         def on_error(ws, error):
@@ -35,24 +35,25 @@ class WebSocketClient:
 
         _logger.debug('Connecting to websocket: {}'.format(url))
         header = ["authorization: bearer " + token] if token else None
-        self.ws = websocket.WebSocketApp(url,
-                                  on_message = on_message,
-                                  on_open = on_open,
-                                  on_close = on_close,
-                                  on_error = on_error,
-                                  header = header,
-                                  subprotocols=subprotocols
+        self.ws = websocket.WebSocketApp(
+            url,
+            on_message=on_message,
+            on_open=on_open,
+            on_close=on_close,
+            on_error=on_error,
+            header=header,
+            subprotocols=subprotocols
         )
         wst = threading.Thread(target=self.ws.run_forever)
         wst.daemon = True
         wst.start()
 
-        for i in range(1200): # Give it up to 120s for ws hand-shaking to finish
+        for i in range(waitsecs * 10):  # Give it up to 120s for ws hand-shaking to finish
             if self.connected():
                 return
             time.sleep(0.1)
         self.ws.close()
-        raise WebSocketConnectionException('Not connected to websocket server after 120s')
+        raise WebSocketConnectionException('Not connected to websocket server after {}s'.format(waitsecs))
 
     def send(self, data, as_binary=False):
         with self._mutex:

@@ -112,7 +112,8 @@ class JanusConn:
             'ws://{}:{}/'.format(JANUS_SERVER, JANUS_WS_PORT),
             on_ws_msg=on_message,
             on_ws_close=on_close,
-            subprotocols=['janus-protocol'])
+            subprotocols=['janus-protocol'],
+            waitsecs=5)
 
     def shutdown(self):
         self.shutting_down = True
