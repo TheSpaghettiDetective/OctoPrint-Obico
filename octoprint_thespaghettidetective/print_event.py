@@ -12,11 +12,13 @@ class PrintEventTracker:
         self._mutex = threading.RLock()
         self.current_print_ts = -1    # timestamp as print_ts coming from octoprint
         self.tsd_gcode_file_id = None
+        self._file_metadata_cache = None
 
     def on_event(self, plugin, event, payload):
         with self._mutex:
             if event == 'PrintStarted':
                 self.current_print_ts = int(time.time())
+                self._file_metadata_cache = None
 
         data = self.octoprint_data(plugin)
         data['octoprint_event'] = {
@@ -29,6 +31,7 @@ class PrintEventTracker:
             if event == 'PrintFailed' or event == 'PrintDone':
                 self.current_print_ts = -1
                 self.tsd_gcode_file_id = None
+                self._file_metadata_cache = None
 
         return data
 
@@ -46,14 +49,15 @@ class PrintEventTracker:
         data['octoprint_data']['_ts'] = int(time.time())
 
         if status_only:
+            if self._file_metadata_cache:
+                data['octoprint_data']['file_metadata'] = self._file_metadata_cache
             return data
 
-        data['octoprint_data']['file_metadata'] = self.get_file_metadata(plugin, data)
+        data['octoprint_data']['file_metadata'] = self._file_metadata_cache = self.get_file_metadata(plugin, data)
 
         octo_settings = plugin.octoprint_settings_updater.as_dict()
         if octo_settings:
             data['octoprint_settings'] = octo_settings
-
 
         return data
 
