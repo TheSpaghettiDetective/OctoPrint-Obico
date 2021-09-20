@@ -88,7 +88,7 @@ class FileDownloader:
 
     def _get_unique_path_and_filename(self, filename):
         sfname = octoprint.server.fileManager.sanitize_name('local', filename)
-        sfparts = sfname.rsplit('.')
+        sfparts = sfname.rsplit('.', 1)
         target_path = os.path.join(self.g_code_folder, sfname)
         n = 0
         while os.path.exists(target_path):
@@ -99,7 +99,7 @@ class FileDownloader:
             target_path = os.path.join(self.g_code_folder, sfname)
 
         if n > 0:
-            parts = filename.rsplit('.')
+            parts = filename.rsplit('.', 1)
             filename = u'{}_{}.{}'.format(parts[0], str(n), parts[1])
 
         return target_path, sfname, filename
