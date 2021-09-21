@@ -28,19 +28,24 @@ _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 class ExpoBackoff:
 
-    def __init__(self, max_seconds):
+    def __init__(self, max_seconds, max_attempts=0):
         self.attempts = -3
         self.max_seconds = max_seconds
+        self.max_attempts = max_attempts
 
     def reset(self):
         self.attempts = -3
 
     def more(self, e):
         self.attempts += 1
-        delay = self.get_delay(self.attempts, self.max_seconds)
-        _logger.error('Backing off %f seconds: %s' % (delay, e))
+        if self.attempts > self.max_attempts:
+            return false
+        else:
+            delay = self.get_delay(self.attempts, self.max_seconds)
+            _logger.error('Backing off %f seconds: %s' % (delay, e))
 
-        time.sleep(delay)
+            time.sleep(delay)
+            return true
 
     @classmethod
     def get_delay(cls, attempts, max_seconds):

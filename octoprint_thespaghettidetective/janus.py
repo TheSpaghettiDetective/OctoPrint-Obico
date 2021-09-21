@@ -31,7 +31,7 @@ class JanusConn:
 
     def __init__(self, plugin):
         self.plugin = plugin
-        self.janus_ws_backoff = ExpoBackoff(120)
+        self.janus_ws_backoff = ExpoBackoff(120, max_attempts=50)
         self.janus_ws = None
         self.janus_proc = None
         self.shutting_down = False
@@ -99,8 +99,8 @@ class JanusConn:
     def start_janus_ws(self):
 
         def on_close(ws):
-            self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
-            if not self.shutting_down:
+            more_backoff = self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
+            if not self.shutting_down and more_backoff:
                 _logger.warning('Reconnecting to Janus WS.')
                 self.start_janus_ws()
 
