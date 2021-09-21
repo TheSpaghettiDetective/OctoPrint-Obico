@@ -31,7 +31,7 @@ class JanusConn:
 
     def __init__(self, plugin):
         self.plugin = plugin
-        self.janus_ws_backoff = ExpoBackoff(120, max_attempts=50)
+        self.janus_ws_backoff = ExpoBackoff(120, max_attempts=20)
         self.janus_ws = None
         self.janus_proc = None
         self.shutting_down = False
@@ -63,7 +63,7 @@ class JanusConn:
                         fout.write(line)
 
         def run_janus():
-            janus_backoff = ExpoBackoff(60 * 1)
+            janus_backoff = ExpoBackoff(60, max_attempts=20)
             janus_cmd = os.path.join(JANUS_DIR, 'run_janus.sh')
             _logger.debug('Popen: {}'.format(janus_cmd))
             self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -76,7 +76,7 @@ class JanusConn:
                     self.janus_proc.wait()
                     msg = 'Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode)
                     self.plugin.sentry.captureMessage(msg, tags=get_tags())
-                    janus_backoff.more(msg)
+                    janus_backoff.more(Exception(msg))
                     self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         ensure_janus_config()
@@ -99,8 +99,8 @@ class JanusConn:
     def start_janus_ws(self):
 
         def on_close(ws):
-            more_backoff = self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
-            if not self.shutting_down and more_backoff:
+            self.janus_ws_backoff.more(Exception('Janus WS connection closed!'))
+            if not self.shutting_down:
                 _logger.warning('Reconnecting to Janus WS.')
                 self.start_janus_ws()
 

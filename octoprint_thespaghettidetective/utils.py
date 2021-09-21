@@ -39,13 +39,13 @@ class ExpoBackoff:
     def more(self, e):
         self.attempts += 1
         if self.attempts > self.max_attempts:
-            return false
+            _logger.error('Giving up on error: %s' % (e))
+            raise e
         else:
             delay = self.get_delay(self.attempts, self.max_seconds)
             _logger.error('Backing off %f seconds: %s' % (delay, e))
 
             time.sleep(delay)
-            return true
 
     @classmethod
     def get_delay(cls, attempts, max_seconds):
