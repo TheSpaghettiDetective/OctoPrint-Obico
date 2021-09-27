@@ -75,7 +75,7 @@ class PrinterDiscovery(object):
         next_connect_at = 0
         connect_attempts = 0
 
-        host_or_ip = get_local_ip()
+        host_or_ip = get_local_ip(self.plugin)
 
         self.static_info = dict(
             device_id=self.device_id,
@@ -323,7 +323,10 @@ def get_port(plugin):
     return public_port or plugin.octoprint_port
 
 
-def get_local_ip():  # type () -> str
+def get_local_ip(plugin):
+    if plugin._settings.get(["force_localhost_for_discovery"]):
+        return '127.0.0.1'
+
     ip = _get_ip_addr()
     if ip and is_lan_address(ip):
         return ip
