@@ -233,6 +233,7 @@ class PrinterDiscovery(object):
 
             if result['succeeded'] is True:
                 _logger.info('printer_discovery verified code succesfully')
+                self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'printer_autolinked': True})
             else:
                 _logger.error('printer_discovery could not verify code')
                 self.plugin.sentry.captureMessage(

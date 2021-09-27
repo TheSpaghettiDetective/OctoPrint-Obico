@@ -162,6 +162,11 @@ $(function () {
             if (data.plugin_updated) {
                 self.fetchPluginStatus();
             }
+
+            if (data.printer_autolinked) {
+                console.log("Printer autolinked");
+                self.fetchPluginStatus();
+            }
         }
 
         self.displayAlert = function (alertMsg) {
