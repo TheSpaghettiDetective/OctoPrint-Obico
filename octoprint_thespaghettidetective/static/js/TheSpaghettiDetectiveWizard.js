@@ -210,10 +210,6 @@ $(function () {
             }
         }
 
-        self.showWizardModal = function() {
-            $('#wizardModal').modal('show');
-        }
-
         self.hideWizardModal = function() {
             $('.tsd-auto-close').removeClass('active');
             $('#wizardModal').modal('hide');
