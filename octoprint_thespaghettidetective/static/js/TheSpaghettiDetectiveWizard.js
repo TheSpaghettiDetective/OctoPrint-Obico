@@ -117,6 +117,13 @@ $(function () {
             $('.tsd-verification-wrapper').removeClass(['error', 'success', 'unknown']);
         }
 
+        self.startAutoCloseTimout = function() {
+            setTimeout(function() {
+                $('.tsd-auto-close').addClass('active');
+                setTimeout(function() { self.hideWizardModal(); }, 10000); // auto-close in 10s
+            }, 500) // Add .5s delay to make transition visible
+        }
+
 
         self.nextStep = function() {
             self.toStep(self.step() + 1);
@@ -125,10 +132,7 @@ $(function () {
                 $('.tsd-modal[aria-hidden="false"] .tsd-verification-code-input input[data-number=1]').trigger('focus');
             } else if (self.step() === 5) {
                 // Close button with countdown animation
-                setTimeout(function() {
-                    $('.tsd-auto-close').addClass('active');
-                    setTimeout(function() { self.hideWizardModal(); }, 10000); // auto-close in 10s
-                }, 500) // Add .5s delay to make transition visible
+                self.startAutoCloseTimout()
             }
         };
 
@@ -204,6 +208,10 @@ $(function () {
             for (let i = 1; i <= 6; i++) {
                 verificationWrapper.find('.tsd-verification-code-input input[data-number='+ i +']').val('');
             }
+        }
+
+        self.showWizardModal = function() {
+            $('#wizardModal').modal('show');
         }
 
         self.hideWizardModal = function() {

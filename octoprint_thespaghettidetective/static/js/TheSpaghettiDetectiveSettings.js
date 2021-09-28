@@ -166,6 +166,8 @@ $(function () {
             if (data.printer_autolinked) {
                 console.log("Printer autolinked");
                 self.fetchPluginStatus();
+                self.thespaghettidetectiveWizardViewModel.toStep(5);
+                self.thespaghettidetectiveWizardViewModel.startAutoCloseTimout();
             }
         }
 
