@@ -328,7 +328,7 @@ class UsbCamWebServer:
         try:
             s.connect(('127.0.0.1', 14499))
             chunk = s.recv(100)
-            if chunk[:3] == '\ff\xd8\xff':
+            if chunk[:3] == b'\xff\xd8\xff':
                 return self._receive_jpeg(s, chunk)
             return self._receive_multipart(s, chunk)
         except (socket.timeout, socket.error):
@@ -344,7 +344,7 @@ class UsbCamWebServer:
     def _receive_jpeg(self, s, chunk):
         arr = bytearray()
         while chunk:
-            index = chunk.find('\xff\xd9')
+            index = chunk.find(b'\xff\xd9')
             if index > -1:
                 arr.extend(chunk[:index+2])
                 return arr
@@ -353,16 +353,16 @@ class UsbCamWebServer:
         # FIXME good or bad idea?
         return arr
 
-    def _process_multipart(self, s, chunk):
-            header = re.search(r"Content-Length: (\d+)", chunk.decode("iso-8859-1"), re.MULTILINE)
-            if not header:
-                raise Exception('Multipart header not found!')
+    def _receive_multipart(self, s, chunk):
+        header = re.search(r"Content-Length: (\d+)", chunk.decode("iso-8859-1"), re.MULTILINE)
+        if not header:
+            raise Exception('Multipart header not found!')
 
-            length = int(header.group(1))
-            chunk = bytearray(chunk[header.end() + 4:])
-            while length > len(chunk):
-                chunk.extend(s.recv(length - len(chunk)))
-            return chunk[:length]
+        length = int(header.group(1))
+        chunk = bytearray(chunk[header.end() + 4:])
+        while length > len(chunk):
+            chunk.extend(s.recv(length - len(chunk)))
+        return chunk[:length]
 
     def run_forever(self):
         webcam_server_app = flask.Flask('webcam_server')
