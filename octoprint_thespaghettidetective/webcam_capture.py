@@ -3,10 +3,14 @@ from __future__ import absolute_import
 from datetime import datetime, timedelta
 import time
 import logging
+
 try:
-    from StringIO import StringIO
+    from StringIO import StringIO as Buffer
+    MJPEG_HDR = '\r\n' * 2
 except ImportError:
-    from io import StringIO
+    from io import BytesIO as Buffer
+    MJPEG_HDR = b'\r\n' * 2
+
 import re
 import os
 try:
@@ -65,7 +69,7 @@ def capture_jpeg(webcam_settings):
                 mjpg = chunker.findMjpegChunk(data)
                 if mjpg:
                     res.close()
-                    mjpeg_headers_index = mjpg.find('\r\n'*2)
+                    mjpeg_headers_index = mjpg.find(MJPEG_HDR)
                     if mjpeg_headers_index > 0:
                         return mjpg[mjpeg_headers_index+4:]
                     else:
@@ -76,7 +80,7 @@ class MjpegStreamChunker:
 
     def __init__(self):
         self.boundary = None
-        self.current_chunk = StringIO()
+        self.current_chunk = Buffer()
 
     # Return: mjpeg chunk if found
     #         None: in the middle of the chunk
