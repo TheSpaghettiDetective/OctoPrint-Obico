@@ -327,9 +327,15 @@ class UsbCamWebServer:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             s.connect(('127.0.0.1', 14499))
-            chunk = s.recv(100)
-            if chunk[:3] == b'\xff\xd8\xff':
-                return self._receive_jpeg(s, chunk)
+            chunk = cur = s.recv(100)
+            n = 3
+            while n > 0:
+                n = n - 1
+                if cur[:3] == b'\xff\xd8\xff':
+                    return self._receive_jpeg(s, cur)
+                chunk += cur
+                time.sleep(0.01)
+                cur = s.recv(100)
             return self._receive_multipart(s, chunk)
         except (socket.timeout, socket.error):
             exc_type, exc_obj, exc_tb = sys.exc_info()
