@@ -328,7 +328,7 @@ class UsbCamWebServer:
         try:
             s.connect(('127.0.0.1', 14499))
             chunk = cur = s.recv(100)
-            n = 3
+            n = 4
             while n > 0:
                 n = n - 1
                 if cur[:3] == b'\xff\xd8\xff':
