@@ -386,7 +386,7 @@ class UsbCamWebServer:
             flask.request.environ.get('werkzeug.server.shutdown')()
             return 'Ok'
 
-        webcam_server_app.run(host='0.0.0.0', port=8080, threaded=True)
+        webcam_server_app.run(port=8080, threaded=True)
 
     def start(self):
         cam_server_thread = Thread(target=self.run_forever)
@@ -471,7 +471,7 @@ class PiCamWebServer:
             flask.request.environ.get('werkzeug.server.shutdown')()
             return 'Ok'
 
-        webcam_server_app.run(host='0.0.0.0', port=8080, threaded=True)
+        webcam_server_app.run(port=8080, threaded=True)
 
     def start(self):
         cam_server_thread = Thread(target=self.run_forever)
