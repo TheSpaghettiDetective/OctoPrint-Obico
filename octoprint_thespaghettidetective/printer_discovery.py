@@ -18,8 +18,9 @@ except ImportError:
         letters = string.ascii_letters + string.digits
         return "".join([random.choice(letters) for i in range(n)])
 
+import netaddr.ip
 import octoprint.server
-from octoprint.util.net import is_lan_address
+from octoprint.util.net import sanitize_address
 from octoprint.util.platform import (
     get_os as octoprint_get_os,
     OPERATING_SYSTEM_UNMAPPED
@@ -150,7 +151,10 @@ class PrinterDiscovery(object):
 
         if (
             self.device_secret and
-            is_lan_address(get_remote_address(flask.request)) and
+            is_local_address(
+                self.plugin,
+                get_remote_address(flask.request)
+            ) and
             flask.request.args.get('device_id') == self.device_id
         ):
             accept = flask.request.headers.get('Accept', '')
@@ -233,7 +237,8 @@ class PrinterDiscovery(object):
 
             if result['succeeded'] is True:
                 _logger.info('printer_discovery verified code succesfully')
-                self.plugin._plugin_manager.send_plugin_message(self.plugin._identifier, {'printer_autolinked': True})
+                self.plugin._plugin_manager.send_plugin_message(
+                    self.plugin._identifier, {'printer_autolinked': True})
             else:
                 _logger.error('printer_discovery could not verify code')
                 self.plugin.sentry.captureMessage(
@@ -329,16 +334,44 @@ def get_local_ip(plugin):
         return '127.0.0.1'
 
     ip = _get_ip_addr()
-    if ip and is_lan_address(ip):
+    if ip and is_local_address(plugin, ip):
         return ip
 
     addresses = list(set([
         addr
         for addr in octoprint.util.interface_addresses()
-        if is_lan_address(addr)
+        if is_local_address(plugin, addr)
     ]))
 
     if addresses:
         return addresses[0]
 
     return ''
+
+
+def is_local_address(plugin, address):
+    subnets = [
+        *netaddr.ip.IPV4_PRIVATE,
+        netaddr.ip.IPV4_LOOPBACK,
+        netaddr.ip.IPV4_LINK_LOCAL,
+        *netaddr.ip.IPV6_PRIVATE,
+        netaddr.ip.IPNetwork(netaddr.ip.IPV6_LOOPBACK),
+        netaddr.ip.IPV6_LINK_LOCAL,
+    ]
+
+    try:
+        address = sanitize_address(address)
+        ip = netaddr.IPAddress(address)
+    except Exception as exc:
+        _logger.error(
+            'could not determine whether {} is local address ({})'.format(
+                address, exc)
+        )
+        plugin.sentry.captureException(tags=get_tags())
+        return False
+
+    for sub in subnets:
+        if ip in sub:
+            return True
+
+    return False
