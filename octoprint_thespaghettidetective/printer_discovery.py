@@ -350,18 +350,10 @@ def get_local_ip(plugin):
 
 
 def is_local_address(plugin, address):
-    subnets = [
-        *netaddr.ip.IPV4_PRIVATE,
-        netaddr.ip.IPV4_LOOPBACK,
-        netaddr.ip.IPV4_LINK_LOCAL,
-        *netaddr.ip.IPV6_PRIVATE,
-        netaddr.ip.IPNetwork(netaddr.ip.IPV6_LOOPBACK),
-        netaddr.ip.IPV6_LINK_LOCAL,
-    ]
-
     try:
         address = sanitize_address(address)
         ip = netaddr.IPAddress(address)
+        return ip.is_private() or ip.is_loopback()
     except Exception as exc:
         _logger.error(
             'could not determine whether {} is local address ({})'.format(
@@ -369,9 +361,3 @@ def is_local_address(plugin, address):
         )
         plugin.sentry.captureException(tags=get_tags())
         return False
-
-    for sub in subnets:
-        if ip in sub:
-            return True
-
-    return False
