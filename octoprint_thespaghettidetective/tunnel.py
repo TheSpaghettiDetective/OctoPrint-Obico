@@ -106,7 +106,6 @@ class LocalTunnel(object):
                     {'ws.tunnel': {'ref': ref, 'data': None, 'type': 'octoprint_close'}},
                     as_binary=True)
 
-
         def on_ws_msg(ws, data):
             try:
                 self.on_ws_message(
@@ -131,3 +130,44 @@ class LocalTunnel(object):
     def close_all_octoprint_ws(self):
         for ref, ws in self.ref_to_ws.items():
             ws.close()
+
+    def send_http_to_local_v2(
+            self, ref, method, path,
+            params=None, data=None, headers=None, timeout=30):
+
+        url = urljoin(self.base_url, path)
+
+        _logger.debug('Tunneling (v2) "{}"'.format(url))
+        try:
+            resp = getattr(requests, method)(
+                url,
+                params=params,
+                headers={k: v for k, v in headers.items()},
+                data=data,
+                timeout=timeout,
+                allow_redirects=True)
+
+            compress = len(resp.content) >= COMPRESS_THRESHOLD
+            resp_data = {
+                'status': resp.status_code,
+                'compressed': compress,
+                'content': (
+                    zlib.compress(resp.content)
+                    if compress
+                    else resp.content
+                ),
+                'cookies': resp.raw._original_response.msg.get_all(
+                    'Set-Cookie'),
+                'headers': {k: v for k, v in resp.headers.items()},
+            }
+        except Exception as ex:
+            resp_data = {
+                'status': 502,
+                'content': repr(ex),
+                'headers': {}
+            }
+
+        self.on_http_response(
+            {'http.tunnelv2': {'ref': ref, 'response': resp_data}},
+            as_binary=True)
+        return

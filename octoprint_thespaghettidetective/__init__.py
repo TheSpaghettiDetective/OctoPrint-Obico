@@ -356,7 +356,18 @@ class TheSpaghettiDetectivePlugin(
                 need_status_boost = True
 
             if msg.get('http.tunnel') and self.local_tunnel:
-                tunnel_thread = threading.Thread(target=self.local_tunnel.send_http_to_local, kwargs=msg.get('http.tunnel'))
+                kwargs = msg.get('http.tunnel')
+                tunnel_thread = threading.Thread(
+                    target=self.local_tunnel.send_http_to_local,
+                    kwargs=kwargs)
+                tunnel_thread.is_daemon = True
+                tunnel_thread.start()
+
+            if msg.get('http.tunnelv2') and self.local_tunnel:
+                kwargs = msg.get('http.tunnelv2')
+                tunnel_thread = threading.Thread(
+                    target=self.local_tunnel.send_http_to_local_v2,
+                    kwargs=kwargs)
                 tunnel_thread.is_daemon = True
                 tunnel_thread.start()
 
