@@ -147,6 +147,15 @@ class LocalTunnel(object):
                 timeout=timeout,
                 allow_redirects=True)
 
+            if sys.version_info[0] < 3:
+                cookies = [
+                    h[len('set-cookie:'):].strip()
+                    for h in resp.raw._original_response.msg.headers
+                    if h.lower().startswith('set-cookie')
+                ]
+            else:
+                cookies = resp.raw._original_response.msg.get_all('Set-Cookie')
+
             compress = len(resp.content) >= COMPRESS_THRESHOLD
             resp_data = {
                 'status': resp.status_code,
@@ -156,8 +165,7 @@ class LocalTunnel(object):
                     if compress
                     else resp.content
                 ),
-                'cookies': resp.raw._original_response.msg.get_all(
-                    'Set-Cookie'),
+                'cookies': cookies,
                 'headers': {k: v for k, v in resp.headers.items()},
             }
         except Exception as ex:
