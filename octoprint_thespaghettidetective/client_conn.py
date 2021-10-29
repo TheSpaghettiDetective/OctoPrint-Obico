@@ -23,6 +23,10 @@ class ClientConn:
         self.seen_refs_lock = threading.RLock()
 
     def on_message_to_plugin(self, msg):
+        if msg.get('printer_id'):
+            if msg['printer_id'] != self.plugin.linked_printer['id']:
+                raise Exception('printer_id mismatch')
+
         target = getattr(self.plugin, msg.get('target'))
         func = getattr(target, msg['func'], None)
         if not func:
@@ -51,6 +55,11 @@ class ClientConn:
         self.plugin.post_update_to_server()
 
     def send_msg_to_client(self, data):
+        if not self.plugin.linked_printer.get('id'):
+            return
+
+        data['printer_id'] = self.plugin.linked_printer['id']
+
         payload = json.dumps(data, default=str).encode('utf8')
         if __python_version__ == 3:
             compressor  = zlib.compressobj(
