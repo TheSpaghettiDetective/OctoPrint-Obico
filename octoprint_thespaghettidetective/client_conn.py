@@ -23,8 +23,9 @@ class ClientConn:
         self.seen_refs_lock = threading.RLock()
 
     def on_message_to_plugin(self, msg):
+        linked_printer = self.plugin.linked_printer
         if msg.get('printer_id'):
-            if msg['printer_id'] != self.plugin.linked_printer['id']:
+            if msg['printer_id'] != linked_printer['id']:
                 raise Exception('printer_id mismatch')
 
         target = getattr(self.plugin, msg.get('target'))
