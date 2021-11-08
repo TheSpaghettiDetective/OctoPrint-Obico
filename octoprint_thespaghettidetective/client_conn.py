@@ -23,8 +23,9 @@ class ClientConn:
         self.seen_refs_lock = threading.RLock()
 
     def on_message_to_plugin(self, msg):
+        linked_printer = self.plugin.linked_printer
         if msg.get('printer_id'):
-            if msg['printer_id'] != self.plugin.linked_printer['id']:
+            if msg['printer_id'] != linked_printer['id']:
                 raise Exception('printer_id mismatch')
 
         target = getattr(self.plugin, msg.get('target'))
@@ -47,9 +48,11 @@ class ClientConn:
 
         if ack_ref:
             self.plugin.send_ws_msg_to_server(
-                {'passthru': {'ref': ack_ref, 'ret': ret}})
+                {'passthru': {'ref': ack_ref, 'ret': ret,
+                              'printer_id': linked_printer['id']}})
             self.send_msg_to_client(
-                {'ref': ack_ref, 'ret': ret, '_webrtc': True})
+                {'ref': ack_ref, 'ret': ret, '_webrtc': True,
+                 'printer_id': linked_printer['id']})
 
         time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
         self.plugin.post_update_to_server()
