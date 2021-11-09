@@ -1,7 +1,7 @@
 from typing import Optional
 import time
 import logging
-import os
+import platform
 import uuid
 import io
 import json
@@ -80,11 +80,11 @@ class PrinterDiscovery(object):
 
         self.static_info = dict(
             device_id=self.device_id,
-            hostname=os.uname()[1][:253],
+            hostname=platform.uname()[1][:253],
             host_or_ip=host_or_ip,
             port=get_port(self.plugin),
             os=get_os()[:253],
-            arch=os.uname()[4][:253],
+            arch=platform.uname()[4][:253],
             rpi_model=read('/proc/device-tree/model')[:253],
             octopi_version=read('/etc/octopi_version')[:253],
             plugin_version=self.plugin._plugin_version,
