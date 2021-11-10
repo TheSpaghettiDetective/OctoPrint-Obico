@@ -16,3 +16,5 @@ dist
 npm-debug.log
 .config*
 janus.jcfg
+.v
+.v2

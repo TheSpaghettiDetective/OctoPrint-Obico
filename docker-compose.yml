@@ -1,4 +1,4 @@
-version: '2.4'
+version: '3.7'
 
 services:
   octoprint:
@@ -41,13 +41,18 @@ services:
     image: thespaghettidetective/janus:ubuntu
     #command: sh -c "/opt/janus/bin/janus --stun-server=stun.l.google.com:19302"
     command: sh -c "/opt/janus/bin/janus"
+    ports:
+      - '${EXPOSED_IP-127.0.0.1}:8188:8188'
+      - '${EXPOSED_IP-127.0.0.1}:8009:8009'
+      - '${EXPOSED_IP-127.0.0.1}:8004:8004'
   mjpeg:
     hostname: mjpeg
     restart: unless-stopped
     image: thespaghettidetective/mjpg-streamer
     ports:
-      - '8080:8080'
+      - '${EXPOSED_IP-127.0.0.1}:8080:8080'
     command: sh -c "/mjpg-streamer/mjpg_streamer -o '/mjpg-streamer/output_http.so -w /mjpg-streamer/www' -i '/mjpg-streamer/input_file.so -f /mjpg-streamer/jpgs -e -d 1'"
+
   video:
     restart: unless-stopped
     image: thespaghettidetective/ffmpeg:ubuntu
