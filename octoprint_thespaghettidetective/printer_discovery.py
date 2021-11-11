@@ -42,16 +42,9 @@ class PrinterDiscovery(object):
 
     def __init__(self,
                  plugin,
-                 poll_period=POLL_PERIOD,
-                 deadline=DEADLINE,
-                 max_backoff_secs=MAX_BACKOFF_SECS
                  ):
         self.plugin = plugin
-        self.poll_period = poll_period  # type: int
-        self.deadline = deadline  # type: int
-        self.max_backoff_secs = max_backoff_secs  # type: int
         self.stopped = False
-        self.cur_step = None  # type: Optional[int]
         self.device_secret = None
         self.static_info = {}
 
@@ -72,9 +65,7 @@ class PrinterDiscovery(object):
 
     def _start(self):
         self.device_secret = token_hex(32)
-        self.cur_step = 0
-        next_connect_at = 0
-        connect_attempts = 0
+        discovery_started = time.time()
 
         host_or_ip = get_local_ip(self.plugin)
 
@@ -95,6 +86,8 @@ class PrinterDiscovery(object):
             self.stop()
             return
 
+        discovery_backoff = ExpoBackoff(MAX_BACKOFF_SECS)
+        last_check = -1
         while not self.stopped:
 
             if self.plugin.is_configured():
@@ -102,16 +95,15 @@ class PrinterDiscovery(object):
                 self.stop()
                 break
 
-            if self.cur_step > self.deadline:
+            if time.time() > discovery_started + DEADLINE:
                 _logger.info('printer_discovery got deadline reached')
                 self.stop()
                 break
 
-            if self.cur_step >= next_connect_at:
+            if time.time() > last_check + POLL_PERIOD:
                 try:
+                    last_check = time.time()
                     self._call()
-                    connect_attempts = 0
-                    next_connect_at = self.cur_step + self.poll_period
                 except (IOError, OSError) as ex:
                     # tyring to catch only network related errors here,
                     # all other errors must bubble up.
@@ -124,17 +116,8 @@ class PrinterDiscovery(object):
 
                     # issues with network / ssl / dns / server (http 5xx)
                     # ... those might go away
-                    backoff_time = ExpoBackoff.get_delay(
-                        connect_attempts, self.max_backoff_secs)
-                    _logger.debug(
-                        'printer_discovery got an error ({}), '
-                        'will retry after {}s'.format(
-                            ex, backoff_time))
+                    discovery_backoff.more(ex)
 
-                    connect_attempts += 1
-                    next_connect_at = self.cur_step + max(1, int(backoff_time))
-
-            self.cur_step += 1
             time.sleep(1)
 
     def stop(self):
@@ -182,7 +165,6 @@ class PrinterDiscovery(object):
     def _call(self):
         _logger.debug('printer_discovery calls server')
         data = self._collect_device_info()
-
         resp = server_request(
             'POST',
             '/api/v1/octo/unlinked/',
