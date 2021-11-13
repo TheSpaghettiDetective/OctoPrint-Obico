@@ -34,7 +34,7 @@ from .utils import (
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 POLL_PERIOD = 5
-DEADLINE = 600
+MAX_POLLS = 120 # remains discoverable for about 10 minutes, give or take.
 MAX_BACKOFF_SECS = 30
 
 
@@ -65,7 +65,7 @@ class PrinterDiscovery(object):
 
     def _start(self):
         self.device_secret = token_hex(32)
-        discovery_started = time.time()
+        polls_remaining = MAX_POLLS
 
         host_or_ip = get_local_ip(self.plugin)
 
@@ -87,7 +87,6 @@ class PrinterDiscovery(object):
             return
 
         discovery_backoff = ExpoBackoff(MAX_BACKOFF_SECS)
-        last_check = -1
         while not self.stopped:
 
             if self.plugin.is_configured():
@@ -95,30 +94,29 @@ class PrinterDiscovery(object):
                 self.stop()
                 break
 
-            if time.time() > discovery_started + DEADLINE:
+            polls_remaining -= 1
+            if polls_remaining < 0:
                 _logger.info('printer_discovery got deadline reached')
                 self.stop()
                 break
 
-            if time.time() > last_check + POLL_PERIOD:
-                try:
-                    last_check = time.time()
-                    self._call()
-                except (IOError, OSError) as ex:
-                    # tyring to catch only network related errors here,
-                    # all other errors must bubble up.
+            try:
+                self._call()
+            except (IOError, OSError) as ex:
+                # tyring to catch only network related errors here,
+                # all other errors must bubble up.
 
-                    # http4xx can be an actionable bug, let it bubble up
-                    if isinstance(ex, HTTPError):
-                        status_code = ex.response.status_code
-                        if 400 <= status_code < 500:
-                            raise
+                # http4xx can be an actionable bug, let it bubble up
+                if isinstance(ex, HTTPError):
+                    status_code = ex.response.status_code
+                    if 400 <= status_code < 500:
+                        raise
 
-                    # issues with network / ssl / dns / server (http 5xx)
-                    # ... those might go away
-                    discovery_backoff.more(ex)
+                # issues with network / ssl / dns / server (http 5xx)
+                # ... those might go away
+                discovery_backoff.more(ex)
 
-            time.sleep(1)
+            time.sleep(POLL_PERIOD)
 
     def stop(self):
         self.stopped = True
