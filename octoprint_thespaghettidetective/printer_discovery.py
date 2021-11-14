@@ -1,4 +1,3 @@
-from typing import Optional
 import time
 import logging
 import platform
@@ -28,13 +27,18 @@ from octoprint.util.platform import (
 
 from .plugin_apis import verify_code
 from .utils import (
-    ExpoBackoff, server_request, OctoPrintSettingsUpdater,
+    server_request, OctoPrintSettingsUpdater,
     get_tags, raise_for_status)
 
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
+# we count steps instead of tracking timestamps;
+# timestamps happened to be unreliable on rpi-s (NTP issue?)
+# printer remains discoverable for about 10 minutes, give or take.
 POLL_PERIOD = 5
-MAX_POLLS = 120 # remains discoverable for about 10 minutes, give or take.
+MAX_POLLS = 120
+TOTAL_STEPS = POLL_PERIOD * MAX_POLLS
+
 MAX_BACKOFF_SECS = 30
 
 
@@ -65,7 +69,7 @@ class PrinterDiscovery(object):
 
     def _start(self):
         self.device_secret = token_hex(32)
-        polls_remaining = MAX_POLLS
+        steps_remaining = TOTAL_STEPS
 
         host_or_ip = get_local_ip(self.plugin)
 
@@ -86,7 +90,6 @@ class PrinterDiscovery(object):
             self.stop()
             return
 
-        discovery_backoff = ExpoBackoff(MAX_BACKOFF_SECS)
         while not self.stopped:
 
             if self.plugin.is_configured():
@@ -94,14 +97,15 @@ class PrinterDiscovery(object):
                 self.stop()
                 break
 
-            polls_remaining -= 1
-            if polls_remaining < 0:
+            steps_remaining -= 1
+            if steps_remaining < 0:
                 _logger.info('printer_discovery got deadline reached')
                 self.stop()
                 break
 
             try:
-                self._call()
+                if steps_remaining % POLL_PERIOD == 0:
+                    self._call()
             except (IOError, OSError) as ex:
                 # tyring to catch only network related errors here,
                 # all other errors must bubble up.
@@ -112,11 +116,7 @@ class PrinterDiscovery(object):
                     if 400 <= status_code < 500:
                         raise
 
-                # issues with network / ssl / dns / server (http 5xx)
-                # ... those might go away
-                discovery_backoff.more(ex)
-
-            time.sleep(POLL_PERIOD)
+            time.sleep(1)
 
     def stop(self):
         self.stopped = True
