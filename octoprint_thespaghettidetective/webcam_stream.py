@@ -231,7 +231,7 @@ class WebcamStreamer:
 
         def ensure_gst_process():
             ring_buffer = deque(maxlen=50)
-            gst_backoff = ExpoBackoff(60 * 10)
+            gst_backoff = ExpoBackoff(60 * 10, max_attempts=20)
             while True:
                 err = to_unicode(self.gst_proc.stderr.readline(), errors='replace')
                 if not err:  # EOF when process ends?
