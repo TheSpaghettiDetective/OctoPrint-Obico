@@ -326,9 +326,8 @@ class TheSpaghettiDetectivePlugin(
                 _logger.debug(
                     'received binary message ({} bytes)'.format(len(raw_data)))
 
-            linked_printer = self.linked_printer
             if msg.get('printer_id'):
-                if linked_printer['id'] != msg['printer_id']:
+                if self.linked_printer['id'] != msg['printer_id']:
                     raise Exception('printer_id mismatch')
 
             need_status_boost = False
