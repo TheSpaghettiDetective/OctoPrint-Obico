@@ -374,9 +374,7 @@ class UsbCamWebServer:
 
         length = int(header.group(1))
         chunk = bytearray(chunk[header.end() + 4:])
-        while length > len(chunk):
-            chunk.extend(s.recv(length - len(chunk)))
-        return chunk[:length]
+        return self._receive_jpeg(s, chunk):
 
     def run_forever(self):
         webcam_server_app = flask.Flask('webcam_server')
