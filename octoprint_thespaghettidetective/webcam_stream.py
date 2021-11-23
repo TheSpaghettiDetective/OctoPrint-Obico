@@ -339,6 +339,7 @@ class UsbCamWebServer:
                 chunk += cur
                 time.sleep(0.01)
                 cur = s.recv(100)
+            chunk += cur
             return self._receive_multipart(s, chunk)
         except (socket.timeout, socket.error):
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -372,9 +373,8 @@ class UsbCamWebServer:
         if not header:
             raise Exception('Multipart header not found!')
 
-        length = int(header.group(1))
-        chunk = bytearray(chunk[header.end() + 4:])
-        return self._receive_jpeg(s, chunk):
+        chunk2 = bytearray(chunk[header.end() + 4:])
+        return self._receive_jpeg(s, chunk2)
 
     def run_forever(self):
         webcam_server_app = flask.Flask('webcam_server')
