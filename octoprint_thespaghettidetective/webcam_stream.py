@@ -327,15 +327,14 @@ class UsbCamWebServer:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             s.connect(('127.0.0.1', 14499))
-            chunk = cur = s.recv(100)
+            cur = s.recv(100)
+            chunk = b''
             n = 4
             while n > 0:
                 n = n - 1
                 # sometimes the mjpeg stream starts without
-                # the mandatory headers, it might have even a
-                # fake jpeg header blob in front of the real mjpeg frame...
-                # perhaps a gst issue
-                if (cur[:3] == b'\xff\xd8\xff' and b'spionisto' not in cur):
+                # the mandatory headers
+                if cur[:3] == b'\xff\xd8\xff':
                     return self._receive_jpeg(s, cur)
                 chunk += cur
                 time.sleep(0.01)
@@ -357,6 +356,11 @@ class UsbCamWebServer:
             index = chunk.find(b'\xff\xd9')
             if index > -1:
                 arr.extend(chunk[:index+2])
+                if (
+                    b'spionisto' in arr or
+                    b'Content-Length' in arr
+                ):
+                    raise Exception('Bad jpeg data')
                 return arr
             arr.extend(chunk)
             chunk = s.recv(1024 * 64)
