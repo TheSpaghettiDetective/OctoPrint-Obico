@@ -273,8 +273,6 @@ class TheSpaghettiDetectivePlugin(
                     _logger.warning("auth_token is not validated. Not sending message to server...")
                     continue
 
-                data['printer_id'] = self.linked_printer['id']
-
                 error_stats.attempt('server')
 
                 if not self.ss or not self.ss.connected():
@@ -325,10 +323,6 @@ class TheSpaghettiDetectivePlugin(
                 msg = bson.loads(raw_data)
                 _logger.debug(
                     'received binary message ({} bytes)'.format(len(raw_data)))
-
-            if msg.get('printer_id'):
-                if self.linked_printer['id'] != msg['printer_id']:
-                    raise Exception('printer_id mismatch')
 
             need_status_boost = False
             for command in msg.get('commands', []):
