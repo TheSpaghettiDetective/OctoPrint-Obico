@@ -7,6 +7,7 @@ import time
 import sys
 import zlib
 from collections import deque
+import octoprint.server
 
 from .janus import JANUS_SERVER, JANUS_DATA_PORT, MAX_PAYLOAD_SIZE
 
@@ -39,7 +40,7 @@ class ClientConn:
                 # as deque manages that when maxlen is set
                 self.seen_refs.append(ack_ref)
 
-        ret = func(*(msg.get("args", [])))
+        ret = func(*(self.extract_args(msg)))
 
         if ack_ref:
             self.plugin.send_ws_msg_to_server(
@@ -68,6 +69,19 @@ class ClientConn:
 
     def close(self):
         self.data_channel_conn.close()
+
+
+    def extract_args(self, msg):
+        args = msg.get("args", [])
+        if 'jog' == msg['func']:
+            # invert the jogging if configured, since OctoPrint doesn't do it interally for us
+            axes = octoprint.server.printerProfileManager.get_current().get('axes', {})
+            for arg in args:
+                axis = arg.keys()[0] # Each arg should be a dict with a single entry
+                if axis in ['x', 'y', 'z'] and axes.get(axis, {}).get('inverted', False):
+                    arg[axis] = -arg[axis]
+
+        return args
 
 
 class DataChannelConn(object):
