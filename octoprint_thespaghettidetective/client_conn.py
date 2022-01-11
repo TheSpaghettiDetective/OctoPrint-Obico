@@ -77,7 +77,7 @@ class ClientConn:
             # invert the jogging if configured, since OctoPrint doesn't do it interally for us
             axes = octoprint.server.printerProfileManager.get_current().get('axes', {})
             for arg in args:
-                axis = arg.keys()[0] # Each arg should be a dict with a single entry
+                axis = list(arg.keys())[0] # Each arg should be a dict with a single entry
                 if axis in ['x', 'y', 'z'] and axes.get(axis, {}).get('inverted', False):
                     arg[axis] = -arg[axis]
 
