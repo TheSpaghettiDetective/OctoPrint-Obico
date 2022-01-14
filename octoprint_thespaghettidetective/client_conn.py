@@ -7,7 +7,6 @@ import time
 import sys
 import zlib
 from collections import deque
-import octoprint.server
 
 from .janus import JANUS_SERVER, JANUS_DATA_PORT, MAX_PAYLOAD_SIZE
 
@@ -75,7 +74,7 @@ class ClientConn:
         args = msg.get("args", [])
         if 'jog' == msg['func']:
             # invert the jogging if configured, since OctoPrint doesn't do it interally for us
-            axes = octoprint.server.printerProfileManager.get_current().get('axes', {})
+            axes = self.plugin._printer_profile_manager.get_current_or_default().get('axes', {})
             for arg in args:
                 axis = list(arg.keys())[0] # Each arg should be a dict with a single entry
                 if axis in ['x', 'y', 'z'] and axes.get(axis, {}).get('inverted', False):

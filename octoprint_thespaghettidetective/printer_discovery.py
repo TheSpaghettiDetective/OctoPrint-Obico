@@ -18,7 +18,6 @@ except ImportError:
         return "".join([random.choice(letters) for i in range(n)])
 
 import netaddr.ip
-import octoprint.server
 from octoprint.util.net import sanitize_address
 from octoprint.util.platform import (
     get_os as octoprint_get_os,
@@ -238,7 +237,7 @@ class PrinterDiscovery(object):
 
     def _collect_device_info(self):
         info = dict(**self.static_info)
-        info['printerprofile'] = get_printerprofile_name()[:253]
+        info['printerprofile'] = self.plugin._printer_profile_manager.get_current_or_default().get('name', '')[:253]
         info['machine_type'] = get_machine_type(
             self.plugin.octoprint_settings_updater)[:253]
         return info
@@ -285,14 +284,6 @@ def get_machine_type(
     try:
         meta = octoprint_settings_updater.printer_metadata or {}
         return meta.get('MACHINE_TYPE', '')
-    except Exception:
-        return ''
-
-
-def get_printerprofile_name():  # type: () -> str
-    try:
-        printerprofile = octoprint.server.printerProfileManager.get_current()
-        return printerprofile.get('name', '') if printerprofile else ''
     except Exception:
         return ''
 
