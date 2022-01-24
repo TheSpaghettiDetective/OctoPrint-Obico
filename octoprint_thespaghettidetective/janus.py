@@ -20,7 +20,6 @@ from .ws import WebSocketClient
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
-USE_EXTERNAL_JANUS = os.getenv('JANUS_SERVER', '').strip() != ''
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 JANUS_WS_PORT = 8188
 JANUS_DATA_PORT = 8009  # check streaming plugin config
@@ -37,14 +36,14 @@ class JanusConn:
         self.shutting_down = False
 
     def start(self):
-        if USE_EXTERNAL_JANUS:
-            # Maybe it's a dev simulator using janus container
-            _logger.warning('Using external Janus gateway. Not starting Janus.')
+
+        if os.getenv('JANUS_SERVER', '').strip() != '':
+            _logger.warning('Using an external Janus gateway. Not starting the built-in Janus gateway.')
             self.start_janus_ws()
             return
 
         if not pi_version():
-            _logger.warning('No external Janus gateway. Not on a Pi. Not starting Janus.')
+            _logger.warning('No external Janus gateway. Not on a Pi. Skipping Janus connection.')
             return
 
         def ensure_janus_config():
