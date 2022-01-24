@@ -37,10 +37,14 @@ class JanusConn:
         self.shutting_down = False
 
     def start(self):
-        if USE_EXTERNAL_JANUS or not pi_version():
+        if USE_EXTERNAL_JANUS:
             # Maybe it's a dev simulator using janus container
-            _logger.warning('Using external Janus gateway or not on a Pi. Not starting Janus.')
+            _logger.warning('Using external Janus gateway. Not starting Janus.')
             self.start_janus_ws()
+            return
+
+        if not pi_version():
+            _logger.warning('No external Janus gaetway. Not on a Pi. Not starting Janus.')
             return
 
         def ensure_janus_config():
