@@ -236,6 +236,10 @@ $(function () {
                     text =
                         '<p>The Premium Webcam Streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the Premium Streaming. <a href="https://www.thespaghettidetective.com/docs/warnings/compatibility-mode-excessive-cpu/">Learn more >>></a></p>';
                 }
+                if (alertMsg.cause === 'octolapse_compat_mode') {
+                    text =
+                        '<p>Octolapse plugin detected! The Spaghetti Detective has switched to "Premium (compability)" streaming mode.</p>';
+                }
             }
 
             if (text) {
