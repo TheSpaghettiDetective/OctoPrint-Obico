@@ -44,7 +44,7 @@ class JanusConn:
             return
 
         if not pi_version():
-            _logger.warning('No external Janus gaetway. Not on a Pi. Not starting Janus.')
+            _logger.warning('No external Janus gateway. Not on a Pi. Not starting Janus.')
             return
 
         def ensure_janus_config():
