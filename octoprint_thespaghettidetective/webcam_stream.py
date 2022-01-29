@@ -75,6 +75,15 @@ def cpu_watch_dog(watched_process, plugin, max, interval):
     watch_thread.start()
 
 
+def is_octolapse_enabled(plugin):
+    octolapse_plugin = plugin._plugin_manager.get_plugin_info('octolapse', True)
+    if octolapse_plugin is None:
+        # not installed or not enabled
+        return False
+
+    return octolapse_plugin.implementation._octolapse_settings.main_settings.is_octolapse_enabled
+
+
 class WebcamStreamer:
 
     def __init__(self, plugin, sentry):
@@ -114,6 +123,16 @@ class WebcamStreamer:
 
         try:
             compatible_mode = self.plugin._settings.get(["video_streaming_compatible_mode"])
+
+            if compatible_mode == 'auto':
+                try:
+                    octolapse_enabled = is_octolapse_enabled(self.plugin)
+                    if octolapse_enabled:
+                        _logger.warning('Octolapse is enabled. Switching to compat mode.')
+                        compatible_mode = 'always'
+                        alert_queue.add_alert({'level': 'warning', 'cause': 'octolapse_compat_mode'}, self.plugin)
+                except Exception:
+                    self.sentry.captureException(tags=get_tags())
 
             if compatible_mode == 'always':
                 self.ffmpeg_from_mjpeg()
