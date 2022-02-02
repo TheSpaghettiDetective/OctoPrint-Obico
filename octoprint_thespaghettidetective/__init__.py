@@ -75,6 +75,7 @@ class TheSpaghettiDetectivePlugin(
         self.janus = JanusConn(self)
         self.client_conn = ClientConn(self)
         self.discovery = None
+        self.event_q = queue.Queue()
 
     # ~~ SettingsPlugin mixin
 
@@ -136,23 +137,34 @@ class TheSpaghettiDetectivePlugin(
     # ~~ Eventhandler mixin
 
     def on_event(self, event, payload):
+        # we should never do blocking operations here (like calling sentry on error)
+        try:
+            self.event_q.put_nowait((event, payload))
+        except Exception:
+            _logger.exception('could not queue octoprint event')
+
+    def event_loop(self):
         global _print_event_tracker
 
-        self.boost_status_update()
+        while True:
+            try:
+                (event, payload) = self.event_q.get()
 
-        try:
-            if event == 'FirmwareData':
-                self.octoprint_settings_updater.update_firmware(payload)
-                self.post_update_to_server()
-            elif event == 'SettingsUpdated':
-                self.octoprint_settings_updater.update_settings()
-                self.post_update_to_server()
-            elif event.startswith("Print"):
-                event_payload = _print_event_tracker.on_event(self, event, payload)
-                if event_payload:
-                    self.post_update_to_server(data=event_payload)
-        except Exception as e:
-            self.sentry.captureException(tags=get_tags())
+                self.boost_status_update()
+
+                if event == 'FirmwareData':
+                    self.octoprint_settings_updater.update_firmware(payload)
+                    self.post_update_to_server()
+                elif event == 'SettingsUpdated':
+                    self.octoprint_settings_updater.update_settings()
+                    self.post_update_to_server()
+                elif event.startswith("Print") or event == "FilamentChangeReq":
+                    event_payload = _print_event_tracker.on_event(self, event, payload)
+                    if event_payload:
+                        self.post_update_to_server(data=event_payload)
+            except Exception:
+                self.sentry.captureException(tags=get_tags())
+
     # ~~Shutdown Plugin
 
     def on_shutdown(self):
@@ -178,6 +190,31 @@ class TheSpaghettiDetectivePlugin(
         main_thread = threading.Thread(target=self.main_loop)
         main_thread.daemon = True
         main_thread.start()
+
+    # -- gcode trackers (for notification)
+
+    def on_gcode_sent(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+        # never do blocking operations here
+
+        if gcode and "m600" == gcode.lower():
+            _logger.info('Detected FilamentChangeReq event ("{}")'.format((gcode, args, kwargs)))
+            self.event_q.put_nowait(("FilamentChangeReq", {}))
+
+    def on_gcode_received(self, comm_instance, line,  *args, **kwargs):
+        # never do blocking operations here
+
+        if line:
+            line_lower = line.lower()
+
+            if "m600" in line_lower or "fsensor_update" in line_lower:
+                _logger.info('Detected "FilamentChangeReq" event ("{}")'.format(line))
+                self.event_q.put_nowait(("FilamentChangeReq", {}))
+            else:
+                if "paused for user" in line_lower or "// action:paused" in line_lower:
+                    _logger.info('Detected PausedForUser event ("{}")'.format(line))
+                    self.event_q.put_nowait(("FilamentChangeReq", {"paused_for_user": True}))
+
+        return line
 
     # Private methods
 
@@ -234,6 +271,10 @@ class TheSpaghettiDetectivePlugin(
         message_to_server_thread = threading.Thread(target=self.message_to_server_loop)
         message_to_server_thread.daemon = True
         message_to_server_thread.start()
+
+        event_thread = threading.Thread(target=self.event_loop)
+        event_thread.daemon = True
+        event_thread.start()
 
         while True:
             try:
@@ -460,6 +501,8 @@ def __plugin_load__():
     global __plugin_hooks__
     __plugin_hooks__ = {
         "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.commander.track_gcode,
+        "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.on_gcode_sent,
+        "octoprint.comm.protocol.gcode.received": __plugin_implementation__.on_gcode_received,
         "octoprint.comm.protocol.scripts": (__plugin_implementation__.commander.script_hook, 100000),
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
     }

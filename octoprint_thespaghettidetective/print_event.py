@@ -13,12 +13,21 @@ class PrintEventTracker:
         self.current_print_ts = -1    # timestamp as print_ts coming from octoprint
         self.tsd_gcode_file_id = None
         self._file_metadata_cache = None
+        self._last_filament_change_req_ts = -1
 
     def on_event(self, plugin, event, payload):
         with self._mutex:
             if event == 'PrintStarted':
                 self.current_print_ts = int(time.time())
                 self._file_metadata_cache = None
+                self._last_filament_change_req_ts = -1
+
+        if event == 'FilamentChangeReq':
+            # silent event if it has been fired recently
+            if abs(time.time() - self._last_filament_change_req_ts) < 5 * 60:  # 5 minutes
+                return
+
+            self._last_filament_change_req_ts = time.time()
 
         data = self.octoprint_data(plugin)
         data['octoprint_event'] = {
@@ -32,6 +41,7 @@ class PrintEventTracker:
                 self.current_print_ts = -1
                 self.tsd_gcode_file_id = None
                 self._file_metadata_cache = None
+                self._last_filament_change_req_ts = -1
 
         return data
 
