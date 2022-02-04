@@ -23,6 +23,7 @@ from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
     get_tags, not_using_pi_camera, OctoPrintSettingsUpdater, server_request)
 from .lib.error_stats import error_stats
+from .lib import alert_queue
 from .print_event import PrintEventTracker
 from .janus import JanusConn
 from .webcam_stream import WebcamStreamer
@@ -76,6 +77,7 @@ class TheSpaghettiDetectivePlugin(
         self.client_conn = ClientConn(self)
         self.discovery = None
         self.event_q = queue.Queue()
+        self.restart_required = False
 
     # ~~ SettingsPlugin mixin
 
@@ -90,6 +92,14 @@ class TheSpaghettiDetectivePlugin(
             sentry_opt='out',
             video_streaming_compatible_mode='auto',
         )
+
+    def on_settings_save(self, data):
+        octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
+        self.set_restart_required()
+
+    def set_restart_required(self):
+        self.restart_required = True
+        alert_queue.add_alert({'level': 'warning', 'cause': 'restart_required'}, self)
 
     # ~~ AssetPlugin mixin
 

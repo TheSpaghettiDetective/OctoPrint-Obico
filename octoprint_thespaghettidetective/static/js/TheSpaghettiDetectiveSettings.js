@@ -27,6 +27,7 @@ $(function () {
             retrieveFromLocalStorage('disableTSDWizardAutoPopupUntil', 0) > new Date().getTime()
         );
         self.showDetailPage = ko.observable(false);
+        self.restartRequired = ko.observable(false);
         self.serverStatus = ko.mapping.fromJS({ is_connected: false, status_posted_to_server_ts: 0 });
         self.streaming = ko.mapping.fromJS({ is_pi_camera: false, premium_streaming: false, compat_streaming: false});
         self.linkedPrinter = ko.mapping.fromJS({ is_pro: false, id: null, name: null});
@@ -76,6 +77,7 @@ $(function () {
                 command: "get_plugin_status",
             })
             .done(function (data) {
+                self.restartRequired(data.restart_required);
                 ko.mapping.fromJS(data.server_status, self.serverStatus);
                 ko.mapping.fromJS(data.streaming_status, self.streaming);
                 ko.mapping.fromJS(data.error_stats, self.errorStats);
@@ -195,19 +197,23 @@ $(function () {
                     click: function (notice) {
                         saveToLocalStorage(ignoredItemPath, true);
                         notice.remove();
-                    }
+                    },
+                    addClass: "never_button"
                 },
                 {
                     text: "OK",
                     click: function (notice) {
                         notice.remove();
-                    }
+                    },
+                    addClass: "ok_button"
                 },
                 {
                     text: "Close",
                     addClass: "remove_button"
                 },
-            ]
+            ];
+
+            var hiddenButtons = ["remove_button", ];
 
             if (alertMsg.level === "error") {
                 buttons.unshift(
@@ -240,6 +246,10 @@ $(function () {
                     text =
                         '<p>Octolapse plugin detected! The Spaghetti Detective has switched to "Premium (compability)" streaming mode.</p>';
                 }
+                if (alertMsg.cause === "restart_required") {
+                    text = '<p></p><p>A restart is needed for changes to take effect.</p>';
+                    hiddenButtons.push("never_button");
+                }
             }
 
             if (text) {
@@ -256,10 +266,12 @@ $(function () {
                         history: false
                     },
                     before_open: function (notice) {
-                        notice
-                            .get()
-                            .find(".remove_button")
-                            .remove();
+                        hiddenButtons.forEach(function(className) {
+                            notice
+                                .get()
+                                .find("." + className)
+                                .remove();
+                        });
                     }
                 });
             }

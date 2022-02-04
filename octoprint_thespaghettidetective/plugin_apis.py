@@ -15,6 +15,7 @@ def get_api_commands():
 
 
 def verify_code(plugin, data):
+    configured_auth_token = plugin._settings.get(["auth_token"])
     resp = server_request('POST', '/api/v1/octo/verify/?code=' + data["code"], plugin)
     succeeded = resp.ok if resp is not None else None
     printer = None
@@ -22,6 +23,9 @@ def verify_code(plugin, data):
         printer = resp.json()['printer']
         plugin._settings.set(["auth_token"], printer['auth_token'], force=True)
         plugin._settings.save(force=True)
+        if configured_auth_token:
+            plugin.set_restart_required()
+
     return {'succeeded': succeeded, 'printer': printer}
 
 
@@ -33,6 +37,7 @@ def on_api_command(plugin, command, data):
 
         if command == "get_plugin_status":
             results = dict(
+                restart_required=plugin.restart_required,
                 server_status=dict(
                     is_connected=plugin.ss and plugin.ss.connected(),
                     status_posted_to_server_ts=plugin.status_posted_to_server_ts,
@@ -57,6 +62,7 @@ def on_api_command(plugin, command, data):
         if command == "toggle_sentry_opt":
             plugin._settings.set(["sentry_opt"], 'out' if plugin._settings.get(["sentry_opt"]) == 'in' else 'in', force=True)
             plugin._settings.save(force=True)
+            plugin.set_restart_required()
 
         if command == "test_server_connection":
             resp = plugin.tsd_api_status()
