@@ -170,7 +170,10 @@ class TheSpaghettiDetectivePlugin(
                 elif event == 'SettingsUpdated':
                     self.octoprint_settings_updater.update_settings()
                     self.post_update_to_server()
-                elif event.startswith("Print") or event == "FilamentChange":
+                elif event.startswith("Print") or event in (
+                    'FilamentChange',
+                    'plugin_pi_support_throttle_state',
+                ):
                     event_payload = _print_event_tracker.on_event(self, event, payload)
                     if event_payload:
                         self.post_update_to_server(data=event_payload)
