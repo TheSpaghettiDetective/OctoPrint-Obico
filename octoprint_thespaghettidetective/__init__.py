@@ -60,6 +60,7 @@ class TheSpaghettiDetectivePlugin(
         octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
+        self.shutting_down = False
         self.ss = None
         self.status_posted_to_server_ts = 0
         self.message_queue_to_server = queue.Queue(maxsize=1000)
@@ -149,14 +150,15 @@ class TheSpaghettiDetectivePlugin(
     def on_event(self, event, payload):
         # we should never do blocking operations here (like calling sentry on error)
         try:
-            self.event_q.put_nowait((event, payload))
+            if self.shutting_down is False:
+                self.event_q.put_nowait((event, payload))
         except Exception:
             _logger.exception('could not queue octoprint event')
 
     def event_loop(self):
         global _print_event_tracker
 
-        while True:
+        while self.shutting_down is False:
             try:
                 (event, payload) = self.event_q.get()
 
@@ -172,12 +174,14 @@ class TheSpaghettiDetectivePlugin(
                     event_payload = _print_event_tracker.on_event(self, event, payload)
                     if event_payload:
                         self.post_update_to_server(data=event_payload)
+
             except Exception:
                 self.sentry.captureException(tags=get_tags())
 
     # ~~Shutdown Plugin
 
     def on_shutdown(self):
+        self.shutting_down = True
         if self.ss is not None:
             self.ss.close()
         if self.janus:
@@ -278,7 +282,7 @@ class TheSpaghettiDetectivePlugin(
         event_thread.daemon = True
         event_thread.start()
 
-        while True:
+        while self.shutting_down is False:
             try:
                 interval_in_seconds = POST_STATUS_INTERVAL_SECONDS
                 if self.status_update_booster > 0:
@@ -304,7 +308,7 @@ class TheSpaghettiDetectivePlugin(
                 self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
 
         server_ws_backoff = ExpoBackoff(300)
-        while True:
+        while self.shutting_down is False:
             try:
                 (data, as_binary) = self.message_queue_to_server.get()
 
@@ -425,7 +429,7 @@ class TheSpaghettiDetectivePlugin(
             self.sentry.captureException(tags=get_tags())
 
     def status_update_to_client_loop(self):
-        while True:
+        while self.shutting_down is False:
             interval = 0.75 if self.status_update_booster > 0 else 2
             time.sleep(interval)
             self.post_printer_status_to_client()
