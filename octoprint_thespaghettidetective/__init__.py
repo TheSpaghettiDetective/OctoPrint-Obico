@@ -294,9 +294,10 @@ class TheSpaghettiDetectivePlugin(
                 if self.status_posted_to_server_ts < time.time() - interval_in_seconds:
                     self.post_update_to_server()
 
-                time.sleep(1)
             except Exception as e:
                 self.sentry.captureException(tags=get_tags())
+
+            time.sleep(1)
 
     def message_to_server_loop(self):
 
