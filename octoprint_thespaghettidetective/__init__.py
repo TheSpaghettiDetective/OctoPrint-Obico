@@ -76,6 +76,11 @@ class TheSpaghettiDetectivePlugin(
         self.client_conn = ClientConn(self)
         self.discovery = None
 
+    # ~~ Custom event registration
+
+    def register_custom_events(*args, **kwargs):
+      return ["start_print", "pause_print", "cancel_print", "resume_print"]
+
     # ~~ SettingsPlugin mixin
 
     def get_settings_defaults(self):
@@ -332,15 +337,19 @@ class TheSpaghettiDetectivePlugin(
                         self._printer_profile_manager.get_current_or_default(),
                         **command.get('args'))
                     self._printer.pause_print()
+                    self._event_bus.fire(octoprint.events.Events.PLUGIN_THESPAGHETTIDETECTIVE_PAUSE_PRINT, {})
 
                 if command["cmd"] == 'cancel':
                     self._printer.cancel_print()
+                    self._event_bus.fire(octoprint.events.Events.PLUGIN_THESPAGHETTIDETECTIVE_CANCEL_PRINT, {})
 
                 if command["cmd"] == 'resume':
                     self._printer.resume_print()
+                    self._event_bus.fire(octoprint.events.Events.PLUGIN_THESPAGHETTIDETECTIVE_RESUME_PRINT, {})
 
                 if command["cmd"] == 'print':
                     self.start_print(**command.get('args'))
+                    self._event_bus.fire(octoprint.events.Events.PLUGIN_THESPAGHETTIDETECTIVE_START_PRINT, {})
 
             if msg.get('passthru'):
                 self.client_conn.on_message_to_plugin(msg.get('passthru'))
@@ -462,4 +471,5 @@ def __plugin_load__():
         "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.commander.track_gcode,
         "octoprint.comm.protocol.scripts": (__plugin_implementation__.commander.script_hook, 100000),
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
+        "octoprint.events.register_custom_events": __plugin_implementation__.register_custom_events,
     }
