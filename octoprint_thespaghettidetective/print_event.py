@@ -13,29 +13,12 @@ class PrintEventTracker:
         self.current_print_ts = -1    # timestamp as print_ts coming from octoprint
         self.tsd_gcode_file_id = None
         self._file_metadata_cache = None
-        self._last_user_interaction_req_ts = -1
-        self._user_interaction_required = False
 
     def on_event(self, plugin, event, payload):
         with self._mutex:
             if event == 'PrintStarted':
                 self.current_print_ts = int(time.time())
                 self._file_metadata_cache = None
-                self._last_user_interaction_req_ts = -1
-                self._user_interaction_required = False
-
-        if event == 'FilamentChange':
-            self._user_interaction_required = True
-
-            # silent event if it has been fired recently
-            if abs(time.time() - self._last_user_interaction_req_ts) < 5 * 60:  # 5 minutes
-                return
-
-            self._last_user_interaction_req_ts = time.time()
-
-        elif event not in ('PrintPaused', 'PrinterStateChanged'):
-            self._user_interaction_required = False
-            self._last_user_interaction_req_ts = -1
 
         data = self.octoprint_data(plugin)
         data['octoprint_event'] = {
@@ -49,8 +32,6 @@ class PrintEventTracker:
                 self.current_print_ts = -1
                 self.tsd_gcode_file_id = None
                 self._file_metadata_cache = None
-                self._last_user_interaction_req_ts = -1
-                self._user_interaction_required = False
 
         return data
 
@@ -66,7 +47,6 @@ class PrintEventTracker:
 
         data['octoprint_data']['temperatures'] = plugin._printer.get_current_temperatures()
         data['octoprint_data']['_ts'] = int(time.time())
-        data['octoprint_data']['user_interaction_required'] = self._user_interaction_required
 
         if status_only:
             if self._file_metadata_cache:
