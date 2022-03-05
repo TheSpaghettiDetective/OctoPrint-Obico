@@ -79,7 +79,7 @@ class TheSpaghettiDetectivePlugin(
     # ~~ Custom event registration
 
     def register_custom_events(*args, **kwargs):
-      return ["start_print", "pause_print", "cancel_print", "resume_print"]
+      return ["command"]
 
     # ~~ SettingsPlugin mixin
 
@@ -331,25 +331,23 @@ class TheSpaghettiDetectivePlugin(
 
             need_status_boost = False
             for command in msg.get('commands', []):
+                self._event_bus.fire(octoprint.events.Events.PLUGIN_THESPAGHETTIDETECTIVE_COMMAND, command)
+
                 if command["cmd"] == "pause":
                     self.commander.prepare_to_pause(
                         self._printer,
                         self._printer_profile_manager.get_current_or_default(),
                         **command.get('args'))
                     self._printer.pause_print()
-                    self._event_bus.fire(octoprint.events.Events.PLUGIN_THESPAGHETTIDETECTIVE_PAUSE_PRINT, {})
 
                 if command["cmd"] == 'cancel':
                     self._printer.cancel_print()
-                    self._event_bus.fire(octoprint.events.Events.PLUGIN_THESPAGHETTIDETECTIVE_CANCEL_PRINT, {})
 
                 if command["cmd"] == 'resume':
                     self._printer.resume_print()
-                    self._event_bus.fire(octoprint.events.Events.PLUGIN_THESPAGHETTIDETECTIVE_RESUME_PRINT, {})
 
                 if command["cmd"] == 'print':
                     self.start_print(**command.get('args'))
-                    self._event_bus.fire(octoprint.events.Events.PLUGIN_THESPAGHETTIDETECTIVE_START_PRINT, {})
 
             if msg.get('passthru'):
                 self.client_conn.on_message_to_plugin(msg.get('passthru'))
