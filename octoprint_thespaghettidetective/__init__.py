@@ -35,6 +35,7 @@ from . import plugin_apis
 from .client_conn import ClientConn
 import zlib
 from .printer_discovery import PrinterDiscovery
+from .gcode_hooks import GCodeHooks
 
 import octoprint.plugin
 
@@ -68,6 +69,7 @@ class TheSpaghettiDetectivePlugin(
         self.status_update_lock = threading.RLock()
         self.remote_status = RemoteStatus()
         self.pause_resume_sequence = PauseResumeGCodeSequence()
+        self.gcode_hooks = GCodeHooks(self)
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_event_tracker)
@@ -475,7 +477,8 @@ def __plugin_load__():
 
     global __plugin_hooks__
     __plugin_hooks__ = {
-        "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.pause_resume_sequence.track_gcode,
+        "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.gcode_hooks.queuing_gcode,
+        "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_hooks.received_gcode,
         "octoprint.comm.protocol.scripts": (__plugin_implementation__.pause_resume_sequence.script_hook, 100000),
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
     }
