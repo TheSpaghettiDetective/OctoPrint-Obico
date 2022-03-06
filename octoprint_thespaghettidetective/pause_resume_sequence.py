@@ -5,7 +5,7 @@ import re
 _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 
-class Commander:
+class PauseResumeGCodeSequence:
 
     def __init__(self):
         self.mutex = threading.RLock()

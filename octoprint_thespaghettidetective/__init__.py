@@ -18,7 +18,7 @@ except ImportError:
     import Queue as queue
 
 from .ws import WebSocketClient, WebSocketConnectionException
-from .commander import Commander
+from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
     get_tags, not_using_pi_camera, OctoPrintSettingsUpdater, server_request)
@@ -67,7 +67,7 @@ class TheSpaghettiDetectivePlugin(
         self.status_update_booster = 0    # update status at higher frequency when self.status_update_booster > 0
         self.status_update_lock = threading.RLock()
         self.remote_status = RemoteStatus()
-        self.commander = Commander()
+        self.pause_resume_sequence = PauseResumeGCodeSequence()
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_event_tracker)
@@ -343,7 +343,7 @@ class TheSpaghettiDetectivePlugin(
             need_status_boost = False
             for command in msg.get('commands', []):
                 if command["cmd"] == "pause":
-                    self.commander.prepare_to_pause(
+                    self.pause_resume_sequence.prepare_to_pause(
                         self._printer,
                         self._printer_profile_manager.get_current_or_default(),
                         **command.get('args'))
@@ -475,7 +475,7 @@ def __plugin_load__():
 
     global __plugin_hooks__
     __plugin_hooks__ = {
-        "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.commander.track_gcode,
-        "octoprint.comm.protocol.scripts": (__plugin_implementation__.commander.script_hook, 100000),
+        "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.pause_resume_sequence.track_gcode,
+        "octoprint.comm.protocol.scripts": (__plugin_implementation__.pause_resume_sequence.script_hook, 100000),
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
     }
