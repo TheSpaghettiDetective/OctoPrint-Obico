@@ -61,6 +61,8 @@ class TheSpaghettiDetectivePlugin(
         octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
+        global _print_event_tracker
+
         self.shutting_down = False
         self.ss = None
         self.status_posted_to_server_ts = 0
@@ -69,7 +71,7 @@ class TheSpaghettiDetectivePlugin(
         self.status_update_lock = threading.RLock()
         self.remote_status = RemoteStatus()
         self.pause_resume_sequence = PauseResumeGCodeSequence()
-        self.gcode_hooks = GCodeHooks(self)
+        self.gcode_hooks = GCodeHooks(self, _print_event_tracker)
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_event_tracker)
@@ -161,7 +163,6 @@ class TheSpaghettiDetectivePlugin(
                 self.octoprint_settings_updater.update_settings()
                 self.post_update_to_server()
             elif event.startswith("Print") or event in (
-                'FilamentChange',
                 'plugin_pi_support_throttle_state',
             ):
                 event_payload = _print_event_tracker.on_event(self, event, payload)
