@@ -1,8 +1,11 @@
 import flask
+import logging
 
 from .utils import server_request
 from .lib.error_stats import error_stats
 from .lib import alert_queue
+
+_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 
 def get_api_commands():
     return dict(
@@ -30,7 +33,7 @@ def verify_code(plugin, data):
 
 
 def on_api_command(plugin, command, data):
-    print('API called', command)
+    _logger.debug('API called: {}'.format(command))
     try:
         if command == "verify_code":
             plugin._settings.set(["endpoint_prefix"], data["endpoint_prefix"], force=True)
