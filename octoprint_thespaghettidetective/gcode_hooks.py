@@ -35,9 +35,9 @@ class GCodeHooks:
             lineLower = line.lower()
             if "m600" in lineLower or "fsensor_update" in lineLower or "paused for user" in lineLower or "action:paused" in lineLower:
                 filament_change_event = True
-        
+
         if filament_change_event:
-            self.num_gcode_until_next_filament_change = 50 # 50 gcode (sent+received) before we can send another filament change event
+            self.num_gcode_until_next_filament_change = 50  # 50 gcode (sent+received) before we can send another filament change event
             event_payload = self._print_event_tracker.on_event(self.plugin, 'FilamentChange', None)
             if event_payload:
-                    self.plugin.post_update_to_server(data=event_payload)
+                self.plugin.post_update_to_server(data=event_payload)
