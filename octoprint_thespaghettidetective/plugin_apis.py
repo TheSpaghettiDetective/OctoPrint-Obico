@@ -24,12 +24,13 @@ def verify_code(plugin, data):
         plugin._settings.set(["auth_token"], printer['auth_token'], force=True)
         plugin._settings.save(force=True)
         if configured_auth_token:
-            plugin.set_restart_required()
+            alert_queue.add_alert({'level': 'warning', 'cause': 'restart_required'}, self)
 
     return {'succeeded': succeeded, 'printer': printer}
 
 
 def on_api_command(plugin, command, data):
+    print('API called', command)
     try:
         if command == "verify_code":
             plugin._settings.set(["endpoint_prefix"], data["endpoint_prefix"], force=True)
@@ -37,7 +38,6 @@ def on_api_command(plugin, command, data):
 
         if command == "get_plugin_status":
             results = dict(
-                restart_required=plugin.restart_required,
                 server_status=dict(
                     is_connected=plugin.ss and plugin.ss.connected(),
                     status_posted_to_server_ts=plugin.status_posted_to_server_ts,
@@ -62,7 +62,6 @@ def on_api_command(plugin, command, data):
         if command == "toggle_sentry_opt":
             plugin._settings.set(["sentry_opt"], 'out' if plugin._settings.get(["sentry_opt"]) == 'in' else 'in', force=True)
             plugin._settings.save(force=True)
-            plugin.set_restart_required()
 
         if command == "test_server_connection":
             resp = plugin.tsd_api_status()

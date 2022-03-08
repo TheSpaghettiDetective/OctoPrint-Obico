@@ -81,7 +81,6 @@ class TheSpaghettiDetectivePlugin(
         self.janus = JanusConn(self)
         self.client_conn = ClientConn(self)
         self.discovery = None
-        self.restart_required = False
 
     # ~~ SettingsPlugin mixin
 
@@ -99,10 +98,6 @@ class TheSpaghettiDetectivePlugin(
 
     def on_settings_save(self, data):
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
-        self.set_restart_required()
-
-    def set_restart_required(self):
-        self.restart_required = True
         alert_queue.add_alert({'level': 'warning', 'cause': 'restart_required'}, self)
 
     # ~~ AssetPlugin mixin

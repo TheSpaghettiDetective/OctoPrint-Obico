@@ -27,7 +27,6 @@ $(function () {
             retrieveFromLocalStorage('disableTSDWizardAutoPopupUntil', 0) > new Date().getTime()
         );
         self.showDetailPage = ko.observable(false);
-        self.restartRequired = ko.observable(false);
         self.serverStatus = ko.mapping.fromJS({ is_connected: false, status_posted_to_server_ts: 0 });
         self.streaming = ko.mapping.fromJS({ is_pi_camera: false, premium_streaming: false, compat_streaming: false});
         self.linkedPrinter = ko.mapping.fromJS({ is_pro: false, id: null, name: null});
@@ -77,7 +76,6 @@ $(function () {
                 command: "get_plugin_status",
             })
             .done(function (data) {
-                self.restartRequired(data.restart_required);
                 ko.mapping.fromJS(data.server_status, self.serverStatus);
                 ko.mapping.fromJS(data.streaming_status, self.streaming);
                 ko.mapping.fromJS(data.error_stats, self.errorStats);
@@ -166,7 +164,6 @@ $(function () {
             }
 
             if (data.printer_autolinked) {
-                console.log("Printer autolinked");
                 self.fetchPluginStatus();
                 self.thespaghettidetectiveWizardViewModel.toStep(5);
                 self.thespaghettidetectiveWizardViewModel.startAutoCloseTimout();
