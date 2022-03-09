@@ -27,7 +27,7 @@ def verify_code(plugin, data):
         plugin._settings.set(["auth_token"], printer['auth_token'], force=True)
         plugin._settings.save(force=True)
         if configured_auth_token:
-            alert_queue.add_alert({'level': 'warning', 'cause': 'restart_required'}, self)
+            alert_queue.add_alert({'level': 'warning', 'cause': 'restart_required'}, plugin)
 
     return {'succeeded': succeeded, 'printer': printer}
 
