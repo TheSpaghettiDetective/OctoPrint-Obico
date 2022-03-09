@@ -82,6 +82,11 @@ class TheSpaghettiDetectivePlugin(
         self.client_conn = ClientConn(self)
         self.discovery = None
 
+    # ~~ Custom event registration
+
+    def register_custom_events(*args, **kwargs):
+      return ["command"]
+
     # ~~ SettingsPlugin mixin
 
     def get_settings_defaults(self):
@@ -340,6 +345,8 @@ class TheSpaghettiDetectivePlugin(
 
             need_status_boost = False
             for command in msg.get('commands', []):
+                self._event_bus.fire(octoprint.events.Events.PLUGIN_THESPAGHETTIDETECTIVE_COMMAND, command)
+
                 if command["cmd"] == "pause":
                     self.pause_resume_sequence.prepare_to_pause(
                         self._printer,
@@ -477,4 +484,5 @@ def __plugin_load__():
         "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_hooks.received_gcode,
         "octoprint.comm.protocol.scripts": (__plugin_implementation__.pause_resume_sequence.script_hook, 100000),
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
+        "octoprint.events.register_custom_events": __plugin_implementation__.register_custom_events,
     }
