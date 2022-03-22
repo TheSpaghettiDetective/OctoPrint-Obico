@@ -30,6 +30,7 @@ from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster
 from .file_download import FileDownloader
+from .file_delete import FileDeleter
 from .tunnel import LocalTunnel
 from . import plugin_apis
 from .client_conn import ClientConn
@@ -75,6 +76,7 @@ class TheSpaghettiDetectivePlugin(
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_event_tracker)
+        self.file_deleter = FileDeleter(self, _print_event_tracker)
         self.webcam_streamer = None
         self.linked_printer = DEFAULT_LINKED_PRINTER
         self.local_tunnel = None

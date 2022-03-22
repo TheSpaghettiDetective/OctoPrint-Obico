@@ -4,30 +4,11 @@ services:
   octoprint:
     hostname: octoprint
     restart: unless-stopped
-    build:
-        context: .
-        dockerfile: Dockerfile.python2
+    image: octoprint/octoprint
     ports:
       - '5000:5000'
     volumes:
-     - ./:/app
-    environment:
-        DEBUG: 'True'
-        JANUS_SERVER: 'janus'
-    depends_on:
-      - janus
-    command: bash -c "sleep 11111111111"
-
-  octoprint_python3:
-    hostname: octoprin_python3
-    restart: unless-stopped
-    build:
-        context: .
-        dockerfile: Dockerfile.python3
-    ports:
-      - '5001:5000'
-    volumes:
-     - ./:/app
+     - ./octoprint_thespaghettidetective:/octoprint/plugins/lib/python3.8/site-packages/octoprint_thespaghettidetective
     environment:
         DEBUG: 'True'
         JANUS_SERVER: 'janus'
@@ -57,3 +38,8 @@ services:
     restart: unless-stopped
     image: thespaghettidetective/ffmpeg:ubuntu
     command: bash -c "ffmpeg -f concat -re -i list.txt -c copy -bsf dump_extra -an -f rtp rtp://janus:8004?pkt_size=1300"
+
+networks: 
+  default: 
+    external: 
+      name: tsd_overlay
