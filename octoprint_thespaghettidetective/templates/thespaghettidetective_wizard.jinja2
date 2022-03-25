@@ -24,17 +24,6 @@
         <h1 class="tsd-title">SPAGHETTI DETECTIVE</h1>
       </div>
       <p><strong>The Spaghetti Detective</strong> is an <a href="https://github.com/TheSpaghettiDetective">open source project</a> that lets you access and monitor OctoPrint <strong>anywhere, on your phone</strong>. <br>It also uses AI (Deep Learning) to detect print failures in real time and send you alerts.</p>
-      <div class="tsd-text-with-checkbox" data-bind="click: toggleCheck">
-        <div class="tsd-checkbox-wrapper" data-bind="css: {checked: userAgreementChecked}"></div>
-        By proceeding you agree to our <a href="https://thespaghettidetective.com/privacy.html">Privacy Policy</a>
-          and the <a href="https://thespaghettidetective.com/terms.html">Terms of Use</a>
-      </div>
-      <div class="tsd-get-started text-center">
-        <button class="tsd-button tsd-setup-wizard" id="next" data-bind="click: nextStep, enable: userAgreementChecked, visible: step() === 1">Setup Plugin</button>
-        <div class="text-center">
-          <div>Complete the setup wizard to link OctoPrint to your account</div>
-        </div>
-      </div>
       <div class="tsd-features">
         <div class="tsd-features-blocks">
           <div class="tsd-feature" data-number="1">
@@ -66,6 +55,31 @@
             </div>
           </div>
         </div>
+      </div>
+      <div class="tsd-get-started">
+        <div>Which The Spaghetti Detective server do you want to link OctoPrint to?</div>
+        <div class="control-group">
+            <div class="controls">
+                <label class="radio">
+                    <input type="radio" name="serverAddressRadioGroup" value="cloud" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"><a href="https://app.thespaghettidetective.com/">The Spaghetti Detective Cloud</a></input>
+                </label>
+                <label class="radio">
+                    <div class="tsd-small">Proudly maintained by <a href="https://www.thespaghettidetective.com/team.html">The Detective Team</a>. Free plan for 1 printer. <a href="https://app.thespaghettidetective.com/ent_pub/pricing/">Pro plan starts from $4/month</a>.</div>
+                </label>
+                <label class="radio">
+                    <input type="radio" name="serverAddressRadioGroup" value="self-hosted" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode">A self-hosted The Spaghetti Detective server</input>
+                </label>
+                <div class="radio">
+                    <input id="endpoint_prefix-input" type="text" class="span8 endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix"></input>
+                </div>
+            </div>
+        </div>
+        <button class="tsd-button" id="next" data-bind="click: nextStep, enable: userAgreementChecked, visible: step() === 1">Setup Plugin</button>
+      </div>
+      <div class="tsd-text-with-checkbox" data-bind="click: toggleCheck">
+        <div class="tsd-checkbox-wrapper" data-bind="css: {checked: userAgreementChecked}"></div>
+        By proceeding you agree to our <a href="https://thespaghettidetective.com/privacy.html">Privacy Policy</a>
+          and the <a href="https://thespaghettidetective.com/terms.html">Terms of Use</a>
       </div>
     </div>
   </div>
@@ -214,23 +228,6 @@
         <div class="tsd-illustration">
           <img src="plugin/thespaghettidetective/static/img/phone-verification-illustration.svg" class="tsd-image" alt="">
           <img src="plugin/thespaghettidetective/static/img/arrow-left-curved.svg" class="tsd-arrow" alt="">
-        </div>
-      </div>
-      <div class="tsd-collapsable">
-        <h4 class="tsd-collapsable-title">
-          Advanced Server Configuration
-        </h4>
-        <div class="tsd-collapsable-content">
-            <form class="form-horizontal">
-              <div class="control-group">
-                  <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
-                  <label class="control-label">{{ _('Server Address') }}</label>
-                  <div class="controls">
-                      <input id="endpoint_prefix-input" type="text" class="span8 endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix"></input>
-                      <button class="btn" type="button" data-bind="click: resetEndpointPrefix">Restore Default</button>
-                  </div>
-              </div>
-            </form>
         </div>
       </div>
       <div class="tsd-collapsable">
