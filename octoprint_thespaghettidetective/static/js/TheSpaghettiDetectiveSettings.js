@@ -127,6 +127,7 @@ $(function () {
 
         self.resetEndpointPrefix = function () {
             self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix("https://app.thespaghettidetective.com");
+            return true;
         };
 
         self.selectPage = function(page) {

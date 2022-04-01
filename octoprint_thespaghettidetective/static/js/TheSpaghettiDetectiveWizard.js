@@ -30,6 +30,11 @@ $(function () {
         self.printerNameTimeoutId = ko.observable(null);
         self.currentFeatureSlide = ko.observable(1);
 
+        self.isServerInvalid = ko.observable(false);
+
+        self.checkSeverValidity = (url) => {
+            return /^(http|https):\/\/[^ "]+$/.test(url);
+        }
 
         // Handle verification code typing:
 
@@ -126,6 +131,18 @@ $(function () {
 
 
         self.nextStep = function() {
+            if (self.step() === 1) {
+                if (self.settingsViewModel.settings.plugins.thespaghettidetective.server_type() === 'self-hosted') {
+                    let url = self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()
+                    if (self.checkSeverValidity(url)) {
+                        self.isServerInvalid(false);
+                    } else {
+                        self.isServerInvalid(true);
+                        return;
+                    }
+                }
+            }
+
             self.toStep(self.step() + 1);
 
             if (self.step() === 4) {
@@ -194,6 +211,7 @@ $(function () {
 
         self.resetEndpointPrefix = function () {
             self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix("https://app.thespaghettidetective.com");
+            return true;
         };
 
         self.reset = function() {

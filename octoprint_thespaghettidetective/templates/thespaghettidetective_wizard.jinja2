@@ -59,22 +59,44 @@
       <div class="tsd-get-started">
         <div>Which The Spaghetti Detective server do you want to link OctoPrint to?</div>
         <div class="control-group">
-            <div class="controls">
-                <label class="radio">
-                    <input type="radio" name="serverAddressRadioGroup" value="cloud" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"><a href="https://app.thespaghettidetective.com/">The Spaghetti Detective Cloud</a></input>
-                </label>
-                <label class="radio">
-                    <div class="tsd-small">Proudly maintained by <a href="https://www.thespaghettidetective.com/team.html">The Detective Team</a>. Free plan for 1 printer. <a href="https://app.thespaghettidetective.com/ent_pub/pricing/">Pro plan starts from $4/month</a>.</div>
-                </label>
-                <label class="radio">
-                    <input type="radio" name="serverAddressRadioGroup" value="self-hosted" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode">A self-hosted The Spaghetti Detective server</input>
-                </label>
-                <div class="radio">
-                    <input id="endpoint_prefix-input" type="text" class="span8 endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix"></input>
-                </div>
+          <div class="controls">
+              <label class="radio">
+                <input
+                  type="radio"
+                  name="serverAddressRadioGroup"
+                  value="cloud"
+                  data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.server_type, click: resetEndpointPrefix"
+                >
+                  <a href="https://app.thespaghettidetective.com/">The Spaghetti Detective Cloud</a>
+                </input>
+              </label>
+              <div class="radio tsd-text-muted" style="margin-bottom: 6px;">Proudly maintained by <a href="https://www.thespaghettidetective.com/team.html">The Detective Team</a>. Free plan for 1 printer. <a href="https://app.thespaghettidetective.com/ent_pub/pricing/">Pro plan starts from $4/month</a>.</div>
+
+              <label class="radio">
+                <input
+                  type="radio"
+                  name="serverAddressRadioGroup"
+                  value="self-hosted"
+                  data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.server_type"
+                >
+                  A self-hosted The Spaghetti Detective server
+                </input>
+              </label>
+              <div class="radio">
+                <input
+                  id="endpoint_prefix-input"
+                  type="text"
+                  class="endpoint-prefix"
+                  data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix, enable: settingsViewModel.settings.plugins.thespaghettidetective.server_type() === 'self-hosted'"
+                  style="width: 100%"
+                ></input>
+                <p class="text-error" data-bind="visible: isServerInvalid()">Invalid server address</p>
+              </div>
             </div>
         </div>
-        <button class="tsd-button" id="next" data-bind="click: nextStep, enable: userAgreementChecked, visible: step() === 1">Setup Plugin</button>
+        <div class="text-center">
+          <button class="tsd-button" id="next" data-bind="click: nextStep, enable: userAgreementChecked, visible: step() === 1">Setup Plugin</button>
+        </div>
       </div>
       <div class="tsd-text-with-checkbox" data-bind="click: toggleCheck">
         <div class="tsd-checkbox-wrapper" data-bind="css: {checked: userAgreementChecked}"></div>

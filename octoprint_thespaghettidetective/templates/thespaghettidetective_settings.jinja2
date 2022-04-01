@@ -134,16 +134,40 @@
         <section>
           <h1 class="tsd-section-title">The Spaghetti Detective Server</h1>
           <div class="tsd-section-content">
-            <form class="form-horizontal">
-              <div class="control-group">
-                  <p>If you feel adventurous, head to <a href="https://github.com/TheSpaghettiDetective/TheSpaghettiDetective">our source code</a> and set up your own server. Then enter your Server Address below:</p>
-                  <label class="control-label">{{ _('Server Address') }}</label>
-                  <div class="controls">
-                      <input type="text" class="span8 tsd-endpoint-prefix" data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix"></input>
-                      <button class="btn" type="button" data-bind="click: resetEndpointPrefix">Restore Default</button>
+            <div class="control-group">
+              <div class="controls">
+                  <label class="radio">
+                    <input
+                      type="radio"
+                      name="serverAddressRadioGroup2"
+                      value="cloud"
+                      data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.server_type, click: resetEndpointPrefix"
+                    >
+                      <a href="https://app.thespaghettidetective.com/">The Spaghetti Detective Cloud</a>
+                    </input>
+                  </label>
+                  <div class="radio tsd-text-muted" style="margin-bottom: 6px;">Proudly maintained by <a href="https://www.thespaghettidetective.com/team.html">The Detective Team</a>. Free plan for 1 printer. <a href="https://app.thespaghettidetective.com/ent_pub/pricing/">Pro plan starts from $4/month</a>.</div>
+
+                  <label class="radio">
+                    <input
+                      type="radio"
+                      name="serverAddressRadioGroup2"
+                      value="self-hosted"
+                      data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.server_type"
+                    >
+                      A self-hosted The Spaghetti Detective server
+                    </input>
+                  </label>
+                  <div class="radio">
+                    <input
+                      type="text"
+                      class="endpoint-prefix"
+                      data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix, enable: settingsViewModel.settings.plugins.thespaghettidetective.server_type() === 'self-hosted'"
+                      style="width: 100%"
+                    ></input>
                   </div>
-              </div>
-            </form>
+                </div>
+            </div>
           </div>
         </section>
         <section>
