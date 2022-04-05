@@ -47,7 +47,6 @@ plugins:
     thespaghettidetective_beta:
         auth_token: 7365a421913674d3299b
         endpoint_prefix: http://app.stg.thespaghettidetective.com
-        server_type: cloud
         webrtc_alpha: true
     tracking:
         enabled: false

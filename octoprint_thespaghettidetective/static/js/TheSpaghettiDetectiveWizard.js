@@ -17,6 +17,11 @@ $(function () {
     function ThespaghettidetectiveWizardViewModel(parameters) {
         var self = this;
 
+        const defaultServerAddress = 'https://app.thespaghettidetective.com';
+        function getServerType(serverAddress) {
+            return serverAddress == defaultServerAddress ? 'cloud' : 'self-hosted';
+        }
+
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
@@ -29,6 +34,12 @@ $(function () {
         self.printerName = ko.observable('');
         self.printerNameTimeoutId = ko.observable(null);
         self.currentFeatureSlide = ko.observable(1);
+
+        self.serverType = ko.observable('cloud');
+
+        self.onStartupComplete = function () {
+            self.serverType(getServerType(self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()));
+        };
 
         self.isServerInvalid = ko.observable(false);
 
@@ -132,8 +143,9 @@ $(function () {
 
         self.nextStep = function() {
             if (self.step() === 1) {
-                if (self.settingsViewModel.settings.plugins.thespaghettidetective.server_type() === 'self-hosted') {
-                    let url = self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()
+                let url = self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()
+
+                if (self.serverType() === 'self-hosted') {
                     if (self.checkSeverValidity(url)) {
                         self.isServerInvalid(false);
                     } else {
@@ -141,6 +153,12 @@ $(function () {
                         return;
                     }
                 }
+
+                self.serverType(getServerType(url))
+                apiCommand({
+                    command: "update_endpoint_prefix",
+                    endpoint_prefix: url,
+                })
             }
 
             self.toStep(self.step() + 1);
@@ -210,7 +228,7 @@ $(function () {
         };
 
         self.resetEndpointPrefix = function () {
-            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix("https://app.thespaghettidetective.com");
+            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix(defaultServerAddress);
             return true;
         };
 

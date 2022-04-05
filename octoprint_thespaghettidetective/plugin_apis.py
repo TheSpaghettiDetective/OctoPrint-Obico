@@ -10,6 +10,7 @@ _logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
 def get_api_commands():
     return dict(
         verify_code=['code', 'endpoint_prefix'],
+        update_endpoint_prefix=['endpoint_prefix'],
         get_plugin_status=[],
         toggle_sentry_opt=[],
         test_server_connection=[],
@@ -38,6 +39,10 @@ def on_api_command(plugin, command, data):
         if command == "verify_code":
             plugin._settings.set(["endpoint_prefix"], data["endpoint_prefix"], force=True)
             return flask.jsonify(verify_code(plugin, data))
+
+        if command == "update_endpoint_prefix":
+            plugin._settings.set(["endpoint_prefix"], data["endpoint_prefix"], force=True)
+            return flask.jsonify({'succeeded': True})
 
         if command == "get_plugin_status":
             results = dict(

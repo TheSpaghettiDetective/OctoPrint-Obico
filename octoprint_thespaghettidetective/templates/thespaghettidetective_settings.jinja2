@@ -141,7 +141,7 @@
                       type="radio"
                       name="serverAddressRadioGroup2"
                       value="cloud"
-                      data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.server_type, click: resetEndpointPrefix"
+                      data-bind="checked: serverType, click: resetEndpointPrefix"
                     >
                       <a href="https://app.thespaghettidetective.com/">The Spaghetti Detective Cloud</a>
                     </input>
@@ -153,7 +153,7 @@
                       type="radio"
                       name="serverAddressRadioGroup2"
                       value="self-hosted"
-                      data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.server_type"
+                      data-bind="checked: serverType"
                     >
                       A self-hosted The Spaghetti Detective server
                     </input>
@@ -162,7 +162,7 @@
                     <input
                       type="text"
                       class="endpoint-prefix"
-                      data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix, enable: settingsViewModel.settings.plugins.thespaghettidetective.server_type() === 'self-hosted'"
+                      data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix, hidden: serverType() === 'cloud'"
                       style="width: 100%"
                     ></input>
                   </div>

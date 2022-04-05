@@ -15,6 +15,11 @@ $(function () {
     function TheSpaghettiDetectiveSettingsViewModel(parameters) {
         var self = this;
 
+        const defaultServerAddress = 'https://app.thespaghettidetective.com';
+        function getServerType(serverAddress) {
+            return serverAddress == defaultServerAddress ? 'cloud' : 'self-hosted';
+        }
+
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
         self.thespaghettidetectiveWizardViewModel = parameters[0];
@@ -42,10 +47,16 @@ $(function () {
         }, self);
         self.wizardAutoPoppedup = ko.observable(false);
         self.disableWizardAutoPopUp = ko.observable(false);
+        self.serverType = ko.observable('cloud');
 
         self.onStartupComplete = function (plugin, data) {
             self.fetchPluginStatus();
+            self.serverType(getServerType(self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()));
         };
+
+        self.onSettingsBeforeSave = function() {
+            self.serverType(getServerType(self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()));
+        }
 
         self.hasServerErrors = function() {
             return self.errorStats.server.error_count() > 0;
@@ -126,7 +137,7 @@ $(function () {
         };
 
         self.resetEndpointPrefix = function () {
-            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix("https://app.thespaghettidetective.com");
+            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix(defaultServerAddress);
             return true;
         };
 
