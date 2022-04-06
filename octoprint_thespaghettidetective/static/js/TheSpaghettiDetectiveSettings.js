@@ -256,7 +256,7 @@ $(function () {
                         '<p>Octolapse plugin detected! The Spaghetti Detective has switched to "Premium (compability)" streaming mode.</p>';
                 }
                 if (alertMsg.cause === "restart_required") {
-                    text = '<p></p><p>A restart is needed for changes to take effect.</p>';
+                    text = '<p></p><p>Settings saved! If you are in the setup wizard, restart OctoPrint after the setup is done. Otherwise, restart OctoPrint now for the changes to take effect.</p>';
                     hiddenButtons.push("never_button");
                 }
             }

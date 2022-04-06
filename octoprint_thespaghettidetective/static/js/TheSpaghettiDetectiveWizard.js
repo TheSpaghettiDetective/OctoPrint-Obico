@@ -155,10 +155,7 @@ $(function () {
                 }
 
                 self.serverType(getServerType(url))
-                apiCommand({
-                    command: "update_endpoint_prefix",
-                    endpoint_prefix: url,
-                })
+                self.settingsViewModel.saveData({plugins: {thespaghettidetective: {endpoint_prefix: url}}});
             }
 
             self.toStep(self.step() + 1);
