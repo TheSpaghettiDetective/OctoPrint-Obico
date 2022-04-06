@@ -17,14 +17,10 @@ $(function () {
     function ThespaghettidetectiveWizardViewModel(parameters) {
         var self = this;
 
-        const defaultServerAddress = 'https://app.thespaghettidetective.com';
-        function getServerType(serverAddress) {
-            return serverAddress == defaultServerAddress ? 'cloud' : 'self-hosted';
-        }
-
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[0];
+        self.endpointPrefixViewModel = parameters[1];
 
         self.step = ko.observable(1);
         self.mobileFlow = ko.observable(true);
@@ -34,18 +30,6 @@ $(function () {
         self.printerName = ko.observable('');
         self.printerNameTimeoutId = ko.observable(null);
         self.currentFeatureSlide = ko.observable(1);
-
-        self.serverType = ko.observable('cloud');
-
-        self.onStartupComplete = function () {
-            self.serverType(getServerType(self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()));
-        };
-
-        self.isServerInvalid = ko.observable(false);
-
-        self.checkSeverValidity = (url) => {
-            return /^(http|https):\/\/[^ "]+$/.test(url);
-        }
 
         // Handle verification code typing:
 
@@ -143,19 +127,7 @@ $(function () {
 
         self.nextStep = function() {
             if (self.step() === 1) {
-                let url = self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()
-
-                if (self.serverType() === 'self-hosted') {
-                    if (self.checkSeverValidity(url)) {
-                        self.isServerInvalid(false);
-                    } else {
-                        self.isServerInvalid(true);
-                        return;
-                    }
-                }
-
-                self.serverType(getServerType(url))
-                self.settingsViewModel.saveData({plugins: {thespaghettidetective: {endpoint_prefix: url}}});
+                self.settingsViewModel.saveData({plugins: {thespaghettidetective: {endpoint_prefix: self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()}}});
             }
 
             self.toStep(self.step() + 1);
@@ -224,11 +196,6 @@ $(function () {
                 });
         };
 
-        self.resetEndpointPrefix = function () {
-            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix(defaultServerAddress);
-            return true;
-        };
-
         self.reset = function() {
             self.step(1);
             self.verifying(false);
@@ -281,7 +248,7 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push({
         construct: ThespaghettidetectiveWizardViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
-        dependencies: ["settingsViewModel"],
+        dependencies: ["settingsViewModel", "endpointPrefixViewModel"],
         // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
         elements: [
             "#wizard_plugin_thespaghettidetective",
@@ -289,4 +256,45 @@ $(function () {
         ]
     });
 
+    // FIXME: this should be a KO component
+    function EndpointPrefixViewModel(parameters) {
+        var self = this;
+        self.settingsViewModel = parameters[0];
+
+        const defaultServerAddress = 'https://app.thespaghettidetective.com';
+        self.serverType = ko.observable('cloud');
+        self.isServerInvalid = ko.observable(false);
+        
+        // self.serverType.subscribe(function (serverType) {
+        //     if (serverType == 'self-hosted') {
+        //         self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix('');
+        //     } else {
+        //         self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix(defaultServerAddress);
+        //     }
+        //  });
+
+        self.onAllBound = function () {
+            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix.subscribe(function (url) {
+                var isvalid = /^(http|https):\/\/[^ "]+$/.test(url);
+                self.isServerInvalid(!isvalid);
+            });
+            self.serverType(self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() == defaultServerAddress ? 'cloud' : 'self-hosted');
+        }
+
+        self.resetEndpoint = function () {
+            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix(defaultServerAddress);
+            self.serverType('cloud');
+        }
+        self.clearEndpoint = function () {
+            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix('');
+            self.serverType('self-hosted');
+        }
+    }
+
+    OCTOPRINT_VIEWMODELS.push({
+        construct: EndpointPrefixViewModel,
+        dependencies: ["settingsViewModel"],
+        elements: [
+        ]
+    });
 });
