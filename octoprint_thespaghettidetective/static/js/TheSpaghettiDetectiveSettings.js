@@ -141,6 +141,11 @@ $(function () {
             return true;
         };
 
+        self.clearEndpointPrefix = function () {
+            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix('');
+            return true;
+        };
+
         self.selectPage = function(page) {
             self.showDetailPage(true);
 

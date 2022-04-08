@@ -143,17 +143,16 @@
                       value="cloud"
                       data-bind="checked: serverType, click: resetEndpointPrefix"
                     >
-                      <a href="https://app.thespaghettidetective.com/">The Spaghetti Detective Cloud</a>
+                      The Spaghetti Detective Cloud
                     </input>
                   </label>
-                  <div class="radio tsd-text-muted" style="margin-bottom: 6px;">Proudly maintained by <a href="https://www.thespaghettidetective.com/team.html">The Detective Team</a>. Free plan for 1 printer. <a href="https://app.thespaghettidetective.com/ent_pub/pricing/">Pro plan starts from $4/month</a>.</div>
-
+                  <div class="radio tsd-text-muted" style="margin-bottom: 6px;">Proudly maintained by The Detective Team. Free plan for 1 printer. Pro plan starts from $4/month. <a href="https://app.thespaghettidetective.com/">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
                   <label class="radio">
                     <input
                       type="radio"
                       name="serverAddressRadioGroup2"
                       value="self-hosted"
-                      data-bind="checked: serverType"
+                      data-bind="checked: serverType, click: clearEndpointPrefix"
                     >
                       A self-hosted The Spaghetti Detective server
                     </input>

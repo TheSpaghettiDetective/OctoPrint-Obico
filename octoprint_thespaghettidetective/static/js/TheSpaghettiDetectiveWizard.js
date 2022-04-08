@@ -44,7 +44,7 @@ $(function () {
         self.isServerInvalid = ko.observable(false);
 
         self.checkSeverValidity = (url) => {
-            return /^(http|https):\/\/[^ "]+$/.test(url);
+            return /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/.test(url);
         }
 
         // Handle verification code typing:
@@ -226,6 +226,11 @@ $(function () {
 
         self.resetEndpointPrefix = function () {
             self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix(defaultServerAddress);
+            return true;
+        };
+
+        self.clearEndpointPrefix = function () {
+            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix('');
             return true;
         };
 
