@@ -25,7 +25,6 @@ $(function () {
         self.thespaghettidetectiveWizardViewModel = parameters[0];
         self.settingsViewModel = parameters[1];
         self.wizardViewModel = parameters[2];
-        self.endpointPrefixViewModel = parameters[3];
 
         self.alertsShown = {};
         self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
@@ -48,10 +47,16 @@ $(function () {
         }, self);
         self.wizardAutoPoppedup = ko.observable(false);
         self.disableWizardAutoPopUp = ko.observable(false);
+        self.serverType = ko.observable('cloud');
 
         self.onStartupComplete = function (plugin, data) {
             self.fetchPluginStatus();
+            self.serverType(getServerType(self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()));
         };
+
+        self.onSettingsBeforeSave = function() {
+            self.serverType(getServerType(self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()));
+        }
 
         self.hasServerErrors = function() {
             return self.errorStats.server.error_count() > 0;
@@ -128,6 +133,11 @@ $(function () {
             apiCommand({
                 command: "toggle_sentry_opt",
             });
+            return true;
+        };
+
+        self.resetEndpointPrefix = function () {
+            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix(defaultServerAddress);
             return true;
         };
 
@@ -333,7 +343,7 @@ $(function () {
     OCTOPRINT_VIEWMODELS.push({
         construct: TheSpaghettiDetectiveSettingsViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
-        dependencies: ["thespaghettidetectiveWizardViewModel", "settingsViewModel", "wizardViewModel", "endpointPrefixViewModel"],
+        dependencies: ["thespaghettidetectiveWizardViewModel", "settingsViewModel", "wizardViewModel"],
         // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
         elements: [
             "#settings_plugin_thespaghettidetective",

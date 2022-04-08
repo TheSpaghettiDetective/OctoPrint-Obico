@@ -58,7 +58,7 @@
       </div>
       <div class="tsd-get-started">
         <div>Which The Spaghetti Detective server do you want to link OctoPrint to?</div>
-        <div class="control-group endpoint-prefix" data-bind="template: { name: 'endpoint-prefix-template'}">
+        <div class="control-group" data-bind="template: { name: 'endpoint-prefix-template' }">
         </div>
         <div class="tsd-flex tsd-align-start">
           <div class="tsd-text-with-checkbox" data-bind="click: toggleCheck">
@@ -271,7 +271,6 @@
     </div>
   </div>
 
-  <!-- FIXME: this should be combined with EndpointPrefixViewModel into a KO component -->
   <script type="text/html" id="endpoint-prefix-template">
     <div class="controls">
         <label class="radio">
@@ -279,7 +278,7 @@
             type="radio"
             name="serverAddressRadioGroup2"
             value="cloud"
-            data-bind="checked: endpointPrefixViewModel.serverType(), click: endpointPrefixViewModel.resetEndpoint"
+            data-bind="checked: serverType, click: resetEndpointPrefix"
           >
             <a href="https://app.thespaghettidetective.com/">The Spaghetti Detective Cloud</a>
           </input>
@@ -291,7 +290,7 @@
             type="radio"
             name="serverAddressRadioGroup2"
             value="self-hosted"
-            data-bind="checked: endpointPrefixViewModel.serverType(), click: endpointPrefixViewModel.clearEndpoint"
+            data-bind="checked: serverType"
           >
             A self-hosted The Spaghetti Detective server
           </input>
@@ -300,10 +299,9 @@
           <input
             type="text"
             class="endpoint-prefix"
-            data-bind="value: endpointPrefixViewModel.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix, hidden: endpointPrefixViewModel.serverType() === 'cloud'"
+            data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix, hidden: serverType() === 'cloud'"
             style="width: 100%"
           ></input>
-          <p class="text-error" data-bind="visible: endpointPrefixViewModel.isServerInvalid">Invalid server address</p>
         </div>
       </div>
   </script>
