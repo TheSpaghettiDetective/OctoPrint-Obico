@@ -1,8 +1,8 @@
 version: '3.7'
 
 services:
-  octoprint:
-    hostname: octoprint
+  op_python2:
+    hostname: octoprint_python2
     restart: unless-stopped
     build:
         context: .
@@ -18,8 +18,8 @@ services:
       - janus
     command: bash -c "sleep 11111111111"
 
-  octoprint_python3:
-    hostname: octoprin_python3
+  op:
+    hostname: octoprint
     restart: unless-stopped
     build:
         context: .
