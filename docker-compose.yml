@@ -8,7 +8,7 @@ services:
         context: .
         dockerfile: Dockerfile.python2
     ports:
-      - '5000:5000'
+      - '5001:5000'
     volumes:
      - ./:/app
     environment:
@@ -25,7 +25,7 @@ services:
         context: .
         dockerfile: Dockerfile.python3
     ports:
-      - '5001:5000'
+      - '5000:5000'
     volumes:
      - ./:/app
     environment:
