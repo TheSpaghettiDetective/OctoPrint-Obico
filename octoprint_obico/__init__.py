@@ -50,7 +50,7 @@ DEFAULT_LINKED_PRINTER = {'is_pro': False}
 _print_event_tracker = PrintEventTracker()
 
 
-class TheSpaghettiDetectivePlugin(
+class ObicoPlugin(
         octoprint.plugin.SettingsPlugin,
         octoprint.plugin.StartupPlugin,
         octoprint.plugin.ShutdownPlugin,
@@ -466,9 +466,9 @@ class TheSpaghettiDetectivePlugin(
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
-__plugin_name__ = "Access Anywhere - The Spaghetti Detective"
-__plugin_author__ = "TSD Team"
-__plugin_url__ = "https://thespaghettidetective.com"
+__plugin_name__ = "Obico for OctoPrint"
+__plugin_author__ = "Obi's Nest"
+__plugin_url__ = "https://www.obico.io/octoprint"
 __plugin_description__ = "Monitor and control your printer anywhere over the internet, on your phone! No port-forwarding or VPN is needed. Best part? AI-based failure detection!"
 __plugin_license__ = "AGPLv3"
 __plugin_pythoncompat__ = ">=2.7,<4"
@@ -476,7 +476,7 @@ __plugin_pythoncompat__ = ">=2.7,<4"
 
 def __plugin_load__():
     global __plugin_implementation__
-    __plugin_implementation__ = TheSpaghettiDetectivePlugin()
+    __plugin_implementation__ = ObicoPlugin()
 
     global __plugin_hooks__
     __plugin_hooks__ = {

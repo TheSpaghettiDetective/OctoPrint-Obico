@@ -4,17 +4,17 @@
 ### Do not forget to adjust the following variables to your own plugin.
 
 # The plugin's identifier, has to be unique
-plugin_identifier = "thespaghettidetective"
+plugin_identifier = "obico"
 
 # The plugin's python package, should be "octoprint_<plugin identifier>", has to be unique
-plugin_package = "octoprint_thespaghettidetective"
+plugin_package = "octoprint_obico"
 
 # The plugin's human readable name. Can be overwritten within OctoPrint's internal data via __plugin_name__ in the
 # plugin module
-plugin_name = "TheSpaghettiDetective"
+plugin_name = "OctoPrint-Obico"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "1.8.12"
+plugin_version = "1.0.1"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
@@ -23,13 +23,13 @@ An essential plugin if you print remotely. Monitor and control your printer over
 """
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
-plugin_author = "TSD Team"
+plugin_author = "Obi's Nest"
 
 # The plugin's author's mail address.
-plugin_author_email = "admin@thespaghettidetective.com"
+plugin_author_email = "admin@obico.io"
 
 # The plugin's homepage URL. Can be overwritten within OctoPrint's internal data via __plugin_url__ in the plugin module
-plugin_url = "https://thespaghettidetective.com"
+plugin_url = "https://www.obico.io/octoprint"
 
 # The plugin's license. Can be overwritten within OctoPrint's internal data via __plugin_license__ in the plugin module
 plugin_license = "AGPLv3"
