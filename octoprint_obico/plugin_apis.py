@@ -44,6 +44,7 @@ def on_api_command(plugin, command, data):
                 server_status=dict(
                     is_connected=plugin.ss and plugin.ss.connected(),
                     status_posted_to_server_ts=plugin.status_posted_to_server_ts,
+                    bailed_because_tsd_plugin_running=plugin.bailed_because_tsd_plugin_running,
                 ),
                 linked_printer=plugin.linked_printer,
                 streaming_status=dict(

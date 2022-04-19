@@ -298,3 +298,17 @@ def raise_for_status(resp, with_content=False, **kwargs):
 
             raise
     resp.raise_for_status()
+
+# TODO: remove once all TSD users have migrated
+def migrate_tsd_settings(plugin):
+    if plugin.is_configured():
+        return
+    if plugin._settings.get(['tsd_migrated']):
+        return
+    tsd_settings = plugin._settings.effective.get('plugins', {}).get('thespaghettidetective')
+    if tsd_settings:
+        for k in tsd_settings.keys():
+            plugin._settings.set([k],tsd_settings.get(k), force=True)
+
+        plugin._settings.set(["tsd_migrated"], 'yes', force=True)
+        plugin._settings.save(force=True)

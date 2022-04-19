@@ -21,7 +21,8 @@ from .ws import WebSocketClient, WebSocketConnectionException
 from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
-    get_tags, not_using_pi_camera, OctoPrintSettingsUpdater, server_request)
+    get_tags, not_using_pi_camera, OctoPrintSettingsUpdater,
+    server_request, migrate_tsd_settings)
 from .lib.error_stats import error_stats
 from .lib import alert_queue
 from .print_event import PrintEventTracker
@@ -81,6 +82,7 @@ class ObicoPlugin(
         self.janus = JanusConn(self)
         self.client_conn = ClientConn(self)
         self.discovery = None
+        self.bailed_because_tsd_plugin_running = False
 
     # ~~ Custom event registration
 
@@ -188,9 +190,19 @@ class ObicoPlugin(
     # ~~Startup Plugin
 
     def on_startup(self, host, port):
+        if 'thespaghettidetective' in self._plugin_manager.plugins and self._plugin_manager.plugins.get('thespaghettidetective').enabled:
+            self.bailed_because_tsd_plugin_running = True
+            alert_queue.add_alert({'level': 'error', 'cause': 'bailed_because_tsd_plugin_running'}, self)
+
+        # TODO: remove once all TSD users have migrated
+        migrate_tsd_settings(self)
+
         self.octoprint_port = port if port else self._settings.getInt(["server", "port"])
 
     def on_after_startup(self):
+        if self.bailed_because_tsd_plugin_running:
+            return
+
         not_using_pi_camera()
 
         main_thread = threading.Thread(target=self.main_loop)

@@ -4,38 +4,48 @@
   <div class="tsd-choice-page" data-bind="visible: !showDetailPage()">
     <img class="tsd-settings-header" src="plugin/obico/static/img/settings-header.svg" alt="">
     <div class="tsd-settings-content">
-      <div class="tsd-not-configured" data-bind="visible: !configured()">
+      <div data-bind="visible: !serverStatus.bailed_because_tsd_plugin_running()">
+        <div class="tsd-not-configured" data-bind="visible: !configured()">
+          <div>
+            <p>
+              <i class="fa fa-exclamation" style="font-size: 48px;"></i>
+            </p>
+            <b>You haven't linked OctoPrint to your The Spaghetti Detective account!</b>
+          </div>
+          <a class="tsd-button tsd-primary" data-bind="click: showWizardModal">Run Setup Wizard to Link OctoPrint</a>
+        </div>
+        <div class="tsd-choice-wrapper" data-bind="visible: configured">
+          <div class="tsd-choice-option" data-bind="click: function(data, event) { selectPage('advanced'); }">
+            <a href="#" class="tsd-button btn-block">
+              <span>Settings</span>
+              <img src="plugin/obico/static/img/arrow-right.svg">
+            </a>
+            <ul class="tsd-squared-markers">
+              <li>View linked printer name</li>
+              <li>Premium Webcam Streaming</li>
+              <li>Configure private TSD server</li>
+              <li>Opt in error reporting</li>
+            </ul>
+          </div>
+          <div class="tsd-choice-option" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">
+            <a href="#" class="tsd-button btn-block">
+              <span>Troubleshooting</span>
+              <img src="plugin/obico/static/img/arrow-right.svg">
+            </a>
+            <ul class="tsd-squared-markers">
+              <li>Server connection status</li>
+              <li>Webcam streaming issues</li>
+              <li>Re-run setup wizard</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div data-bind="visible: serverStatus.bailed_because_tsd_plugin_running()">
         <div>
           <p>
             <i class="fa fa-exclamation" style="font-size: 48px;"></i>
           </p>
-          <b>You haven't linked OctoPrint to your The Spaghetti Detective account!</b>
-        </div>
-        <a class="tsd-button tsd-primary" data-bind="click: showWizardModal">Run Setup Wizard to Link OctoPrint</a>
-      </div>
-      <div class="tsd-choice-wrapper" data-bind="visible: configured">
-        <div class="tsd-choice-option" data-bind="click: function(data, event) { selectPage('advanced'); }">
-          <a href="#" class="tsd-button btn-block">
-            <span>Settings</span>
-            <img src="plugin/obico/static/img/arrow-right.svg">
-          </a>
-          <ul class="tsd-squared-markers">
-            <li>View linked printer name</li>
-            <li>Premium Webcam Streaming</li>
-            <li>Configure private TSD server</li>
-            <li>Opt in error reporting</li>
-          </ul>
-        </div>
-        <div class="tsd-choice-option" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">
-          <a href="#" class="tsd-button btn-block">
-            <span>Troubleshooting</span>
-            <img src="plugin/obico/static/img/arrow-right.svg">
-          </a>
-          <ul class="tsd-squared-markers">
-            <li>Server connection status</li>
-            <li>Webcam streaming issues</li>
-            <li>Re-run setup wizard</li>
-          </ul>
+          <b>You are still running The Spaghetti Detective</b>
         </div>
       </div>
       <div class="tsd-help-link-section">
@@ -412,6 +422,23 @@
       <p>
         Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.
       </p>
+    </div>
+  </div>
+</div>
+
+<div id="tsdMigratedModal" class="tsd-modal modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="tsdMigratedModal" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+    <h4 style="text-align: center;">The Spaghetti Detective Setup Wizard</h4>
+  </div>
+  <div>
+    TSD settings have been migrated.
+  </div>
+  <div class="modal-footer">
+    <div class="row-fluid">
+      <div class="span12">
+        <button type="button" class="btn btn-secondary" data-bind="click: hideTsdMigratedModal">Gotcha! Don't show again.</button>
+      </div>
     </div>
   </div>
 </div>

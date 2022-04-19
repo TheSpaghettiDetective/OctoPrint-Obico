@@ -32,7 +32,7 @@ $(function () {
             retrieveFromLocalStorage('disableTSDWizardAutoPopupUntil', 0) > new Date().getTime()
         );
         self.showDetailPage = ko.observable(false);
-        self.serverStatus = ko.mapping.fromJS({ is_connected: false, status_posted_to_server_ts: 0 });
+        self.serverStatus = ko.mapping.fromJS({ is_connected: false, status_posted_to_server_ts: 0, bailed_because_tsd_plugin_running: false });
         self.streaming = ko.mapping.fromJS({ is_pi_camera: false, premium_streaming: false, compat_streaming: false});
         self.linkedPrinter = ko.mapping.fromJS({ is_pro: false, id: null, name: null});
         self.errorStats = ko.mapping.fromJS({ server: { attempts: 0, error_count: 0, first: null, last: null }, webcam: { attempts: 0, error_count: 0, first: null, last: null }});
@@ -92,6 +92,16 @@ $(function () {
                 ko.mapping.fromJS(data.error_stats, self.errorStats);
                 ko.mapping.fromJS(data.linked_printer, self.linkedPrinter);
 
+                _.get(data, 'alerts', []).forEach(function (alertMsg) {
+                    self.displayAlert(alertMsg);
+                })
+                
+                if (self.settingsViewModel.settings.plugins.obico.tsd_migrated
+                    && self.settingsViewModel.settings.plugins.obico.tsd_migrated() == 'yes') {
+                    self.showTsdMigratedModal();
+                    return;
+                }
+                
                 if (!self.configured() && !self.isWizardShown() && !self.wizardViewModel.isDialogActive()) {
                     self.showWizardModal();
                     self.isWizardShown(true);
@@ -112,9 +122,6 @@ $(function () {
                         self.toggleSentryOpt();
                     });
                 }
-                _.get(data, 'alerts', []).forEach(function (alertMsg) {
-                    self.displayAlert(alertMsg);
-                })
             });
         };
 
@@ -230,21 +237,29 @@ $(function () {
             var hiddenButtons = ["remove_button", ];
 
             if (alertMsg.level === "error") {
-                buttons.unshift(
-                    {
-                        text: "Details",
-                        click: function (notice) {
-                            self.showDiagnosticReportModal();
-                            notice.remove();
-                        }
-                    }
-                );
+                var diagnosticReportAvailable = false;
                 if (alertMsg.cause === "server") {
+                    diagnosticReportAvailable = true
                     text =
                         "The Spaghetti Detective failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.";
                 } else if (alertMsg.cause === "webcam") {
+                    diagnosticReportAvailable = true
                     text =
                         'The Spaghetti Detective plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.thespaghettidetective.com/docs/warnings/webcam-connection-error-popup/">this troubleshooting guide</a>.';
+                } else if (alertMsg.cause === "bailed_because_tsd_plugin_running") {
+                    text =
+                        'You are still running The Spaghetti Detective.';
+                }
+                if (diagnosticReportAvailable) {
+                    buttons.unshift(
+                        {
+                            text: "Details",
+                            click: function (notice) {
+                                self.showDiagnosticReportModal();
+                                notice.remove();
+                            }
+                        }
+                    );
                 }
             }
             if (alertMsg.level === "warning") {
@@ -308,6 +323,14 @@ $(function () {
                 saveToLocalStorage('disableTSDWizardAutoPopupUntil', (new Date()).getTime() + 1000*60*60*24*30); // Not show for 30 days
             }
         });
+
+        self.showTsdMigratedModal = function (maybeViewModel) {
+            $('#tsdMigratedModal').modal();
+        };
+        self.hideTsdMigratedModal = function() {
+            $('#tsdMigratedModal').modal('hide');
+            self.settingsViewModel.saveData({plugins: {obico: {tsd_migrated: 'confirmed'}}});
+        }
     }
 
 
