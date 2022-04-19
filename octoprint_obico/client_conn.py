@@ -12,7 +12,7 @@ from .janus import JANUS_SERVER, JANUS_DATA_PORT, MAX_PAYLOAD_SIZE
 
 __python_version__ = 3 if sys.version_info >= (3, 0) else 2
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 class ClientConn:
 

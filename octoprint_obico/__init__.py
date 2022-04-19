@@ -41,7 +41,7 @@ import octoprint.plugin
 
 __python_version__ = 3 if sys.version_info >= (3, 0) else 2
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 POST_STATUS_INTERVAL_SECONDS = 50.0
 

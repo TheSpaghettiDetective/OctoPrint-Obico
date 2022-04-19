@@ -7,14 +7,14 @@
 $(function () {
 
     function apiCommand(data) {
-        return $.ajax("api/plugin/thespaghettidetective", {
+        return $.ajax("api/plugin/obico", {
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify(data)
         });
     }
 
-    function ThespaghettidetectiveWizardViewModel(parameters) {
+    function ObicoWizardViewModel(parameters) {
         var self = this;
 
         const defaultServerAddress = 'https://app.thespaghettidetective.com';
@@ -38,7 +38,7 @@ $(function () {
         self.serverType = ko.observable('cloud');
 
         self.onStartupComplete = function () {
-            self.serverType(getServerType(self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()));
+            self.serverType(getServerType(self.settingsViewModel.settings.plugins.obico.endpoint_prefix()));
         };
 
         self.isServerInvalid = ko.observable(false);
@@ -143,7 +143,7 @@ $(function () {
 
         self.nextStep = function() {
             if (self.step() === 1) {
-                let url = self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()
+                let url = self.settingsViewModel.settings.plugins.obico.endpoint_prefix()
 
                 if (self.serverType() === 'self-hosted') {
                     if (self.checkSeverValidity(url)) {
@@ -155,7 +155,7 @@ $(function () {
                 }
 
                 self.serverType(getServerType(url))
-                self.settingsViewModel.saveData({plugins: {thespaghettidetective: {endpoint_prefix: url}}});
+                self.settingsViewModel.saveData({plugins: {obico: {endpoint_prefix: url}}});
             }
 
             self.toStep(self.step() + 1);
@@ -225,12 +225,12 @@ $(function () {
         };
 
         self.resetEndpointPrefix = function () {
-            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix(defaultServerAddress);
+            self.settingsViewModel.settings.plugins.obico.endpoint_prefix(defaultServerAddress);
             return true;
         };
 
         self.clearEndpointPrefix = function () {
-            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix('');
+            self.settingsViewModel.settings.plugins.obico.endpoint_prefix('');
             return true;
         };
 
@@ -284,13 +284,13 @@ $(function () {
      * and a full list of the available options.
      */
     OCTOPRINT_VIEWMODELS.push({
-        construct: ThespaghettidetectiveWizardViewModel,
+        construct: ObicoWizardViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
         dependencies: ["settingsViewModel"],
-        // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
+        // Elements to bind to, e.g. #settings_plugin_obico, #tab_plugin_obico, ...
         elements: [
-            "#wizard_plugin_thespaghettidetective",
-            "#tsd_wizard",
+            "#wizard_plugin_obico",
+            "#obico_wizard",
         ]
     });
 

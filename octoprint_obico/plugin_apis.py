@@ -5,7 +5,7 @@ from .utils import server_request
 from .lib.error_stats import error_stats
 from .lib import alert_queue
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 def get_api_commands():
     return dict(

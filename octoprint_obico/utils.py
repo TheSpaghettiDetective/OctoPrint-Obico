@@ -23,7 +23,7 @@ CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
 
 PRINTER_SETTINGS_UPDATE_INTERVAL = 60*30.0  # Update printer settings at max 30 minutes interval, as they are relatively static.
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 
 class ExpoBackoff:

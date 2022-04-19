@@ -2,7 +2,7 @@ import threading
 import logging
 import re
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 
 class GCodeHooks:

@@ -5,7 +5,7 @@ import websocket
 import logging
 import threading
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 class WebSocketConnectionException(Exception):
     pass
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         print('Closed')
 
     with open(sys.argv[1]) as stream:
-        config = yaml.load(stream.read()).get('plugins', {}).get('thespaghettidetective', {})
+        config = yaml.load(stream.read()).get('plugins', {}).get('obico', {})
 
     url = config.get('endpoint_prefix', 'https://app.thespaghettidetective.com').replace('http', 'ws') + '/ws/dev/'
     token = config.get('auth_token')

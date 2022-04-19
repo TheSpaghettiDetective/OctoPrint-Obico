@@ -9,7 +9,7 @@ from octoprint.filemanager.util import AbstractFileWrapper
 import io
 from .utils import get_tags
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 UPLOAD_FOLDER = 'TheSpaghettiDetectiveUpload'
 
 

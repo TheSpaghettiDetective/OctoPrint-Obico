@@ -17,7 +17,7 @@ except ImportError:
 from .utils import ExpoBackoff, get_tags, pi_version
 from .ws import WebSocketClient
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
@@ -138,14 +138,14 @@ class JanusConn:
         try:
             msg = json.loads(raw_msg)
 
-            # when plugindata.data.thespaghettidetective is set, this is a incoming message from webrtc data channel
+            # when plugindata.data.obico is set, this is a incoming message from webrtc data channel
             # https://github.com/TheSpaghettiDetective/janus-gateway/commit/e0bcc6b40f145ce72e487204354486b2977393ea
             to_plugin = msg.get(
                 'plugindata', {}
             ).get(
                 'data', {}
             ).get(
-                'thespaghettidetective', {}
+                'obico', {}
             )
 
             if to_plugin:

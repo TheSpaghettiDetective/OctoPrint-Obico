@@ -1,4 +1,4 @@
-<div id="tsd_wizard" class="tsd-wizard-content" data-bind="css: {'tsd-bg-logo': [1, 4, 5].includes(step()), 'tsd-bg-primary': [5].includes(step())}">
+<div id="obico_wizard" class="tsd-wizard-content" data-bind="css: {'tsd-bg-logo': [1, 4, 5].includes(step()), 'tsd-bg-primary': [5].includes(step())}">
   <div class="tsd-navigation">
     <a href="#" class="tsd-back-btn" data-bind="click: prevStep, visible: ![1,5].includes(step())">
       ❮ Back
@@ -27,28 +27,28 @@
       <div class="tsd-features">
         <div class="tsd-features-blocks">
           <div class="tsd-feature" data-number="1">
-            <img src="plugin/thespaghettidetective/static/img/icon-connection.svg" alt="">
+            <img src="plugin/obico/static/img/icon-connection.svg" alt="">
             <div class="tsd-feature-text">
               <div class="tsd-title">Manage printer on your phone</div>
               <p class="tsd-description">Start/pause/cancel prints anytime, anywhere! Upload your print files and kick-off prints from your phone, desktop, or tablet.</p>
             </div>
           </div>
           <div class="tsd-feature" data-number="2">
-            <img src="plugin/thespaghettidetective/static/img/icon-security.svg" alt="">
+            <img src="plugin/obico/static/img/icon-security.svg" alt="">
             <div class="tsd-feature-text">
               <div class="tsd-title">Secure remote access</div>
               <p class="tsd-description">Access your printer securely from anywhere without opening your home network to the wild internet.</p>
             </div>
           </div>
           <div class="tsd-feature" data-number="3">
-            <img src="plugin/thespaghettidetective/static/img/icon-fire.svg" alt="">
+            <img src="plugin/obico/static/img/icon-fire.svg" alt="">
             <div class="tsd-feature-text">
               <div class="tsd-title">Catch print hazards early</div>
               <p class="tsd-description">Check in your prints in real time to instantly know if the printer is acting up.</p>
             </div>
           </div>
           <div class="tsd-feature" data-number="4">
-            <img src="plugin/thespaghettidetective/static/img/icon-money.svg" alt="">
+            <img src="plugin/obico/static/img/icon-money.svg" alt="">
             <div class="tsd-feature-text">
               <div class="tsd-title">Save time and money</div>
               <p class="tsd-description">The Spaghetti Detective watched your prints constantly for problems and intervenes to catch failures early.</p>
@@ -87,7 +87,7 @@
                   id="endpoint_prefix-input"
                   type="text"
                   class="endpoint-prefix"
-                  data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix, hidden: serverType() === 'cloud'"
+                  data-bind="value: settingsViewModel.settings.plugins.obico.endpoint_prefix, hidden: serverType() === 'cloud'"
                   style="width: calc(100% - 14px)"
                 ></input>
                 <p class="text-error" data-bind="visible: isServerInvalid()">Invalid server address</p>
@@ -127,13 +127,13 @@
     <div class="tsd-choice-container">
       <div class="tsd-choice-banner">
         <div class="tsd-option" data-bind="click: function(data, event) { nextStep(); mobileFlow(true); }">
-          <img src="plugin/thespaghettidetective/static/img/phone-illustration.svg" alt="">
+          <img src="plugin/obico/static/img/phone-illustration.svg" alt="">
           <h2>Mobile Setup</h2>
           <a href="#" class="tsd-button tsd-filled">Continue with <strong>Mobile App</strong></a>
         </div>
         <div class="tsd-delimeter"></div>
         <div class="tsd-option" data-bind="click: function(data, event) { nextStep(); mobileFlow(false); }">
-          <img src="plugin/thespaghettidetective/static/img/desktop-illustration.svg" alt="">
+          <img src="plugin/obico/static/img/desktop-illustration.svg" alt="">
           <h2>Web Setup</h2>
           <a href="#" class="tsd-button tsd-outline">Continue with <strong>Web Site</strong></a>
         </div>
@@ -160,20 +160,20 @@
         <div class="text-right">
           <a href="#" class="tsd-small"  data-bind="click: function(data, event) { mobileFlow(false); }">
             Setup through web browser instead
-            <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
+            <img src="plugin/obico/static/img/arrow-right-gray.svg" alt="">
           </a>
         </div>
       </div>
       <div class="tsd-bottom-illustration">
-        <img src="plugin/thespaghettidetective/static/img/mobile-setup-illustration.svg" alt="" class="tsd-mobile-screen">
+        <img src="plugin/obico/static/img/mobile-setup-illustration.svg" alt="" class="tsd-mobile-screen">
         <div class="tsd-mobile-links">
-          <img src="plugin/thespaghettidetective/static/img/app-qrcode.png" alt="" class="tsd-qr">
+          <img src="plugin/obico/static/img/app-qrcode.png" alt="" class="tsd-qr">
           <div class="tsd-buttons">
             <a href="https://play.google.com/store/apps/details?id=com.thespaghettidetective.android" class="tsd-button" target="_blank">
-              <img src="plugin/thespaghettidetective/static/img/google-play-btn.svg" alt="">
+              <img src="plugin/obico/static/img/google-play-btn.svg" alt="">
             </a>
             <a href="https://apps.apple.com/us/app/the-spaghetti-detective/id1540646623?uo=4" class="tsd-button" target="_blank">
-              <img src="plugin/thespaghettidetective/static/img/app-store-btn.svg" alt="">
+              <img src="plugin/obico/static/img/app-store-btn.svg" alt="">
             </a>
           </div>
         </div>
@@ -183,11 +183,11 @@
 
   <div data-bind="visible: step() === 3 && !mobileFlow()">
     <div class="tsd-header">
-      <h2>Sign into <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">The Spaghetti Detective website</a></h2>
+      <h2>Sign into <a data-bind="attr: { href: settingsViewModel.settings.plugins.obico.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">The Spaghetti Detective website</a></h2>
     </div>
     <div>
       <ol>
-        <li>Click <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">here</a> to open The Spaghetti Detective website in a separate tab.
+        <li>Click <a data-bind="attr: { href: settingsViewModel.settings.plugins.obico.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">here</a> to open The Spaghetti Detective website in a separate tab.
         <li>Sign up for a The Spaghetti Detective account. Or sign in if you already have one.</li>
         <li>Click the "Link OctoPrint" button in the web app.
         <li>If OctoPrint shows up in the web app, click "Link" to finish linking it.</li>
@@ -199,7 +199,7 @@
         <div class="text-right">
           <a href="#" class="tsd-small" data-bind="click: function(data, event) { mobileFlow(true); }">
             Setup through mobile app instead
-            <img src="plugin/thespaghettidetective/static/img/arrow-right-gray.svg" alt="">
+            <img src="plugin/obico/static/img/arrow-right-gray.svg" alt="">
           </a>
           <br /><br />
           <div class="tsd-small">*Note: You can always download The Spaghetti Detective mobile app later</div>
@@ -259,8 +259,8 @@
           </div>
         </div>
         <div class="tsd-illustration">
-          <img src="plugin/thespaghettidetective/static/img/phone-verification-illustration.svg" class="tsd-image" alt="">
-          <img src="plugin/thespaghettidetective/static/img/arrow-left-curved.svg" class="tsd-arrow" alt="">
+          <img src="plugin/obico/static/img/phone-verification-illustration.svg" class="tsd-image" alt="">
+          <img src="plugin/obico/static/img/arrow-left-curved.svg" class="tsd-arrow" alt="">
         </div>
       </div>
       <div class="tsd-collapsable">
@@ -281,7 +281,7 @@
   <div data-bind="visible: step() === 5">
     <div class="tsd-flex tsd-justify-center tsd-successful-setup">
       <div class="tsd-flex tsd-col tsd-align-center">
-        <img src="plugin/thespaghettidetective/static/img/checkmark-circled.svg" class="tsd-checkmark-circle" alt="">
+        <img src="plugin/obico/static/img/checkmark-circled.svg" class="tsd-checkmark-circle" alt="">
         <h1 class="tsd-title white">OctoPrint Linked Successfully!</h1>
         <div class="tsd-sub-title">Now you can close this window and go back to The Spaghetti Detective mobile app or web app to check the printer feed.</div>
         <div class="tsd-button-wrapper">
@@ -299,7 +299,7 @@
     </div>
     <div>
       <a href="https://discord.com/invite/NcZkQfj" class="tsd-discord-link" target="_blank">
-        <img src="plugin/thespaghettidetective/static/img/discord.svg" alt="">
+        <img src="plugin/obico/static/img/discord.svg" alt="">
         <div class="tsd-text">JOIN OUR DISCORD FORUM</div>
       </a>
     </div>

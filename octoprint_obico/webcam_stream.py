@@ -32,7 +32,7 @@ from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')

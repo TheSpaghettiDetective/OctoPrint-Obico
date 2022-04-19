@@ -12,7 +12,7 @@ $(function () {
         })
     });
 
-    function TheSpaghettiDetectiveSettingsViewModel(parameters) {
+    function ObicoSettingsViewModel(parameters) {
         var self = this;
 
         const defaultServerAddress = 'https://app.thespaghettidetective.com';
@@ -22,7 +22,7 @@ $(function () {
 
         // assign the injected parameters, e.g.:
         // self.loginStateViewModel = parameters[0];
-        self.thespaghettidetectiveWizardViewModel = parameters[0];
+        self.obicoWizardViewModel = parameters[0];
         self.settingsViewModel = parameters[1];
         self.wizardViewModel = parameters[2];
 
@@ -39,11 +39,11 @@ $(function () {
         self.serverTestStatusCode = ko.observable(null);
         self.serverTested = ko.observable('never');
         self.sentryOptedIn = ko.pureComputed(function () {
-            return self.settingsViewModel.settings.plugins.thespaghettidetective.sentry_opt() === "in";
+            return self.settingsViewModel.settings.plugins.obico.sentry_opt() === "in";
         }, self);
         self.configured = ko.pureComputed(function () {
-            return self.settingsViewModel.settings.plugins.thespaghettidetective.auth_token
-                && self.settingsViewModel.settings.plugins.thespaghettidetective.auth_token();
+            return self.settingsViewModel.settings.plugins.obico.auth_token
+                && self.settingsViewModel.settings.plugins.obico.auth_token();
         }, self);
         self.wizardAutoPoppedup = ko.observable(false);
         self.disableWizardAutoPopUp = ko.observable(false);
@@ -51,11 +51,11 @@ $(function () {
 
         self.onStartupComplete = function (plugin, data) {
             self.fetchPluginStatus();
-            self.serverType(getServerType(self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()));
+            self.serverType(getServerType(self.settingsViewModel.settings.plugins.obico.endpoint_prefix()));
         };
 
         self.onSettingsBeforeSave = function() {
-            self.serverType(getServerType(self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix()));
+            self.serverType(getServerType(self.settingsViewModel.settings.plugins.obico.endpoint_prefix()));
         }
 
         self.hasServerErrors = function() {
@@ -137,12 +137,12 @@ $(function () {
         };
 
         self.resetEndpointPrefix = function () {
-            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix(defaultServerAddress);
+            self.settingsViewModel.settings.plugins.obico.endpoint_prefix(defaultServerAddress);
             return true;
         };
 
         self.clearEndpointPrefix = function () {
-            self.settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix('');
+            self.settingsViewModel.settings.plugins.obico.endpoint_prefix('');
             return true;
         };
 
@@ -172,7 +172,7 @@ $(function () {
         /*** Plugin error alerts */
 
         self.onDataUpdaterPluginMessage = function (plugin, data) {
-            if (plugin != "thespaghettidetective") {
+            if (plugin != "obico") {
                 return;
             }
 
@@ -182,8 +182,8 @@ $(function () {
 
             if (data.printer_autolinked) {
                 self.fetchPluginStatus();
-                self.thespaghettidetectiveWizardViewModel.toStep(5);
-                self.thespaghettidetectiveWizardViewModel.startAutoCloseTimout();
+                self.obicoWizardViewModel.toStep(5);
+                self.obicoWizardViewModel.startAutoCloseTimout();
             }
         }
 
@@ -301,7 +301,7 @@ $(function () {
         };
 
         $('#wizardModal').on('shown', function(){
-            self.thespaghettidetectiveWizardViewModel.reset();
+            self.obicoWizardViewModel.reset();
         });
         $('#wizardModal').on('hidden', function(){
             if (self.disableWizardAutoPopUp()) {
@@ -313,7 +313,7 @@ $(function () {
 
     // Helper methods
     function apiCommand(data) {
-        return $.ajax("api/plugin/thespaghettidetective", {
+        return $.ajax("api/plugin/obico", {
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify(data)
@@ -346,12 +346,12 @@ $(function () {
      * and a full list of the available options.
      */
     OCTOPRINT_VIEWMODELS.push({
-        construct: TheSpaghettiDetectiveSettingsViewModel,
+        construct: ObicoSettingsViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
-        dependencies: ["thespaghettidetectiveWizardViewModel", "settingsViewModel", "wizardViewModel"],
-        // Elements to bind to, e.g. #settings_plugin_thespaghettidetective, #tab_plugin_thespaghettidetective, ...
+        dependencies: ["obicoWizardViewModel", "settingsViewModel", "wizardViewModel"],
+        // Elements to bind to, e.g. #settings_plugin_obico, #tab_plugin_obico, ...
         elements: [
-            "#settings_plugin_thespaghettidetective",
+            "#settings_plugin_obico",
         ]
     });
 

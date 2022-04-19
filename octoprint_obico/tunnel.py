@@ -17,7 +17,7 @@ WRITE_MODE = 'w' if sys.version_info[0] < 3 else 'wb'
 READ_MODE = 'r' if sys.version_info[0] < 3 else 'rb'
 COMPRESS_THRESHOLD = 1000
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 
 class LocalTunnel(object):

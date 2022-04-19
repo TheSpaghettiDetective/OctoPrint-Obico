@@ -2,7 +2,7 @@
 
   <!-- Initial page with choice - what settings page (tab) to open? -->
   <div class="tsd-choice-page" data-bind="visible: !showDetailPage()">
-    <img class="tsd-settings-header" src="plugin/thespaghettidetective/static/img/settings-header.svg" alt="">
+    <img class="tsd-settings-header" src="plugin/obico/static/img/settings-header.svg" alt="">
     <div class="tsd-settings-content">
       <div class="tsd-not-configured" data-bind="visible: !configured()">
         <div>
@@ -17,7 +17,7 @@
         <div class="tsd-choice-option" data-bind="click: function(data, event) { selectPage('advanced'); }">
           <a href="#" class="tsd-button btn-block">
             <span>Settings</span>
-            <img src="plugin/thespaghettidetective/static/img/arrow-right.svg">
+            <img src="plugin/obico/static/img/arrow-right.svg">
           </a>
           <ul class="tsd-squared-markers">
             <li>View linked printer name</li>
@@ -29,7 +29,7 @@
         <div class="tsd-choice-option" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">
           <a href="#" class="tsd-button btn-block">
             <span>Troubleshooting</span>
-            <img src="plugin/thespaghettidetective/static/img/arrow-right.svg">
+            <img src="plugin/obico/static/img/arrow-right.svg">
           </a>
           <ul class="tsd-squared-markers">
             <li>Server connection status</li>
@@ -39,7 +39,7 @@
         </div>
       </div>
       <div class="tsd-help-link-section">
-        <img src="plugin/thespaghettidetective/static/img/chat.svg" alt="">
+        <img src="plugin/obico/static/img/chat.svg" alt="">
         <div class="tsd-notes">
           Join <a href="https://discord.com/invite/NcZkQfj" target="_blank">TSD user community (Discord server)</a><br>
           Visit <a href="https://thespaghettidetective.com/" target="_blank">thespaghettidetective.com</a><br>
@@ -52,7 +52,7 @@
   <!-- Page with tabs at the top -->
   <div class="tabbable" data-bind="visible: showDetailPage()">
     <ul class="nav">
-      <img src="plugin/thespaghettidetective/static/img/logo-white.svg" alt="" class="tsd-logo" data-bind="click: returnToSelection">
+      <img src="plugin/obico/static/img/logo-white.svg" alt="" class="tsd-logo" data-bind="click: returnToSelection">
       <li data-page="advanced">
         <a href="#tsd-advanced" data-toggle="tab">
           <span>Settings</span>
@@ -76,7 +76,7 @@
           </div>
           <div class="tsd-section-content" data-bind="visible: linkedPrinter.id">
             <p>This OctoPrint is linked to <b data-bind="text: linkedPrinter.name"></b> in your TSD account.</p>
-            <a data-bind="attr: { href: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix() + '/printers/' + linkedPrinter.id() + '/?source=plugin' }" target="_blank" class="btn">View/Change Settings (Login Required)</a>
+            <a data-bind="attr: { href: settingsViewModel.settings.plugins.obico.endpoint_prefix() + '/printers/' + linkedPrinter.id() + '/?source=plugin' }" target="_blank" class="btn">View/Change Settings (Login Required)</a>
           </div>
         </section>
         <section data-bind="visible: linkedPrinter.id">
@@ -100,30 +100,30 @@
                 <div class="control-group">
                     <div class="controls">
                         <div class="form-check" style="margin-top: 8px;">
-                          <input id="disable-streaming" class="form-check-input" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming" style="margin-top: 0px;">
+                          <input id="disable-streaming" class="form-check-input" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.disable_video_streaming" style="margin-top: 0px;">
                           <label class="form-check-label" for="disable-streaming" style="display: inline">
                             Disable the Premium Webcam Streaming. <a href="https://www.thespaghettidetective.com/docs/disable-25-fps-streaming/">(Why would I want to do that?)</a>
                           </label>
                         </div>
                     </div>
                 </div>
-                <div data-bind="visible: (streaming.is_pi_camera() && !settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming())" class="control-group" title="{{ _('Pi Camera resolution') }}">
+                <div data-bind="visible: (streaming.is_pi_camera() && !settingsViewModel.settings.plugins.obico.disable_video_streaming())" class="control-group" title="{{ _('Pi Camera resolution') }}">
                     <label class="control-label" for="pi-cam-resolution">{{ _('Resolution') }}</label>
                     <div class="controls">
-                        <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.thespaghettidetective.pi_cam_resolution" id="pi-cam-resolution"></select>
+                        <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.obico.pi_cam_resolution" id="pi-cam-resolution"></select>
                     </div>
                 </div>
-                <div data-bind="visible: !settingsViewModel.settings.plugins.thespaghettidetective.disable_video_streaming()" class="control-group">
+                <div data-bind="visible: !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
                     <label class="control-label">Compatibility mode<div><a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/">(What is it?)</a></div></label>
                     <div class="controls">
                         <label class="radio">
-                            <input type="radio" name="webcamCompatibleModeGroup" value="auto" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Automatic (default). TSD will automatically switch to compatibility mode if necessary. Select this option if you are not sure.
+                            <input type="radio" name="webcamCompatibleModeGroup" value="auto" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Automatic (default). TSD will automatically switch to compatibility mode if necessary. Select this option if you are not sure.
                         </label>
                         <label class="radio">
-                            <input type="radio" name="webcamCompatibleModeGroup" value="always" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Always stream in compatibility mode
+                            <input type="radio" name="webcamCompatibleModeGroup" value="always" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Always stream in compatibility mode
                         </label>
                         <label class="radio">
-                            <input type="radio" name="webcamCompatibleModeGroup" value="never" data-bind="checked: settingsViewModel.settings.plugins.thespaghettidetective.video_streaming_compatible_mode"> Never stream in compatibility mode
+                            <input type="radio" name="webcamCompatibleModeGroup" value="never" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Never stream in compatibility mode
                         </label>
                     </div>
                 </div>
@@ -161,7 +161,7 @@
                     <input
                       type="text"
                       class="endpoint-prefix"
-                      data-bind="value: settingsViewModel.settings.plugins.thespaghettidetective.endpoint_prefix, hidden: serverType() === 'cloud'"
+                      data-bind="value: settingsViewModel.settings.plugins.obico.endpoint_prefix, hidden: serverType() === 'cloud'"
                       style="width: 100%"
                     ></input>
                   </div>
@@ -353,7 +353,7 @@
       You are re-linking OctoPrint to your TSD account. Don't forget to <strong>restart OctoPrint</strong> when you are done.
     </div>
     <div data-bind="allowBindings: false">
-    {% include "thespaghettidetective_wizard.jinja2" %}
+    {% include "obico_wizard.jinja2" %}
     </div>
   </div>
   <div class="modal-footer">

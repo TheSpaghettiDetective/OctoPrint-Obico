@@ -33,7 +33,7 @@ POST_PIC_INTERVAL_SECONDS = 10.0
 if os.environ.get('DEBUG'):
     POST_PIC_INTERVAL_SECONDS = 3.0
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 def webcam_full_url(url):
     if not url or not url.strip():

@@ -3,7 +3,7 @@ import time
 import threading
 from octoprint.filemanager.analysis import QueueEntry
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 
 class PrintEventTracker:

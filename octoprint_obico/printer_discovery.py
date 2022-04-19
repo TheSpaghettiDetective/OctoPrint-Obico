@@ -29,7 +29,7 @@ from .utils import (
     server_request, OctoPrintSettingsUpdater,
     get_tags, raise_for_status)
 
-_logger = logging.getLogger('octoprint.plugins.thespaghettidetective')
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 # we count steps instead of tracking timestamps;
 # timestamps happened to be unreliable on rpi-s (NTP issue?)
@@ -148,7 +148,7 @@ class PrinterDiscovery(object):
             else:
                 resp = flask.Response(
                     flask.render_template(
-                        'thespaghettidetective_discovery.jinja2',
+                        'obico_discovery.jinja2',
                         device_secret=self.device_secret
                     )
                 )
