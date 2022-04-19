@@ -111,9 +111,9 @@ class ObicoPlugin(
         # Define your plugin's asset files to automatically include in the
         # core UI here.
         return dict(
-            js=["js/TheSpaghettiDetectiveSettings.js", "js/TheSpaghettiDetectiveWizard.js"],
-            css=["css/TheSpaghettiDetective.css"],
-            less=["less/TheSpaghettiDetective.less"]
+            js=["js/ObicoSettings.js", "js/ObicoWizard.js"],
+            css=["css/Obico.css"],
+            less=["less/Obico.less"]
         )
 
     # ~~ Softwareupdate hook
