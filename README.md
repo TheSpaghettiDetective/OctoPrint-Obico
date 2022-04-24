@@ -1,8 +1,8 @@
-# The Spaghetti Detective Plugin - Print With Peace Of Mind
+# Obico Plugin - Print With Peace Of Mind
 
-[The Spaghetti Detective](https://www.thespaghettidetective.com) is a Machine Learning-based algorithm to automatically detects 3D print failures, send you alerts, and let you cancel prints from anywhere.
+[Obico](https://www.obico.io) is a Machine Learning-based algorithm to automatically detects 3D print failures, send you alerts, and let you cancel prints from anywhere.
 
-This plugin requires The Spaghetti Detective server to work. You can grab the server source code from [The Spaghetti Detective server github repo](https://github.com/TheSpaghettiDetective/TheSpaghettiDetective) and get it up and running. If you don't want the hassle of setting up and running your own server, you can [sign up a The Spaghetti Detective cloud account](https://www.thespaghettidetective.com/accounts/signup/).
+This plugin requires Obico server to work. You can grab the server source code from [Obico server github repo](https://github.com/TheSpaghettiDetective/TheSpaghettiDetective) and get it up and running. If you don't want the hassle of setting up and running your own server, you can [sign up a Obico cloud account](https://www.obico.io/accounts/signup/).
 
 ## Setup
 
@@ -13,4 +13,4 @@ or manually using this URL:
 
 ## Configuration
 
-Follow [The Spaghetti Detective Setup Guide](https://www.thespaghettidetective.com/docs/octoprint-plugin-setup/) to set up this plugin.
+Follow [Obico Setup Guide](https://www.obico.io/docs/octoprint-plugin-setup/) to set up this plugin.

@@ -1,0 +1,76 @@
+@import "variables.less";
+
+// Reusable components
+@import "obico-button.less";
+@import "obico-tabbable.less";
+@import "obico-collapsable.less";
+
+// Pages, blocks, sections
+@import "obico-settings-choice.less";
+@import "obico-settings-page.less";
+@import "obico-setup-wizard.less";
+
+#settings_plugin_obico {
+  font-family: 'Roboto', sans-serif;
+  height: 100%;
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+.obico-modal {
+  &.secondary-modal {
+    width: 700px;
+    margin-left: -350px;
+  }
+}
+
+
+// Text
+
+.obico-text-dark {
+  color: @color-text;
+}
+
+.obico-text-muted {
+  color: #9793A0;
+}
+
+.obico-text-error {
+  color: @color-danger;
+  *, *:hover {
+    color: @color-danger;
+  }
+}
+
+.obico-text-success {
+  color: @color-success;
+  *, *:hover {
+    color: @color-success;
+  }
+}
+
+
+// Flex
+
+.obico-flex {
+  display: flex;
+
+  &.obico-col {
+    flex-direction: column;
+  }
+
+  &.obico-align-start {
+    align-items: flex-start;
+  }
+
+  &.obico-align-center {
+    align-items: center;
+  }
+
+  &.obico-justify-center {
+    justify-content: center;
+  }
+}
+

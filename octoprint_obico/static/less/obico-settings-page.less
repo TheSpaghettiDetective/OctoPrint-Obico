@@ -1,0 +1,86 @@
+// Settings page with tabs
+
+@import "variables.less";
+
+.obico-settings-page {
+  &__section {
+    margin-top: 30px;
+
+    ul {
+      font-size: 15px;
+
+      li {
+        margin-bottom: 3px;
+      }
+    }
+  }
+
+  &__section-title {
+    font-size: 26px;
+  }
+
+  &__section-content {
+    padding-left: 18px;
+  }
+
+  .obico-test-connection-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .obico-section-panel {
+      &.obico-plugin-status {
+        max-width: 40%;
+      }
+      .obico-status-line {
+        i {
+          margin-right: 8px;
+        }
+
+        .obico-accountPro {
+          color: @color-primary;
+        }
+      }
+
+      .obico-test-connection-header {
+        margin-top: -24px;
+        text-align: center;
+      }
+
+      .obico-test-connection {
+        display: flex;
+
+        .obico-text-connection-button {
+          position: relative;
+        }
+
+        .obico-test-result {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 99px;
+          width: 230px;
+          max-width: 70%;
+          padding: 0 0 0 50px;
+          border: @color-primary solid thin;
+          border-left: 0;
+          margin-left: -50px;
+          color: @color-primary;
+          border-radius: 0 10px 10px 0;
+          font-size: 12px;
+          line-height: 125%;
+        }
+      }
+    }
+
+    @media screen and (max-width: 700px) {
+      flex-direction: column;
+      .obico-divider {
+        display: none;
+      }
+      .obico-section-panel .obico-test-connection-header {
+        margin-top: 10px;
+      }
+    }
+  }
+}

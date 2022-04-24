@@ -59,7 +59,7 @@ class LocalTunnel(object):
                 self.request_session.cookies.clear()
                 save_cookies = True
 
-            if resp.headers.pop('Set-Cookie', None) or save_cookies: # Stop set-cookie from being propagated to TSD server
+            if resp.headers.pop('Set-Cookie', None) or save_cookies: # Stop set-cookie from being propagated to Obico server
                 with open(self.cj_path, WRITE_MODE) as fp:
                     pickle.dump(self.request_session.cookies, fp)
 

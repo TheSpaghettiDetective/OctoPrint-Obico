@@ -114,8 +114,8 @@ class ObicoPlugin(
         # core UI here.
         return dict(
             js=["js/ObicoSettings.js", "js/ObicoWizard.js"],
-            css=["css/Obico.css"],
-            less=["less/Obico.less"]
+            css=["css/main.css"],
+            less=["less/main.less"]
         )
 
     # ~~ Softwareupdate hook
@@ -126,7 +126,7 @@ class ObicoPlugin(
         # for details.
         return dict(
             TheSpaghettiDetective=dict(
-                displayName="Access Anywhere - The Spaghetti Detective",
+                displayName="Obico",
                 displayVersion=self._plugin_version,
 
                 # version check: github repository

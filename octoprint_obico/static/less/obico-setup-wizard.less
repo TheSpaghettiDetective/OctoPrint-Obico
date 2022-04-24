@@ -1,0 +1,806 @@
+
+// Wizard content
+
+@import "variables.less";
+
+
+.obico-wizard-content {
+  font-family: 'Roboto', sans-serif;
+  padding-right: 18px;
+  overflow: hidden;
+  position: relative;
+
+  // Wizards with big logo as a background
+  &.obico-bg-logo {
+    background-image: url(../img/logo-bg.svg);
+    background-repeat: no-repeat;
+    background-position: -100px 120px;
+    background-size: 550px;
+
+    &.obico-bg-primary {
+      background-image: url(../img/logo-bg-dark.svg);
+    }
+  }
+
+  &.obico-bg-primary {
+    background-color: @color-primary;
+    color: #fff;
+
+    .obico-navigation .obico-back-btn {
+      color: #fff;
+    }
+  }
+
+  // Main elements
+  p {
+    font-size: @paragraph-text-size;
+  }
+
+  ul {
+    margin-top: 20px;
+    list-style-type: square;
+
+     li {
+       margin-bottom: 4px;
+     }
+
+     a {
+       color: @color-text;
+     }
+  }
+
+  a {
+    color: @color-primary;
+    text-decoration: underline;
+
+    &:hover {
+      opacity: .8;
+    }
+  }
+
+  .obico-indent-content {
+    padding-left: 80px;
+  }
+
+  // Header at the top of each page
+  .obico-navigation {
+    height: 54px;
+    display: flex;
+    align-items: bottom;
+    justify-content: space-between;
+
+    // Back button
+    .obico-back-btn {
+      text-decoration: none;
+      font-size: 18px;
+      color: #888;
+
+      &:hover {
+        opacity: .8;
+        cursor: pointer;
+      }
+
+      img {
+        width: 10px;
+        height: 20px;
+      }
+    }
+
+    // Small black logo
+    .obico-logo {
+      text-align: center;
+
+      svg {
+        width: 44px;
+        height: 43px;
+      }
+    }
+
+    // Progress circles at the top right corner
+    .obico-progress-content {
+      text-align: center;
+
+      .obico-circles {
+        font-size: 0;
+
+        .obico-circle {
+          width: 16px;
+          height: 16px;
+          display: inline-block;
+          border: 2px solid @color-primary;
+          border-radius: 50%;
+          position: relative;
+          margin-right: 18px;
+
+          &.filled {
+            background-color: @color-primary;
+          }
+
+          &.checked:before {
+            content: url("../img/checkmark-half-filled.svg");
+            display: inline-block;
+            width: 19px;
+            height: 15px;
+            position: absolute;
+            bottom: 40%;
+            left: 40%;
+          }
+
+          &:after {
+            content: "";
+            width: 18px;
+            height: 2px;
+            background-color: @color-primary;
+            position: absolute;
+            left: calc(100% + 2px);
+            top: calc(50% - 1px);
+          }
+
+          &:last-child {
+            margin-right: 0;
+
+            &:after {
+              content: none;
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  // Main style for buttons
+
+  // Wizard title
+  .obico-header {
+    margin: 4px 0 10px 0;
+  }
+
+  // Text with checkbox
+  .obico-text-with-checkbox {
+    padding-left: 22px;
+    position: relative;
+
+    &:hover {
+      cursor: pointer;
+      opacity: .8;
+    }
+
+    .obico-checkbox-wrapper {
+      width: 10px;
+      height: 10px;
+      border: 1px solid @color-primary;
+      background-color: #fff;
+      position: absolute;
+      left: 0;
+      top: 5px;
+      bottom: 1px;
+      margin: auto;
+
+      &.checked:after {
+        content: url(../img/checkmark.svg);
+        display: block;
+        position: absolute;
+        width: 15px;
+        height: 12px;
+        bottom: 4px;
+        left: 1px;
+      }
+    }
+  }
+
+  // Features block
+  .obico-features {
+    margin: 32px 0px;
+    overflow: hidden;
+    width: 100%;
+    height: 82px;
+    position: relative;
+    box-sizing: border-box;
+
+    .obico-features-blocks {
+      width: 100%;
+      position: relative;
+
+      .obico-feature {
+        padding-left: 90px;
+        min-height: 64px;
+        position: absolute;
+        display: inline-block;
+        width: 100%;
+        box-sizing: border-box;
+        top: 0;
+        left: -100%;
+
+        &[data-number="1"] {
+          left: 0;
+        }
+
+        &[data-number="2"] {
+          left: 100%;
+        }
+
+
+        .obico-feature-text {
+          min-height: 64px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+
+          .obico-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: @color-primary;
+          }
+
+          .obico-description {
+            margin: 0;
+            margin-top: 4px;
+            font-size: 15px;
+          }
+        }
+
+        img {
+          position: absolute;
+          left: 0;
+          top: 0;
+          border-radius: 50%;
+          width: 60px;
+          border: 2px solid @color-primary;
+        }
+      }
+    }
+
+    @media screen and (max-width: 800px) {
+      & {
+        height: 130px;
+      }
+    }
+
+    @media screen and (max-width: 700px) {
+      & {
+        .obico-description {
+          font-size: 13px;
+          line-height: 1.25;
+        }
+      }
+    }
+
+    @media screen and (max-width: 600px) {
+      & {
+        height: 200px;
+
+        .obico-title {
+          font-size: 15px;
+          line-height: 1;
+        }
+      }
+    }
+  }
+
+  .obico-get-started {
+    margin: 20px 0;
+
+    .obico-flex {
+      margin-top: 10px;
+    }
+
+    .setup-wizard-btn {
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      margin: 0;
+      gap: 4px;
+    }
+
+    .obico-text-with-checkbox, .obico-get-started-wrapper {
+      flex: 1;
+    }
+
+    .obico-get-started-wrapper {
+      text-align: right;
+    }
+
+    @media screen and (max-width: 600px) {
+      .obico-flex {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+    }
+  }
+
+  // Choice between mobile and web (step 2)
+  .obico-choice-container {
+    background-color: @color-primary;
+    padding: 18px;
+    border-radius: @border-radius-sm;
+
+    .obico-choice-banner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .obico-delimeter {
+        background-color: @color-text;
+        width: 3px;
+        height: 200px;
+      }
+
+      .obico-option {
+        text-align: center;
+        margin: 30px 30px;
+        color: @color-text;
+
+        &:hover {
+          cursor: pointer;
+        }
+
+        h2 {
+          color: @color-text;
+        }
+
+        .obico-button {
+          color: @color-primary;
+          background-color: #fff;
+
+          &.obico-filled {
+            color: @color-primary;
+            background-color: @color-text;
+          }
+
+          &.obico-outline {
+            background-color: @color-primary;
+            color: @color-text;
+            border: 2px solid @color-text;
+          }
+        }
+      }
+
+      @media screen and (max-width: 800px) {
+        flex-direction: column;
+
+        .obico-delimeter {
+          width: 80%;
+          height: 3px;
+        }
+      }
+    }
+  }
+
+  // Footer notes
+  .obico-notes {
+    color: @color-text;
+    text-align: center;
+
+    &.obico-primary {
+      background-color: @color-primary;
+      color: #fff;
+      margin-top: 60px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    &.obico-text-black {
+      color: @color-text;
+    }
+  }
+
+  // Setup illustration at the bottom (step 3.1 - mobile)
+  .obico-bottom-illustration {
+    background-color: @color-primary;
+    display: flex;
+    margin-top: 40px;
+    padding: 40px 40px 0;
+    align-items: flex-end;
+    justify-content: space-around;
+
+    & .obico-mobile-screen {
+      width: 60%;
+    }
+
+    .obico-mobile-links {
+      width: 25%;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .obico-qr {
+        width: 100%;
+      }
+
+      .obico-buttons {
+        display: flex;
+        justify-content: space-between;
+
+        a.obico-button {
+          padding: 0;
+          width: 45%;
+        }
+      }
+    }
+
+    @media screen and (max-width: 850px) {
+      flex-direction: column;
+      align-items: center;
+
+      & .obico-mobile-screen {
+        width: 300px;
+        max-width: 100%;
+      }
+
+      .obico-mobile-links {
+        order: -1;
+        margin-bottom: 50px;
+        width: 200px;
+        max-width: 100%;
+      }
+    }
+
+    @media screen and (max-width: 450px) {
+      .obico-google, .obico-apple {
+        flex-direction: column;
+      }
+    }
+  }
+
+  // Small gray link with arrow under title (step 3)
+  .obico-small {
+    font-size: 14px;
+    color: #9793A0;
+    line-height: 14px;
+    text-decoration: none;
+
+    &:hover {
+      opacity: .8;
+    }
+  }
+
+  // Big checkmark in the circle (final step)
+  .obico-checkmark-circle {
+    width: 115px;
+    margin-bottom: 20px;
+  }
+
+  // List with circled checkmarks markers
+  ul.obico-circled-checkmarks {
+    font-size: 18px;
+    list-style-type: none;
+
+    li {
+      margin-bottom: 6px;
+
+      div {
+        display: inline-block;
+      }
+
+      img {
+        width: 20px;
+        margin-right: 5px;
+      }
+    }
+  }
+
+  // Link to discord at the bottom (final step)
+  .obico-discord-link {
+    text-decoration: none;
+    margin: 50px 20px 20px;
+    display: inline-block;
+
+    img {
+      width: 30px;
+    }
+
+    .obico-text {
+      display: inline-block;
+      margin-left: 8px;
+      border-bottom: 1px solid @color-text;
+      font-weight: bold;
+    }
+
+    &:hover {
+      opacity: .8;
+
+      .obico-text {
+        border-bottom: none;
+      }
+    }
+  }
+
+  // Verification code page (step 4)
+  .obico-mobile-verification-wrapper {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+
+    // Left content - text and input
+    .obico-description {
+      @input-width: 240px;
+      @cell-border-width: 2px;
+      margin-top: 10px;
+
+      p {
+        width: @input-width + @cell-border-width * 5;
+        margin-bottom: 30px;
+      }
+
+      // Input for security code
+      .obico-verification-wrapper {
+        label {
+          font-weight: bold;
+        }
+
+        .obico-input-wrapper {
+          width: @input-width + @cell-border-width * 5;
+          height: 20px;
+          display: flex;
+          border: 2px solid #000;
+          border-radius: 10px;
+          background-color: #fff;
+          overflow: hidden;
+          padding: 10px 0;
+          position: relative;
+          text-align: center;
+          box-sizing: content-box;
+
+          // Cells of input wrapper
+          input {
+            box-shadow: none;
+            width: @input-width / 6 - 2px;
+            border: none;
+            border-radius: 0;
+            margin: 0;
+            padding: 0;
+            padding-left: 2px;
+            height: 100%;
+            border-right: @cell-border-width solid rgba(#000, .5);
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #000;
+            background-color: #fff;
+            box-sizing: content-box;
+
+            &:focus {
+              box-shadow: none;
+              outline: none;
+            }
+
+            &:last-child {
+              border-right: none;
+            }
+          }
+        }
+
+        textarea.obico-paste-from-clipboard-placeholder {
+          border: none;
+          margin: 0;
+          padding: 0;
+          width: 1px;
+          height: 1px;
+          opacity: 0;
+        }
+
+        .obico-error-message, .obico-success-message, .obico-unknown-error {
+          margin-top: 10px;
+          line-height: 1.25;
+          display: none;
+        }
+
+        &.error {
+          .obico-input-wrapper {
+            border-color: @color-danger;
+
+            input {
+              border-color: rgba(@color-danger, .5);
+            }
+          }
+
+          .obico-error-message {
+            display: block;
+            color: @color-danger;
+          }
+        }
+
+        &.success {
+          .obico-input-wrapper {
+            border-color: @color-success;
+
+            input {
+              border-color: rgba(@color-success, .5);
+            }
+          }
+
+          .obico-success-message {
+            display: block;
+            color: @color-success;
+          }
+        }
+
+        &.unknown {
+          .obico-unknown-error {
+            display: block;
+            color: @color-danger;
+          }
+        }
+
+        .obico-loader {
+          width: @input-width;
+          text-align: center;
+
+          svg {
+            width: 60px;
+            height: 60px;
+            display: inline-block;
+          }
+        }
+      }
+    }
+
+
+    // Right content - mobile screen illustration
+    .obico-illustration {
+      width: 180px;
+      position: relative;
+
+      .obico-image {
+        display: inline-block;
+        width: 100%;
+      }
+
+      .obico-arrow {
+        position: absolute;
+        bottom: 40%;
+        right: 83%;
+        width: 90%;
+        display: block;
+        z-index: 12;
+        transform: rotate(20deg);
+
+        @media screen and (max-width: 980px) {
+          width: 80%;
+          bottom: 41%;
+        }
+
+        @media screen and (max-width: 960px) {
+          width: 70%;
+          bottom: 42%;
+        }
+
+        @media screen and (max-width: 940px) {
+          width: 60%;
+          bottom: 43%;
+        }
+
+        @media screen and (max-width: 920px) {
+          width: 50%;
+          bottom: 43%;
+        }
+
+        @media screen and (max-width: 900px) {
+          display: none;
+        }
+      }
+    }
+
+    // Hide mobile screen illustration on small screens
+    @media screen and (max-width: 800px) {
+      flex-direction: column;
+
+      .obico-description {
+        width: 100%;
+
+        p {
+          width: 100%;
+        }
+
+        .obico-verification-wrapper {
+          margin-top: 40px;
+        }
+      }
+
+      .obico-illustration {
+        max-width: 200px;
+        margin: 30px 0;
+      }
+    }
+  }
+
+  // Last step - setup printer's name
+  .obico-successful-setup {
+    .obico-title {
+      text-align: center;
+      padding-bottom: 28px;
+    }
+
+    .obico-sub-title {
+      padding: 0px 48px 22px;
+      text-align: center;
+      max-width: 450px;
+    }
+
+    .obico-auto-close {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      padding: 0;
+      margin: 0;
+      border: none;
+      background: none;
+
+      .obico-text {
+        position: absolute;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        line-height: 100px;
+        left: 0;
+        top: 0;
+        font-size: 1.125rem;
+        border-radius: 100%;
+        background-color: #fff;
+        color: @color-text;
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+
+      .obico-progress-border {
+        position: absolute;
+        z-index: 0;
+        vertical-align: middle;
+        width: 120px;
+        height: 120px;
+        left: -10px;
+        top: -10px;
+        transform: rotate(-90deg);
+
+        .obico-under {
+          stroke: #fff;
+          fill: none;
+        }
+
+        .obico-progress {
+          /*
+            2 * π * r = 2 * 3.141592 * 21 = 131.526864
+            do not use 'calc(2 * 3.141592 * 21)' - it doesn't work in Firefox
+          */
+          stroke-dasharray: 131.526864;
+          stroke-dashoffset: 131.526864;
+          stroke: lighten(@color-primary, 20%);
+          transition: all 10s linear;
+          fill: none;
+        }
+      }
+
+      &.active {
+        .obico-progress {
+          stroke-dashoffset: 0;
+        }
+      }
+    }
+
+  }
+}
+
+html.themeify {
+  // Hide by default (for unknown themes)
+  .obico-wizard-content .obico-bg-logo {
+    background-image: none;
+  }
+
+  // Light background themes
+  &.material_ui_light, &.dyl {
+    .obico-wizard-content.obico-bg-logo {
+      background-image: url(../img/logo-bg.svg);
+    }
+  }
+
+  // Dark background themes
+  &.discorded, &.cyborg, &.discoranged, &.nighttime {
+    .obico-wizard-content.obico-bg-logo {
+      background-image: url(../img/logo-bg-dark.svg);
+    }
+  }
+}

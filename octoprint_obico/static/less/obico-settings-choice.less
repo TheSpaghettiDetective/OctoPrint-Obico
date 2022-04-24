@@ -1,0 +1,88 @@
+// First page with choice of setting tabs
+
+@import "variables.less";
+
+.obico-settings-choice {
+  min-height: 100%;
+  padding: 32px;
+  border-radius: @border-radius-md;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 30px;
+  background-color: @color-surface;
+
+  &__logo {
+    margin-top: 30px;
+    text-align: center;
+
+    img {
+      width: 300px;
+      max-width: 80%;
+    }
+  }
+
+  &__content {
+    width: 100%;
+  }
+
+  &__choice-unavailable {
+    text-align: center;
+    i {
+      color: @color-danger;
+    }
+  }
+
+  &__choice-wrapper {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &__choice-option {
+    flex: 0 0 46%;
+    transition: color .3s ease-out;
+    color: @color-on-surface;
+
+    &:hover {
+      color: @color-primary;
+      cursor: pointer;
+    }
+  }
+
+  &__choice-description {
+    font-size: 16px;
+    margin-top: 10px;
+    padding-left: 10px;
+    font-weight: normal;
+
+    li {
+      line-height: 125%;
+    }
+  }
+
+  &__footer {
+    width: 100%;
+    display: flex;
+    font-size: 14px;
+    align-items: center;
+    text-align: left;
+    color: @color-on-surface;
+
+    img {
+      margin-right: 20px;
+    }
+
+    a {
+      color: @color-primary;
+    }
+  }
+
+  @media screen and (max-width: 700px) {
+    &__choice-wrapper {
+      flex-direction: column;
+      gap: 20px;
+    }
+  }
+}
+

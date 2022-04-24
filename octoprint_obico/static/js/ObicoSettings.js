@@ -1,13 +1,13 @@
 /*
- * View model for TheSpaghettiDetective Wizard
+ * View model for Obico Settings
  *
- * Author: The Spaghetti Detective
+ * Author:  Obi's Nest
  * License: AGPLv3
  */
 $(function () {
 
     $(function() {
-        $('.tsd-collapsable-title').click(function() {
+        $('.obico-collapsable__title').click(function() {
             $(this).parent().toggleClass('opened');
         })
     });
@@ -95,13 +95,13 @@ $(function () {
                 _.get(data, 'alerts', []).forEach(function (alertMsg) {
                     self.displayAlert(alertMsg);
                 })
-                
+
                 if (self.settingsViewModel.settings.plugins.obico.tsd_migrated
                     && self.settingsViewModel.settings.plugins.obico.tsd_migrated() == 'yes') {
                     self.showTsdMigratedModal();
                     return;
                 }
-                
+
                 if (!self.configured() && !self.isWizardShown() && !self.wizardViewModel.isDialogActive()) {
                     self.showWizardModal();
                     self.isWizardShown(true);
@@ -110,8 +110,8 @@ $(function () {
 
                 if (_.get(data, 'sentry_opt') === "out") {
                     var sentrynotice = new PNotify({
-                        title: "The Spaghetti Detective",
-                        text: "<p>Turn on bug reporting to help us make TSD plugin better?</p><p>The debugging info included in the report will be anonymized.</p>",
+                        title: "Obico",
+                        text: "<p>Turn on bug reporting to help us make Obico plugin better?</p><p>The debugging info included in the report will be anonymized.</p>",
                         hide: false,
                         destroy: true,
                         confirm: {
@@ -159,15 +159,15 @@ $(function () {
             switch (page) {
                 case 'troubleshooting':
                     $('li[data-page="advanced"]').removeClass('active');
-                    $('#tsd-advanced').removeClass('active');
+                    $('#obico-advanced').removeClass('active');
                     $('li[data-page="troubleshooting"]').addClass('active');
-                    $('#tsd-troubleshooting').addClass('active');
+                    $('#obico-troubleshooting').addClass('active');
                     break;
                 case 'advanced':
                     $('li[data-page="troubleshooting"]').removeClass('active');
-                    $('#tsd-troubleshooting').removeClass('active');
+                    $('#obico-troubleshooting').removeClass('active');
                     $('li[data-page="advanced"]').addClass('active');
-                    $('#tsd-advanced').addClass('active');
+                    $('#obico-advanced').addClass('active');
                     break;
             }
         };
@@ -241,14 +241,14 @@ $(function () {
                 if (alertMsg.cause === "server") {
                     diagnosticReportAvailable = true
                     text =
-                        "The Spaghetti Detective failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.";
+                        "Obico failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.";
                 } else if (alertMsg.cause === "webcam") {
                     diagnosticReportAvailable = true
                     text =
-                        'The Spaghetti Detective plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.thespaghettidetective.com/docs/warnings/webcam-connection-error-popup/">this troubleshooting guide</a>.';
+                        'Obico plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.thespaghettidetective.com/docs/warnings/webcam-connection-error-popup/">this troubleshooting guide</a>.';
                 } else if (alertMsg.cause === "bailed_because_tsd_plugin_running") {
                     text =
-                        'You are still running The Spaghetti Detective.';
+                        'You are still running Obico.';
                 }
                 if (diagnosticReportAvailable) {
                     buttons.unshift(
@@ -265,7 +265,7 @@ $(function () {
             if (alertMsg.level === "warning") {
                 if (alertMsg.cause === 'streaming') {
                     text =
-                        '<p>The Premium Webcam Streaming failed to start. The Spaghetti Detective has switched to the Basic Streaming.</p><p><a href="https://www.thespaghettidetective.com/docs/warnings/webcam-switched-to-basic-streaming/">Learn more >>></a></p>';
+                        '<p>The Premium Webcam Streaming failed to start. Obico has switched to the Basic Streaming.</p><p><a href="https://www.obico.io/docs/warnings/webcam-switched-to-basic-streaming/">Learn more >>></a></p>';
                 }
                 if (alertMsg.cause === 'cpu') {
                     text =
@@ -273,7 +273,7 @@ $(function () {
                 }
                 if (alertMsg.cause === 'octolapse_compat_mode') {
                     text =
-                        '<p>Octolapse plugin detected! The Spaghetti Detective has switched to "Premium (compability)" streaming mode.</p>';
+                        '<p>Octolapse plugin detected! Obico has switched to "Premium (compability)" streaming mode.</p>';
                 }
                 if (alertMsg.cause === "restart_required") {
                     text = '<p></p><p>Settings saved! If you are in the setup wizard, restart OctoPrint after the setup is done. Otherwise, restart OctoPrint now for the changes to take effect.</p>';
@@ -283,7 +283,7 @@ $(function () {
 
             if (text) {
                 new PNotify({
-                    title: "The Spaghetti Detective",
+                    title: "Obico",
                     text: text,
                     type: msgType,
                     hide: false,

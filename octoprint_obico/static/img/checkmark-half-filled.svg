@@ -1,16 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="19px" height="15px" viewBox="0 0 19 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
-    <title>Group</title>
-    <desc>Created with Sketch.</desc>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="Artboard-3" transform="translate(-795.000000, -244.000000)">
-            <g id="Group-424">
-                <g id="Group" transform="translate(795.000000, 244.000000)">
-                    <path d="M18.2806,1.662 L10.5936,8.51 C10.2236,7.864 9.7566,7.27 9.2216,6.759 L16.7976,0 L18.2806,1.662 Z" id="Fill-422" fill="#9965F4"></path>
-                    <path d="M10.594,8.5096 L3.635,14.7116 L0,10.8396 L1.617,9.3186 L3.777,11.6116 L9.222,6.7586 C9.756,7.2706 10.224,7.8636 10.594,8.5096" id="Fill-423" fill="#FFFFFF"></path>
-                </g>
-            </g>
-        </g>
-    </g>
+<svg width="19" height="15" viewBox="0 0 19 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M18.2806 1.662L10.5936 8.51C10.2236 7.864 9.75656 7.27 9.22156 6.759L16.7976 0L18.2806 1.662Z" fill="#3CEAC0"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M10.594 8.50954L3.635 14.7115L0 10.8395L1.617 9.31854L3.777 11.6115L9.222 6.75854C9.756 7.27054 10.224 7.86354 10.594 8.50954Z" fill="white"/>
 </svg>

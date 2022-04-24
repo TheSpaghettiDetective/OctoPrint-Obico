@@ -1,0 +1,57 @@
+// Hideble mini-section
+
+@import "variables.less";
+
+.obico-collapsable {
+  margin-left: 25px;
+
+  &__title {
+    font-size: 20px;
+    border-bottom: 1px solid #757575;
+    position: relative;
+
+    &:before {
+      content: url(../img/toggle-arrow.svg);
+      width: 10px;
+      position: absolute;
+      top: 0;
+      left: -25px;
+    }
+  }
+
+  &__counter {
+    font-weight: normal;
+
+    &:before {
+      content: "(";
+    }
+
+    &:after {
+      content: ")";
+    }
+  }
+
+  &__content {
+    height: 0;
+    overflow: hidden;
+  }
+
+  &:hover & {
+    &__title {
+      opacity: .8;
+      cursor: pointer;
+    }
+  }
+
+  &.opened & {
+    &__title {
+      &:before {
+        transform: rotate(90deg);
+      }
+    }
+
+    &__content {
+      height: auto;
+    }
+  }
+}

@@ -1,0 +1,87 @@
+@import "variables.less";
+
+.obico-button {
+  border-radius: 100px;
+  padding: 10px 26px;
+  font-size: 16px;
+  line-height: 18px;
+  text-decoration: none !important;
+  display: inline-block;
+  text-align: center;
+  font-weight: bold;
+
+  --button-color: @color-primary;
+  --button-hover-color: @color-primary-hover;
+  --button-text-color: @color-text;
+  &_dark-scheme {
+    --button-color: @color-primary;
+    --button-hover-color: @color-primary;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &[disabled] {
+    opacity: .4;
+
+    &:hover {
+      opacity: .4;
+      cursor: default;
+    }
+  }
+
+  // Solid button
+  &_solid {
+    border: none;
+    background-color: var(--button-color);
+    color: @color-text;
+
+    &:hover {
+      background-color: var(--button-hover-color);
+      cursor: pointer;
+      text-decoration: none;
+      color: @color-text;
+    }
+  }
+
+  // Outline button
+  &_outline {
+    border: 2px solid var(--button-color);
+    color: var(--button-color);
+    background: none;
+
+    &:hover {
+      background-color: var(--button-hover-color);
+      color: var(--button-text-color);
+      opacity: 1;
+    }
+  }
+
+  // Button with icon
+  &_with-icon {
+    position: relative;
+    display: block;
+
+    img {
+      width: 20px;
+      position: absolute;
+      right: 10px;
+      opacity: 0;
+      transition: opacity .3s ease-out;
+    }
+
+    &:hover {
+      img {
+        opacity: 1;
+      }
+    }
+  }
+
+  // Circle button
+  &_circle {
+    width: 99px;
+    height: 99px;
+    border-radius: 50%;
+  }
+}

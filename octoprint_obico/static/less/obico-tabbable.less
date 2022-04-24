@@ -1,0 +1,152 @@
+@import "variables.less";
+
+.obico-tabbable {
+
+  &__tabs {
+    // Bootstrap styles
+    line-height: 20px;
+    list-style: none;
+    &:before, &:after {
+      display: table;
+      line-height: 0;
+      content: "";
+    }
+    &:after {
+      clear: both;
+    }
+    // End of Bootstrap styles
+
+    background-color: @color-primary;
+    margin: 0;
+    padding: 8px 0 0 116px;
+    position: relative;
+    border: none;
+    border-bottom: 8px solid #fff;
+    border-radius: @border-radius-sm @border-radius-sm 0 0;
+  }
+
+  &__logo {
+    display: block;
+    width: 60px;
+    height: 30px;
+    position: absolute;
+    bottom: 0;
+    top: 0;
+    left: 30px;
+    margin: auto;
+
+    &:hover {
+      cursor: pointer;
+      opacity: .8;
+    }
+  }
+
+  &__tab {
+    float: left;
+    margin: 0 5px 0 0;
+    position: relative;
+    top: 8px;
+
+    &.active {
+      z-index: 2;
+      top: 0;
+
+      .obico-tabbable__tab-link {
+        color: @color-text;
+        background-color: #fff !important;
+        padding-top: 12px;
+        padding-bottom: 1px;
+        font-size: 18px;
+
+        &:hover {
+          opacity: 1;
+        }
+
+        &:before {
+          box-shadow: 10px 0 0 0 #fff;
+        }
+
+        &:after {
+          box-shadow: -10px 0 0 0 #fff;
+        }
+      }
+
+      .obico-tabbable__tab-title {
+        display: inline-block;
+        padding: 0 0 5px;
+      }
+    }
+  }
+
+  &__tab-link {
+    margin: 0;
+    text-decoration: none;
+    border: none;
+    display: block;
+    padding: 5px 30px;
+    border-radius: 10px 10px 0 0;
+    background-color: @color-surface !important;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    transition: font-size .1s;
+    position: relative;
+
+    &:hover {
+      color: #fff;
+    }
+
+    &:before, &:after {
+      content: "";
+      position: absolute;
+      height: 10px;
+      width: 20px;
+      bottom: 0;
+    }
+
+    &:after {
+      right: -20px;
+      border-radius: 0 0 0 10px;
+      box-shadow: -10px 0 0 0 @color-surface;
+    }
+
+    &:before {
+      left: -20px;
+      border-radius: 0 0 10px 0;
+      box-shadow: 10px 0 0 0 @color-surface;
+    }
+  }
+
+  @media screen and (max-width: 850px) {
+    &__tabs {
+      padding-top: 10px;
+      padding-right: 20px;
+    }
+
+    &__tab {
+      position: static;
+      margin-bottom: 10px;
+      float: none;
+
+      &.active {
+        .obico-tabbable__tab-link {
+          font-size: 16px;
+        }
+
+        .obico-tabbable__tab-title {
+          border-bottom: none;
+          padding-bottom: 10px;
+        }
+      }
+    }
+
+    &__tab-link {
+      padding: 5px 20px;
+      border-radius: 10px;
+
+      &:before, &:after {
+        content: none;
+      }
+    }
+  }
+}

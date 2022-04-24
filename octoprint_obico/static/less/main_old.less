@@ -51,21 +51,9 @@
     align-items: center;
   }
 
-  &.obico-align-start {
-    align-items: flex-start;
-  }
-
   &.tsd-justify-center {
     justify-content: center;
   }
-}
-
-.obico-text-muted {
-  color: #9793A0;
-}
-
-.tsd-text-bold {
-  font-weight: bold;
 }
 
 // API call animation
@@ -336,7 +324,8 @@
       background-color: #fff;
       position: absolute;
       left: 0;
-      top: 5px;
+      top: 0;
+      bottom: 1px;
       margin: auto;
 
       &.checked:after {
@@ -353,7 +342,7 @@
 
   // Features block
   .tsd-features {
-    margin: 32px 0px;
+    margin-top: 50px;
     overflow: hidden;
     width: 100%;
     height: 82px;
@@ -443,32 +432,10 @@
   .tsd-get-started {
     margin: 20px 0;
 
-    .obico-flex {
-      margin-top: 10px;
-    }
-
     .tsd-button {
-      font-weight: bold;
-      display: inline-flex;
-      align-items: center;
-      margin: 0;
-      gap: 4px;
-    }
-
-    .obico-text-with-checkbox, .obico-get-started-wrapper {
-      flex: 1;
-    }
-
-    .obico-get-started-wrapper {
-      text-align: right;
-    }
-
-    @media screen and (max-width: 600px) {
-      .obico-flex {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-      }
+      padding: 24px 40px;
+      font-size: 24px;
+      font-weight: bolder;
     }
   }
 
