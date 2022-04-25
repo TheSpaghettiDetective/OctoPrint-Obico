@@ -38,7 +38,7 @@ $(function () {
         self.serverType = ko.observable('cloud');
 
         self.onStartupComplete = function () {
-            self.serverType(getServerType(self.settingsViewModel.settings.plugins.obico.endpoint_prefix()));
+            self.reset();
         };
 
         self.isServerInvalid = ko.observable(false);
@@ -155,7 +155,9 @@ $(function () {
                 }
 
                 self.serverType(getServerType(url))
-                self.settingsViewModel.saveData({plugins: {obico: {endpoint_prefix: url}}});
+                if (self.settingsViewModel.settings.plugins.obico.endpoint_prefix() !== self.initialServerEndpointPrefix) {
+                    self.settingsViewModel.saveData({plugins: {obico: {endpoint_prefix: url}}});
+                }
             }
 
             self.toStep(self.step() + 1);
@@ -246,6 +248,8 @@ $(function () {
             for (let i = 1; i <= 6; i++) {
                 verificationWrapper.find('.obico-verification-code-input input[data-number='+ i +']').val('');
             }
+            self.serverType(getServerType(self.settingsViewModel.settings.plugins.obico.endpoint_prefix()));
+            self.initialServerEndpointPrefix = self.settingsViewModel.settings.plugins.obico.endpoint_prefix();
         }
 
         self.hideWizardModal = function() {

@@ -48,6 +48,7 @@ $(function () {
         self.wizardAutoPoppedup = ko.observable(false);
         self.disableWizardAutoPopUp = ko.observable(false);
         self.serverType = ko.observable('cloud');
+        self.hasTsdMigratedModalShown = ko.observable(false);
 
         self.onStartupComplete = function (plugin, data) {
             self.fetchPluginStatus();
@@ -97,8 +98,10 @@ $(function () {
                 })
 
                 if (self.settingsViewModel.settings.plugins.obico.tsd_migrated
-                    && self.settingsViewModel.settings.plugins.obico.tsd_migrated() == 'yes') {
+                    && self.settingsViewModel.settings.plugins.obico.tsd_migrated() == 'yes'
+                    && !self.hasTsdMigratedModalShown()) {
                     self.showTsdMigratedModal();
+                    self.hasTsdMigratedModalShown(true);
                     return;
                 }
 
