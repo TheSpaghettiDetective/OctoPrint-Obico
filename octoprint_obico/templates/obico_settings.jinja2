@@ -96,7 +96,7 @@
               <div class="alert alert-warning" role="alert">
                 The Premium Webcam Streaming not eligible, for one of the following reasons:
                 <ul>
-                  <li>Your Obico account is a Free account. <a href="https://www.obico.io/docs/webcam-streaming-for-human-eyes/">Why is Free account not eligbile?</a></li>
+                  <li>Your Obico account is a Free account. <a href="https://www.obico.io/docs/user_guides/webcam-streaming-for-human-eyes/">Why is Free account not eligbile?</a></li>
                   <li>Your OctoPrint is not connected to the Obico server, hence the plugin can't fetch your account status.</li>
                 </ul>
               </div>
@@ -111,7 +111,7 @@
                       <div class="form-check" style="margin-top: 8px;">
                         <input id="disable-streaming" class="form-check-input" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.disable_video_streaming" style="margin-top: 0px;">
                         <label class="form-check-label" for="disable-streaming" style="display: inline">
-                          Disable the Premium Webcam Streaming. <a href="https://www.obico.io/docs/disable-25-fps-streaming/">(Why would I want to do that?)</a>
+                          Disable the Premium Webcam Streaming. <a href="https://www.obico.io/docs/user_guides/disable-25-fps-streaming/">(Why would I want to do that?)</a>
                         </label>
                       </div>
                   </div>
@@ -123,7 +123,7 @@
                   </div>
               </div>
               <div data-bind="visible: !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
-                  <label class="control-label">Compatibility mode<div><a href="https://www.obico.io/docs/streaming-compatibility-mode/">(What is it?)</a></div></label>
+                  <label class="control-label">Compatibility mode<div><a href="https://www.obico.io/docs/user_guides/streaming-compatibility-mode/">(What is it?)</a></div></label>
                   <div class="controls">
                       <label class="radio">
                           <input type="radio" name="webcamCompatibleModeGroup" value="auto" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Automatic (default). Obico will automatically switch to compatibility mode if necessary. Select this option if you are not sure.
@@ -262,7 +262,7 @@
       </section>
       <section class="obico-settings-page__section">
         <h1 class="obico-settings-page__section-title">Troubleshooting Tips</h1>
-        <p>Make sure you have followed <a href="https://www.obico.io/docs/octoprint-plugin-setup/">the setup guide</a> to link OctoPrint to your Obico account successfully. Check out our <a href="https://www.thespaghettidetective.com/help">help docs</a> for detailed troubleshooting guides.</p>
+        <p>Make sure you have followed <a href="https://www.obico.io/docs/user_guides/octoprint-plugin-setup/">the setup guide</a> to link OctoPrint to your Obico account successfully. Check out our <a href="https://www.thespaghettidetective.com/help">help docs</a> for detailed troubleshooting guides.</p>
         <div class="obico-settings-page__section-content">
           <div class="obico-collapsable">
             <h4 class="obico-collapsable__title">
@@ -272,7 +272,7 @@
             <div class="obico-collapsable__content">
               <h5>I'm getting laggy webcam streaming.</h5>
               <ul>
-                <li>If you have a free Obico account and it's out of the free trial period, your webcam streaming will be 1 frame per 10 seconds. <a href="https://www.obico.io/docs/webcam-streaming-for-human-eyes/">25 frames per second webcam streaming is a premium feature for Pro accounts only.</a></li>
+                <li>If you have a free Obico account and it's out of the free trial period, your webcam streaming will be 1 frame per 10 seconds. <a href="https://www.obico.io/docs/user_guides/webcam-streaming-for-human-eyes/">25 frames per second webcam streaming is a premium feature for Pro accounts only.</a></li>
                 <li>Have you restarted OctoPrint and/or your Rasbperry Pi after upgrading to Pro account?</li>
                 <li>Make sure the Premium Streaming is not disabled in the "Settings" section.</li>
               </ul>
@@ -281,7 +281,7 @@
                 <li>The Basic Webcam Streaming (free account) is on only when you are printing. You won't see a webcam feed when the printer is idle.</li>
                 <li>However, the Premium Webcam Streaming is always on. If you have a Pro account, you should see webcam feed even if the printer is idle.</li>
                 <li>You need to make sure webcam URL is configured correctly in OctoPrint, and can be reached from your Raspberry Pi.</li>
-                <li>Check out <a href="https://www.obico.io/docs/webcam-feed-is-not-showing/">the detailed help document</a>.</li>
+                <li>Check out <a href="https://www.obico.io/docs/user_guides/webcam-feed-is-not-showing/">the detailed help document</a>.</li>
               </ul>
               <h5>I got a warning that says "switched to the Basic Streaming".</h5>
               <ul>
@@ -291,7 +291,7 @@
               <ul>
                 <li>If you have set streaming compability mode to "always", please set it back to "auto".</li>
                 <li>If you have to always stream in compability mode, set webcam resolution to 640x480, fps to 10. Then restart the Pi.</li>
-                <li>Learn more about <a href="https://www.obico.io/docs/streaming-compatibility-mode/">the streaming compability mode</a>.</li>
+                <li>Learn more about <a href="https://www.obico.io/docs/user_guides/streaming-compatibility-mode/">the streaming compability mode</a>.</li>
               </ul>
             </div>
           </div>
@@ -303,14 +303,14 @@
             <div class="obico-collapsable__content">
               <h5>I got a spaghetti alert but there was nothing wrong.</h5>
               <ul>
-                <li>This happens because The Detective is not perfect at her job yet.  <a href="https://www.obico.io/docs/how-does-credits-work/">Help her improve.</a></li>
+                <li>This happens because The Detective is not perfect at her job yet.  <a href="https://www.obico.io/docs/user_guides/how-does-credits-work/">Help her improve.</a></li>
               </ul>
               <h5>The Detective is "not watching".</h5>
               <ul>
                 <li>The Detective is not detecting when your printer is not printing.</li>
                 <li>You have left "watching for failures" off.</li>
                 <li>The plugin has trouble connecting to Obico server</li>
-                <li><a href="https://www.obico.io/docs/detective-not-watching/#4-you-have-run-out-of-detective-hours">You have run out of Detective Hours</a>.</li>
+                <li><a href="https://www.obico.io/docs/user_guides/detective-not-watching/#4-you-have-run-out-of-detective-hours">You have run out of Detective Hours</a>.</li>
               </ul>
             </div>
           </div>
@@ -394,7 +394,7 @@
       There have been no errors since last time OctoPrint rebooted.
     </b>
     <b class="obico-text-error" data-bind="visible: hasServerErrors() || hasWebcamErrors()">
-      Obico plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.obico.io/docs/connectivity-error-report/">trouble-shooting page</a> or <a href="https://www.obico.io/docs/contact-us-for-support/">reach out to us</a> for help.
+      Obico plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.obico.io/docs/user_guides/connectivity-error-report/">trouble-shooting page</a> or <a href="https://www.obico.io/docs/user_guides/contact-us-for-support/">reach out to us</a> for help.
     </b>
     <div data-bind="visible: hasServerErrors()">
       <hr />

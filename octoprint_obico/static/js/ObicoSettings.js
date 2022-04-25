@@ -245,7 +245,7 @@ $(function () {
                 } else if (alertMsg.cause === "webcam") {
                     diagnosticReportAvailable = true
                     text =
-                        'Obico plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.thespaghettidetective.com/docs/warnings/webcam-connection-error-popup/">this troubleshooting guide</a>.';
+                        'Obico plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.obico.io/docs/user_guides/warnings/webcam-connection-error-popup/">this troubleshooting guide</a>.';
                 } else if (alertMsg.cause === "bailed_because_tsd_plugin_running") {
                     text =
                         'You are still running Obico.';
@@ -265,7 +265,7 @@ $(function () {
             if (alertMsg.level === "warning") {
                 if (alertMsg.cause === 'streaming') {
                     text =
-                        '<p>The Premium Webcam Streaming failed to start. Obico has switched to the Basic Streaming.</p><p><a href="https://www.obico.io/docs/warnings/webcam-switched-to-basic-streaming/">Learn more >>></a></p>';
+                        '<p>The Premium Webcam Streaming failed to start. Obico has switched to the Basic Streaming.</p><p><a href="https://www.obico.io/docs/user_guides/warnings/webcam-switched-to-basic-streaming/">Learn more >>></a></p>';
                 }
                 if (alertMsg.cause === 'cpu') {
                     text =
