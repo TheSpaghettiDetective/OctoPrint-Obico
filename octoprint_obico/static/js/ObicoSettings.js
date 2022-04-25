@@ -1,7 +1,7 @@
 /*
  * View model for Obico Settings
  *
- * Author:  Obi's Nest
+ * Author:  aNoO
  * License: AGPLv3
  */
 $(function () {

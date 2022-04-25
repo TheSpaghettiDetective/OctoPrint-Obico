@@ -479,7 +479,7 @@ class ObicoPlugin(
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
 __plugin_name__ = "Obico for OctoPrint"
-__plugin_author__ = "Obi's Nest"
+__plugin_author__ = "aNoO"
 __plugin_url__ = "https://www.obico.io/octoprint"
 __plugin_description__ = "Monitor and control your printer anywhere over the internet, on your phone! No port-forwarding or VPN is needed. Best part? AI-based failure detection!"
 __plugin_license__ = "AGPLv3"

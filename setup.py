@@ -23,7 +23,7 @@ An essential plugin if you print remotely. Monitor and control your printer over
 """
 
 # The plugin's author. Can be overwritten within OctoPrint's internal data via __plugin_author__ in the plugin module
-plugin_author = "Obi's Nest"
+plugin_author = "aNoO"
 
 # The plugin's author's mail address.
 plugin_author_email = "admin@obico.io"
