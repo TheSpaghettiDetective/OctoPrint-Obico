@@ -23,7 +23,7 @@
           <ul class="obico-settings-choice__choice-description">
             <li>View linked printer name</li>
             <li>Premium Webcam Streaming</li>
-            <li>Configure private Obico server</li>
+            <li>Configure private Obico Server</li>
             <li>Opt in error reporting</li>
           </ul>
         </div>
@@ -97,7 +97,7 @@
                 The Premium Webcam Streaming not eligible, for one of the following reasons:
                 <ul>
                   <li>Your Obico account is a Free account. <a href="https://www.obico.io/docs/user_guides/webcam-streaming-for-human-eyes/">Why is Free account not eligbile?</a></li>
-                  <li>Your OctoPrint is not connected to the Obico server, hence the plugin can't fetch your account status.</li>
+                  <li>Your OctoPrint is not connected to the Obico Server, hence the plugin can't fetch your account status.</li>
                 </ul>
               </div>
             </div>
@@ -152,10 +152,10 @@
                     value="cloud"
                     data-bind="checked: serverType, click: resetEndpointPrefix"
                   >
-                    Obico Cloud
+                    The Obico Cloud
                   </input>
                 </label>
-                <div class="radio obico-text-muted" style="margin-bottom: 6px;">Proudly maintained byObico team. Free plan for 1 printer. Pro plan starts from $4/month. <a href="https://app.thespaghettidetective.com/">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
+                <div class="radio obico-text-muted" style="margin-bottom: 6px;">Proudly maintained by the Obico team. Free for 1 printer. Pro plan starts from $4/month. <a href="https://app.thespaghettidetective.com/">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
                 <label class="radio">
                   <input
                     type="radio"
@@ -163,7 +163,7 @@
                     value="self-hosted"
                     data-bind="checked: serverType, click: clearEndpointPrefix"
                   >
-                    A self-hosted Obico server
+                    A self-hosted Obico Server.  <a href="https://www.obico.io/docs/server_guides/">Host your own Obico Server <i class="fa fa-external-link" aria-hidden="true"></i></a>
                   </input>
                 </label>
                 <div class="radio">
@@ -201,7 +201,7 @@
           <div class="obico-test-connection-wrapper">
             <div class="obico-section-panel obico-plugin-status" data-bind="visible: !linkedPrinter.id()">
               <div class="obico-text-error">
-                Plugin can't reach Obico server. Press the "TEST" button to further diagnose the problem.
+                Plugin can't reach Obico Server. Press the "TEST" button to further diagnose the problem.
               </div>
             </div>
             <div class="obico-section-panel obico-plugin-status" data-bind="visible: linkedPrinter.id">
@@ -309,7 +309,7 @@
               <ul>
                 <li>The Detective is not detecting when your printer is not printing.</li>
                 <li>You have left "watching for failures" off.</li>
-                <li>The plugin has trouble connecting to Obico server</li>
+                <li>The plugin has trouble connecting to Obico Server</li>
                 <li><a href="https://www.obico.io/docs/user_guides/detective-not-watching/#4-you-have-run-out-of-detective-hours">You have run out of Detective Hours</a>.</li>
               </ul>
             </div>
@@ -356,7 +356,7 @@
 <div id="wizardModal" class="obico-modal modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-    <h4 style="text-align: center;">Obico Setup Wizard</h4>
+    <h4 style="text-align: center;"><img src="plugin/obico/static/img/logo-square.svg" style="width: 1.6em; height: 1.6em; margin-right: 1.6em;">Obico Setup Wizard</h4>
   </div>
   <div class="modal-body">
     <div class="alert alert-warning" role="alert" data-bind="visible: configured">

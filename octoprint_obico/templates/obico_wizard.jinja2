@@ -1,12 +1,9 @@
-<div id="obico-wizard" class="obico-wizard-content" data-bind="css: {'obico-bg-logo': [1, 4, 5].includes(step()), 'obico-bg-primary': [5].includes(step())}">
+<div id="obico-wizard" class="obico-wizard-content" data-bind="css: {'obico-bg-primary': [5].includes(step())}">
   <div class="obico-navigation">
     <a href="#" class="obico-back-btn" data-bind="click: prevStep, visible: ![1,5].includes(step())">
       ❮ Back
     </a>
     <div style="width: 70px;" data-bind="visible: step() === 1"></div>
-    <div class="obico-logo" data-bind="visible: step() !== 5">
-      <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 88"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M44.63 0a44.63 44.63 0 0 1 21.59 83.68c.62-12.63.47-27.67-6.8-32.76a2.683 2.683 0 0 1-.06-.59 15.36 15.36 0 0 0 6.91-12.8v-1.06a15.32 15.32 0 0 0-4.42-10.75 15 15 0 0 0 3.33-8.86 36 36 0 0 1-4.09 3.45 31.273 31.273 0 0 1-6.23 3.5c-10.33 4.26-21.81 2-30.91-6.95a14.999 14.999 0 0 0 3.5 9.07 15.31 15.31 0 0 0-4.22 10.54v1.06a15.37 15.37 0 0 0 7.08 12.91c0 .253-.02.513-.06.78l-.07.09c-8.13 6.19-7.68 24.21 1.46 36A44.63 44.63 0 0 1 44.63 0Z" fill="#2D3E4F"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h89.25v87.33H0z"/></clipPath></defs></svg>
-    </div>
     <div class="obico-progress-content" data-bind="visible: step() !== 5">
       <div class="obico-circles">
         <div class="obico-circle" data-bind="css: {filled: step() >= 1, checked: step() > 1}"></div>
@@ -18,9 +15,8 @@
   </div>
 
   <div data-bind="visible: step() === 1" class="obico-home-slide">
-    <div class="obico-indent-content">
+    <div>
       <div class="obico-header">
-        <div class="obico-subtitle">MEET THE</div>
         <h1 class="obico-title">Obico for OctoPrint</h1>
       </div>
       <p><strong>Obico</strong> is an <a href="https://github.com/TheSpaghettiDetective">open source project</a> that lets you access and monitor OctoPrint <strong>anywhere, on your phone</strong>. <br>It also uses AI (Deep Learning) to detect print failures in real time and send you alerts.</p>
@@ -57,7 +53,7 @@
         </div>
       </div>
       <div class="obico-get-started">
-        <div>Which Obico server do you want to link OctoPrint to?</div>
+        <div>Which Obico Server do you want to link OctoPrint to?</div>
         <div class="control-group">
           <div class="controls">
               <label class="radio">
@@ -67,10 +63,10 @@
                   value="cloud"
                   data-bind="checked: serverType, click: resetEndpointPrefix"
                 >
-                  Obico Cloud
+                  The Obico Cloud
                 </input>
               </label>
-              <div class="radio obico-text-muted" style="margin-bottom: 6px;">Proudly maintained byObico team. Free plan for 1 printer. Pro plan starts from $4/month. <a href="https://app.obico.io/">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
+              <div class="radio obico-text-muted" style="margin-bottom: 6px;">Proudly maintained by the Obico team. Free for 1 printer. Pro plan starts from $4/month. <a href="https://app.obico.io/">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
 
               <label class="radio">
                 <input
@@ -79,7 +75,7 @@
                   value="self-hosted"
                   data-bind="checked: serverType, click: clearEndpointPrefix"
                 >
-                  A self-hosted Obico server
+                  A self-hosted Obico Server.  <a href="https://www.obico.io/docs/server_guides/">Host your own Obico Server <i class="fa fa-external-link" aria-hidden="true"></i></a>
                 </input>
               </label>
               <div class="radio">
@@ -210,7 +206,7 @@
   </div>
 
   <div data-bind="visible: step() === 4">
-    <div class="obico-indent-content">
+    <div>
       <div class="obico-header">
         <h2>Verification Code</h2>
       </div>
@@ -233,7 +229,7 @@
               Did you enter an expired code?
             </small>
             <small class="obico-unknown-error">
-              Failed to talk to Obico server!<br>
+              Failed to talk to Obico Server!<br>
               Make sure OctoPrint is connected to the Internet.
             </small>
             <small class="obico-success-message">

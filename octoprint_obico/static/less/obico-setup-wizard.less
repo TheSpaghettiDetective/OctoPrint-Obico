@@ -6,21 +6,9 @@
 
 .obico-wizard-content {
   font-family: 'Roboto', sans-serif;
-  padding-right: 18px;
+  padding: 0px 18px;
   overflow: hidden;
   position: relative;
-
-  // Wizards with big logo as a background
-  &.obico-bg-logo {
-    background-image: url(../img/logo-bg.svg);
-    background-repeat: no-repeat;
-    background-position: -100px 120px;
-    background-size: 550px;
-
-    &.obico-bg-primary {
-      background-image: url(../img/logo-bg-dark.svg);
-    }
-  }
 
   &.obico-bg-primary {
     background-color: @color-primary;
@@ -58,13 +46,8 @@
     }
   }
 
-  .obico-indent-content {
-    padding-left: 80px;
-  }
-
   // Header at the top of each page
   .obico-navigation {
-    height: 54px;
     display: flex;
     align-items: bottom;
     justify-content: space-between;
@@ -88,8 +71,6 @@
 
     // Small black logo
     .obico-logo {
-      text-align: center;
-
       svg {
         width: 44px;
         height: 43px;
@@ -785,22 +766,5 @@
 }
 
 html.themeify {
-  // Hide by default (for unknown themes)
-  .obico-wizard-content .obico-bg-logo {
-    background-image: none;
-  }
 
-  // Light background themes
-  &.material_ui_light, &.dyl {
-    .obico-wizard-content.obico-bg-logo {
-      background-image: url(../img/logo-bg.svg);
-    }
-  }
-
-  // Dark background themes
-  &.discorded, &.cyborg, &.discoranged, &.nighttime {
-    .obico-wizard-content.obico-bg-logo {
-      background-image: url(../img/logo-bg-dark.svg);
-    }
-  }
 }
