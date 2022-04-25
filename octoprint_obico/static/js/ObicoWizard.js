@@ -1,7 +1,7 @@
 /*
  * View model for Obico Wizard
  *
- * Author: The Spaghetti Detective
+ * Author:  Obi's Nest
  * License: AGPLv3
  */
 $(function () {

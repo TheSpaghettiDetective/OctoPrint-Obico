@@ -1,63 +1,63 @@
-<div id="obico_wizard" class="tsd-wizard-content" data-bind="css: {'tsd-bg-logo': [1, 4, 5].includes(step()), 'tsd-bg-primary': [5].includes(step())}">
-  <div class="tsd-navigation">
-    <a href="#" class="tsd-back-btn" data-bind="click: prevStep, visible: ![1,5].includes(step())">
+<div id="obico-wizard" class="obico-wizard-content" data-bind="css: {'obico-bg-logo': [1, 4, 5].includes(step()), 'obico-bg-primary': [5].includes(step())}">
+  <div class="obico-navigation">
+    <a href="#" class="obico-back-btn" data-bind="click: prevStep, visible: ![1,5].includes(step())">
       ❮ Back
     </a>
     <div style="width: 70px;" data-bind="visible: step() === 1"></div>
-    <div class="tsd-logo" data-bind="visible: step() !== 5">
-      <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><defs><style>.cls-1{fill:none;}.cls-2{fill:#373737;}</style></defs><path class="cls-1" d="M256,256H0V0H256Zm-129.58-8.66c13.06-24.28,30.7-43.44,50.37-60.91,7.26-6.44,7.46-6.58,2.87-15.44-2.07-4-1.88-7,1.92-9.25,8.43-5,16.78-10.13,25.58-14.36,6.93-3.33,14.47-5.38,22.32-8.21-11.15-11.72-24.46-19.48-38.88-27.69,3.83-1,6.49-1.64,9.12-2.36,10.63-2.93,21.17-6.15,30.13-12.89,10.32-7.76,10.43-17-.08-24.43-16.55-11.67-36-14.56-55.86-18.14.78,5,1.44,9.16,2.33,14.78-11,1.89-21.62,4.32-32.44,5.47A167,167,0,0,1,81.41,69c-3.44-1-5.29-2.11-4-6.13.89-2.73,1-5.72,1.57-9.51-9.13,2-17.43,3.58-25.62,5.6-11,2.72-21.78,6.36-31,13.36-9.36,7.14-9.51,16-.17,23.09a56.82,56.82,0,0,0,13.37,7.63c8.29,3.26,16.89,5.75,26,8.76C48,119.75,34.42,127.4,23.28,139.38l5.47,1.74c13.62,4.5,27.14,9.24,39,17.68,8.41,6,8.37,6.08,4,15.13a20.33,20.33,0,0,1-1.32,2.69c-1.63,2.37-1.24,3.94,1.15,5.78,4.74,3.65,9.3,7.58,13.67,11.67C101.58,209.39,116.14,226.19,126.42,247.34ZM79.66,53.16C111.22,61.37,142,61.5,173.23,53c-1.71-9.26-3.72-17.84-4.76-26.55-.75-6.31-3.9-10.51-9.43-12.27a135.11,135.11,0,0,0-24.1-5.79c-13.35-1.65-26.72-.53-39.18,4.95-4,1.75-8.93,5.1-10,8.75C82.77,31.9,81.65,42.24,79.66,53.16Z"/><path class="cls-2" d="M126.42,247.34c-10.28-21.15-24.84-38-41.25-53.27-4.37-4.09-8.93-8-13.67-11.67-2.39-1.84-2.78-3.41-1.15-5.78a20.33,20.33,0,0,0,1.32-2.69c4.41-9.05,4.45-9.11-4-15.13-11.82-8.44-25.34-13.18-39-17.68l-5.47-1.74c11.14-12,24.68-19.63,38.3-27.54-9.07-3-17.67-5.5-26-8.76a56.82,56.82,0,0,1-13.37-7.63c-9.34-7.07-9.19-16,.17-23.09,9.19-7,19.93-10.64,31-13.36,8.19-2,16.49-3.62,25.62-5.6-.59,3.79-.68,6.78-1.57,9.51-1.32,4,.53,5.18,4,6.13a167,167,0,0,0,62.39,4.87c10.82-1.15,21.49-3.58,32.44-5.47-.89-5.62-1.55-9.83-2.33-14.78,19.85,3.58,39.31,6.47,55.86,18.14,10.51,7.42,10.4,16.67.08,24.43-9,6.74-19.5,10-30.13,12.89-2.63.72-5.29,1.37-9.12,2.36,14.42,8.21,27.73,16,38.88,27.69-7.85,2.83-15.39,4.88-22.32,8.21-8.8,4.23-17.15,9.4-25.58,14.36-3.8,2.23-4,5.23-1.92,9.25,4.59,8.86,4.39,9-2.87,15.44C157.12,203.9,139.48,223.06,126.42,247.34Zm-39.78-131c7.57,12.92,22.88,14.74,29.52,4.57-4.86-.54-9.67-.9-14.41-1.63S92.05,117.42,86.64,116.35Zm50,5c8.16,10,23.11,7.51,29.14-4.53Z"/><path class="cls-2" d="M79.66,53.16c2-10.92,3.11-21.26,6.06-31,1.11-3.65,6.07-7,10-8.75,12.46-5.48,25.83-6.6,39.18-4.95A135.11,135.11,0,0,1,159,14.21c5.53,1.76,8.68,6,9.43,12.27,1,8.71,3.05,17.29,4.76,26.55C142,61.5,111.22,61.37,79.66,53.16Z"/><path class="cls-1" d="M86.64,116.35c5.41,1.07,10.23,2.19,15.11,2.94s9.55,1.09,14.41,1.63C109.52,131.09,94.21,129.27,86.64,116.35Z"/><path class="cls-1" d="M136.59,121.3l29.14-4.53C159.7,128.81,144.75,131.25,136.59,121.3Z"/></svg>
+    <div class="obico-logo" data-bind="visible: step() !== 5">
+      <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 88"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M44.63 0a44.63 44.63 0 0 1 21.59 83.68c.62-12.63.47-27.67-6.8-32.76a2.683 2.683 0 0 1-.06-.59 15.36 15.36 0 0 0 6.91-12.8v-1.06a15.32 15.32 0 0 0-4.42-10.75 15 15 0 0 0 3.33-8.86 36 36 0 0 1-4.09 3.45 31.273 31.273 0 0 1-6.23 3.5c-10.33 4.26-21.81 2-30.91-6.95a14.999 14.999 0 0 0 3.5 9.07 15.31 15.31 0 0 0-4.22 10.54v1.06a15.37 15.37 0 0 0 7.08 12.91c0 .253-.02.513-.06.78l-.07.09c-8.13 6.19-7.68 24.21 1.46 36A44.63 44.63 0 0 1 44.63 0Z" fill="#2D3E4F"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h89.25v87.33H0z"/></clipPath></defs></svg>
     </div>
-    <div class="tsd-progress-content" data-bind="visible: step() !== 5">
-      <div class="tsd-circles">
-        <div class="tsd-circle" data-bind="css: {filled: step() >= 1, checked: step() > 1}"></div>
-        <div class="tsd-circle" data-bind="css: {filled: step() >= 2, checked: step() > 2}"></div>
-        <div class="tsd-circle" data-bind="css: {filled: step() >= 3, checked: step() > 3}"></div>
-        <div class="tsd-circle" data-bind="css: {filled: step() >= 4, checked: step() > 4}"></div>
+    <div class="obico-progress-content" data-bind="visible: step() !== 5">
+      <div class="obico-circles">
+        <div class="obico-circle" data-bind="css: {filled: step() >= 1, checked: step() > 1}"></div>
+        <div class="obico-circle" data-bind="css: {filled: step() >= 2, checked: step() > 2}"></div>
+        <div class="obico-circle" data-bind="css: {filled: step() >= 3, checked: step() > 3}"></div>
+        <div class="obico-circle" data-bind="css: {filled: step() >= 4, checked: step() > 4}"></div>
       </div>
     </div>
   </div>
 
-  <div data-bind="visible: step() === 1" class="tsd-home-slide">
-    <div class="tsd-indent-content">
-      <div class="tsd-header">
-        <div class="tsd-subtitle">MEET THE</div>
-        <h1 class="tsd-title">SPAGHETTI DETECTIVE</h1>
+  <div data-bind="visible: step() === 1" class="obico-home-slide">
+    <div class="obico-indent-content">
+      <div class="obico-header">
+        <div class="obico-subtitle">MEET THE</div>
+        <h1 class="obico-title">Obico for OctoPrint</h1>
       </div>
-      <p><strong>The Spaghetti Detective</strong> is an <a href="https://github.com/TheSpaghettiDetective">open source project</a> that lets you access and monitor OctoPrint <strong>anywhere, on your phone</strong>. <br>It also uses AI (Deep Learning) to detect print failures in real time and send you alerts.</p>
-      <div class="tsd-features">
-        <div class="tsd-features-blocks">
-          <div class="tsd-feature" data-number="1">
-            <img src="plugin/obico/static/img/icon-connection.svg" alt="">
-            <div class="tsd-feature-text">
-              <div class="tsd-title">Manage printer on your phone</div>
-              <p class="tsd-description">Start/pause/cancel prints anytime, anywhere! Upload your print files and kick-off prints from your phone, desktop, or tablet.</p>
+      <p><strong>Obico</strong> is an <a href="https://github.com/TheSpaghettiDetective">open source project</a> that lets you access and monitor OctoPrint <strong>anywhere, on your phone</strong>. <br>It also uses AI (Deep Learning) to detect print failures in real time and send you alerts.</p>
+      <div class="obico-features">
+        <div class="obico-features-blocks">
+          <div class="obico-feature" data-number="1">
+            <img src="plugin/obico/static/img/features/icon-connection.svg" alt="">
+            <div class="obico-feature-text">
+              <div class="obico-title">Manage printer on your phone</div>
+              <p class="obico-description">Start/pause/cancel prints anytime, anywhere! Upload your print files and kick-off prints from your phone, desktop, or tablet.</p>
             </div>
           </div>
-          <div class="tsd-feature" data-number="2">
-            <img src="plugin/obico/static/img/icon-security.svg" alt="">
-            <div class="tsd-feature-text">
-              <div class="tsd-title">Secure remote access</div>
-              <p class="tsd-description">Access your printer securely from anywhere without opening your home network to the wild internet.</p>
+          <div class="obico-feature" data-number="2">
+            <img src="plugin/obico/static/img/features/icon-security.svg" alt="">
+            <div class="obico-feature-text">
+              <div class="obico-title">Secure remote access</div>
+              <p class="obico-description">Access your printer securely from anywhere without opening your home network to the wild internet.</p>
             </div>
           </div>
-          <div class="tsd-feature" data-number="3">
-            <img src="plugin/obico/static/img/icon-fire.svg" alt="">
-            <div class="tsd-feature-text">
-              <div class="tsd-title">Catch print hazards early</div>
-              <p class="tsd-description">Check in your prints in real time to instantly know if the printer is acting up.</p>
+          <div class="obico-feature" data-number="3">
+            <img src="plugin/obico/static/img/features/icon-fire.svg" alt="">
+            <div class="obico-feature-text">
+              <div class="obico-title">Catch print hazards early</div>
+              <p class="obico-description">Check in your prints in real time to instantly know if the printer is acting up.</p>
             </div>
           </div>
-          <div class="tsd-feature" data-number="4">
-            <img src="plugin/obico/static/img/icon-money.svg" alt="">
-            <div class="tsd-feature-text">
-              <div class="tsd-title">Save time and money</div>
-              <p class="tsd-description">The Spaghetti Detective watched your prints constantly for problems and intervenes to catch failures early.</p>
+          <div class="obico-feature" data-number="4">
+            <img src="plugin/obico/static/img/features/icon-money.svg" alt="">
+            <div class="obico-feature-text">
+              <div class="obico-title">Save time and money</div>
+              <p class="obico-description">Obico watched your prints constantly for problems and intervenes to catch failures early.</p>
             </div>
           </div>
         </div>
       </div>
-      <div class="tsd-get-started">
-        <div>Which The Spaghetti Detective server do you want to link OctoPrint to?</div>
+      <div class="obico-get-started">
+        <div>Which Obico server do you want to link OctoPrint to?</div>
         <div class="control-group">
           <div class="controls">
               <label class="radio">
@@ -67,10 +67,10 @@
                   value="cloud"
                   data-bind="checked: serverType, click: resetEndpointPrefix"
                 >
-                  The Spaghetti Detective Cloud
+                  Obico Cloud
                 </input>
               </label>
-              <div class="radio obico-text-muted" style="margin-bottom: 6px;">Proudly maintained by The Detective Team. Free plan for 1 printer. Pro plan starts from $4/month. <a href="https://app.thespaghettidetective.com/">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
+              <div class="radio obico-text-muted" style="margin-bottom: 6px;">Proudly maintained byObico team. Free plan for 1 printer. Pro plan starts from $4/month. <a href="https://app.obico.io/">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
 
               <label class="radio">
                 <input
@@ -79,7 +79,7 @@
                   value="self-hosted"
                   data-bind="checked: serverType, click: clearEndpointPrefix"
                 >
-                  A self-hosted The Spaghetti Detective server
+                  A self-hosted Obico server
                 </input>
               </label>
               <div class="radio">
@@ -96,13 +96,13 @@
         </div>
         <div class="obico-flex obico-align-start">
           <div class="obico-text-with-checkbox" data-bind="click: toggleCheck">
-            <div class="tsd-checkbox-wrapper" data-bind="css: {checked: userAgreementChecked}"></div>
-            By proceeding you agree to our <a href="https://thespaghettidetective.com/privacy.html">Privacy Policy</a>
-              and the <a href="https://thespaghettidetective.com/terms.html">Terms of Use</a>
+            <div class="obico-checkbox-wrapper" data-bind="css: {checked: userAgreementChecked}"></div>
+            By proceeding you agree to our <a href="https://obico.io/privacy.html">Privacy Policy</a>
+              and the <a href="https://obico.io/terms.html">Terms of Use</a>
           </div>
           <div class="obico-get-started-wrapper">
             <button
-              class="tsd-button"
+              class="obico-button obico-button_solid setup-wizard-btn"
               id="next"
               data-bind="click: nextStep, enable: userAgreementChecked, visible: step() === 1"
             >
@@ -118,61 +118,61 @@
   </div>
 
   <div data-bind="visible: step() === 2">
-    <div class="tsd-header">
-      <h2 class="tsd-title tsd-primary">Setup with mobile app or web browser?</h2>
+    <div class="obico-header">
+      <h2 class="obico-title obico-primary">Setup with mobile app or web browser?</h2>
     </div>
-    <div>You will need to sign up for a new The Spaghetti Detective account if you don't already have one.</div>
+    <div>You will need to sign up for a new Obico account if you don't already have one.</div>
     <div>Do  you want to do it in the mobile app or in the web browser?</div>
     <br />
-    <div class="tsd-choice-container">
-      <div class="tsd-choice-banner">
-        <div class="tsd-option" data-bind="click: function(data, event) { nextStep(); mobileFlow(true); }">
+    <div class="obico-choice-container">
+      <div class="obico-choice-banner">
+        <div class="obico-option" data-bind="click: function(data, event) { nextStep(); mobileFlow(true); }">
           <img src="plugin/obico/static/img/phone-illustration.svg" alt="">
           <h2>Mobile Setup</h2>
-          <a href="#" class="tsd-button tsd-filled">Continue with <strong>Mobile App</strong></a>
+          <a href="#" class="obico-button obico-filled">Continue with <strong>Mobile App</strong></a>
         </div>
-        <div class="tsd-delimeter"></div>
-        <div class="tsd-option" data-bind="click: function(data, event) { nextStep(); mobileFlow(false); }">
+        <div class="obico-delimeter"></div>
+        <div class="obico-option" data-bind="click: function(data, event) { nextStep(); mobileFlow(false); }">
           <img src="plugin/obico/static/img/desktop-illustration.svg" alt="">
           <h2>Web Setup</h2>
-          <a href="#" class="tsd-button tsd-outline">Continue with <strong>Web Site</strong></a>
+          <a href="#" class="obico-button obico-outline">Continue with <strong>Web Site</strong></a>
         </div>
       </div>
-      <div class="tsd-notes">*Note: You can always switch later.</div>
+      <div class="obico-notes">*Note: You can always switch later.</div>
     </div>
   </div>
 
   <div data-bind="visible: step() === 3 && mobileFlow()">
-    <div class="tsd-header">
-      <h2 class="tsd-title tsd-primary">Sign into the <strong>mobile app</strong></h2>
+    <div class="obico-header">
+      <h2 class="obico-title obico-primary">Sign into the <strong>mobile app</strong></h2>
     </div>
     <div>
       <ol>
-        <li>Download The Spaghetti Detective mobile app.</li>
-        <li>Sign up for a The Spaghetti Detective account. Or sign in if you already have one.</li>
+        <li>Download Obico mobile app.</li>
+        <li>Sign up for a Obico account. Or sign in if you already have one.</li>
         <li>Click the "Link OctoPrint" button in the mobile app.
         <li>If OctoPrint shows up in the mobile app, click "Link" to finish linking it.</li>
         <li>Otherwise, switch to "manual linking" and get the <strong>6-digit verification code</strong>.</li>
         <li>Come back here and press "CONTINUE".</li>
       </ol>
       <div class="text-center">
-        <button class="tsd-button" data-bind="click: nextStep">CONTINUE</button>
+        <button class="obico-button obico-button_solid" data-bind="click: nextStep">CONTINUE</button>
         <div class="text-right">
-          <a href="#" class="tsd-small"  data-bind="click: function(data, event) { mobileFlow(false); }">
+          <a href="#" class="obico-small"  data-bind="click: function(data, event) { mobileFlow(false); }">
             Setup through web browser instead
             <img src="plugin/obico/static/img/arrow-right-gray.svg" alt="">
           </a>
         </div>
       </div>
-      <div class="tsd-bottom-illustration">
-        <img src="plugin/obico/static/img/mobile-setup-illustration.svg" alt="" class="tsd-mobile-screen">
-        <div class="tsd-mobile-links">
-          <img src="plugin/obico/static/img/app-qrcode.png" alt="" class="tsd-qr">
-          <div class="tsd-buttons">
-            <a href="https://play.google.com/store/apps/details?id=com.thespaghettidetective.android" class="tsd-button" target="_blank">
+      <div class="obico-bottom-illustration">
+        <img src="plugin/obico/static/img/mobile-setup-illustration.svg" alt="" class="obico-mobile-screen">
+        <div class="obico-mobile-links">
+          <img src="plugin/obico/static/img/app-qrcode.png" alt="" class="obico-qr">
+          <div class="obico-buttons">
+            <a href="https://play.google.com/store/apps/details?id=com.thespaghettidetective.android" class="obico-button" target="_blank">
               <img src="plugin/obico/static/img/google-play-btn.svg" alt="">
             </a>
-            <a href="https://apps.apple.com/us/app/the-spaghetti-detective/id1540646623?uo=4" class="tsd-button" target="_blank">
+            <a href="https://apps.apple.com/us/app/the-spaghetti-detective/id1540646623?uo=4" class="obico-button" target="_blank">
               <img src="plugin/obico/static/img/app-store-btn.svg" alt="">
             </a>
           </div>
@@ -182,27 +182,27 @@
   </div>
 
   <div data-bind="visible: step() === 3 && !mobileFlow()">
-    <div class="tsd-header">
-      <h2>Sign into <a data-bind="attr: { href: settingsViewModel.settings.plugins.obico.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">The Spaghetti Detective website</a></h2>
+    <div class="obico-header">
+      <h2>Sign into <a data-bind="attr: { href: settingsViewModel.settings.plugins.obico.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">Obico website</a></h2>
     </div>
     <div>
       <ol>
-        <li>Click <a data-bind="attr: { href: settingsViewModel.settings.plugins.obico.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">here</a> to open The Spaghetti Detective website in a separate tab.
-        <li>Sign up for a The Spaghetti Detective account. Or sign in if you already have one.</li>
+        <li>Click <a data-bind="attr: { href: settingsViewModel.settings.plugins.obico.endpoint_prefix() + '/accounts/signup/?source=plugin' }" target="_blank">here</a> to open Obico website in a separate tab.
+        <li>Sign up for a Obico account. Or sign in if you already have one.</li>
         <li>Click the "Link OctoPrint" button in the web app.
         <li>If OctoPrint shows up in the web app, click "Link" to finish linking it.</li>
         <li>Otherwise, switch to "manual linking" and get the <strong>6-digit verification code</strong>.</li>
         <li>Come back here and press "CONTINUE".</li>
       </ol>
       <div class="text-center">
-        <button class="tsd-button" data-bind="click: nextStep">CONTINUE</button>
+        <button class="obico-button obico-button_solid" data-bind="click: nextStep">CONTINUE</button>
         <div class="text-right">
-          <a href="#" class="tsd-small" data-bind="click: function(data, event) { mobileFlow(true); }">
+          <a href="#" class="obico-small" data-bind="click: function(data, event) { mobileFlow(true); }">
             Setup through mobile app instead
             <img src="plugin/obico/static/img/arrow-right-gray.svg" alt="">
           </a>
           <br /><br />
-          <div class="tsd-small">*Note: You can always download The Spaghetti Detective mobile app later</div>
+          <div class="obico-small">*Note: You can always download Obico mobile app later</div>
         </div>
       </div>
 
@@ -210,37 +210,37 @@
   </div>
 
   <div data-bind="visible: step() === 4">
-    <div class="tsd-indent-content">
-      <div class="tsd-header">
+    <div class="obico-indent-content">
+      <div class="obico-header">
         <h2>Verification Code</h2>
       </div>
-      <div class="tsd-mobile-verification-wrapper">
-        <div class="tsd-description">
-          <p>To link OctoPrint to your account, you need to obtain the <strong>6-digit verification code</strong> in The Spaghetti Detective mobile app or web app, and enter the code below.</p>
-          <div class="tsd-verification-wrapper">
+      <div class="obico-mobile-verification-wrapper">
+        <div class="obico-description">
+          <p>To link OctoPrint to your account, you need to obtain the <strong>6-digit verification code</strong> in Obico mobile app or web app, and enter the code below.</p>
+          <div class="obico-verification-wrapper">
             <label>6-Digit Verification Code:</label>
-            <div class="tsd-input-wrapper tsd-verification-code-input">
-              <input type="text" class="tsd-cell" data-number="1" maxlength="1" pattern="\d*">
-              <input type="text" class="tsd-cell" data-number="2" maxlength="1" pattern="\d*">
-              <input type="text" class="tsd-cell" data-number="3" maxlength="1" pattern="\d*">
-              <input type="text" class="tsd-cell" data-number="4" maxlength="1" pattern="\d*">
-              <input type="text" class="tsd-cell" data-number="5" maxlength="1" pattern="\d*">
-              <input type="text" class="tsd-cell" data-number="6" maxlength="1" pattern="\d*">
+            <div class="obico-input-wrapper obico-verification-code-input">
+              <input type="text" class="obico-cell" data-number="1" maxlength="1" pattern="\d*">
+              <input type="text" class="obico-cell" data-number="2" maxlength="1" pattern="\d*">
+              <input type="text" class="obico-cell" data-number="3" maxlength="1" pattern="\d*">
+              <input type="text" class="obico-cell" data-number="4" maxlength="1" pattern="\d*">
+              <input type="text" class="obico-cell" data-number="5" maxlength="1" pattern="\d*">
+              <input type="text" class="obico-cell" data-number="6" maxlength="1" pattern="\d*">
             </div>
             <small style="color: #888;">Enter code or Ctrl-V/Cmd-V to paste</small>
-            <small class="tsd-error-message">
+            <small class="obico-error-message">
               Wrong code!<br>
               Did you enter an expired code?
             </small>
-            <small class="tsd-unknown-error">
-              Failed to talk to The Spaghetti Detective server!<br>
+            <small class="obico-unknown-error">
+              Failed to talk to Obico server!<br>
               Make sure OctoPrint is connected to the Internet.
             </small>
-            <small class="tsd-success-message">
+            <small class="obico-success-message">
               Success!<br>
               OctoPrint successfully linked.
             </small>
-            <div class="tsd-loader" data-bind="visible: verifying">
+            <div class="obico-loader" data-bind="visible: verifying">
               <svg version="1.1" id="L9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
                 viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
                   <path fill="#000" d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50">
@@ -255,21 +255,21 @@
                 </path>
               </svg>
             </div>
-            <textarea class="tsd-paste-from-clipboard-placeholder"></textarea>
+            <textarea class="obico-paste-from-clipboard-placeholder"></textarea>
           </div>
         </div>
-        <div class="tsd-illustration">
-          <img src="plugin/obico/static/img/phone-verification-illustration.svg" class="tsd-image" alt="">
-          <img src="plugin/obico/static/img/arrow-left-curved.svg" class="tsd-arrow" alt="">
+        <div class="obico-illustration">
+          <img src="plugin/obico/static/img/phone-verification-illustration.svg" class="obico-image" alt="">
+          <img src="plugin/obico/static/img/arrow-left-curved.svg" class="obico-arrow" alt="">
         </div>
       </div>
-      <div class="tsd-collapsable">
-        <h4 class="tsd-collapsable-title">
+      <div class="obico-collapsable">
+        <h4 class="obico-collapsable-title">
           Help
         </h4>
-        <div class="tsd-collapsable-content">
+        <div class="obico-collapsable-content">
           <ul>
-            <li>Lost? Check out the <a href="https://www.thespaghettidetective.com/docs/octoprint-plugin-setup/" target="_blank">step-by-step setup guide</a>.</li>
+            <li>Lost? Check out the <a href="https://www.obico.io/docs/octoprint-plugin-setup/" target="_blank">step-by-step setup guide</a>.</li>
             <li><a href="#" data-bind="click: function(data, event) { toStep(1); }">Walk through this wizard again.</a></li>
             <li>Need more help? Visit <a href="https://discord.com/invite/NcZkQfj" target="_blank">TSD discord forum</a></li>
           </ul>
@@ -279,28 +279,28 @@
   </div>
 
   <div data-bind="visible: step() === 5">
-    <div class="obico-flex tsd-justify-center tsd-successful-setup">
-      <div class="obico-flex tsd-col tsd-align-center">
-        <img src="plugin/obico/static/img/checkmark-circled.svg" class="tsd-checkmark-circle" alt="">
-        <h1 class="tsd-title white">OctoPrint Linked Successfully!</h1>
-        <div class="tsd-sub-title">Now you can close this window and go back to The Spaghetti Detective mobile app or web app to check the printer feed.</div>
-        <div class="tsd-button-wrapper">
-          <button class="tsd-auto-close" data-bind="click: hideWizardModal">
-            <svg class="tsd-progress-border" viewBox="0 0 50 50">
+    <div class="obico-flex obico-justify-center obico-successful-setup">
+      <div class="obico-flex obico-col obico-align-center">
+        <img src="plugin/obico/static/img/checkmark-circled.svg" class="obico-checkmark-circle" alt="">
+        <h1 class="obico-title white obico-text-dark">OctoPrint Linked Successfully!</h1>
+        <div class="obico-sub-title obico-text-dark">Now you can close this window and go back to Obico mobile app or web app to check the printer feed.</div>
+        <div class="obico-button-wrapper">
+          <button class="obico-auto-close" data-bind="click: hideWizardModal">
+            <svg class="obico-progress-border" viewBox="0 0 50 50">
               <g>
-                <circle class="tsd-under" cx="25" cy="25" r="20.9" stroke-width="4" />
-                <circle class="tsd-progress" cx="25" cy="25" r="21" stroke-width="4" />
+                <circle class="obico-under" cx="25" cy="25" r="20.9" stroke-width="4" />
+                <circle class="obico-progress" cx="25" cy="25" r="21" stroke-width="4" />
               </g>
             </svg>
-            <span class="tsd-text">Close</span>
+            <span class="obico-text obico-text-dark">Close</span>
           </button>
         </div>
       </div>
     </div>
     <div>
-      <a href="https://discord.com/invite/NcZkQfj" class="tsd-discord-link" target="_blank">
+      <a href="https://discord.com/invite/NcZkQfj" class="obico-discord-link" target="_blank">
         <img src="plugin/obico/static/img/discord.svg" alt="">
-        <div class="tsd-text">JOIN OUR DISCORD FORUM</div>
+        <div class="obico-text obico-text-dark">JOIN OUR DISCORD FORUM</div>
       </a>
     </div>
   </div>

@@ -1,366 +1,366 @@
-<div class="tsd-settings-wrapper">
-
-  <!-- Initial page with choice - what settings page (tab) to open? -->
-  <div class="tsd-choice-page" data-bind="visible: !showDetailPage()">
-    <img class="tsd-settings-header" src="plugin/obico/static/img/settings-header.svg" alt="">
-    <div class="tsd-settings-content">
-      <div data-bind="visible: !serverStatus.bailed_because_tsd_plugin_running()">
-        <div class="tsd-not-configured" data-bind="visible: !configured()">
-          <div>
-            <p>
-              <i class="fa fa-exclamation" style="font-size: 48px;"></i>
-            </p>
-            <b>You haven't linked OctoPrint to your The Spaghetti Detective account!</b>
-          </div>
-          <a class="tsd-button tsd-primary" data-bind="click: showWizardModal">Run Setup Wizard to Link OctoPrint</a>
-        </div>
-        <div class="tsd-choice-wrapper" data-bind="visible: configured">
-          <div class="tsd-choice-option" data-bind="click: function(data, event) { selectPage('advanced'); }">
-            <a href="#" class="tsd-button btn-block">
-              <span>Settings</span>
-              <img src="plugin/obico/static/img/arrow-right.svg">
-            </a>
-            <ul class="tsd-squared-markers">
-              <li>View linked printer name</li>
-              <li>Premium Webcam Streaming</li>
-              <li>Configure private TSD server</li>
-              <li>Opt in error reporting</li>
-            </ul>
-          </div>
-          <div class="tsd-choice-option" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">
-            <a href="#" class="tsd-button btn-block">
-              <span>Troubleshooting</span>
-              <img src="plugin/obico/static/img/arrow-right.svg">
-            </a>
-            <ul class="tsd-squared-markers">
-              <li>Server connection status</li>
-              <li>Webcam streaming issues</li>
-              <li>Re-run setup wizard</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div data-bind="visible: serverStatus.bailed_because_tsd_plugin_running()">
+{# obico-settings-choice #}
+<div class="obico-settings-choice" data-bind="visible: !showDetailPage()">
+  <div class="obico-settings-choice__logo">
+    <img src="plugin/obico/static/img/logo-full.svg" alt="Obico">
+  </div>
+  <div class="obico-settings-choice__content">
+    <div data-bind="visible: !serverStatus.bailed_because_tsd_plugin_running()">
+      <div class="obico-settings-choice__choice-unavailable" data-bind="visible: !configured()">
         <div>
           <p>
             <i class="fa fa-exclamation" style="font-size: 48px;"></i>
           </p>
-          <b>You are still running The Spaghetti Detective</b>
+          <b>You haven't linked OctoPrint to your Obico account!</b>
         </div>
+        <a class="obico-button obico-button_solid" data-bind="click: showWizardModal">Run Setup Wizard to Link OctoPrint</a>
       </div>
-      <div class="tsd-help-link-section">
-        <img src="plugin/obico/static/img/chat.svg" alt="">
-        <div class="tsd-notes">
-          Join <a href="https://discord.com/invite/NcZkQfj" target="_blank">TSD user community (Discord server)</a><br>
-          Visit <a href="https://thespaghettidetective.com/" target="_blank">thespaghettidetective.com</a><br>
-          Download the app through the <a href="https://play.google.com/store/apps/details?id=com.thespaghettidetective.android" target="_blank">Google Playstore</a> or <a href="https://apps.apple.com/us/app/the-spaghetti-detective/id1540646623?ign-itsct=apps_box&ign-itscg=30200" target="_blank">App Store</a>
+      <div class="obico-settings-choice__choice-wrapper" data-bind="visible: configured">
+        <div class="obico-settings-choice__choice-option" data-bind="click: function(data, event) { selectPage('advanced'); }">
+          <a href="#" class="obico-button obico-button_dark-scheme obico-button_outline obico-button_with-icon">
+            <span>Settings</span>
+            <img src="plugin/obico/static/img/arrow-right.svg">
+          </a>
+          <ul class="obico-settings-choice__choice-description">
+            <li>View linked printer name</li>
+            <li>Premium Webcam Streaming</li>
+            <li>Configure private Obico server</li>
+            <li>Opt in error reporting</li>
+          </ul>
+        </div>
+        <div class="obico-settings-choice__choice-option" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">
+          <a href="#" class="obico-button obico-button_dark-scheme obico-button_outline obico-button_with-icon">
+            <span>Troubleshooting</span>
+            <img src="plugin/obico/static/img/arrow-right.svg">
+          </a>
+          <ul class="obico-settings-choice__choice-description">
+            <li>Server connection status</li>
+            <li>Webcam streaming issues</li>
+            <li>Re-run setup wizard</li>
+          </ul>
         </div>
       </div>
     </div>
+    <div data-bind="visible: serverStatus.bailed_because_tsd_plugin_running()">
+      <div>
+        <p>
+          <i class="fa fa-exclamation" style="font-size: 48px;"></i>
+        </p>
+        <b>You are still running Obico</b>
+      </div>
+    </div>
   </div>
+  <div class="obico-settings-choice__footer">
+    <img src="plugin/obico/static/img/chat.svg" alt="">
+    <div>
+      Join <a href="https://discord.com/invite/NcZkQfj" target="_blank">Obico user community (Discord server)</a><br>
+      Visit our website <a href="https://obico.io/" target="_blank">obico.io</a><br>
+      Download the app through the <a href="https://play.google.com/store/apps/details?id=com.thespaghettidetective.android" target="_blank">Google Playstore</a> or <a href="https://apps.apple.com/us/app/the-spaghetti-detective/id1540646623?ign-itsct=apps_box&ign-itscg=30200" target="_blank">App Store</a>
+    </div>
+  </div>
+</div>
 
-  <!-- Page with tabs at the top -->
-  <div class="tabbable" data-bind="visible: showDetailPage()">
-    <ul class="nav">
-      <img src="plugin/obico/static/img/logo-white.svg" alt="" class="tsd-logo" data-bind="click: returnToSelection">
-      <li data-page="advanced">
-        <a href="#tsd-advanced" data-toggle="tab">
-          <span>Settings</span>
-        </a>
-      </li>
-      <li data-page="troubleshooting">
-        <a href="#tsd-troubleshooting" data-toggle="tab">
-          <span>Troubleshooting</span>
-        </a>
-      </li>
-    </ul>
-
-    <div class="tab-content">
-      <div class="tab-pane active" id="tsd-advanced">
-        <section>
-          <h1 class="tsd-section-title">Linked Printer</h1>
-          <div class="tsd-section-content" data-bind="visible: !linkedPrinter.id()">
-            <div class="alert alert-warning" role="alert">
-              Can't determine which TSD account this OctoPrint is linked to. Check to make sure your Rasbperry Pi is connected to the Internet. And refresh this page.
+{# obico-settings-page #}
+<div class="obico-settings-page obico-tabbable tabbable" data-bind="visible: showDetailPage()">
+  <ul class="obico-tabbable__tabs nav">
+    <img src="plugin/obico/static/img/logo-square.svg" class="obico-tabbable__logo" alt="Obico" data-bind="click: returnToSelection">
+    <li class="obico-tabbable__tab" data-page="advanced">
+      <a href="#obico-advanced" class="obico-tabbable__tab-link" data-toggle="tab">
+        <span class="obico-tabbable__tab-title">Settings</span>
+      </a>
+    </li>
+    <li class="obico-tabbable__tab" data-page="troubleshooting">
+      <a href="#obico-troubleshooting" class="obico-tabbable__tab-link" data-toggle="tab">
+        <span class="obico-tabbable__tab-title">Troubleshooting</span>
+      </a>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane active" id="obico-advanced">
+      <section class="obico-settings-page__section">
+        <h1 class="obico-settings-page__section-title">Linked Printer</h1>
+        <div class="obico-settings-page__section-content" data-bind="visible: !linkedPrinter.id()">
+          <div class="alert alert-warning" role="alert">
+            Can't determine which Obico account this OctoPrint is linked to. Check to make sure your Rasbperry Pi is connected to the Internet. And refresh this page.
+          </div>
+        </div>
+        <div class="obico-settings-page__section-content" data-bind="visible: linkedPrinter.id">
+          <p>This OctoPrint is linked to <b data-bind="text: linkedPrinter.name"></b> in your Obico account.</p>
+          <a data-bind="attr: { href: settingsViewModel.settings.plugins.obico.endpoint_prefix() + '/printers/' + linkedPrinter.id() + '/?source=plugin' }" target="_blank" class="btn">View/Change Settings (Login Required)</a>
+        </div>
+      </section>
+      <section data-bind="visible: linkedPrinter.id">
+        <h1 class="obico-settings-page__section-title">Premium Webcam Streaming</h1>
+        <div class="obico-settings-page__section-content">
+          <form class="form-horizontal">
+            <div data-bind="visible: !linkedPrinter.is_pro()">
+              <div class="alert alert-warning" role="alert">
+                The Premium Webcam Streaming not eligible, for one of the following reasons:
+                <ul>
+                  <li>Your Obico account is a Free account. <a href="https://www.obico.io/docs/webcam-streaming-for-human-eyes/">Why is Free account not eligbile?</a></li>
+                  <li>Your OctoPrint is not connected to the Obico server, hence the plugin can't fetch your account status.</li>
+                </ul>
+              </div>
             </div>
-          </div>
-          <div class="tsd-section-content" data-bind="visible: linkedPrinter.id">
-            <p>This OctoPrint is linked to <b data-bind="text: linkedPrinter.name"></b> in your TSD account.</p>
-            <a data-bind="attr: { href: settingsViewModel.settings.plugins.obico.endpoint_prefix() + '/printers/' + linkedPrinter.id() + '/?source=plugin' }" target="_blank" class="btn">View/Change Settings (Login Required)</a>
-          </div>
-        </section>
-        <section data-bind="visible: linkedPrinter.id">
-          <h1 class="tsd-section-title">Premium Webcam Streaming</h1>
-          <div class="tsd-section-content">
-            <form class="form-horizontal">
-              <div data-bind="visible: !linkedPrinter.is_pro()">
-                <div class="alert alert-warning" role="alert">
-                  The Premium Webcam Streaming not eligible, for one of the following reasons:
-                  <ul>
-                    <li>Your The Spaghetti Detective account is a Free account. <a href="https://www.thespaghettidetective.com/docs/webcam-streaming-for-human-eyes/">Why is Free account not eligbile?</a></li>
-                    <li>Your OctoPrint is not connected to the TSD server, hence the plugin can't fetch your account status.</li>
-                  </ul>
-                </div>
+            <div data-bind="visible: linkedPrinter.is_pro()">
+              <div class="alert alert-warning" role="alert">
+                <h4>Restart required:</h4>
+                The changes to any of the following settings won't be effective until OctoPrint is restarted.
               </div>
-              <div data-bind="visible: linkedPrinter.is_pro()">
-                <div class="alert alert-warning" role="alert">
-                  <h4>Restart required:</h4>
-                  The changes to any of the following settings won't be effective until OctoPrint is restarted.
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <div class="form-check" style="margin-top: 8px;">
-                          <input id="disable-streaming" class="form-check-input" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.disable_video_streaming" style="margin-top: 0px;">
-                          <label class="form-check-label" for="disable-streaming" style="display: inline">
-                            Disable the Premium Webcam Streaming. <a href="https://www.thespaghettidetective.com/docs/disable-25-fps-streaming/">(Why would I want to do that?)</a>
-                          </label>
-                        </div>
-                    </div>
-                </div>
-                <div data-bind="visible: (streaming.is_pi_camera() && !settingsViewModel.settings.plugins.obico.disable_video_streaming())" class="control-group" title="{{ _('Pi Camera resolution') }}">
-                    <label class="control-label" for="pi-cam-resolution">{{ _('Resolution') }}</label>
-                    <div class="controls">
-                        <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.obico.pi_cam_resolution" id="pi-cam-resolution"></select>
-                    </div>
-                </div>
-                <div data-bind="visible: !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
-                    <label class="control-label">Compatibility mode<div><a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/">(What is it?)</a></div></label>
-                    <div class="controls">
-                        <label class="radio">
-                            <input type="radio" name="webcamCompatibleModeGroup" value="auto" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Automatic (default). TSD will automatically switch to compatibility mode if necessary. Select this option if you are not sure.
+              <div class="control-group">
+                  <div class="controls">
+                      <div class="form-check" style="margin-top: 8px;">
+                        <input id="disable-streaming" class="form-check-input" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.disable_video_streaming" style="margin-top: 0px;">
+                        <label class="form-check-label" for="disable-streaming" style="display: inline">
+                          Disable the Premium Webcam Streaming. <a href="https://www.obico.io/docs/disable-25-fps-streaming/">(Why would I want to do that?)</a>
                         </label>
-                        <label class="radio">
-                            <input type="radio" name="webcamCompatibleModeGroup" value="always" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Always stream in compatibility mode
-                        </label>
-                        <label class="radio">
-                            <input type="radio" name="webcamCompatibleModeGroup" value="never" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Never stream in compatibility mode
-                        </label>
-                    </div>
-                </div>
-              </div>
-            </form>
-          </div>
-        </section>
-        <section>
-          <h1 class="tsd-section-title">The Spaghetti Detective Server</h1>
-          <div class="tsd-section-content">
-            <div class="control-group">
-              <div class="controls">
-                  <label class="radio">
-                    <input
-                      type="radio"
-                      name="serverAddressRadioGroup2"
-                      value="cloud"
-                      data-bind="checked: serverType, click: resetEndpointPrefix"
-                    >
-                      The Spaghetti Detective Cloud
-                    </input>
-                  </label>
-                  <div class="radio obico-text-muted" style="margin-bottom: 6px;">Proudly maintained by The Detective Team. Free plan for 1 printer. Pro plan starts from $4/month. <a href="https://app.thespaghettidetective.com/">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
-                  <label class="radio">
-                    <input
-                      type="radio"
-                      name="serverAddressRadioGroup2"
-                      value="self-hosted"
-                      data-bind="checked: serverType, click: clearEndpointPrefix"
-                    >
-                      A self-hosted The Spaghetti Detective server
-                    </input>
-                  </label>
-                  <div class="radio">
-                    <input
-                      type="text"
-                      class="endpoint-prefix"
-                      data-bind="value: settingsViewModel.settings.plugins.obico.endpoint_prefix, hidden: serverType() === 'cloud'"
-                      style="width: 100%"
-                    ></input>
+                      </div>
                   </div>
-                </div>
+              </div>
+              <div data-bind="visible: (streaming.is_pi_camera() && !settingsViewModel.settings.plugins.obico.disable_video_streaming())" class="control-group" title="{{ _('Pi Camera resolution') }}">
+                  <label class="control-label" for="pi-cam-resolution">{{ _('Resolution') }}</label>
+                  <div class="controls">
+                      <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.obico.pi_cam_resolution" id="pi-cam-resolution"></select>
+                  </div>
+              </div>
+              <div data-bind="visible: !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
+                  <label class="control-label">Compatibility mode<div><a href="https://www.obico.io/docs/streaming-compatibility-mode/">(What is it?)</a></div></label>
+                  <div class="controls">
+                      <label class="radio">
+                          <input type="radio" name="webcamCompatibleModeGroup" value="auto" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Automatic (default). Obico will automatically switch to compatibility mode if necessary. Select this option if you are not sure.
+                      </label>
+                      <label class="radio">
+                          <input type="radio" name="webcamCompatibleModeGroup" value="always" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Always stream in compatibility mode
+                      </label>
+                      <label class="radio">
+                          <input type="radio" name="webcamCompatibleModeGroup" value="never" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Never stream in compatibility mode
+                      </label>
+                  </div>
+              </div>
             </div>
-          </div>
-        </section>
-        <section>
-          <h1 class="tsd-section-title">Opt In</h1>
-          <div class="tsd-section-content">
-            <form class="form-horizontal">
-              <div>Do you want to send anonymized error informtation to The Spaghetti Detective developers to help them improve the plugin?</div>
-              <div class="form-check" style="margin-top: 8px;">
-                <input id="sentry-opt" class="form-check-input" type="checkbox" value="" data-bind="checked: sentryOptedIn, click: toggleSentryOpt" style="margin-top: 0px;">
-                <label class="form-check-label" for="sentry-opt" style="display: inline">
-                  Yes I am in!
+          </form>
+        </div>
+      </section>
+      <section class="obico-settings-page__section">
+        <h1 class="obico-settings-page__section-title">Obico Server</h1>
+        <div class="obico-settings-page__section-content">
+          <div class="control-group">
+            <div class="controls">
+                <label class="radio">
+                  <input
+                    type="radio"
+                    name="serverAddressRadioGroup2"
+                    value="cloud"
+                    data-bind="checked: serverType, click: resetEndpointPrefix"
+                  >
+                    Obico Cloud
+                  </input>
                 </label>
+                <div class="radio obico-text-muted" style="margin-bottom: 6px;">Proudly maintained byObico team. Free plan for 1 printer. Pro plan starts from $4/month. <a href="https://app.thespaghettidetective.com/">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
+                <label class="radio">
+                  <input
+                    type="radio"
+                    name="serverAddressRadioGroup2"
+                    value="self-hosted"
+                    data-bind="checked: serverType, click: clearEndpointPrefix"
+                  >
+                    A self-hosted Obico server
+                  </input>
+                </label>
+                <div class="radio">
+                  <input
+                    type="text"
+                    class="endpoint-prefix"
+                    data-bind="value: settingsViewModel.settings.plugins.obico.endpoint_prefix, hidden: serverType() === 'cloud'"
+                    style="width: 100%"
+                  ></input>
+                </div>
               </div>
-            </form>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+      <section class="obico-settings-page__section">
+        <h1 class="obico-settings-page__section-title">Opt In</h1>
+        <div class="obico-settings-page__section-content">
+          <form class="form-horizontal">
+            <div>Do you want to send anonymized error informtation to Obico developers to help them improve the plugin?</div>
+            <div class="form-check" style="margin-top: 8px;">
+              <input id="sentry-opt" class="form-check-input" type="checkbox" value="" data-bind="checked: sentryOptedIn, click: toggleSentryOpt" style="margin-top: 0px;">
+              <label class="form-check-label" for="sentry-opt" style="display: inline">
+                Yes I am in!
+              </label>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
 
-      <div class="tab-pane" id="tsd-troubleshooting">
-        <section>
-          <h1 class="tsd-section-title">Plugin Status</h1>
-          <div class="tsd-section-content">
-            <div class="tsd-test-connection-wrapper">
-              <div class="tsd-section-panel tsd-plugin-status" data-bind="visible: !linkedPrinter.id()">
-                <div class="error">
-                  Plugin can't reach The Spaghetti Detective server. Press the "TEST" button to further diagnose the problem.
-                </div>
+    <div class="tab-pane" id="obico-troubleshooting">
+      <section class="obico-settings-page__section">
+        <h1 class="obico-settings-page__section-title">Plugin Status</h1>
+        <div class="obico-settings-page__section-content">
+          <div class="obico-test-connection-wrapper">
+            <div class="obico-section-panel obico-plugin-status" data-bind="visible: !linkedPrinter.id()">
+              <div class="obico-text-error">
+                Plugin can't reach Obico server. Press the "TEST" button to further diagnose the problem.
               </div>
-              <div class="tsd-section-panel tsd-plugin-status" data-bind="visible: linkedPrinter.id">
-                <div class="tsd-status-line" data-bind="visible: linkedPrinter.is_pro">
-                  <i class="fa fa-circle"></i>Account status: <span class="tsd-accountPro">Pro</span>
-                </div>
-                <div class="tsd-status-line" data-bind="visible: !linkedPrinter.is_pro()">
-                  <i class="fa fa-circle"></i>Account status: Free
-                </div>
-                <div class="tsd-status-line">
-                  <i class="fa fa-circle"></i>Webcam streaming: <span data-bind="text: streaming.premium_streaming() ? (streaming.compat_streaming() ?  'Premium (compatibility)' : 'Premium (advanced)') : 'Basic', css: {'tsd-accountPro': streaming.premium_streaming}"></span>
-                </div>
-                <div class="tsd-status-line success" data-bind="visible: !hasServerErrors()">
-                  <i class="fa fa-circle"></i>Connection to server: Okay
-                </div>
-                <div class="tsd-status-line error" data-bind="visible: hasServerErrors()">
-                  <i class="fa fa-circle"></i><a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Connection to server: <span data-bind="text: serverStatus.is_connected() ? 'Error' : 'Disconnected'"></span></a>
-                </div>
-                <div class="tsd-status-line success" data-bind="visible: !hasWebcamErrors()">
-                  <i class="fa fa-circle"></i>Connection to webcam: Okay
-                </div>
-                <div class="tsd-status-line error" data-bind="visible: hasWebcamErrors()">
-                  <i class="fa fa-circle"></i><a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Connection to webcam: Error</a>
-                </div>
+            </div>
+            <div class="obico-section-panel obico-plugin-status" data-bind="visible: linkedPrinter.id">
+              <div class="obico-status-line" data-bind="visible: linkedPrinter.is_pro">
+                <i class="fa fa-circle"></i>Account status: <span class="obico-accountPro">Pro</span>
               </div>
-              <div style="height: 70px; border-right: gray solid thin;"></div>
-              <div class="tsd-section-panel">
-                  <h5 class="tsd-test-connection-header">Server Connection Test</h5>
-              <div class="tsd-test-connection" style="padding-right: 18px;">
-                <button class="tsd-circle" data-bind="click: testServerConnection">
-                <span data-bind="visible: serverTested() != 'testing'">TEST</span>
-                <i data-bind="visible: serverTested() == 'testing'" class="fa fa-spinner fa-spin" style="font-size: 40px;"></i>
-                </button>
-                <div class="tsd-test-result">
-                  <div style="margin: 10px; display: flex; flex-direction: column; align-items: center;">
-                    <div data-bind="visible: serverTested() == 'tested', css: {error: !serverTestSucceeded(), success: serverTestSucceeded()}" style="text-align: center;">
-                      <i data-bind="css: {'fa-exclamation': !serverTestSucceeded(), 'fa-check': serverTestSucceeded()}" class="fa" aria-hidden="true" style="font-size: 24px;"></i>
-                      <div data-bind="visible: serverTestStatusCode() == 200">
-                      Succeeded!
-                      </div>
-                      <div class="tsd-status-line error" data-bind="visible: serverTestStatusCode() == null">
-                      <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Failed to contact server. Is OctoPrint connected to Internet?</a>
-                      </div>
-                      <div data-bind="visible: serverTestStatusCode() == 401">
-                      <div>Invalid account credentials.</div>
-                      <div><a href="#" data-bind="click: showWizardModal">Re-run wizard</a> to link OctoPrint.</div>
-                      </div>
-                      <div data-bind="visible: serverTestUnknownError()">
-                      Something went wrong. <a href="mailto:support@thespaghettidetective.com">Contact us</a> for help.
-                      </div>
+              <div class="obico-status-line" data-bind="visible: !linkedPrinter.is_pro()">
+                <i class="fa fa-circle"></i>Account status: Free
+              </div>
+              <div class="obico-status-line">
+                <i class="fa fa-circle"></i>Webcam streaming: <span data-bind="text: streaming.premium_streaming() ? (streaming.compat_streaming() ?  'Premium (compatibility)' : 'Premium (advanced)') : 'Basic', css: {'obico-accountPro': streaming.premium_streaming}"></span>
+              </div>
+              <div class="obico-status-line obico-text-success" data-bind="visible: !hasServerErrors()">
+                <i class="fa fa-circle"></i>Connection to server: Okay
+              </div>
+              <div class="obico-status-line obico-text-error" data-bind="visible: hasServerErrors()">
+                <i class="fa fa-circle"></i><a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Connection to server: <span data-bind="text: serverStatus.is_connected() ? 'Error' : 'Disconnected'"></span></a>
+              </div>
+              <div class="obico-status-line obico-text-success" data-bind="visible: !hasWebcamErrors()">
+                <i class="fa fa-circle"></i>Connection to webcam: Okay
+              </div>
+              <div class="obico-status-line obico-text-error" data-bind="visible: hasWebcamErrors()">
+                <i class="fa fa-circle"></i><a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Connection to webcam: Error</a>
+              </div>
+            </div>
+            <div class="obico-divider" style="height: 70px; border-right: gray solid thin;"></div>
+            <div class="obico-section-panel">
+                <h5 class="obico-test-connection-header">Server Connection Test</h5>
+            <div class="obico-test-connection" style="padding-right: 18px;">
+              <button class="obico-button obico-button_solid obico-button_circle obico-text-connection-button" data-bind="click: testServerConnection">
+              <span data-bind="visible: serverTested() != 'testing'">TEST</span>
+              <i data-bind="visible: serverTested() == 'testing'" class="fa fa-spinner fa-spin" style="font-size: 40px;"></i>
+              </button>
+              <div class="obico-test-result">
+                <div style="margin: 10px; display: flex; flex-direction: column; align-items: center;">
+                  <div data-bind="visible: serverTested() == 'tested', css: {'obico-text-error': !serverTestSucceeded(), 'obico-text-success': serverTestSucceeded()}" style="text-align: center;">
+                    <i data-bind="css: {'fa-exclamation': !serverTestSucceeded(), 'fa-check': serverTestSucceeded()}" class="fa" aria-hidden="true" style="font-size: 24px;"></i>
+                    <div data-bind="visible: serverTestStatusCode() == 200">
+                    Succeeded!
+                    </div>
+                    <div class="obico-status-line obico-text-error" data-bind="visible: serverTestStatusCode() == null">
+                    <a href="#diagnosticReportModal" data-bind="click: showDiagnosticReportModal">Failed to contact server. Is OctoPrint connected to Internet?</a>
+                    </div>
+                    <div data-bind="visible: serverTestStatusCode() == 401">
+                    <div>Invalid account credentials.</div>
+                    <div><a href="#" data-bind="click: showWizardModal">Re-run wizard</a> to link OctoPrint.</div>
+                    </div>
+                    <div data-bind="visible: serverTestUnknownError()">
+                    Something went wrong. <a href="mailto:support@obico.io">Contact us</a> for help.
                     </div>
                   </div>
                 </div>
               </div>
-              </div>
+            </div>
             </div>
           </div>
-        </section>
-        <section>
-          <h1 class="tsd-section-title">Troubleshooting Tips</h1>
-          <p>Make sure you have followed <a href="https://www.thespaghettidetective.com/docs/octoprint-plugin-setup/">the setup guide</a> to link OctoPrint to your The Spaghetti Detective account successfully. Check out our <a href="https://www.thespaghettidetective.com/help">help docs</a> for detailed troubleshooting guides.</p>
-          <div class="tsd-section-content">
-            <div class="tsd-collapsable">
-              <h4 class="tsd-collapsable-title">
-                Webcam streaming
-                <span class="tsd-counter">4</span>
-              </h4>
-              <div class="tsd-collapsable-content">
-                <h5>I'm getting laggy webcam streaming.</h5>
-                <ul>
-                  <li>If you have a free The Spaghetti Detective account and it's out of the free trial period, your webcam streaming will be 1 frame per 10 seconds. <a href="https://www.thespaghettidetective.com/docs/webcam-streaming-for-human-eyes/">25 frames per second webcam streaming is a premium feature for Pro accounts only.</a></li>
-                  <li>Have you restarted OctoPrint and/or your Rasbperry Pi after upgrading to Pro account?</li>
-                  <li>Make sure the Premium Streaming is not disabled in the "Settings" section.</li>
-                </ul>
-                <h5>Webcam streaming doesn't work.</h5>
-                <ul>
-                  <li>The Basic Webcam Streaming (free account) is on only when you are printing. You won't see a webcam feed when the printer is idle.</li>
-                  <li>However, the Premium Webcam Streaming is always on. If you have a Pro account, you should see webcam feed even if the printer is idle.</li>
-                  <li>You need to make sure webcam URL is configured correctly in OctoPrint, and can be reached from your Raspberry Pi.</li>
-                  <li>Check out <a href="https://www.thespaghettidetective.com/docs/webcam-feed-is-not-showing/">the detailed help document</a>.</li>
-                </ul>
-                <h5>I got a warning that says "switched to the Basic Streaming".</h5>
-                <ul>
-                  <li>This warning means the Premium Streaming process failed to start. You will only get the Basic Streaming, if your account is eligible for the 25fps Premium Streaming. If you have a Pro account, you can <a href="mailto:support@thespaghettidetective.com">get help from the TSD team</a>.</li>
-                </ul>
-                <h5>I got a warning that says "streaming uses excessive CPU".</h5>
-                <ul>
-                  <li>If you have set streaming compability mode to "always", please set it back to "auto".</li>
-                  <li>If you have to always stream in compability mode, set webcam resolution to 640x480, fps to 10. Then restart the Pi.</li>
-                  <li>Learn more about <a href="https://www.thespaghettidetective.com/docs/streaming-compatibility-mode/">the streaming compability mode</a>.</li>
-                </ul>
-              </div>
-            </div>
-            <div class="tsd-collapsable">
-              <h4 class="tsd-collapsable-title">
-                Failure detection
-                <span class="tsd-counter">2</span>
-              </h4>
-              <div class="tsd-collapsable-content">
-                <h5>I got a spaghetti alert but there was nothing wrong.</h5>
-                <ul>
-                  <li>This happens because The Detective is not perfect at her job yet.  <a href="https://www.thespaghettidetective.com/docs/how-does-credits-work/">Help her improve.</a></li>
-                </ul>
-                <h5>The Detective is "not watching".</h5>
-                <ul>
-                  <li>The Detective is not detecting when your printer is not printing.</li>
-                  <li>You have left "watching for failures" off.</li>
-                  <li>The plugin has trouble connecting to The Spaghetti Detective server</li>
-                  <li><a href="https://www.thespaghettidetective.com/docs/detective-not-watching/#4-you-have-run-out-of-detective-hours">You have run out of Detective Hours</a>.</li>
-                </ul>
-              </div>
-            </div>
-            <div class="tsd-collapsable">
-              <h4 class="tsd-collapsable-title">
-                Other problems
-                <span class="tsd-counter">2</span>
-              </h4>
-              <div class="tsd-collapsable-content">
-                <h5>My OctoPrint is running, but the page shows "OctoPrint is offline".</h5>
-                <ul>
-                  <li>Your Rasbperry Pi may have issue connecting to the internet. Check the connection status on this page for errors.</li>
-                  <li>The credentials established in the process of linking OctoPrint to your account may have been lost or corrupted. For instance, if you have re-installed OctoPrint, or have a corrupted SD card.</li>
-                  <li>As the last resort, you re-run the setup wizard (below) to re-establish the credentials to link OctoPrint to your account.</li>
-                </ul>
-                <h5>Help! The web page doesn't seem to work correctly.</h5>
-                <ul>
-                  <li>It's almost always a good idea to just try "hard-refreshing" the page. Here is <a href="https://en.scratch-wiki.info/wiki/Help:Hard_Refresh">how you hard-refresh a page</a>.</li>
-                </ul>
-              </div>
+        </div>
+      </section>
+      <section class="obico-settings-page__section">
+        <h1 class="obico-settings-page__section-title">Troubleshooting Tips</h1>
+        <p>Make sure you have followed <a href="https://www.obico.io/docs/octoprint-plugin-setup/">the setup guide</a> to link OctoPrint to your Obico account successfully. Check out our <a href="https://www.thespaghettidetective.com/help">help docs</a> for detailed troubleshooting guides.</p>
+        <div class="obico-settings-page__section-content">
+          <div class="obico-collapsable">
+            <h4 class="obico-collapsable__title">
+              Webcam streaming
+              <span class="obico-collapsable__counter">4</span>
+            </h4>
+            <div class="obico-collapsable__content">
+              <h5>I'm getting laggy webcam streaming.</h5>
+              <ul>
+                <li>If you have a free Obico account and it's out of the free trial period, your webcam streaming will be 1 frame per 10 seconds. <a href="https://www.obico.io/docs/webcam-streaming-for-human-eyes/">25 frames per second webcam streaming is a premium feature for Pro accounts only.</a></li>
+                <li>Have you restarted OctoPrint and/or your Rasbperry Pi after upgrading to Pro account?</li>
+                <li>Make sure the Premium Streaming is not disabled in the "Settings" section.</li>
+              </ul>
+              <h5>Webcam streaming doesn't work.</h5>
+              <ul>
+                <li>The Basic Webcam Streaming (free account) is on only when you are printing. You won't see a webcam feed when the printer is idle.</li>
+                <li>However, the Premium Webcam Streaming is always on. If you have a Pro account, you should see webcam feed even if the printer is idle.</li>
+                <li>You need to make sure webcam URL is configured correctly in OctoPrint, and can be reached from your Raspberry Pi.</li>
+                <li>Check out <a href="https://www.obico.io/docs/webcam-feed-is-not-showing/">the detailed help document</a>.</li>
+              </ul>
+              <h5>I got a warning that says "switched to the Basic Streaming".</h5>
+              <ul>
+                <li>This warning means the Premium Streaming process failed to start. You will only get the Basic Streaming, if your account is eligible for the 25fps Premium Streaming. If you have a Pro account, you can <a href="mailto:support@thespaghettidetective.com">get help from the Obico team</a>.</li>
+              </ul>
+              <h5>I got a warning that says "streaming uses excessive CPU".</h5>
+              <ul>
+                <li>If you have set streaming compability mode to "always", please set it back to "auto".</li>
+                <li>If you have to always stream in compability mode, set webcam resolution to 640x480, fps to 10. Then restart the Pi.</li>
+                <li>Learn more about <a href="https://www.obico.io/docs/streaming-compatibility-mode/">the streaming compability mode</a>.</li>
+              </ul>
             </div>
           </div>
-        </section>
-        <section>
-          <h1 class="tsd-section-title">Re-run Setup Wizard</h1>
-          <div class="tsd-section-content">
-            <div>
-            If you can no longer log into your The Spaghetti Detective account, e.g., you don't remember what email you signed up with, you can re-run the setup wizard to link your OctoPrint with a new The Spaghetti Detective account.
-            </div>
-            <div>
-              <a href="#" class="tsd-button tsd-rerun-wizard" data-bind="click: showWizardModal">Re-run Wizard</a>
+          <div class="obico-collapsable">
+            <h4 class="obico-collapsable__title">
+              Failure detection
+              <span class="obico-collapsable__counter">2</span>
+            </h4>
+            <div class="obico-collapsable__content">
+              <h5>I got a spaghetti alert but there was nothing wrong.</h5>
+              <ul>
+                <li>This happens because The Detective is not perfect at her job yet.  <a href="https://www.obico.io/docs/how-does-credits-work/">Help her improve.</a></li>
+              </ul>
+              <h5>The Detective is "not watching".</h5>
+              <ul>
+                <li>The Detective is not detecting when your printer is not printing.</li>
+                <li>You have left "watching for failures" off.</li>
+                <li>The plugin has trouble connecting to Obico server</li>
+                <li><a href="https://www.obico.io/docs/detective-not-watching/#4-you-have-run-out-of-detective-hours">You have run out of Detective Hours</a>.</li>
+              </ul>
             </div>
           </div>
-        </section>
-      </div>
+          <div class="obico-collapsable">
+            <h4 class="obico-collapsable__title">
+              Other problems
+              <span class="obico-collapsable__counter">2</span>
+            </h4>
+            <div class="obico-collapsable__content">
+              <h5>My OctoPrint is running, but the page shows "OctoPrint is offline".</h5>
+              <ul>
+                <li>Your Rasbperry Pi may have issue connecting to the internet. Check the connection status on this page for errors.</li>
+                <li>The credentials established in the process of linking OctoPrint to your account may have been lost or corrupted. For instance, if you have re-installed OctoPrint, or have a corrupted SD card.</li>
+                <li>As the last resort, you re-run the setup wizard (below) to re-establish the credentials to link OctoPrint to your account.</li>
+              </ul>
+              <h5>Help! The web page doesn't seem to work correctly.</h5>
+              <ul>
+                <li>It's almost always a good idea to just try "hard-refreshing" the page. Here is <a href="https://en.scratch-wiki.info/wiki/Help:Hard_Refresh">how you hard-refresh a page</a>.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="obico-settings-page__section">
+        <h1 class="obico-settings-page__section-title">Re-run Setup Wizard</h1>
+        <div class="obico-settings-page__section-content">
+          <div>
+          If you can no longer log into your Obico account, e.g., you don't remember what email you signed up with, you can re-run the setup wizard to link your OctoPrint with a new Obico account.
+          </div>
+          <div>
+            <br>
+            <a href="#" class="obico-button obico-button_solid" data-bind="click: showWizardModal">Re-run Wizard</a>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </div>
 
 
-<!-- Modals -->
-<div id="wizardModal" class="tsd-modal modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel" aria-hidden="true">
+{# Modals #}
+
+<div id="wizardModal" class="obico-modal modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-    <h4 style="text-align: center;">The Spaghetti Detective Setup Wizard</h4>
+    <h4 style="text-align: center;">Obico Setup Wizard</h4>
   </div>
   <div class="modal-body">
     <div class="alert alert-warning" role="alert" data-bind="visible: configured">
-      You are re-linking OctoPrint to your TSD account. Don't forget to <strong>restart OctoPrint</strong> when you are done.
+      You are re-linking OctoPrint to your Obico account. Don't forget to <strong>restart OctoPrint</strong> when you are done.
     </div>
     <div data-bind="allowBindings: false">
     {% include "obico_wizard.jinja2" %}
@@ -370,9 +370,9 @@
     <div class="row-fluid">
       <div class="span6" style="text-align: left;">
         <div class="controls" data-bind="visible: wizardAutoPoppedup">
-            <label class="checkbox">
-                <input type="checkbox" data-bind="checked: disableWizardAutoPopUp" id="toggleAutoPopUp"> Don't show again
-            </label>
+          <label class="checkbox">
+            <input type="checkbox" data-bind="checked: disableWizardAutoPopUp" id="toggleAutoPopUp"> Don't show again
+          </label>
         </div>
       </div>
       <div class="span6">
@@ -382,23 +382,23 @@
   </div>
 </div>
 
-<div id="diagnosticReportModal" class="tsd-modal modal hide fade tsd-secondary-modal" tabindex="-1" role="dialog" aria-labelledby="diagnosticReportModalLabel" aria-hidden="true">
+<div id="diagnosticReportModal" class="obico-modal modal hide fade obico-secondary-modal" tabindex="-1" role="dialog" aria-labelledby="diagnosticReportModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-    <h3 id="diagnosticReportModalLabel">The Spaghetti Detective Diagnostic Report</h3>
+    <h3 id="diagnosticReportModalLabel">Obico Diagnostic Report</h3>
   </div>
   <div class="modal-body">
-    <i>*Note: This report is to diagnostic information for potential problems in <b>Access Anywhere - The Spaghetti Detective</b> plugin. It is not a diagnosis for your print failures.</i>
+    <i>*Note: This report is to diagnostic information for potential problems in <b>Access Anywhere - Obico</b> plugin. It is not a diagnosis for your print failures.</i>
     <br /><br />
-    <b class="text-success" data-bind="visible: !hasServerErrors() && !hasWebcamErrors()">
+    <b class="obico-text-success" data-bind="visible: !hasServerErrors() && !hasWebcamErrors()">
       There have been no errors since last time OctoPrint rebooted.
     </b>
-    <b class="text-error" data-bind="visible: hasServerErrors() || hasWebcamErrors()">
-      The Spaghetti Detective plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.thespaghettidetective.com/docs/connectivity-error-report/">trouble-shooting page</a> or <a href="https://www.thespaghettidetective.com/docs/contact-us-for-support/">reach out to us</a> for help.
+    <b class="obico-text-error" data-bind="visible: hasServerErrors() || hasWebcamErrors()">
+      Obico plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.obico.io/docs/connectivity-error-report/">trouble-shooting page</a> or <a href="https://www.obico.io/docs/contact-us-for-support/">reach out to us</a> for help.
     </b>
     <div data-bind="visible: hasServerErrors()">
       <hr />
-      <p class="text-error">
+      <p class="obico-text-error">
         The plugin has failed to connect to the server <b data-bind="text: errorStats.server.error_count"></b> times (error rate <b data-bind="text: serverErrorRate() + '%'"></b>) since OctoPrint rebooted.
       </p>
       <ul>
@@ -407,12 +407,12 @@
         <li data-bind="visible: serverStatus.status_posted_to_server_ts">The most recent attempted server contact occurred at: <b data-bind="text: new Date(serverStatus.status_posted_to_server_ts())"></b>.</li>
       </ul>
       <p>
-        The Spaghetti Detective failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.
+        Obico failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.
       </p>
     </div>
     <div data-bind="visible: hasWebcamErrors()">
       <hr />
-      <p class="text-error">
+      <p class="obico-text-error">
         The plugin has failed to connect to the webcam <b data-bind="text: errorStats.webcam.error_count"></b> times (error rate <b data-bind="text: webcamErrorRate() + '%'"></b>) since OctoPrint rebooted.
       </p>
       <ul>
@@ -426,7 +426,7 @@
   </div>
 </div>
 
-<div id="tsdMigratedModal" class="tsd-modal modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="tsdMigratedModal" aria-hidden="true">
+<div id="tsdMigratedModal" class="obico-modal modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="tsdMigratedModal" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
     <h4 style="text-align: center;">The Spaghetti Detective Setup Wizard</h4>
