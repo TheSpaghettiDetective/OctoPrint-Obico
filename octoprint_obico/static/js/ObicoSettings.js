@@ -15,7 +15,7 @@ $(function () {
     function ObicoSettingsViewModel(parameters) {
         var self = this;
 
-        const defaultServerAddress = 'https://app.thespaghettidetective.com';
+        const defaultServerAddress = 'https://app.obico.io';
         function getServerType(serverAddress) {
             return serverAddress == defaultServerAddress ? 'cloud' : 'self-hosted';
         }

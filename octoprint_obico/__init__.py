@@ -96,7 +96,7 @@ class ObicoPlugin(
         self.sentry = SentryWrapper(self)
 
         return dict(
-            endpoint_prefix='https://app.thespaghettidetective.com',
+            endpoint_prefix='https://app.obico.io',
             disable_video_streaming=False,
             pi_cam_resolution='medium',
             sentry_opt='out',

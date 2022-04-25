@@ -85,7 +85,7 @@ if __name__ == "__main__":
     with open(sys.argv[1]) as stream:
         config = yaml.load(stream.read()).get('plugins', {}).get('obico', {})
 
-    url = config.get('endpoint_prefix', 'https://app.thespaghettidetective.com').replace('http', 'ws') + '/ws/dev/'
+    url = config.get('endpoint_prefix', 'https://app.obico.io').replace('http', 'ws') + '/ws/dev/'
     token = config.get('auth_token')
     print('Connecting to:\n{}\nwith token:\n{}\n'.format(url, token))
     websocket.enableTrace(True)
