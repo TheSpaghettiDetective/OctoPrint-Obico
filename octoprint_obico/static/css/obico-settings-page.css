@@ -25,7 +25,7 @@
   margin-right: 8px;
 }
 .obico-settings-page .obico-test-connection-wrapper .obico-section-panel .obico-status-line .obico-accountPro {
-  color: #3CEAC0;
+  color: #00B1A4;
 }
 .obico-settings-page .obico-test-connection-wrapper .obico-section-panel .obico-test-connection-header {
   margin-top: -24px;
@@ -45,10 +45,10 @@
   width: 230px;
   max-width: 70%;
   padding: 0 0 0 50px;
-  border: #3CEAC0 solid thin;
+  border: #00B1A4 solid thin;
   border-left: 0;
   margin-left: -50px;
-  color: #3CEAC0;
+  color: #00B1A4;
   border-radius: 0 10px 10px 0;
   font-size: 12px;
   line-height: 125%;

@@ -7,13 +7,13 @@
   display: inline-block;
   text-align: center;
   font-weight: bold;
-  --button-color: #3CEAC0;
+  --button-color: #00B1A4;
   --button-hover-color: #62F4D1;
   --button-text-color: #28303A;
 }
 .obico-button_dark-scheme {
-  --button-color: #3CEAC0;
-  --button-hover-color: #3CEAC0;
+  --button-color: #00B1A4;
+  --button-hover-color: #00B1A4;
 }
 .obico-button:focus {
   outline: none;
