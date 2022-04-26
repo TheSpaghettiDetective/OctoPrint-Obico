@@ -251,7 +251,7 @@ $(function () {
                         'Obico plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.obico.io/docs/user_guides/warnings/webcam-connection-error-popup/">this troubleshooting guide</a>.';
                 } else if (alertMsg.cause === "bailed_because_tsd_plugin_running") {
                     text =
-                        'You are still running Obico.';
+                        '<p>The Obico plugin failed to start because "Access Anywhere - The Spaghetti Detective" plugin is still installed and enabled.</p><p>Please remove or disable "Access Anywhere - The Spaghetti Detective" plugin and restart OctoPrint.</p><p><a href="https://www.obico.io/docs/user_guides/move-from-tsd-to-obico-in-octoprint">Learn more about migrating from The Spaghetti Detective to Obico.</a></p>';
                 }
                 if (diagnosticReportAvailable) {
                     buttons.unshift(

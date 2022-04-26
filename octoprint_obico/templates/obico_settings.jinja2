@@ -41,11 +41,13 @@
       </div>
     </div>
     <div data-bind="visible: serverStatus.bailed_because_tsd_plugin_running()">
-      <div>
-        <p>
-          <i class="fa fa-exclamation" style="font-size: 48px;"></i>
-        </p>
-        <b>You are still running Obico</b>
+      <div class="obico-settings-choice__choice-unavailable">
+          <p>
+          <i class="fa fa-exclamation" style="font-size: 48px; margin-bottom: 12px;"></i>
+          </p>
+        <p style="text-align: left;">The Obico plugin failed to start because "Access Anywhere - The Spaghetti Detective" plugin is still installed and enabled.</p>
+        <p style="text-align: left;">Please remove or disable "Access Anywhere - The Spaghetti Detective" plugin and restart OctoPrint.</p>
+        <p style="text-align: left;"><a href="https://www.obico.io/docs/user_guides/move-from-tsd-to-obico-in-octoprint">Learn more about migrating from The Spaghetti Detective to Obico.</a></p>
       </div>
     </div>
   </div>
@@ -356,7 +358,7 @@
 <div id="wizardModal" class="obico-modal modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-    <h4 style="text-align: center;"><img src="plugin/obico/static/img/logo-square.svg" style="width: 1.6em; height: 1.6em; margin-right: 1.6em;">Obico Setup Wizard</h4>
+    <h4 style="text-align: center;"><img src="plugin/obico/static/img/logo-square.svg" style="width: 1.6em; height: 1.6em; margin-right: 1em;">Obico Setup Wizard</h4>
   </div>
   <div class="modal-body">
     <div class="alert alert-warning" role="alert" data-bind="visible: configured">
@@ -388,7 +390,7 @@
     <h3 id="diagnosticReportModalLabel">Obico Diagnostic Report</h3>
   </div>
   <div class="modal-body">
-    <i>*Note: This report is to diagnostic information for potential problems in <b>Access Anywhere - Obico</b> plugin. It is not a diagnosis for your print failures.</i>
+    <i>*Note: This report is to diagnostic information for potential problems in <b>Obico for OctoPrint</b> plugin. It is not a diagnosis for your print failures.</i>
     <br /><br />
     <b class="obico-text-success" data-bind="visible: !hasServerErrors() && !hasWebcamErrors()">
       There have been no errors since last time OctoPrint rebooted.
@@ -429,10 +431,20 @@
 <div id="tsdMigratedModal" class="obico-modal modal hide fade secondary-modal" tabindex="-1" role="dialog" aria-labelledby="tsdMigratedModal" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-    <h4 style="text-align: center;">The Spaghetti Detective Setup Wizard</h4>
+    <h4 style="text-align: center;"><img src="plugin/obico/static/img/logo-square.svg" style="width: 1.6em; height: 1.6em; margin-right: 1em;">Welcome to Obico</h4>
   </div>
-  <div>
-    TSD settings have been migrated.
+  <div class="modal-body">
+    <h3>The Spaghetti Detective is now Obico</h3>
+    <p>We have migrated all of your previous settings in The Spaghetti Detective to Obico. Now your OctoPrint is linked to the Obico Server.</p>
+    <br /><br />
+    <p><b>What's next?</b></p>
+    <ul>
+      <li>If you haven't done so, please remove the "Access Anywhere - The Spaghetti Detective" plugin from your Octoprint. Don't forget to restart OctoPrint afterward.</li>
+      <li>Nothing else. You are all set. You can now login <a href="https://app.obico.io">the Obico app</a> using your previous The Spaghetti Detective account credential.</li>
+    </ul>
+    <br /><br />
+    <p>Have run into issues with the Obico plugin? Head to <a href="https://www.obico.io/docs/user_guides/move-from-tsd-to-obico-in-octoprint">the migration instruction</a> for troubleshooting tips.</p>
+    <p>Learn more about <a href="https://www.obico.io/the-spaghetti-detective">The Spaghetti Detective becoming Obico</a>.</p>
   </div>
   <div class="modal-footer">
     <div class="row-fluid">
