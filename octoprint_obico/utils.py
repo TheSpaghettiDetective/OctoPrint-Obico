@@ -306,9 +306,11 @@ def migrate_tsd_settings(plugin):
         return
     if plugin._settings.get(['tsd_migrated']):
         return
-    tsd_settings = plugin._settings.effective.get('plugins', {}).get('thespaghettidetective')
+    tsd_settings = plugin._settings.settings.get(['plugins', ]).get('thespaghettidetective')
     if tsd_settings:
         for k in tsd_settings.keys():
+            if k == 'endpoint_prefix' and tsd_settings.get(k) == 'https://app.thespaghettidetective.com':
+                continue
             plugin._settings.set([k],tsd_settings.get(k), force=True)
 
         plugin._settings.set(["tsd_migrated"], 'yes', force=True)
