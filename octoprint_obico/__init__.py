@@ -357,7 +357,7 @@ class ObicoPlugin(
 
             need_status_boost = False
             for command in msg.get('commands', []):
-                self._event_bus.fire(octoprint.events.Events.PLUGIN_THESPAGHETTIDETECTIVE_COMMAND, command)
+                self._event_bus.fire(octoprint.events.Events.PLUGIN_OBICO_COMMAND, command)
 
                 if command["cmd"] == "pause":
                     self.pause_resume_sequence.prepare_to_pause(
