@@ -10,14 +10,6 @@
   text-align: center;
   font-weight: bold;
 
-  --button-color: @color-primary;
-  --button-hover-color: @color-primary-hover;
-  --button-text-color: @color-text;
-  &_dark-scheme {
-    --button-color: @color-primary;
-    --button-hover-color: @color-primary;
-  }
-
   &:focus {
     outline: none;
   }
@@ -34,11 +26,11 @@
   // Solid button
   &_solid {
     border: none;
-    background-color: var(--button-color);
+    background-color: @color-primary;
     color: @color-text;
 
     &:hover {
-      background-color: var(--button-hover-color);
+      background-color: @color-primary-hover;
       cursor: pointer;
       text-decoration: none;
       color: @color-text;
@@ -47,13 +39,13 @@
 
   // Outline button
   &_outline {
-    border: 2px solid var(--button-color);
-    color: var(--button-color);
+    border: 2px solid @color-primary;
+    color: @color-primary;
     background: none;
 
     &:hover {
-      background-color: var(--button-hover-color);
-      color: var(--button-text-color);
+      background-color: @color-primary;
+      color: @color-text;
       opacity: 1;
     }
   }

@@ -12,11 +12,12 @@
           </p>
           <b>You haven't linked OctoPrint to your Obico account!</b>
         </div>
+        <br>
         <a class="obico-button obico-button_solid" data-bind="click: showWizardModal">Run Setup Wizard to Link OctoPrint</a>
       </div>
-      <div class="obico-settings-choice__choice-wrapper" data-bind="visible: configured">
+      <div class="obico-settings-choice__choice-wrapper" data-bind="visible: configured()">
         <div class="obico-settings-choice__choice-option" data-bind="click: function(data, event) { selectPage('advanced'); }">
-          <a href="#" class="obico-button obico-button_dark-scheme obico-button_outline obico-button_with-icon">
+          <a href="#" class="obico-button obico-button_outline obico-button_with-icon">
             <span>Settings</span>
             <img src="plugin/obico/static/img/arrow-right.svg">
           </a>
@@ -28,7 +29,7 @@
           </ul>
         </div>
         <div class="obico-settings-choice__choice-option" data-bind="click: function(data, event) { selectPage('troubleshooting'); }">
-          <a href="#" class="obico-button obico-button_dark-scheme obico-button_outline obico-button_with-icon">
+          <a href="#" class="obico-button obico-button_outline obico-button_with-icon">
             <span>Troubleshooting</span>
             <img src="plugin/obico/static/img/arrow-right.svg">
           </a>

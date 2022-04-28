@@ -633,12 +633,12 @@
 
       .obico-arrow {
         position: absolute;
-        bottom: 40%;
+        bottom: 45%;
         right: 83%;
         width: 90%;
         display: block;
         z-index: 12;
-        transform: rotate(20deg);
+        transform: rotate(30deg);
 
         @media screen and (max-width: 980px) {
           width: 80%;
@@ -691,6 +691,8 @@
 
   // Last step - setup printer's name
   .obico-successful-setup {
+    padding-top: 50px;
+
     .obico-title {
       text-align: center;
       padding-bottom: 28px;
@@ -749,7 +751,7 @@
           */
           stroke-dasharray: 131.526864;
           stroke-dashoffset: 131.526864;
-          stroke: lighten(@color-primary, 20%);
+          stroke: @color-surface;
           transition: all 10s linear;
           fill: none;
         }
