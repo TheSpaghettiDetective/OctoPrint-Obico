@@ -268,7 +268,7 @@
       </section>
       <section class="obico-settings-page__section">
         <h1 class="obico-settings-page__section-title">Troubleshooting Tips</h1>
-        <p>Make sure you have followed <a href="https://www.obico.io/docs/user_guides/octoprint-plugin-setup/">the setup guide</a> to link OctoPrint to your Obico account successfully. Check out our <a href="https://www.thespaghettidetective.com/help">help docs</a> for detailed troubleshooting guides.</p>
+        <p>Make sure you have followed <a href="https://www.obico.io/docs/user_guides/octoprint-plugin-setup/">the setup guide</a> to link OctoPrint to your Obico account successfully. Check out our <a href="https://www.obico.io/help">help docs</a> for detailed troubleshooting guides.</p>
         <div class="obico-settings-page__section-content">
           <div class="obico-collapsable">
             <h4 class="obico-collapsable__title">
@@ -291,7 +291,7 @@
               </ul>
               <h5>I got a warning that says "switched to the Basic Streaming".</h5>
               <ul>
-                <li>This warning means the Premium Streaming process failed to start. You will only get the Basic Streaming, if your account is eligible for the 25fps Premium Streaming. If you have a Pro account, you can <a href="mailto:support@thespaghettidetective.com">get help from the Obico team</a>.</li>
+                <li>This warning means the Premium Streaming process failed to start. You will only get the Basic Streaming, if your account is eligible for the 25fps Premium Streaming. If you have a Pro account, you can <a href="mailto:support@obico.io">get help from the Obico team</a>.</li>
               </ul>
               <h5>I got a warning that says "streaming uses excessive CPU".</h5>
               <ul>
@@ -309,14 +309,14 @@
             <div class="obico-collapsable__content">
               <h5>I got a spaghetti alert but there was nothing wrong.</h5>
               <ul>
-                <li>This happens because The Detective is not perfect at her job yet.  <a href="https://www.obico.io/docs/user_guides/how-does-credits-work/">Help her improve.</a></li>
+                <li>This happens because the AI failure detection is still not perfect yet. <a href="https://www.obico.io/docs/user_guides/how-does-credits-work/">Help us improve.</a></li>
               </ul>
-              <h5>The Detective is "not watching".</h5>
+              <h5>"Failure detection off".</h5>
               <ul>
-                <li>The Detective is not detecting when your printer is not printing.</li>
-                <li>You have left "watching for failures" off.</li>
+                <li>The AI failure detection is off when your printer is not printing.</li>
+                <li>You have disabled AI failure detection.</li>
                 <li>The plugin has trouble connecting to Obico Server</li>
-                <li><a href="https://www.obico.io/docs/user_guides/detective-not-watching/#4-you-have-run-out-of-detective-hours">You have run out of Detective Hours</a>.</li>
+                <li><a href="https://www.obico.io/docs/user_guides/detective-not-watching#4-you-have-run-out-of-ai-detection-hours">You have run out of AI Detection Hours</a>.</li>
               </ul>
             </div>
           </div>
@@ -400,7 +400,7 @@
       There have been no errors since last time OctoPrint rebooted.
     </b>
     <b class="obico-text-error" data-bind="visible: hasServerErrors() || hasWebcamErrors()">
-      Obico plugin has run into issues. These issues may have prevented The Detective from watching your print effectively. Please check out our <a href="https://www.obico.io/docs/user_guides/connectivity-error-report/">trouble-shooting page</a> or <a href="https://www.obico.io/docs/user_guides/contact-us-for-support/">reach out to us</a> for help.
+      Obico plugin has run into issues. These issues may have prevented Obico plugin from connecting to the Obico Server and sending status update correctly and promptly. Please check out our <a href="https://www.obico.io/docs/user_guides/connectivity-error-report/">trouble-shooting page</a> or <a href="https://www.obico.io/docs/user_guides/contact-us-for-support/">reach out to us</a> for help.
     </b>
     <div data-bind="visible: hasServerErrors()">
       <hr />

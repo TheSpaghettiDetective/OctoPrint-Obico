@@ -111,7 +111,7 @@ class SentryWrapper:
 
     def enabled(self):
         return self.plugin._settings.get(["sentry_opt"]) != 'out' \
-            and self.plugin.canonical_endpoint_prefix().endswith('thespaghettidetective.com')
+            and self.plugin.canonical_endpoint_prefix().endswith('obico.io')
 
     def captureException(self, *args, **kwargs):
         _logger.exception("Exception")

@@ -272,7 +272,7 @@ $(function () {
                 }
                 if (alertMsg.cause === 'cpu') {
                     text =
-                        '<p>The Premium Webcam Streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the Premium Streaming. <a href="https://www.thespaghettidetective.com/docs/warnings/compatibility-mode-excessive-cpu/">Learn more >>></a></p>';
+                        '<p>The Premium Webcam Streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the Premium Streaming. <a href="https://www.obico.io/docs/user_guides/warnings/compatibility-mode-excessive-cpu/">Learn more >>></a></p>';
                 }
                 if (alertMsg.cause === 'octolapse_compat_mode') {
                     text =

@@ -196,7 +196,7 @@ nat: {
 	# statically configured TURN server, and thus provide the address of the
 	# TURN server, the transport (udp/tcp/tls) to use, and a set of valid
 	# credentials to authenticate...
-	turn_server = "turn.thespaghettidetective.com"
+	turn_server = "turn.obico.io"
 	turn_port = 80
 	turn_type = "tcp"
 	turn_user = "{TURN_CREDENTIAL}"

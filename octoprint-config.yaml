@@ -38,16 +38,16 @@ plugins:
         _config_version: 1
     softwareupdate:
         _config_version: 9
+    obico:
+        auth_token: b7588cf3a16c787c7203
+        # endpoint_prefix: https://app-stg.obico.io
+        # endpoint_prefix: http://docker.for.mac.host.internal:3334
+        sentry_opt: in
     thespaghettidetective:
         auth_token: b7588cf3a16c787c7203
         # endpoint_prefix: https://app-stg.thespaghettidetective.com
-        # endpoint_prefix: http://192.168.0.235:3334
         # endpoint_prefix: http://docker.for.mac.host.internal:3334
         sentry_opt: in
-    thespaghettidetective_beta:
-        auth_token: 7365a421913674d3299b
-        endpoint_prefix: http://app.stg.thespaghettidetective.com
-        webrtc_alpha: true
     tracking:
         enabled: false
         unique_id: e6b528a5-a4c9-4ecd-bbd6-b0fc3abb8c4a
