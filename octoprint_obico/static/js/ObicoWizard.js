@@ -1,7 +1,7 @@
 /*
  * View model for Obico Wizard
  *
- * Author:  aNoO
+ * Author:  The Obico team
  * License: AGPLv3
  */
 $(function () {
