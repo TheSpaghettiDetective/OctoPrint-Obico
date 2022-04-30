@@ -290,6 +290,7 @@ class ObicoPlugin(
         def on_server_ws_open(ws):
             if self.ss and self.ss.ws and self.ss.ws == ws:
                 self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
+                self.post_update_to_server() # Make sure an update is sent asap so that the server can rely on the availability of essential info such as agent.version
 
         server_ws_backoff = ExpoBackoff(300)
         while self.shutting_down is False:

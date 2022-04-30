@@ -76,8 +76,7 @@ class OctoPrintSettingsUpdater:
         data = dict(
             webcam=dict((k, v) for k, v in self.plugin._settings.effective['webcam'].items() if k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
             temperature=self.plugin._settings.settings.effective['temperature'],
-            client_id='octoprint_obico',
-            client_version=self.plugin._plugin_version,
+            agent=dict(name='octoprint_obico', version=self.plugin._plugin_version),
             octoprint_version=octoprint.util.version.get_octoprint_version_string(),
         )
         if self.printer_metadata:
