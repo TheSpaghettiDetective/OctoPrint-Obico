@@ -82,6 +82,7 @@ class PrinterDiscovery(object):
             rpi_model=read('/proc/device-tree/model')[:253],
             octopi_version=read('/etc/octopi_version')[:253],
             plugin_version=self.plugin._plugin_version,
+            agent='Obico for OctoPrint',
         )
 
         if not host_or_ip:
@@ -301,9 +302,6 @@ def get_port(plugin):
 
 
 def get_local_ip(plugin):
-    if plugin._settings.get(["force_localhost_for_discovery"]):
-        return '127.0.0.1'
-
     ip = _get_ip_addr()
     if ip and is_local_address(plugin, ip):
         return ip
