@@ -248,10 +248,10 @@ $(function () {
                 } else if (alertMsg.cause === "webcam") {
                     diagnosticReportAvailable = true
                     text =
-                        'Obico plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.obico.io/docs/user_guides/warnings/webcam-connection-error-popup/">this troubleshooting guide</a>.';
+                        'Obico plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.obico.io/docs/user-guides/warnings/webcam-connection-error-popup/">this troubleshooting guide</a>.';
                 } else if (alertMsg.cause === "bailed_because_tsd_plugin_running") {
                     text =
-                        '<p>The Obico plugin failed to start because "Access Anywhere - The Spaghetti Detective" plugin is still installed and enabled.</p><p>Please remove or disable "Access Anywhere - The Spaghetti Detective" plugin and restart OctoPrint.</p><p><a href="https://www.obico.io/docs/user_guides/move-from-tsd-to-obico-in-octoprint">Learn more about migrating from The Spaghetti Detective to Obico.</a></p>';
+                        '<p>The Obico plugin failed to start because "Access Anywhere - The Spaghetti Detective" plugin is still installed and enabled.</p><p>Please remove or disable "Access Anywhere - The Spaghetti Detective" plugin and restart OctoPrint.</p><p><a href="https://www.obico.io/docs/user-guides/move-from-tsd-to-obico-in-octoprint">Learn more about migrating from The Spaghetti Detective to Obico.</a></p>';
                 }
                 if (diagnosticReportAvailable) {
                     buttons.unshift(
@@ -268,11 +268,11 @@ $(function () {
             if (alertMsg.level === "warning") {
                 if (alertMsg.cause === 'streaming') {
                     text =
-                        '<p>The Premium Webcam Streaming failed to start. Obico has switched to the Basic Streaming.</p><p><a href="https://www.obico.io/docs/user_guides/warnings/webcam-switched-to-basic-streaming/">Learn more >>></a></p>';
+                        '<p>The Premium Webcam Streaming failed to start. Obico has switched to the Basic Streaming.</p><p><a href="https://www.obico.io/docs/user-guides/warnings/webcam-switched-to-basic-streaming/">Learn more >>></a></p>';
                 }
                 if (alertMsg.cause === 'cpu') {
                     text =
-                        '<p>The Premium Webcam Streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the Premium Streaming. <a href="https://www.obico.io/docs/user_guides/warnings/compatibility-mode-excessive-cpu/">Learn more >>></a></p>';
+                        '<p>The Premium Webcam Streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the Premium Streaming. <a href="https://www.obico.io/docs/user-guides/warnings/compatibility-mode-excessive-cpu/">Learn more >>></a></p>';
                 }
                 if (alertMsg.cause === 'octolapse_compat_mode') {
                     text =
