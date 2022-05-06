@@ -481,7 +481,7 @@ class ObicoPlugin(
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
 __plugin_name__ = "Obico for OctoPrint"
 __plugin_author__ = "The Obico team"
-__plugin_url__ = "https://www.obico.io/octoprint"
+__plugin_url__ = "https://www.obico.io/"
 __plugin_description__ = "Monitor and control your printer anywhere over the internet, on your phone! No port-forwarding or VPN is needed. Best part? AI-based failure detection!"
 __plugin_license__ = "AGPLv3"
 __plugin_pythoncompat__ = ">=2.7,<4"
