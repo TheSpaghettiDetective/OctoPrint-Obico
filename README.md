@@ -13,4 +13,4 @@ or manually using this URL:
 
 ## Configuration
 
-Follow [Obico Setup Guide](https://www.obico.io/docs/octoprint-plugin-setup/) to set up this plugin.
+Follow [Obico Setup Guide](https://www.obico.io/docs/user-guides/octoprint-plugin-setup/) to set up this plugin.
