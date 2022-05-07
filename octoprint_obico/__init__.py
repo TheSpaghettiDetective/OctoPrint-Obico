@@ -482,7 +482,7 @@ class ObicoPlugin(
 __plugin_name__ = "Obico for OctoPrint"
 __plugin_author__ = "The Obico team"
 __plugin_url__ = "https://www.obico.io/"
-__plugin_description__ = "Monitor and control your printer anywhere over the internet, on your phone! No port-forwarding or VPN is needed. Best part? AI-based failure detection!"
+__plugin_description__ = "Securely monitor and control your OctoPrint-connected printer from anywhere for free with Obico. Get unlimited live webcam streaming, full OctoPrint remote access, printer status notifications, and a free companion mobile app for iOS and Android. The best part? AI-powered failure detection watches your prints so you don’t have to."
 __plugin_license__ = "AGPLv3"
 __plugin_pythoncompat__ = ">=2.7,<4"
 
