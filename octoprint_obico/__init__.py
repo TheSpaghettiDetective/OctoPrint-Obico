@@ -125,14 +125,14 @@ class ObicoPlugin(
         # Plugin here. See https://github.com/foosel/OctoPrint/wiki/Plugin:-Software-Update
         # for details.
         return dict(
-            TheSpaghettiDetective=dict(
-                displayName="Obico",
+            obico=dict(
+                displayName="Obico for OctoPrint",
                 displayVersion=self._plugin_version,
 
                 # version check: github repository
                 type="github_release",
                 user="TheSpaghettiDetective",
-                repo="OctoPrint-TheSpaghettiDetective",
+                repo="OctoPrint-Obico",
                 current=self._plugin_version,
 
                 # update method: pip
