@@ -1,8 +1,9 @@
-# Obico for OctoPrint -
+# Obico for OctoPrint
 
-[Obico](https://www.obico.io) is a Machine Learning-based algorithm to automatically detects 3D print failures, send you alerts, and let you cancel prints from anywhere.
+[Obico](https://www.obico.io) is a community-built, open-source smart 3D printing platform used by makers, enthusiasts, and tinkerers around the world.
 
-This plugin requires Obico server to work. You can grab the server source code from the [Obico Server github repo](https://github.com/TheSpaghettiDetective/obico-server) and get it up and running. If you don't want the hassle of setting up and running your own server, you can [sign up a Obico cloud account](https://www.obico.io/accounts/signup/).
+
+This plugin requires Obico Server to work. You can grab the server source code from the [Obico Server github repo](https://github.com/TheSpaghettiDetective/obico-server) and run a self-hosted Obico Server. If you don't want the hassle of setting up and running your own server, you can [sign up a Obico Cloud account](https://www.obico.io/accounts/signup/).
 
 ## Setup
 
