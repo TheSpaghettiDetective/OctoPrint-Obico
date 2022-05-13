@@ -303,7 +303,7 @@
       align-items: center;
 
       .obico-delimeter {
-        background-color: @color-text;
+        background-color: @color-on-primary;
         width: 3px;
         height: 200px;
       }
@@ -311,29 +311,29 @@
       .obico-option {
         text-align: center;
         margin: 30px 30px;
-        color: @color-text;
+        color: @color-on-primary;
 
         &:hover {
           cursor: pointer;
         }
 
         h2 {
-          color: @color-text;
+          color: @color-on-primary;
         }
 
         .obico-button {
           color: @color-primary;
-          background-color: #fff;
+          background-color: @color-on-primary;
 
           &.obico-filled {
             color: @color-primary;
-            background-color: @color-text;
+            background-color: @color-on-primary;
           }
 
           &.obico-outline {
             background-color: @color-primary;
-            color: @color-text;
-            border: 2px solid @color-text;
+            color: @color-on-primary;
+            border: 2px solid @color-on-primary;
           }
         }
       }
@@ -351,7 +351,7 @@
 
   // Footer notes
   .obico-notes {
-    color: @color-text;
+    color: @color-on-primary;
     text-align: center;
 
     &.obico-primary {
@@ -360,10 +360,6 @@
       margin-top: 60px;
       padding: 18px;
       text-align: center;
-    }
-
-    &.obico-text-black {
-      color: @color-text;
     }
   }
 
@@ -476,7 +472,8 @@
     .obico-text {
       display: inline-block;
       margin-left: 8px;
-      border-bottom: 1px solid @color-text;
+      border-bottom: 1px solid @color-on-primary;
+      color: @color-on-primary;
       font-weight: bold;
     }
 
@@ -724,7 +721,7 @@
         font-size: 1.125rem;
         border-radius: 100%;
         background-color: #fff;
-        color: @color-text;
+        color: @color-primary;
         text-transform: uppercase;
         font-weight: bold;
       }
@@ -751,7 +748,7 @@
           */
           stroke-dasharray: 131.526864;
           stroke-dashoffset: 131.526864;
-          stroke: @color-surface;
+          stroke: @color-primary-hover;
           transition: all 10s linear;
           fill: none;
         }
