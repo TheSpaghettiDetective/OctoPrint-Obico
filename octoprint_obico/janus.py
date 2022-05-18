@@ -140,13 +140,7 @@ class JanusConn:
 
             # when plugindata.data.obico is set, this is a incoming message from webrtc data channel
             # https://github.com/TheSpaghettiDetective/janus-gateway/commit/e0bcc6b40f145ce72e487204354486b2977393ea
-            to_plugin = msg.get(
-                'plugindata', {}
-            ).get(
-                'data', {}
-            ).get(
-                'obico', {}
-            )
+            to_plugin = msg.get('plugindata', {}).get('data', {}).get('thespaghettidetective', {})
 
             if to_plugin:
                 _logger.debug('Processing WebRTC data channel msg from client:')
