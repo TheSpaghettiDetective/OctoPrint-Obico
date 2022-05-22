@@ -15,3 +15,27 @@ or manually using this URL:
 ## Configuration
 
 Follow [Obico Setup Guide](https://www.obico.io/docs/user-guides/octoprint-plugin-setup/) to set up this plugin.
+
+
+# Plugin Development
+
+## Running the plugin locally
+
+```bash
+docker compose up -d
+```
+
+Will start a series of containers that support the plugin (eg mock video streaming) as well as an octoprint container for python2 and python3. However, to enable interactive debugging the plugin containers are not running the plugins yet. 
+
+In another terminal:
+
+To install the plugin in the container run:
+```bash
+docker compose exec {op/op_python_2} octoprint dev plugin:install
+```
+
+Then to start octoprint (and by extension the plugin) run:
+
+```bash
+docker compose exec {op/op_python2} ./start.sh
+```
