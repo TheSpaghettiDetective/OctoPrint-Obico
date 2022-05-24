@@ -10,7 +10,7 @@
   background-color: #2D3E4F;
 }
 .obico-settings-choice a:not(.obico-button) {
-  color: #00B1A4;
+  color: #01A299;
   text-decoration: underline;
 }
 .obico-settings-choice a:not(.obico-button):hover {
@@ -41,7 +41,7 @@
   color: #ebebeb;
 }
 .obico-settings-choice__choice-option:hover {
-  color: #00B1A4;
+  color: #01A299;
   cursor: pointer;
 }
 .obico-settings-choice__choice-description {
