@@ -20,22 +20,22 @@
 }
 .obico-button_solid {
   border: none;
-  background-color: #00B1A4;
+  background-color: #01A299;
   color: #fff;
 }
 .obico-button_solid:hover {
-  background-color: #02D4C5;
+  background-color: #019592;
   cursor: pointer;
   text-decoration: none;
   color: #fff;
 }
 .obico-button_outline {
-  border: 2px solid #00B1A4;
+  border: 2px solid #01A299;
   color: #fff;
   background: none;
 }
 .obico-button_outline:hover {
-  background-color: #00B1A4;
+  background-color: #01A299;
   color: #fff;
   opacity: 1;
 }

@@ -1,19 +1,19 @@
 <svg width="163" height="163" viewBox="0 0 163 163" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_183_83)">
+<g clip-path="url(#clip0_182_33)">
 <path d="M81.32 162.64C126.232 162.64 162.64 126.232 162.64 81.32C162.64 36.4082 126.232 0 81.32 0C36.4082 0 0 36.4082 0 81.32C0 126.232 36.4082 162.64 81.32 162.64Z" fill="#E5FAF5"/>
-<path d="M42.73 117.95H43.73" stroke="#BCEFE3" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
-<path d="M49.51 117.95H116.02" stroke="#BCEFE3" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="1.93 5.78"/>
-<path d="M118.91 117.95H119.91" stroke="#BCEFE3" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
-<path d="M81.3199 91.51V92.51" stroke="#BCEFE3" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
-<path d="M81.3199 99.17V113.62" stroke="#BCEFE3" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="2.22 6.67"/>
-<path d="M81.3199 116.95V117.95" stroke="#BCEFE3" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
-<path d="M80.26 23.0001C71.8369 27.8522 62.854 31.6603 53.51 34.3401C53.0749 34.4651 52.6919 34.7273 52.418 35.0877C52.1441 35.4481 51.9939 35.8874 51.99 36.3401V59.8301C51.99 70.7101 59.32 91.1601 80.69 97.8901C81.0965 98.0202 81.5335 98.0202 81.94 97.8901C103.32 91.1601 110.65 70.7101 110.65 59.8301V36.3601C110.646 35.9074 110.496 35.4681 110.222 35.1077C109.948 34.7473 109.565 34.4851 109.13 34.3601C99.785 31.6739 90.8022 27.8591 82.38 23.0001C82.058 22.813 81.6923 22.7145 81.32 22.7145C80.9476 22.7145 80.5819 22.813 80.26 23.0001V23.0001Z" fill="#00B1A4"/>
-<path d="M66.77 59.4699L77.62 70.3199L97.15 51.0699" stroke="#2D3E4F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M42.73 127.38C47.9381 127.38 52.16 123.158 52.16 117.95C52.16 112.742 47.9381 108.52 42.73 108.52C37.522 108.52 33.3 112.742 33.3 117.95C33.3 123.158 37.522 127.38 42.73 127.38Z" fill="#00B1A4"/>
-<path d="M119.91 127.38C125.118 127.38 129.34 123.158 129.34 117.95C129.34 112.742 125.118 108.52 119.91 108.52C114.702 108.52 110.48 112.742 110.48 117.95C110.48 123.158 114.702 127.38 119.91 127.38Z" fill="#00B1A4"/>
+<path d="M42.73 117.95H43.73" stroke="#03DAC5" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M49.51 117.95H116.02" stroke="#03DAC5" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="1.93 5.78"/>
+<path d="M118.91 117.95H119.91" stroke="#03DAC5" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M81.3201 91.51V92.51" stroke="#03DAC5" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M81.3201 99.17V113.62" stroke="#03DAC5" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round" stroke-dasharray="2.22 6.67"/>
+<path d="M81.3201 116.95V117.95" stroke="#03DAC5" stroke-width="4" stroke-miterlimit="10" stroke-linecap="round"/>
+<path d="M80.26 23.0001C71.8369 27.8522 62.854 31.6603 53.51 34.3401C53.0749 34.4651 52.6919 34.7273 52.418 35.0877C52.1441 35.4481 51.9939 35.8874 51.99 36.3401V59.8301C51.99 70.7101 59.32 91.1601 80.69 97.8901C81.0965 98.0202 81.5335 98.0202 81.94 97.8901C103.32 91.1601 110.65 70.7101 110.65 59.8301V36.3601C110.646 35.9074 110.496 35.4681 110.222 35.1077C109.948 34.7473 109.565 34.4851 109.13 34.3601C99.785 31.6739 90.8022 27.8591 82.38 23.0001C82.058 22.813 81.6923 22.7145 81.32 22.7145C80.9476 22.7145 80.5819 22.813 80.26 23.0001V23.0001Z" fill="#01A299"/>
+<path d="M66.77 59.4699L77.62 70.3199L97.15 51.0699" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M42.73 127.38C47.9381 127.38 52.16 123.158 52.16 117.95C52.16 112.742 47.9381 108.52 42.73 108.52C37.522 108.52 33.3 112.742 33.3 117.95C33.3 123.158 37.522 127.38 42.73 127.38Z" fill="#01A299"/>
+<path d="M119.91 127.38C125.118 127.38 129.34 123.158 129.34 117.95C129.34 112.742 125.118 108.52 119.91 108.52C114.702 108.52 110.48 112.742 110.48 117.95C110.48 123.158 114.702 127.38 119.91 127.38Z" fill="#01A299"/>
 </g>
 <defs>
-<clipPath id="clip0_183_83">
+<clipPath id="clip0_182_33">
 <rect width="162.63" height="162.63" fill="white"/>
 </clipPath>
 </defs>

@@ -5,7 +5,7 @@
   position: relative;
 }
 .obico-wizard-content.obico-bg-primary {
-  background-color: #00B1A4;
+  background-color: #01A299;
   color: #fff;
 }
 .obico-wizard-content.obico-bg-primary .obico-navigation .obico-back-btn {
@@ -25,7 +25,7 @@
   color: #28303A;
 }
 .obico-wizard-content a {
-  color: #00B1A4;
+  color: #01A299;
   text-decoration: underline;
 }
 .obico-wizard-content a:hover {
@@ -63,13 +63,13 @@
   width: 16px;
   height: 16px;
   display: inline-block;
-  border: 2px solid #00B1A4;
+  border: 2px solid #01A299;
   border-radius: 50%;
   position: relative;
   margin-right: 18px;
 }
 .obico-wizard-content .obico-navigation .obico-progress-content .obico-circles .obico-circle.filled {
-  background-color: #00B1A4;
+  background-color: #01A299;
 }
 .obico-wizard-content .obico-navigation .obico-progress-content .obico-circles .obico-circle.checked:before {
   content: url("../img/checkmark-half-filled.svg");
@@ -84,7 +84,7 @@
   content: "";
   width: 18px;
   height: 2px;
-  background-color: #00B1A4;
+  background-color: #01A299;
   position: absolute;
   left: calc(100% + 2px);
   top: calc(50% - 1px);
@@ -109,7 +109,7 @@
 .obico-wizard-content .obico-text-with-checkbox .obico-checkbox-wrapper {
   width: 10px;
   height: 10px;
-  border: 1px solid #00B1A4;
+  border: 1px solid #01A299;
   background-color: #fff;
   position: absolute;
   left: 0;
@@ -163,7 +163,7 @@
 .obico-wizard-content .obico-features .obico-features-blocks .obico-feature .obico-feature-text .obico-title {
   font-weight: bold;
   font-size: 18px;
-  color: #00B1A4;
+  color: #01A299;
 }
 .obico-wizard-content .obico-features .obico-features-blocks .obico-feature .obico-feature-text .obico-description {
   margin: 0;
@@ -176,7 +176,7 @@
   top: 0;
   border-radius: 50%;
   width: 60px;
-  border: 2px solid #00B1A4;
+  border: 2px solid #01A299;
 }
 @media screen and (max-width: 800px) {
   .obico-wizard-content .obico-features {
@@ -226,7 +226,7 @@
   }
 }
 .obico-wizard-content .obico-choice-container {
-  background-color: #00B1A4;
+  background-color: #01A299;
   padding: 18px;
   border-radius: 12px;
 }
@@ -252,15 +252,15 @@
   color: #fff;
 }
 .obico-wizard-content .obico-choice-container .obico-choice-banner .obico-option .obico-button {
-  color: #00B1A4;
+  color: #01A299;
   background-color: #fff;
 }
 .obico-wizard-content .obico-choice-container .obico-choice-banner .obico-option .obico-button.obico-filled {
-  color: #00B1A4;
+  color: #01A299;
   background-color: #fff;
 }
 .obico-wizard-content .obico-choice-container .obico-choice-banner .obico-option .obico-button.obico-outline {
-  background-color: #00B1A4;
+  background-color: #01A299;
   color: #fff;
   border: 2px solid #fff;
 }
@@ -278,14 +278,14 @@
   text-align: center;
 }
 .obico-wizard-content .obico-notes.obico-primary {
-  background-color: #00B1A4;
+  background-color: #01A299;
   color: #fff;
   margin-top: 60px;
   padding: 18px;
   text-align: center;
 }
 .obico-wizard-content .obico-bottom-illustration {
-  background-color: #00B1A4;
+  background-color: #01A299;
   display: flex;
   margin-top: 40px;
   padding: 40px 40px 0;
@@ -580,7 +580,7 @@
   font-size: 1.125rem;
   border-radius: 100%;
   background-color: #fff;
-  color: #00B1A4;
+  color: #01A299;
   text-transform: uppercase;
   font-weight: bold;
 }
@@ -605,7 +605,7 @@
           */
   stroke-dasharray: 131.526864;
   stroke-dashoffset: 131.526864;
-  stroke: #02D4C5;
+  stroke: #019592;
   transition: all 10s linear;
   fill: none;
 }
