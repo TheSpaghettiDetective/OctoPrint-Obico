@@ -164,7 +164,7 @@ class WebcamStreamer:
 
             # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
             else:
-                self.start_ffmpeg('-re -i pipe:0 -flags:v +global_header -c:v copy', via_wrapper=False)  # script wrapper would break stdin pipe
+                self.start_ffmpeg('-re -i pipe:0 -flags:v +global_header -c:v copy')
 
                 self.webcam_server = PiCamWebServer(self.pi_camera, self.sentry)
                 self.webcam_server.start()
@@ -193,10 +193,10 @@ class WebcamStreamer:
         stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
         self.bitrate = bitrate_for_dim(img_w, img_h)
 
-        self.start_ffmpeg('-re -i {} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, self.bitrate, img_w, img_h), via_wrapper=True)
+        self.start_ffmpeg('-re -i {} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, self.bitrate, img_w, img_h))
         self.compat_streaming = True
 
-    def start_ffmpeg(self, ffmpeg_args, via_wrapper=False):
+    def start_ffmpeg(self, ffmpeg_args):
         ffmpeg_cmd = '{} {} -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
 
         _logger.debug('Popen: {}'.format(ffmpeg_cmd))
