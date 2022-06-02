@@ -107,8 +107,8 @@ class WebcamStreamer:
                 self.pi_camera.framerate = 20
                 (res_43, res_169) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
                 self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
-                self.bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
-                _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, self.bitrate, self.pi_camera.resolution))
+                bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
+                _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, bitrate, self.pi_camera.resolution))
             except picamera.exc.PiCameraError:
                 not_using_pi_camera()
                 return
@@ -134,7 +134,7 @@ class WebcamStreamer:
                 except Exception:
                     self.sentry.captureException(tags=get_tags())
 
-            if compatible_mode == 'always':
+            if compatible_mode == 'always' or not self.plugin.is_pro_user():
                 self.ffmpeg_from_mjpeg()
                 return
 
@@ -191,9 +191,10 @@ class WebcamStreamer:
         jpg = wait_for_webcamd(webcam_settings)
         (_, img_w, img_h) = get_image_info(jpg)
         stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
-        self.bitrate = bitrate_for_dim(img_w, img_h)
+        bitrate = bitrate_for_dim(img_w, img_h)
+        fps = 25 if self.plugin.is_pro_user() else 3
 
-        self.start_ffmpeg('-re -i {} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, self.bitrate, img_w, img_h))
+        self.start_ffmpeg('-re -i {} -filter:v fps={} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, fps, bitrate, img_w, img_h))
         self.compat_streaming = True
 
     def start_ffmpeg(self, ffmpeg_args):

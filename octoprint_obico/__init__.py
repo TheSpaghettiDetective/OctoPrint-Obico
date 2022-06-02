@@ -238,7 +238,7 @@ class ObicoPlugin(
         janus_thread.daemon = True
         janus_thread.start()
 
-        if self.linked_printer.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
+        if not self._settings.get(["disable_video_streaming"]):
             _logger.info('Starting webcam streamer')
             self.webcam_streamer = WebcamStreamer(self, self.sentry)
             stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
@@ -386,11 +386,8 @@ class ObicoPlugin(
             if msg.get('remote_status'):
                 self.remote_status.update(msg.get('remote_status'))
                 need_status_boost = True
-
                 if self.remote_status['viewing']:
-                    viewing_boost_thread = threading.Thread(
-                        target=self.jpeg_poster.post_pic_to_boost_viewing,
-                        kwargs={'repeats': 3 if self.linked_printer.get('is_pro') else 1})
+                    viewing_boost_thread = threading.Thread(target=self.jpeg_poster.post_pic_to_boost_viewing)
                     viewing_boost_thread.is_daemon = True
                     viewing_boost_thread.start()
 
@@ -480,6 +477,8 @@ class ObicoPlugin(
         # !! HEADSUP bluprint endpoints does not require authentication
         return False
 
+    def is_pro_user(self):
+        return self.linked_printer.get('is_pro')
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
