@@ -138,6 +138,7 @@ class JpegPoster:
             finally:
                 time.sleep(1)
 
-    def post_pic_to_boost_viewing(self, repeats=1):
+    def post_pic_to_boost_viewing(self):
+        repeats = 3 if self.plugin.is_pro_user() else 1 # Pro users get better viewing boost
         for _ in range(repeats):
             self.post_pic_to_server(viewing_boost=True)
