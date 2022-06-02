@@ -20,3 +20,6 @@ class RemoteStatus:
         for key in ('viewing', 'should_watch'):
             if key in data:
                 self[key] = data[key]
+
+    def __str__(self):
+        return str(self.__items__)

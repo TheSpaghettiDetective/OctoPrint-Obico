@@ -253,7 +253,7 @@ class ObicoPlugin(
             data_dir=self.get_plugin_data_folder(),
             sentry=self.sentry)
 
-        jpeg_post_thread = threading.Thread(target=self.jpeg_poster.jpeg_post_loop)
+        jpeg_post_thread = threading.Thread(target=self.jpeg_poster.pic_post_loop)
         jpeg_post_thread.daemon = True
         jpeg_post_thread.start()
 
@@ -385,9 +385,14 @@ class ObicoPlugin(
 
             if msg.get('remote_status'):
                 self.remote_status.update(msg.get('remote_status'))
-                if self.remote_status['viewing']:
-                    self.jpeg_poster.post_jpeg_if_needed(force=True)
                 need_status_boost = True
+
+                if self.remote_status['viewing']:
+                    viewing_boost_thread = threading.Thread(
+                        target=self.jpeg_poster.post_pic_to_boost_viewing,
+                        kwargs={'repeats': 3 if self.linked_printer.get('is_pro') else 1})
+                    viewing_boost_thread.is_daemon = True
+                    viewing_boost_thread.start()
 
             if msg.get('http.tunnel') and self.local_tunnel:
                 kwargs = msg.get('http.tunnel')

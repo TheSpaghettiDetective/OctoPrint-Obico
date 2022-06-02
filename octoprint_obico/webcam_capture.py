@@ -103,23 +103,7 @@ class JpegPoster:
         self.plugin = plugin
         self.last_jpg_post_ts = 0
 
-    def post_jpeg_if_needed(self, force=False):
-        if not self.plugin.is_configured():
-            return
-
-        if not self.plugin._printer.get_state_id() in ['PRINTING',]:
-            return
-
-        if not force:
-            interval_seconds = POST_PIC_INTERVAL_SECONDS
-            if not self.plugin.remote_status['viewing'] and not self.plugin.remote_status['should_watch']:
-                interval_seconds *= 12      # Slow down jpeg posting if needed
-
-            if self.last_jpg_post_ts > time.time() - interval_seconds:
-                return
-
-        self.last_jpg_post_ts = time.time()
-
+    def post_pic_to_server(self, viewing_boost=False):
         try:
             error_stats.attempt('webcam')
             files = {'pic': capture_jpeg(self.plugin._settings.global_get(["webcam"]))}
@@ -127,13 +111,33 @@ class JpegPoster:
             error_stats.add_connection_error('webcam', self.plugin)
             return
 
-        resp = server_request('POST', '/api/v1/octo/pic/', self.plugin, timeout=60, files=files, headers=self.plugin.auth_headers())
+        data = {'viewing_boost': 'true'} if viewing_boost else {}
+        resp = server_request('POST', '/api/v1/octo/pic/', self.plugin, timeout=60, files=files, data=data, headers=self.plugin.auth_headers())
         _logger.debug('Jpeg posted to server - {0}'.format(resp))
 
-    def jpeg_post_loop(self):
+    def pic_post_loop(self):
         while True:
             try:
-                self.post_jpeg_if_needed()
-                time.sleep(1)
+                if not self.plugin.is_configured():
+                    continue
+
+                if not self.plugin._printer.get_state_id() in ['PRINTING',]:
+                    continue
+
+                interval_seconds = POST_PIC_INTERVAL_SECONDS
+                if not self.plugin.remote_status['viewing'] and not self.plugin.remote_status['should_watch']:
+                    interval_seconds *= 12      # Slow down jpeg posting if needed
+
+                if self.last_jpg_post_ts > time.time() - interval_seconds:
+                    continue
+
+                self.last_jpg_post_ts = time.time()
+                self.post_pic_to_server()
             except:
                 self.plugin.sentry.captureException(tags=get_tags())
+            finally:
+                time.sleep(1)
+
+    def post_pic_to_boost_viewing(self, repeats=1):
+        for _ in range(repeats):
+            self.post_pic_to_server(viewing_boost=True)
