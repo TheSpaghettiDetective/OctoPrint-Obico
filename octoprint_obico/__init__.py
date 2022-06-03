@@ -21,7 +21,7 @@ from .ws import WebSocketClient, WebSocketConnectionException
 from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
-    get_tags, not_using_pi_camera, OctoPrintSettingsUpdater,
+    get_tags, OctoPrintSettingsUpdater,
     server_request, migrate_tsd_settings)
 from .lib.error_stats import error_stats
 from .lib import alert_queue
@@ -185,7 +185,6 @@ class ObicoPlugin(
         if self.client_conn:
             self.client_conn.close()
 
-        not_using_pi_camera()
 
     # ~~Startup Plugin
 
@@ -202,8 +201,6 @@ class ObicoPlugin(
     def on_after_startup(self):
         if self.bailed_because_tsd_plugin_running:
             return
-
-        not_using_pi_camera()
 
         main_thread = threading.Thread(target=self.main_loop)
         main_thread.daemon = True

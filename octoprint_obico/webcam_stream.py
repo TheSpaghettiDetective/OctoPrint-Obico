@@ -28,7 +28,7 @@ import psutil
 from octoprint.util import to_unicode
 
 from .janus import JANUS_SERVER
-from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera, get_image_info, wait_for_port, wait_for_port_to_close
+from .utils import pi_version, ExpoBackoff, get_tags, get_image_info, wait_for_port, wait_for_port_to_close
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 
@@ -102,7 +102,6 @@ class WebcamStreamer:
         try:
             import picamera
             try:
-                using_pi_camera()
                 self.pi_camera = picamera.PiCamera()
                 self.pi_camera.framerate = 20
                 (res_43, res_169) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
@@ -110,7 +109,6 @@ class WebcamStreamer:
                 bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
                 _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, bitrate, self.pi_camera.resolution))
             except picamera.exc.PiCameraError:
-                not_using_pi_camera()
                 return
         except ModuleNotFoundError:
             _logger.warning('picamera module is not found on a Pi. Seems like an installation error.')
@@ -171,7 +169,6 @@ class WebcamStreamer:
                 self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, profile='baseline')
                 self.pi_camera.wait_recording(0)
         except Exception:
-            not_using_pi_camera()
             alert_queue.add_alert({'level': 'warning', 'cause': 'streaming'}, self.plugin)
 
             wait_for_port('127.0.0.1', 8080)  # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
