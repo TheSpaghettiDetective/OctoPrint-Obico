@@ -19,8 +19,6 @@ import requests
 
 from .lib.error_stats import error_stats
 
-CAM_EXCLUSIVE_USE = os.path.join(tempfile.gettempdir(), '.using_picam')
-
 PRINTER_SETTINGS_UPDATE_INTERVAL = 60*30.0  # Update printer settings at max 30 minutes interval, as they are relatively static.
 
 _logger = logging.getLogger('octoprint.plugins.obico')
@@ -169,17 +167,6 @@ def get_tags():
     with tags_mutex:
         system_tags = tags
         return system_tags
-
-
-def not_using_pi_camera():
-    try:
-        os.remove(CAM_EXCLUSIVE_USE)
-    except:
-        pass
-
-
-def using_pi_camera():
-    open(CAM_EXCLUSIVE_USE, 'a').close()  # touch CAM_EXCLUSIVE_USE to indicate the intention of exclusive use of pi camera
 
 
 def get_image_info(data):
