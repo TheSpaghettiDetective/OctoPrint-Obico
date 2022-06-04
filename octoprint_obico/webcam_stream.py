@@ -120,6 +120,10 @@ class WebcamStreamer:
             return
 
         try:
+            if not self.plugin.is_pro_user():
+                self.ffmpeg_from_mjpeg()
+                return
+
             compatible_mode = self.plugin._settings.get(["video_streaming_compatible_mode"])
 
             if compatible_mode == 'auto':
@@ -132,7 +136,7 @@ class WebcamStreamer:
                 except Exception:
                     self.sentry.captureException(tags=get_tags())
 
-            if compatible_mode == 'always' or not self.plugin.is_pro_user():
+            if compatible_mode == 'always':
                 self.ffmpeg_from_mjpeg()
                 return
 
