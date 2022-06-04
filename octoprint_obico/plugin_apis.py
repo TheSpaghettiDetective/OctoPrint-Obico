@@ -49,7 +49,7 @@ def on_api_command(plugin, command, data):
                 linked_printer=plugin.linked_printer,
                 streaming_status=dict(
                     is_pi_camera=plugin.webcam_streamer and bool(plugin.webcam_streamer.pi_camera),
-                    premium_streaming=plugin.webcam_streamer and not plugin.webcam_streamer.shutting_down,
+                    webrtc_streaming=plugin.webcam_streamer and not plugin.webcam_streamer.shutting_down,
                     compat_streaming=plugin.webcam_streamer and plugin.webcam_streamer.compat_streaming),
                     error_stats=error_stats.as_dict(),
                     alerts=alert_queue.fetch_and_clear(),
