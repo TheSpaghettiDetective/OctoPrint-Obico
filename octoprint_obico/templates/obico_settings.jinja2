@@ -209,7 +209,7 @@
               <div class="obico-status-line">
                 <i class="fa fa-circle"></i>Webcam streaming:
                 <span data-bind="visible: !streaming.webrtc_streaming()"><a target="_blank" href="https://www.obico.io/docs/user-guides/webcam-stream-stuck-at-1-10-fps/">0.1 FPS</a></span>
-                <span data-bind="visible: streaming.webrtc_streaming(), text: linkedPrinter.is_pro() ? (streaming.compat_streaming() ?  'Premium (compatibility)' : 'Premium (advanced)') : 'Basic (compatibility)'"></span>
+                <span data-bind="visible: streaming.webrtc_streaming(), text: linkedPrinter.is_pro() ? (streaming.compat_streaming() ?  'Premium (compatibility)' : 'Premium (advanced)') : 'Basic'"></span>
               </div>
               <div class="obico-status-line obico-text-success" data-bind="visible: !hasServerErrors()">
                 <i class="fa fa-circle"></i>Connection to server: Okay
@@ -269,20 +269,15 @@
             <div class="obico-collapsable__content">
               <h5>I'm getting laggy webcam streaming.</h5>
               <ul>
-                <li>If you have a free Obico account and it's out of the free trial period, your webcam streaming will be 1 frame per 10 seconds. <a href="https://www.obico.io/docs/user-guides/webcam-streaming-for-human-eyes/">25 frames per second webcam streaming is a premium feature for Pro accounts only.</a></li>
+                <li>If you have a free Obico account and it's out of the free trial period, your webcam streaming will be up to 5 FPS (frame per second). <a href="https://www.obico.io/docs/user-guides/webcam-streaming-for-human-eyes/">25 FPS webcam streaming is a premium feature for Pro accounts only.</a></li>
                 <li>Have you restarted OctoPrint and/or your Rasbperry Pi after upgrading to Pro account?</li>
-                <li>Make sure the Premium Streaming is not disabled in the "Settings" section.</li>
               </ul>
+              <h5>I got a warning that says "the webcam streaming failed to start".</h5>
+              <div>This warning means the webcam streaming process failed to start. Follow <a target="_blank" href="https://www.obico.io/docs/user-guides/webcam-stream-stuck-at-1-10-fps/">this troubleshooting guide</a>.</div>
               <h5>Webcam streaming doesn't work.</h5>
               <ul>
-                <li>The Basic Webcam Streaming (free account) is on only when you are printing. You won't see a webcam feed when the printer is idle.</li>
-                <li>However, the Premium Webcam Streaming is always on. If you have a Pro account, you should see webcam feed even if the printer is idle.</li>
                 <li>You need to make sure webcam URL is configured correctly in OctoPrint, and can be reached from your Raspberry Pi.</li>
-                <li>Check out <a href="https://www.obico.io/docs/user-guides/webcam-feed-is-not-showing/">the detailed help document</a>.</li>
-              </ul>
-              <h5>I got a warning that says "switched to the Basic Streaming".</h5>
-              <ul>
-                <li>This warning means the Premium Streaming process failed to start. You will only get the Basic Streaming, if your account is eligible for the 25fps Premium Streaming. If you have a Pro account, you can <a href="mailto:support@obico.io">get help from the Obico team</a>.</li>
+                <li>Check out <a href="https://www.obico.io/docs/user-guides/webcam-feed-is-not-showing/">the detailed troubleshooting guide</a>.</li>
               </ul>
               <h5>I got a warning that says "streaming uses excessive CPU".</h5>
               <ul>
