@@ -209,7 +209,7 @@
               <div class="obico-status-line">
                 <i class="fa fa-circle"></i>Webcam streaming:
                 <span data-bind="visible: !streaming.webrtc_streaming()"><a target="_blank" href="https://www.obico.io/docs/user-guides/webcam-stream-stuck-at-1-10-fps/">0.1 FPS</a></span>
-                <span data-bind="visible: streaming.webrtc_streaming(), text: linkedPrinter.is_pro() ? (streaming.compat_streaming() ?  'Premium (compatibility)' : 'Premium (advanced)') : 'Basic (compatibility)' }"></span>
+                <span data-bind="visible: streaming.webrtc_streaming(), text: linkedPrinter.is_pro() ? (streaming.compat_streaming() ?  'Premium (compatibility)' : 'Premium (advanced)') : 'Basic (compatibility)'"></span>
               </div>
               <div class="obico-status-line obico-text-success" data-bind="visible: !hasServerErrors()">
                 <i class="fa fa-circle"></i>Connection to server: Okay
