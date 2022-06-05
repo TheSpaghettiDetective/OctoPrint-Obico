@@ -384,9 +384,7 @@ class ObicoPlugin(
                 self.remote_status.update(msg.get('remote_status'))
                 need_status_boost = True
                 if self.remote_status['viewing']:
-                    viewing_boost_thread = threading.Thread(target=self.jpeg_poster.post_pic_to_boost_viewing)
-                    viewing_boost_thread.is_daemon = True
-                    viewing_boost_thread.start()
+                    self.jpeg_poster.need_viewing_boost.set()
 
             if msg.get('http.tunnel') and self.local_tunnel:
                 kwargs = msg.get('http.tunnel')
