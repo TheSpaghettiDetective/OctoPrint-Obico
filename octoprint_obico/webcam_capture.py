@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from datetime import datetime, timedelta
 import time
 import logging
+import threading
 
 try:
     from StringIO import StringIO as Buffer
@@ -102,6 +103,7 @@ class JpegPoster:
     def __init__(self, plugin):
         self.plugin = plugin
         self.last_jpg_post_ts = 0
+        self.need_viewing_boost = threading.Event()
 
     def post_pic_to_server(self, viewing_boost=False):
         try:
@@ -118,7 +120,16 @@ class JpegPoster:
     def pic_post_loop(self):
         while True:
             try:
+                viewing_boost = self.need_viewing_boost.wait(1)
+
                 if not self.plugin.is_configured():
+                    continue
+
+                if viewing_boost:
+                    self.need_viewing_boost.clear()
+                    repeats = 3 if self.plugin.is_pro_user() else 1 # Pro users get better viewing boost
+                    for _ in range(repeats):
+                        self.post_pic_to_server(viewing_boost=True)
                     continue
 
                 if not self.plugin._printer.get_state_id() in ['PRINTING',]:
@@ -135,10 +146,3 @@ class JpegPoster:
                 self.post_pic_to_server()
             except:
                 self.plugin.sentry.captureException(tags=get_tags())
-            finally:
-                time.sleep(1)
-
-    def post_pic_to_boost_viewing(self):
-        repeats = 3 if self.plugin.is_pro_user() else 1 # Pro users get better viewing boost
-        for _ in range(repeats):
-            self.post_pic_to_server(viewing_boost=True)
