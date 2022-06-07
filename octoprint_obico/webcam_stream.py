@@ -28,7 +28,7 @@ import psutil
 from octoprint.util import to_unicode
 
 from .janus import JANUS_SERVER
-from .utils import pi_version, ExpoBackoff, get_tags, using_pi_camera, not_using_pi_camera, get_image_info, wait_for_port, wait_for_port_to_close
+from .utils import pi_version, ExpoBackoff, get_tags, get_image_info, wait_for_port, wait_for_port_to_close
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 
@@ -102,15 +102,13 @@ class WebcamStreamer:
         try:
             import picamera
             try:
-                using_pi_camera()
                 self.pi_camera = picamera.PiCamera()
                 self.pi_camera.framerate = 20
                 (res_43, res_169) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
                 self.pi_camera.resolution = res_169 if self.plugin._settings.effective['webcam'].get('streamRatio', '4:3') == '16:9' else res_43
-                self.bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
-                _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, self.bitrate, self.pi_camera.resolution))
+                bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
+                _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, bitrate, self.pi_camera.resolution))
             except picamera.exc.PiCameraError:
-                not_using_pi_camera()
                 return
         except ModuleNotFoundError:
             _logger.warning('picamera module is not found on a Pi. Seems like an installation error.')
@@ -122,6 +120,10 @@ class WebcamStreamer:
             return
 
         try:
+            if not self.plugin.is_pro_user():
+                self.ffmpeg_from_mjpeg()
+                return
+
             compatible_mode = self.plugin._settings.get(["video_streaming_compatible_mode"])
 
             if compatible_mode == 'auto':
@@ -171,7 +173,6 @@ class WebcamStreamer:
                 self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, profile='baseline')
                 self.pi_camera.wait_recording(0)
         except Exception:
-            not_using_pi_camera()
             alert_queue.add_alert({'level': 'warning', 'cause': 'streaming'}, self.plugin)
 
             wait_for_port('127.0.0.1', 8080)  # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
@@ -191,9 +192,10 @@ class WebcamStreamer:
         jpg = wait_for_webcamd(webcam_settings)
         (_, img_w, img_h) = get_image_info(jpg)
         stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
-        self.bitrate = bitrate_for_dim(img_w, img_h)
+        bitrate = bitrate_for_dim(img_w, img_h)
+        fps = 25 if self.plugin.is_pro_user() else 5
 
-        self.start_ffmpeg('-re -i {} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, self.bitrate, img_w, img_h))
+        self.start_ffmpeg('-re -i {} -filter:v fps={} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, fps, bitrate, img_w, img_h))
         self.compat_streaming = True
 
     def start_ffmpeg(self, ffmpeg_args):

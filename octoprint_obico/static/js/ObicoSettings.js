@@ -33,7 +33,7 @@ $(function () {
         );
         self.showDetailPage = ko.observable(false);
         self.serverStatus = ko.mapping.fromJS({ is_connected: false, status_posted_to_server_ts: 0, bailed_because_tsd_plugin_running: false });
-        self.streaming = ko.mapping.fromJS({ is_pi_camera: false, premium_streaming: false, compat_streaming: false});
+        self.streaming = ko.mapping.fromJS({ is_pi_camera: false, webrtc_streaming: false, compat_streaming: false});
         self.linkedPrinter = ko.mapping.fromJS({ is_pro: false, id: null, name: null});
         self.errorStats = ko.mapping.fromJS({ server: { attempts: 0, error_count: 0, first: null, last: null }, webcam: { attempts: 0, error_count: 0, first: null, last: null }});
         self.serverTestStatusCode = ko.observable(null);
@@ -268,15 +268,15 @@ $(function () {
             if (alertMsg.level === "warning") {
                 if (alertMsg.cause === 'streaming') {
                     text =
-                        '<p>The Premium Webcam Streaming failed to start. Obico has switched to the Basic Streaming.</p><p><a href="https://www.obico.io/docs/user-guides/warnings/webcam-switched-to-basic-streaming/">Learn more >>></a></p>';
+                        '<p>The webcam streaming failed to start. Obico is now streaming your webcam at 0.1 FPS.</p><p><a href="https://www.obico.io/docs/user-guides/warnings/webcam-streaming-failed-to-start/">Learn more >>></a></p>';
                 }
                 if (alertMsg.cause === 'cpu') {
                     text =
-                        '<p>The Premium Webcam Streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the Premium Streaming. <a href="https://www.obico.io/docs/user-guides/warnings/compatibility-mode-excessive-cpu/">Learn more >>></a></p>';
+                        '<p>The webcam streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the webcam streaming. <a href="https://www.obico.io/docs/user-guides/warnings/compatibility-mode-excessive-cpu/">Learn more >>></a></p>';
                 }
                 if (alertMsg.cause === 'octolapse_compat_mode') {
                     text =
-                        '<p>Octolapse plugin detected! Obico has switched to "Premium (compability)" streaming mode.</p>';
+                        '<p>Octolapse plugin detected! Obico has switched to "Premium (compatibility)" streaming mode.</p>';
                 }
                 if (alertMsg.cause === "restart_required") {
                     text = '<p></p><p>Settings saved! If you are in the setup wizard, restart OctoPrint after the setup is done. Otherwise, restart OctoPrint now for the changes to take effect.</p>';

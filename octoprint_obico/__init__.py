@@ -21,7 +21,7 @@ from .ws import WebSocketClient, WebSocketConnectionException
 from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
-    get_tags, not_using_pi_camera, OctoPrintSettingsUpdater,
+    get_tags, OctoPrintSettingsUpdater,
     server_request, migrate_tsd_settings)
 from .lib.error_stats import error_stats
 from .lib import alert_queue
@@ -185,7 +185,6 @@ class ObicoPlugin(
         if self.client_conn:
             self.client_conn.close()
 
-        not_using_pi_camera()
 
     # ~~Startup Plugin
 
@@ -202,8 +201,6 @@ class ObicoPlugin(
     def on_after_startup(self):
         if self.bailed_because_tsd_plugin_running:
             return
-
-        not_using_pi_camera()
 
         main_thread = threading.Thread(target=self.main_loop)
         main_thread.daemon = True
@@ -238,7 +235,7 @@ class ObicoPlugin(
         janus_thread.daemon = True
         janus_thread.start()
 
-        if self.linked_printer.get('is_pro') and not self._settings.get(["disable_video_streaming"]):
+        if not self._settings.get(["disable_video_streaming"]):
             _logger.info('Starting webcam streamer')
             self.webcam_streamer = WebcamStreamer(self, self.sentry)
             stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
@@ -253,7 +250,7 @@ class ObicoPlugin(
             data_dir=self.get_plugin_data_folder(),
             sentry=self.sentry)
 
-        jpeg_post_thread = threading.Thread(target=self.jpeg_poster.jpeg_post_loop)
+        jpeg_post_thread = threading.Thread(target=self.jpeg_poster.pic_post_loop)
         jpeg_post_thread.daemon = True
         jpeg_post_thread.start()
 
@@ -385,9 +382,9 @@ class ObicoPlugin(
 
             if msg.get('remote_status'):
                 self.remote_status.update(msg.get('remote_status'))
-                if self.remote_status['viewing']:
-                    self.jpeg_poster.post_jpeg_if_needed(force=True)
                 need_status_boost = True
+                if self.remote_status['viewing']:
+                    self.jpeg_poster.need_viewing_boost.set()
 
             if msg.get('http.tunnel') and self.local_tunnel:
                 kwargs = msg.get('http.tunnel')
@@ -475,6 +472,8 @@ class ObicoPlugin(
         # !! HEADSUP bluprint endpoints does not require authentication
         return False
 
+    def is_pro_user(self):
+        return self.linked_printer.get('is_pro')
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
