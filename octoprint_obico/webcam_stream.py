@@ -193,7 +193,10 @@ class WebcamStreamer:
         (_, img_w, img_h) = get_image_info(jpg)
         stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
         bitrate = bitrate_for_dim(img_w, img_h)
-        fps = 25 if self.plugin.is_pro_user() else 5
+        fps = 25
+        if not self.plugin.is_pro_user():
+            fps = 5
+            bitrate = int(bitrate/4)
 
         self.start_ffmpeg('-re -i {} -filter:v fps={} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, fps, bitrate, img_w, img_h))
         self.compat_streaming = True
