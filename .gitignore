@@ -16,5 +16,6 @@ dist
 npm-debug.log
 .config*
 janus.jcfg
+janus.plugin.streaming.jcfg
 .v
 .v2
