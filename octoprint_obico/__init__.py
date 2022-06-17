@@ -92,8 +92,6 @@ class ObicoPlugin(
     # ~~ SettingsPlugin mixin
 
     def get_settings_defaults(self):
-        # Initialize sentry the first opportunity when `self._plugin_version` is available. Is there a better place for it?
-        self.sentry = SentryWrapper(self)
 
         return dict(
             endpoint_prefix='https://app.obico.io',
@@ -213,6 +211,7 @@ class ObicoPlugin(
 
     def main_loop(self):
         global _print_event_tracker
+        self.sentry = SentryWrapper(self)
 
         get_tags()  # init tags to minimize risk of race condition
 

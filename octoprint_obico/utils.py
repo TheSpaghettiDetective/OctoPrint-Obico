@@ -2,7 +2,8 @@
 import time
 import random
 import logging
-import raven
+import sentry_sdk
+from sentry_sdk.integrations.threading import ThreadingIntegration
 import re
 import os
 import platform
@@ -89,22 +90,24 @@ class OctoPrintSettingsUpdater:
 class SentryWrapper:
 
     def __init__(self, plugin):
-        self.sentryClient = raven.Client(
-            'https://f0356e1461124e69909600a64c361b71@sentry.obico.io/4',
-            release=plugin._plugin_version,
-            ignore_exceptions = [
-                'BrokenPipeError',
-                'SSLError',
-                'SSLEOFError',
-                'ConnectionResetError',
-                'ConnectionError',
-                'ConnectionRefusedError',
-                'WebSocketConnectionClosedException',
-                'ReadTimeout',
-                'OSError',
-            ]
-        )
         self.plugin = plugin
+        sentry_sdk.init(
+            dsn='https://f0356e1461124e69909600a64c361b71@sentry.obico.io/4',
+            integrations=[
+                ThreadingIntegration(propagate_hub=True),
+            ],
+
+            # If you wish to associate users to errors (assuming you are using
+            # django.contrib.auth) you may enable sending PII data.
+            send_default_pii=True,
+    
+            # By default the SDK will try to use the SENTRY_RELEASE
+            # environment variable, or infer a git commit
+            # SHA as release, however you may want to set
+            # something more human-readable.
+            # release="myapp@1.0.0",
+            release=plugin._plugin_version,
+        )
 
     def enabled(self):
         return self.plugin._settings.get(["sentry_opt"]) != 'out' \
@@ -113,15 +116,16 @@ class SentryWrapper:
     def captureException(self, *args, **kwargs):
         _logger.exception("Exception")
         if self.enabled():
-            self.sentryClient.captureException(*args, **kwargs)
+            sentry_sdk.capture_exception(*args, **kwargs)
 
     def user_context(self, *args, **kwargs):
         if self.enabled():
-            self.sentryClient.user_context(*args, **kwargs)
+            sentry_sdk.set_user(*args, **kwargs)
+            # sentry_sdk.set_tag('key', 'value')
 
     def captureMessage(self, *args, **kwargs):
         if self.enabled():
-            self.sentryClient.captureMessage(*args, **kwargs)
+            sentry_sdk.capture_message(*args, **kwargs)
 
 
 def pi_version():
