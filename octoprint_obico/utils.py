@@ -4,6 +4,7 @@ import random
 import logging
 import sentry_sdk
 from sentry_sdk.integrations.threading import ThreadingIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 import re
 import os
 import platform
@@ -94,13 +95,17 @@ class SentryWrapper:
         sentry_sdk.init(
             dsn='https://f0356e1461124e69909600a64c361b71@sentry.obico.io/4',
             integrations=[
-                ThreadingIntegration(propagate_hub=True),
+                ThreadingIntegration(propagate_hub=True), # Make sure context are propagated to sub-threads.
+                LoggingIntegration(
+                    level=logging.INFO, # Capture info and above as breadcrumbs
+                    event_level=None  # Send logs as events above a logging level, disabled it
+                ),
             ],
 
             # If you wish to associate users to errors (assuming you are using
             # django.contrib.auth) you may enable sending PII data.
             send_default_pii=True,
-    
+
             # By default the SDK will try to use the SENTRY_RELEASE
             # environment variable, or infer a git commit
             # SHA as release, however you may want to set
@@ -113,15 +118,16 @@ class SentryWrapper:
         return self.plugin._settings.get(["sentry_opt"]) != 'out' \
             and self.plugin.canonical_endpoint_prefix().endswith('obico.io')
 
+    def init_context(self):
+        if self.enabled():
+            sentry_sdk.set_user({'id': self.plugin.auth_token()})
+            for (k, v) in get_tags().items():
+                sentry_sdk.set_tag(k, v)
+
     def captureException(self, *args, **kwargs):
         _logger.exception("Exception")
         if self.enabled():
             sentry_sdk.capture_exception(*args, **kwargs)
-
-    def user_context(self, *args, **kwargs):
-        if self.enabled():
-            sentry_sdk.set_user(*args, **kwargs)
-            # sentry_sdk.set_tag('key', 'value')
 
     def captureMessage(self, *args, **kwargs):
         if self.enabled():

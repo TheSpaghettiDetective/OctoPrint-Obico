@@ -14,7 +14,7 @@ try:
 except ImportError:
     import Queue as queue
 
-from .utils import ExpoBackoff, get_tags, pi_version
+from .utils import ExpoBackoff, pi_version
 from .ws import WebSocketClient
 
 _logger = logging.getLogger('octoprint.plugins.obico')
@@ -78,7 +78,7 @@ class JanusConn:
                 elif not self.shutting_down:
                     self.janus_proc.wait()
                     msg = 'Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode)
-                    self.plugin.sentry.captureMessage(msg, tags=get_tags())
+                    self.plugin.sentry.captureMessage(msg)
                     janus_backoff.more(Exception(msg))
                     self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -152,4 +152,4 @@ class JanusConn:
             _logger.debug(msg)
             self.plugin.send_ws_msg_to_server(dict(janus=raw_msg))
         except:
-            self.plugin.sentry.captureException(tags=get_tags())
+            self.plugin.sentry.captureException()

@@ -7,7 +7,6 @@ import threading
 import octoprint.server
 from octoprint.filemanager.util import AbstractFileWrapper
 import io
-from .utils import get_tags
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 UPLOAD_FOLDER = 'ObicoUpload'
@@ -60,7 +59,7 @@ class FileDownloader:
             return {'target_path': target_path}
 
         except Exception as e:
-            self.plugin.sentry.captureException(tags=get_tags())
+            self.plugin.sentry.captureException()
 
     def __download_and_print__(self, gcode_file, target_path, filename):
         try:
@@ -84,7 +83,7 @@ class FileDownloader:
             self.plugin._printer.select_file(
                 target_path, False, printAfterSelect=True)
         except Exception:
-            self.plugin.sentry.captureException(tags=get_tags())
+            self.plugin.sentry.captureException()
 
     def _get_unique_path_and_filename(self, filename):
         sfname = octoprint.server.fileManager.sanitize_name('local', filename)

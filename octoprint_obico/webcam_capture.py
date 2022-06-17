@@ -27,7 +27,7 @@ import requests
 import backoff
 
 from .lib.error_stats import error_stats
-from .utils import server_request, get_tags
+from .utils import server_request
 
 
 POST_PIC_INTERVAL_SECONDS = 10.0
@@ -145,4 +145,4 @@ class JpegPoster:
                 self.last_jpg_post_ts = time.time()
                 self.post_pic_to_server()
             except:
-                self.plugin.sentry.captureException(tags=get_tags())
+                self.plugin.sentry.captureException()

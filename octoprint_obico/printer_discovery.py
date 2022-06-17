@@ -27,7 +27,7 @@ from octoprint.util.platform import (
 from .plugin_apis import verify_code
 from .utils import (
     server_request, OctoPrintSettingsUpdater,
-    get_tags, raise_for_status)
+    raise_for_status)
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
@@ -62,7 +62,7 @@ class PrinterDiscovery(object):
             self._start()
         except Exception:
             self.stop()
-            self.plugin.sentry.captureException(tags=get_tags())
+            self.plugin.sentry.captureException()
 
         _logger.debug('printer_discovery quits')
 
@@ -196,7 +196,6 @@ class PrinterDiscovery(object):
                 _logger.error('printer_discovery got unmatching secret')
                 self.plugin.sentry.captureMessage(
                     'printer_discovery got unmatching secret',
-                    tags=get_tags(),
                     extra={'secret': self.device_secret, 'msg': msg}
                 )
                 self.stop()
@@ -206,7 +205,6 @@ class PrinterDiscovery(object):
                 _logger.error('printer_discovery got unmatching device_id')
                 self.plugin.sentry.captureMessage(
                     'printer_discovery got unmatching device_id',
-                    tags=get_tags(),
                     extra={'device_id': self.device_id, 'msg': msg}
                 )
                 self.stop()
@@ -223,7 +221,6 @@ class PrinterDiscovery(object):
                 _logger.error('printer_discovery could not verify code')
                 self.plugin.sentry.captureMessage(
                     'printer_discovery could not verify code',
-                    tags=get_tags(),
                     extra={'code': code})
 
             self.stop()
@@ -232,7 +229,6 @@ class PrinterDiscovery(object):
         _logger.error('printer_discovery got unexpected message')
         self.plugin.sentry.captureMessage(
             'printer_discovery got unexpected message',
-            tags=get_tags(),
             extra={'msg': msg}
         )
 
@@ -328,5 +324,5 @@ def is_local_address(plugin, address):
             'could not determine whether {} is local address ({})'.format(
                 address, exc)
         )
-        plugin.sentry.captureException(tags=get_tags())
+        plugin.sentry.captureException()
         return False
