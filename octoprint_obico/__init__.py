@@ -21,7 +21,7 @@ from .ws import WebSocketClient, WebSocketConnectionException
 from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
-    get_tags, OctoPrintSettingsUpdater,
+    OctoPrintSettingsUpdater,
     server_request, migrate_tsd_settings)
 from .lib.error_stats import error_stats
 from .lib import alert_queue
@@ -169,7 +169,7 @@ class ObicoPlugin(
                 if event_payload:
                     self.post_update_to_server(data=event_payload)
         except Exception as e:
-            self.sentry.captureException(tags=get_tags())
+            self.sentry.captureException()
     # ~~Shutdown Plugin
 
     def on_shutdown(self):
@@ -213,8 +213,6 @@ class ObicoPlugin(
         global _print_event_tracker
         self.sentry = SentryWrapper(self)
 
-        get_tags()  # init tags to minimize risk of race condition
-
         if not self.is_configured():
             self.discovery = PrinterDiscovery(plugin=self)
             self.discovery.start_and_block()
@@ -222,7 +220,7 @@ class ObicoPlugin(
 
         self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
 
-        self.sentry.user_context({'id': self.auth_token()})
+        self.sentry.init_context()
         _logger.info('Linked printer: {}'.format(self.linked_printer))
         _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
 
@@ -271,7 +269,7 @@ class ObicoPlugin(
                     self.post_update_to_server()
 
             except Exception as e:
-                self.sentry.captureException(tags=get_tags())
+                self.sentry.captureException()
 
             time.sleep(1)
 
@@ -322,7 +320,7 @@ class ObicoPlugin(
                 error_stats.add_connection_error('server', self)
                 server_ws_backoff.more(e)
             except Exception as e:
-                self.sentry.captureException(tags=get_tags())
+                self.sentry.captureException()
                 error_stats.add_connection_error('server', self)
                 server_ws_backoff.more(e)
 
@@ -409,7 +407,7 @@ class ObicoPlugin(
             if need_status_boost:
                 self.boost_status_update()
         except:
-            self.sentry.captureException(tags=get_tags())
+            self.sentry.captureException()
 
     def status_update_to_client_loop(self):
         while self.shutting_down is False:

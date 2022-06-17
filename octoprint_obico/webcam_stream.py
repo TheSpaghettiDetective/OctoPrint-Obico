@@ -28,7 +28,7 @@ import psutil
 from octoprint.util import to_unicode
 
 from .janus import JANUS_SERVER
-from .utils import pi_version, ExpoBackoff, get_tags, get_image_info, wait_for_port, wait_for_port_to_close
+from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 
@@ -134,7 +134,7 @@ class WebcamStreamer:
                         compatible_mode = 'always'
                         alert_queue.add_alert({'level': 'warning', 'cause': 'octolapse_compat_mode'}, self.plugin)
                 except Exception:
-                    self.sentry.captureException(tags=get_tags())
+                    self.sentry.captureException()
 
             if compatible_mode == 'always':
                 self.ffmpeg_from_mjpeg()
@@ -177,7 +177,7 @@ class WebcamStreamer:
 
             wait_for_port('127.0.0.1', 8080)  # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
-            self.sentry.captureException(tags=get_tags())
+            self.sentry.captureException()
 
     def ffmpeg_from_mjpeg(self):
 
@@ -222,7 +222,7 @@ class WebcamStreamer:
                     returncode = self.ffmpeg_proc.wait()
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
                     _logger.error(msg)
-                    self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode), tags=get_tags())
+                    self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
                     return
                 else:
                     ring_buffer.append(err)
@@ -265,7 +265,7 @@ class WebcamStreamer:
                     returncode = self.gst_proc.wait()
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
                     _logger.debug(msg)
-                    self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(returncode), tags=get_tags())
+                    self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(returncode))
                     gst_backoff.more('GST exited un-expectedly. Exit code: {}'.format(returncode))
 
                     ring_buffer = deque(maxlen=50)
@@ -333,10 +333,10 @@ class UsbCamWebServer:
             pass
         except socket.error as err:
             if err.errno not in [errno.ECONNREFUSED, ]:
-                self.sentry.captureException(tags=get_tags())
+                self.sentry.captureException()
             raise
         except Exception:
-            self.sentry.captureException(tags=get_tags())
+            self.sentry.captureException()
             raise
         finally:
             s.close()
@@ -370,7 +370,7 @@ class UsbCamWebServer:
             _logger.error(exc_obj)
             raise
         except Exception:
-            self.sentry.captureException(tags=get_tags())
+            self.sentry.captureException()
             raise
         finally:
             s.close()
@@ -448,7 +448,7 @@ class PiCamWebServer:
 
                 self.img_q.put(chunk)
         except Exception:
-            self.sentry.captureException(tags=get_tags())
+            self.sentry.captureException()
             raise
 
     def mjpeg_generator(self, boundary):
@@ -465,7 +465,7 @@ class PiCamWebServer:
         except GeneratorExit:
             pass
         except Exception:
-            self.sentry.captureException(tags=get_tags())
+            self.sentry.captureException()
             raise
 
     def get_snapshot(self):
