@@ -56,17 +56,17 @@ class OctoPrintSettingsUpdater:
     def __init__(self, plugin):
         self._mutex = threading.RLock()
         self.plugin = plugin
-        self.last_asked = 0
+        self.last_asked = 0    # The timestamp when any caller asked for the setting data, presumably to send to the server.
         self.printer_metadata = None
 
     def update_settings(self):
         with self._mutex:
-            self.last_asked = 0
+            self.last_asked = 0  # Settings changed. Reset last_asked so that the next call will guarantee to be sent to the server
 
     def update_firmware(self, payload):
         with self._mutex:
             self.printer_metadata = payload['data']
-            self.last_asked = 0
+            self.last_asked = 0  # Firmware changed. Reset last_asked so that the next call will guarantee to be sent to the server
 
     def as_dict(self):
         with self._mutex:
@@ -78,6 +78,7 @@ class OctoPrintSettingsUpdater:
             temperature=self.plugin._settings.settings.effective['temperature'],
             agent=dict(name='octoprint_obico', version=self.plugin._plugin_version),
             octoprint_version=octoprint.util.version.get_octoprint_version_string(),
+            platform_uname=list(platform.uname())
         )
         if self.printer_metadata:
             data['printer_metadata'] = self.printer_metadata
