@@ -92,6 +92,15 @@ class OctoPrintSettingsUpdater:
 class SentryWrapper:
 
     def __init__(self, plugin):
+
+        # https://github.com/getsentry/sentry-python/issues/149
+        def before_send(event, hint):
+            if 'exc_info' in hint:
+                exc_type, exc_value, tb = hint['exc_info']
+                if isinstance(exc_value, requests.exceptions.RequestException):
+                    event['fingerprint'] = ['database-unavailable']
+            return event
+
         self.plugin = plugin
         sentry_sdk.init(
             dsn='https://f0356e1461124e69909600a64c361b71@sentry.obico.io/4',
@@ -102,6 +111,7 @@ class SentryWrapper:
                     event_level=None  # Send logs as events above a logging level, disabled it
                 ),
             ],
+            before_send=before_send,
 
             # If you wish to associate users to errors (assuming you are using
             # django.contrib.auth) you may enable sending PII data.
