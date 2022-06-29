@@ -9,11 +9,6 @@ import json
 import socket
 from octoprint.util import to_unicode
 
-try:
-    import queue
-except ImportError:
-    import Queue as queue
-
 from .utils import ExpoBackoff, pi_version
 from .ws import WebSocketClient
 
