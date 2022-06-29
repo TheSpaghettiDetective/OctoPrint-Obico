@@ -322,27 +322,30 @@ class UsbCamWebServer:
     def __init__(self, sentry):
         self.sentry = sentry
         self.web_server = None
+        self.udp_mjpeg_ring_buffer = deque(maxlen=16) # 16 * 16 * 1024 bytes hopefully to give enough buffer for the rate mismatch between udp (in) and tcp (out)
+        cam_server_thread = Thread(target=self.listen_to_mjpeg_udp_from_ffmepg)
+        cam_server_thread.daemon = True
+        cam_server_thread.start()
+
+    def listen_to_mjpeg_udp_from_ffmepg(self):
+        upd_sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        upd_sock.bind(('127.0.0.1', 14498))
+        while(True):
+            (data, _) = upd_sock.recvfrom(1024*16)
+            self.udp_mjpeg_ring_buffer.appendLeft(data)
 
     def mjpeg_generator(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            s.connect(('127.0.0.1', 14499))
             while True:
-                yield s.recv(1024)
+                yield self.udp_mjpeg_ring_buffer.pop()
         except GeneratorExit:
             pass
-        except socket.error as err:
-            if err.errno not in [errno.ECONNREFUSED, ]:
-                self.sentry.captureException()
-            raise
         except Exception:
             self.sentry.captureException()
             raise
-        finally:
-            s.close()
 
     def get_mjpeg(self):
-        return flask.Response(flask.stream_with_context(self.mjpeg_generator()), mimetype='multipart/x-mixed-replace;boundary=spionisto')
+        return flask.Response(flask.stream_with_context(self.mjpeg_generator()), mimetype='multipart/x-mixed-replace;boundary=ffmpeg')
 
     def get_snapshot(self):
         return flask.send_file(io.BytesIO(self.next_jpg()), mimetype='image/jpeg')
