@@ -322,22 +322,29 @@ class UsbCamWebServer:
     def __init__(self, sentry):
         self.sentry = sentry
         self.web_server = None
-        self.udp_mjpeg_ring_buffer = deque(maxlen=16) # 16 * 16 * 1024 bytes hopefully to give enough buffer for the rate mismatch between udp (in) and tcp (out)
-        cam_server_thread = Thread(target=self.listen_to_mjpeg_udp_from_ffmepg)
-        cam_server_thread.daemon = True
-        cam_server_thread.start()
+        self.mjpeg_ring_buffer = deque(maxlen=512) # 512 * 4 * 1024 bytes hopefully to give enough buffer for the rate mismatch between udp (in) and tcp (out)
 
     def listen_to_mjpeg_udp_from_ffmepg(self):
         upd_sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
         upd_sock.bind(('127.0.0.1', 14498))
+
+        jpeg = bytearray()
         while(True):
-            (data, _) = upd_sock.recvfrom(1024*16)
-            self.udp_mjpeg_ring_buffer.appendLeft(data)
+            data = upd_sock.recv(4*1024)
+            jpeg.extend(data)
+            if len(jpeg) > 16 * 1024 * 1024:
+                raise Exception('Proper multi-part boundary not detected in ffmepg MJPEG stream.')
+            if data[-10:] == '--ffmpeg\r\n': # ffmpeg sends boundary as the last line in a UDP packet to indicate the end of the previous jpeg
+                self.mjpeg_ring_buffer.appendleft(jpeg)
+                jpeg = bytearray()
 
     def mjpeg_generator(self):
         try:
             while True:
-                yield self.udp_mjpeg_ring_buffer.pop()
+                if self.mjpeg_ring_buffer:
+                    yield bytes(self.mjpeg_ring_buffer.pop())
+                else:
+                    time.sleep(0.01)
         except GeneratorExit:
             pass
         except Exception:
@@ -348,60 +355,25 @@ class UsbCamWebServer:
         return flask.Response(flask.stream_with_context(self.mjpeg_generator()), mimetype='multipart/x-mixed-replace;boundary=ffmpeg')
 
     def get_snapshot(self):
-        return flask.send_file(io.BytesIO(self.next_jpg()), mimetype='image/jpeg')
+        data = None
+        for i in range(100):
+            if self.mjpeg_ring_buffer:
+                data = self.mjpeg_ring_buffer.pop()
+                break
+            time.sleep(0.01)
 
-    def next_jpg(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            s.connect(('127.0.0.1', 14499))
-            cur = s.recv(100)
-            chunk = b''
-            n = 4
-            while n > 0:
-                n = n - 1
-                # sometimes the mjpeg stream starts without
-                # the mandatory headers
-                if cur[:3] == b'\xff\xd8\xff':
-                    return self._receive_jpeg(s, cur)
-                chunk += cur
-                time.sleep(0.01)
-                cur = s.recv(100)
-            chunk += cur
-            return self._receive_multipart(s, chunk)
-        except (socket.timeout, socket.error):
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            _logger.error(exc_obj)
-            raise
-        except Exception:
-            self.sentry.captureException()
-            raise
-        finally:
-            s.close()
+        if not data:
+            return flask.Response(status=500)
 
-    def _receive_jpeg(self, s, chunk):
-        arr = bytearray()
-        while chunk:
-            index = chunk.find(b'\xff\xd9')
-            if index > -1:
-                arr.extend(chunk[:index+2])
-                if (
-                    b'spionisto' in arr or
-                    b'Content-Length' in arr
-                ):
-                    raise Exception('Bad jpeg data')
-                return arr
-            arr.extend(chunk)
-            chunk = s.recv(1024 * 64)
-        # FIXME good or bad idea?
-        return arr
+        start_marker = data.find(b'\xff\xd8\xff')
+        if start_marker < 0:
+            return flask.Response(status=500)
 
-    def _receive_multipart(self, s, chunk):
-        header = re.search(r"Content-Length: (\d+)", chunk.decode("iso-8859-1"), re.MULTILINE)
-        if not header:
-            raise Exception('Multipart header not found!')
-
-        chunk2 = bytearray(chunk[header.end() + 4:])
-        return self._receive_jpeg(s, chunk2)
+        end_marker = data.find(b'\xff\xd9')
+        if end_marker > 0:
+            return flask.send_file(io.BytesIO(data[start_marker:end_marker+2]), mimetype='image/jpeg')
+        else:
+            return flask.send_file(io.BytesIO(data[start_marker:]), mimetype='image/jpeg') # end_marker not found. Better way to handle it?
 
     def run_forever(self):
         webcam_server_app = flask.Flask('webcam_server')
@@ -425,6 +397,7 @@ class UsbCamWebServer:
         cam_server_thread = Thread(target=self.run_forever)
         cam_server_thread.daemon = True
         cam_server_thread.start()
+        self.listen_to_mjpeg_udp_from_ffmepg()
 
 
 class PiCamWebServer:
