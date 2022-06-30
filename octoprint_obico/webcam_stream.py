@@ -35,7 +35,6 @@ from .webcam_capture import capture_jpeg, webcam_full_url
 _logger = logging.getLogger('octoprint.plugins.obico')
 
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
-GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 
 PI_CAM_RESOLUTIONS = {
     'low': ((320, 240), (480, 270)),  # resolution for 4:3 and 16:9
@@ -92,7 +91,6 @@ class WebcamStreamer:
 
         self.pi_camera = None
         self.webcam_server = None
-        self.gst_proc = None
         self.ffmpeg_proc = None
         self.shutting_down = False
         self.compat_streaming = False
@@ -152,17 +150,15 @@ class WebcamStreamer:
 
                 _logger.debug('v4l2 device found! Streaming as USB camera.')
                 try:
-                    self.start_gst()
+                    bitrate = bitrate_for_dim(640, 480)
+                    self.start_ffmpeg('-f v4l2 -s 640x480 -i /dev/video0 -c:v mjpeg -q:v 1 -s 640x480 -r 5 -an -f mpjpeg udp://127.0.0.1:14498 -filter:v fps=25 -b:v {} -minrate:v 100k -maxrate:v 200k -pix_fmt yuv420p -s 1024x768 -flags:v +global_header -vcodec h264_omx -s 640x480'.format(bitrate))
+                    self.webcam_server = UsbCamWebServer(self.sentry)
+                    self.webcam_server.start()
                 except Exception:
                     if compatible_mode == 'never':
                         raise
                     self.ffmpeg_from_mjpeg()
                     return
-
-                self.webcam_server = UsbCamWebServer(self.sentry)
-                self.webcam_server.start()
-
-                self.start_gst_memory_guard()
 
             # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
             else:
@@ -231,53 +227,6 @@ class WebcamStreamer:
         ffmpeg_thread.daemon = True
         ffmpeg_thread.start()
 
-    def start_gst_memory_guard(self):
-        # Hack to deal with gst command that causes memory leak
-        kill_leaked_gst_cmd = '{} 200000'.format(os.path.join(GST_DIR, 'gst_memory_guard.sh'))
-        _logger.debug('Popen: {}'.format(kill_leaked_gst_cmd))
-        subprocess.Popen(kill_leaked_gst_cmd.split(' '))
-
-    # gst may fail to open /dev/video0 a few times before it finally succeeds. Probably because system resources not immediately available after webcamd shuts down
-
-    @backoff.on_exception(backoff.expo, Exception, jitter=None, max_tries=6)
-    def start_gst(self):
-        gst_cmd = os.path.join(GST_DIR, 'run_gst.sh')
-        _logger.debug('Popen: {}'.format(gst_cmd))
-        self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        for i in range(5):
-            return_code = self.gst_proc.poll()
-            if return_code:    # returncode will be None when it's still running, or 0 if exit successfully
-                (stdoutdata, stderrdata) = self.gst_proc.communicate()
-                msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
-                _logger.debug(msg)
-                raise Exception('GST failed. Exit code: {}'.format(self.gst_proc.returncode))
-            time.sleep(1)
-
-        def ensure_gst_process():
-            ring_buffer = deque(maxlen=50)
-            gst_backoff = ExpoBackoff(60 * 10, max_attempts=20)
-            while True:
-                err = to_unicode(self.gst_proc.stderr.readline(), errors='replace')
-                if not err:  # EOF when process ends?
-                    if self.shutting_down:
-                        return
-
-                    returncode = self.gst_proc.wait()
-                    msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
-                    _logger.debug(msg)
-                    self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(returncode))
-                    gst_backoff.more('GST exited un-expectedly. Exit code: {}'.format(returncode))
-
-                    ring_buffer = deque(maxlen=50)
-                    gst_cmd = os.path.join(GST_DIR, 'run_gst.sh')
-                    _logger.debug('Popen: {}'.format(gst_cmd))
-                    self.gst_proc = subprocess.Popen(gst_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                else:
-                    ring_buffer.append(err)
-
-        gst_thread = Thread(target=ensure_gst_process)
-        gst_thread.daemon = True
-        gst_thread.start()
 
     def restore(self):
         self.shutting_down = True
@@ -287,11 +236,6 @@ class WebcamStreamer:
         except Exception:
             pass
 
-        if self.gst_proc:
-            try:
-                self.gst_proc.terminate()
-            except Exception:
-                pass
         if self.ffmpeg_proc:
             try:
                 self.ffmpeg_proc.terminate()
@@ -312,7 +256,6 @@ class WebcamStreamer:
         wait_for_port_to_close('127.0.0.1', 8080)
         sarge.run('sudo service webcamd start')   # failed to start streaming. falling back to mjpeg-streamer
 
-        self.gst_proc = None
         self.ffmpeg_proc = None
         self.pi_camera = None
 
