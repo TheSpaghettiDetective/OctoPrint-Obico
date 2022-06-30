@@ -151,7 +151,7 @@ class WebcamStreamer:
                 _logger.debug('v4l2 device found! Streaming as USB camera.')
                 try:
                     bitrate = bitrate_for_dim(640, 480)
-                    self.start_ffmpeg('-f v4l2 -s 640x480 -i /dev/video0 -c:v mjpeg -q:v 1 -s 640x480 -r 5 -an -f mpjpeg udp://127.0.0.1:14498 -filter:v fps=25 -b:v {} -minrate:v 100k -maxrate:v 200k -pix_fmt yuv420p -s 1024x768 -flags:v +global_header -vcodec h264_omx -s 640x480'.format(bitrate))
+                    self.start_ffmpeg('-f v4l2 -s 640x480 -i /dev/video0 -b:v {} -pix_fmt yuv420p -s 640x480 -r 25 -flags:v +global_header -vcodec h264_omx'.format(bitrate), second_stream=' -c:v mjpeg -q:v 1 -s 640x480 -r 5 -an -f mpjpeg udp://127.0.0.1:14498')
                     self.webcam_server = UsbCamWebServer(self.sentry)
                     self.webcam_server.start()
                 except Exception:
@@ -197,8 +197,10 @@ class WebcamStreamer:
         self.start_ffmpeg('-re -i {} -filter:v fps={} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, fps, bitrate, img_w, img_h))
         self.compat_streaming = True
 
-    def start_ffmpeg(self, ffmpeg_args):
+    def start_ffmpeg(self, ffmpeg_args, second_stream=None):
         ffmpeg_cmd = '{} {} -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
+        if second_stream:
+            ffmpeg_cmd += second_stream
 
         _logger.debug('Popen: {}'.format(ffmpeg_cmd))
         FNULL = open(os.devnull, 'w')
