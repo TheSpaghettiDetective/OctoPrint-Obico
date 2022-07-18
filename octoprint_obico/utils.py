@@ -5,6 +5,7 @@ import logging
 import sentry_sdk
 from sentry_sdk.integrations.threading import ThreadingIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.flask import FlaskIntegration
 import re
 import os
 import platform
@@ -104,12 +105,14 @@ class SentryWrapper:
         self.plugin = plugin
         sentry_sdk.init(
             dsn='https://f0356e1461124e69909600a64c361b71@sentry.obico.io/4',
+            default_integrations=False,
             integrations=[
                 ThreadingIntegration(propagate_hub=True), # Make sure context are propagated to sub-threads.
                 LoggingIntegration(
                     level=logging.INFO, # Capture info and above as breadcrumbs
                     event_level=None  # Send logs as events above a logging level, disabled it
                 ),
+                FlaskIntegration(),
             ],
             before_send=before_send,
 
