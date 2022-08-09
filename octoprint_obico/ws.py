@@ -17,7 +17,12 @@ class WebSocketClient:
 
         def on_error(ws, error):
             _logger.warning('Server WS ERROR: {}'.format(error))
-            self.close()
+
+            def run(*args):
+                self.close()
+
+            # https://websocket-client.readthedocs.io/en/latest/threading.html
+            threading.Thread(target=run).start()
 
         def on_message(ws, msg):
             if on_ws_msg:
