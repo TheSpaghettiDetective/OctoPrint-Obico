@@ -35,8 +35,14 @@ class WebSocketClient:
 
         def on_open(ws):
             _logger.debug('WS Opened')
-            if on_ws_open:
-                on_ws_open(ws)
+
+            def run(*args):
+                if on_ws_open:
+                    on_ws_open(ws)
+
+            # https://websocket-client.readthedocs.io/en/latest/threading.html
+            threading.Thread(target=run).start()
+
 
         _logger.debug('Connecting to websocket: {}'.format(url))
         header = ["authorization: bearer " + token] if token else None
