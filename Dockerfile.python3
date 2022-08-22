@@ -7,6 +7,3 @@ RUN pip3 install ipdb
 COPY . /app
 
 WORKDIR /app
-
-RUN pip3 install -e ./
-

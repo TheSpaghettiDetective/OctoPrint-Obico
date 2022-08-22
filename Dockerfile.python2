@@ -7,6 +7,3 @@ RUN pip install ipdb
 COPY . /app
 
 WORKDIR /app
-
-RUN pip install -e ./
-
