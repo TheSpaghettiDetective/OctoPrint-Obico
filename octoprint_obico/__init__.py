@@ -326,7 +326,7 @@ class ObicoPlugin(
 
     def post_update_to_server(self, data=None):
         if not data:
-            data = _print_event_tracker.octoprint_data(self)
+            data = _print_event_tracker.status(self)
         self.send_ws_msg_to_server(data)
         self.status_posted_to_server_ts = time.time()
 
@@ -418,7 +418,7 @@ class ObicoPlugin(
                 self.status_update_booster -= 1
 
     def post_printer_status_to_client(self):
-        self.client_conn.send_msg_to_client(_print_event_tracker.octoprint_data(self, status_only=True))
+        self.client_conn.send_msg_to_client(_print_event_tracker.status(self, status_only=True))
 
     def boost_status_update(self):
         self.post_printer_status_to_client()
