@@ -98,7 +98,7 @@ class LocalTunnel(object):
             ws.send(data)
 
     def connect_octoprint_ws(self, ref, path):
-        def on_ws_close(ws):
+        def on_ws_close(ws, **kwargs):
             _logger.info("OctoPrint WS is closing")
             if ref in self.ref_to_ws:
                 del self.ref_to_ws[ref]     # Remove octoprint ws from refs as on_ws_message may fail
