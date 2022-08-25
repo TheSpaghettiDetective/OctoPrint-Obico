@@ -26,7 +26,7 @@ class WebSocketClient:
         def on_close(ws, close_status_code, close_msg):
             _logger.warning('WS Closed - {} - {}'.format(close_status_code, close_msg))
             if on_ws_close:
-                on_ws_close(ws)
+                on_ws_close(ws, close_status_code=close_status_code)
 
         def on_open(ws):
             _logger.debug('WS Opened')

@@ -275,11 +275,15 @@ class ObicoPlugin(
 
     def message_to_server_loop(self):
 
-        def on_server_ws_close(ws):
+        def on_server_ws_close(ws, close_status_code):
             if self.ss and self.ss.ws and self.ss.ws == ws:
                 self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
                 self.local_tunnel.close_all_octoprint_ws()
                 self.ss = None
+
+                if close_status_code == 4321:
+                    alert_queue.add_alert({'level': 'error', 'cause': 'shared_auth_token'}, self)
+                    self.shutting_down = True
 
         def on_server_ws_open(ws):
             if self.ss and self.ss.ws and self.ss.ws == ws:
