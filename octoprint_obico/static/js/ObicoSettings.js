@@ -252,7 +252,11 @@ $(function () {
                 } else if (alertMsg.cause === "bailed_because_tsd_plugin_running") {
                     text =
                         '<p>The Obico plugin failed to start because "Access Anywhere - The Spaghetti Detective" plugin is still installed and enabled.</p><p>Please remove or disable "Access Anywhere - The Spaghetti Detective" plugin and restart OctoPrint.</p><p><a href="https://www.obico.io/docs/user-guides/move-from-tsd-to-obico-in-octoprint">Learn more about migrating from The Spaghetti Detective to Obico.</a></p>';
+                } else if (alertMsg.cause === "shared_auth_token") {
+                    text = '<p>The same authentication token is being used by another printer. To ensure the security and correct function of your printer, please <a href="https://obico.io/docs/user-guides/relink-octoprint/">relink your printer immediately</a>. More details <a href="https://obico.io/docs/user-guides/warnings/shared-auth-token-error">here >>></a></p>';
+                    hiddenButtons.push("never_button");
                 }
+
                 if (diagnosticReportAvailable) {
                     buttons.unshift(
                         {
