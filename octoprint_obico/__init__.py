@@ -283,7 +283,8 @@ class ObicoPlugin(
 
                 if close_status_code == 4321:
                     alert_queue.add_alert({'level': 'error', 'cause': 'shared_auth_token'}, self)
-                    self.shutting_down = True
+                    _logger.error('Shared auth_token detected. Shutting down.')
+                    self.on_shutdown()
 
         def on_server_ws_open(ws):
             if self.ss and self.ss.ws and self.ss.ws == ws:
