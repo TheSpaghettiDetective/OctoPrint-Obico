@@ -213,7 +213,7 @@ class ObicoPlugin(
         global _print_event_tracker
         self.sentry = SentryWrapper(self)
 
-        if not self.is_configured():
+        if not self.is_configured() and self.canonical_endpoint_prefix():
             self.discovery = PrinterDiscovery(plugin=self)
             self.discovery.start_and_block()
             self.discovery = None
