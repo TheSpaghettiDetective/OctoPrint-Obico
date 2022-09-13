@@ -182,16 +182,15 @@ class WebcamStreamer:
     def ffmpeg_from_mjpeg(self):
 
         @backoff.on_exception(backoff.expo, Exception, jitter=None, max_tries=4)
-        def wait_for_webcamd(webcam_settings):
-            return capture_jpeg(webcam_settings)
+        def wait_for_webcamd():
+            return capture_jpeg(self.plugin)
 
         wait_for_port_to_close('127.0.0.1', 8080)  # wait for WebcamServer to be clear of port 8080
         sarge.run('sudo service webcamd start')
 
-        webcam_settings = self.plugin._settings.global_get(["webcam"])
-        jpg = wait_for_webcamd(webcam_settings)
+        jpg = wait_for_webcamd()
         (_, img_w, img_h) = get_image_info(jpg)
-        stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
+        stream_url = webcam_full_url(self.plugin._settings.global_get(["webcam"]).get("stream", "/webcam/?action=stream"))
         bitrate = bitrate_for_dim(img_w, img_h)
         fps = 25
         if not self.plugin.is_pro_user():

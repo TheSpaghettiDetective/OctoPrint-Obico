@@ -49,7 +49,8 @@ def webcam_full_url(url):
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 @backoff.on_predicate(backoff.expo, max_tries=3)
-def capture_jpeg(webcam_settings):
+def capture_jpeg(plugin):
+    webcam_settings = plugin._settings.global_get(["webcam"])
     snapshot_url = webcam_full_url(webcam_settings.get("snapshot", ''))
     if snapshot_url:
         snapshot_validate_ssl = bool(webcam_settings.get("snapshotSslValidation", 'False'))
@@ -108,7 +109,7 @@ class JpegPoster:
     def post_pic_to_server(self, viewing_boost=False):
         try:
             error_stats.attempt('webcam')
-            files = {'pic': capture_jpeg(self.plugin._settings.global_get(["webcam"]))}
+            files = {'pic': capture_jpeg(self.plugin)}
         except:
             error_stats.add_connection_error('webcam', self.plugin)
             return

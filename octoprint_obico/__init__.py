@@ -29,7 +29,7 @@ from .print_event import PrintEventTracker
 from .janus import JanusConn
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
-from .webcam_capture import JpegPoster
+from .webcam_capture import JpegPoster, capture_jpeg
 from .file_download import FileDownloader
 from .tunnel import LocalTunnel
 from . import plugin_apis
@@ -162,6 +162,8 @@ class ObicoPlugin(
             elif event == 'SettingsUpdated':
                 self.octoprint_settings_updater.update_settings()
                 self.post_update_to_server()
+            elif event == 'Error':
+                self.post_error_event_to_server(payload)
             elif event.startswith("Print") or event in (
                 'plugin_pi_support_throttle_state',
             ):
@@ -434,6 +436,21 @@ class ObicoPlugin(
         self.post_printer_status_to_client()
         with self.status_update_lock:
             self.status_update_booster = 20
+
+    def post_error_event_to_server(self, payload):
+        files = None
+        try:
+            files = {'snapshot': capture_jpeg(self)}
+        except:
+            pass
+        data = {
+            'event_type': 'PRINTER_ERROR',
+            'event_class': 'ERROR',
+            'event_title': 'OctoPrint Error',
+            'event_text': payload.get('error', 'Unknown Error'),
+        }
+        resp = server_request('POST', '/api/v2/agent/event/', self, timeout=60, files=files, data=data, headers=self.auth_headers())
+
 
     # ~~ helper methods
 
