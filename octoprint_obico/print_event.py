@@ -46,10 +46,10 @@ class PrintEventTracker:
             if self.tsd_gcode_file_id:
                 data['tsd_gcode_file_id'] = self.tsd_gcode_file_id
 
-        # Apparently printers like Prusa throws random temperatures here. This should be consistent with OctoPrint, which only keeps toolx|chamber|bed
+        # Apparently printers like Prusa throws random temperatures here. This should be consistent with OctoPrint, which only keeps r"^(tool\d+|bed|chamber)$"
         temperatures = {}
         for (k,v) in plugin._printer.get_current_temperatures().items():
-            if re.search(r'tool|chamber|bed', k):
+            if re.search(r'^(tool\d+|bed|chamber)$', k):
                 temperatures[k] = v
 
         data['status']['temperatures'] = temperatures
