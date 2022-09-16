@@ -16,6 +16,7 @@ except ImportError:
 
 from .utils import ExpoBackoff, pi_version
 from .ws import WebSocketClient
+from .lib import alert_queue
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
@@ -79,6 +80,15 @@ class JanusConn:
                     self.janus_proc.wait()
                     msg = 'Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode)
                     self.plugin.sentry.captureMessage(msg)
+                    alert_queue.add_alert({
+                        'level': 'warning',
+                        'cause': 'streaming',
+                        'title': 'Webcam Streaming Failed',
+                        'text': 'The webcam streaming failed to start. Obico is now streaming your webcam at 0.1 FPS.',
+                        'info_url': 'https://www.obico.io/docs/user-guides/warnings/webcam-streaming-failed-to-start/',
+                        'buttons': ['more_info', 'never', 'ok']
+                    }, self.plugin, post_to_server=True)
+
                     janus_backoff.more(Exception(msg))
                     self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
