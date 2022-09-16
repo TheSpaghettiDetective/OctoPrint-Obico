@@ -15,7 +15,7 @@ def add_alert(alert, plugin, post_to_server=False, attach_snapshot=False):
     plugin._plugin_manager.send_plugin_message(plugin._identifier, {'plugin_updated': True})
 
     if post_to_server:
-        self.post_printer_event_to_server(
+        plugin.post_printer_event_to_server(
             alert['title'],
             alert['text'],
             event_class=('WARNING' if alert['level'] == 'warning' else 'ERROR'),
