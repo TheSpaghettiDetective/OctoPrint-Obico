@@ -103,7 +103,12 @@ class ObicoPlugin(
 
     def on_settings_save(self, data):
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
-        alert_queue.add_alert({'level': 'warning', 'cause': 'restart_required'}, self)
+        alert_queue.add_alert({
+            'level': 'warning',
+            'cause': 'restart_required',
+            'text': 'Settings saved! If you are in the setup wizard, restart OctoPrint after the setup is done. Otherwise, restart OctoPrint now for the changes to take effect.',
+            'buttons': ['never', 'ok']
+        }, self)
 
     # ~~ AssetPlugin mixin
 
@@ -163,7 +168,7 @@ class ObicoPlugin(
                 self.octoprint_settings_updater.update_settings()
                 self.post_update_to_server()
             elif event == 'Error':
-                self.post_error_event_to_server(payload)
+                self.post_printer_event_to_server('OctoPrint Error', payload.get('error', 'Unknown Error'), attach_snapshot=True)
             elif event.startswith("Print") or event in (
                 'plugin_pi_support_throttle_state',
             ):
@@ -191,7 +196,14 @@ class ObicoPlugin(
     def on_startup(self, host, port):
         if 'thespaghettidetective' in self._plugin_manager.plugins and self._plugin_manager.plugins.get('thespaghettidetective').enabled:
             self.bailed_because_tsd_plugin_running = True
-            alert_queue.add_alert({'level': 'error', 'cause': 'bailed_because_tsd_plugin_running'}, self)
+            alert_queue.add_alert({
+                'level': 'error',
+                'cause': 'bailed_because_tsd_plugin_running',
+                'title': 'Plugin Conflicts',
+                'text': 'The Obico plugin failed to start because "Access Anywhere - The Spaghetti Detective" plugin is still installed and enabled. Please remove or disable "Access Anywhere - The Spaghetti Detective" plugin and restart OctoPrint.',
+                'info_url': 'https://www.obico.io/docs/user-guides/move-from-tsd-to-obico-in-octoprint',
+                'buttons': ['more_info', 'ok']
+                }, self, post_to_server=True)
 
         # TODO: remove once all TSD users have migrated
         migrate_tsd_settings(self)
@@ -284,7 +296,13 @@ class ObicoPlugin(
                 self.ss = None
 
                 if close_status_code == 4321:
-                    alert_queue.add_alert({'level': 'error', 'cause': 'shared_auth_token'}, self)
+                    alert_queue.add_alert({
+                        'level': 'error',
+                        'cause': 'shared_auth_token',
+                        'text': 'The same authentication token is being used by another printer. To ensure the security and correct function of your printer, please relink your printer immediately.',
+                        'info_url': 'https://obico.io/docs/user-guides/warnings/shared-auth-token-error/',
+                        'buttons': ['more_info', 'never', 'ok']
+                    }, self)
                     _logger.error('Shared auth_token detected. Shutting down.')
                     self.on_shutdown()
 
@@ -437,19 +455,15 @@ class ObicoPlugin(
         with self.status_update_lock:
             self.status_update_booster = 20
 
-    def post_error_event_to_server(self, payload):
+    def post_printer_event_to_server(self, event_title, event_text, event_type='PRINTER_ERROR', event_class='ERROR', attach_snapshot=False, **kwargs):
         files = None
-        try:
-            files = {'snapshot': capture_jpeg(self)}
-        except:
-            pass
-        data = {
-            'event_type': 'PRINTER_ERROR',
-            'event_class': 'ERROR',
-            'event_title': 'OctoPrint Error',
-            'event_text': payload.get('error', 'Unknown Error'),
-        }
-        resp = server_request('POST', '/api/v2/agent/event/', self, timeout=60, files=files, data=data, headers=self.auth_headers())
+        if attach_snapshot:
+            try:
+                files = {'snapshot': capture_jpeg(self)}
+            except:
+                pass
+        data = dict(event_title=event_title, event_text=event_text, event_type=event_type, event_class=event_class, **kwargs)
+        resp = server_request('POST', '/api/v1/octo/printer_events/', self, timeout=60, files=files, data=data, headers=self.auth_headers())
 
 
     # ~~ helper methods

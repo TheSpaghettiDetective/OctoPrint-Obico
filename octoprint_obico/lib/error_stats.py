@@ -38,7 +38,26 @@ class ErrorStats:
             if error_count < attempts * 0.25:
                 return
 
-        alert_queue.add_alert({'level': 'error', 'cause': error_type}, plugin)
+        post_to_server = False
+        title = None
+        if error_type == 'server':
+            info_url = 'https://www.obico.io/docs/user-guides/troubleshoot-server-connection-issues/'
+            text = 'Obico failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.'
+
+        if error_type == 'webcam':
+            text = 'Obico plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.',
+            info_url = 'https://www.obico.io/docs/user-guides/warnings/webcam-connection-error-popup/',
+            title = 'Failed to Snapshot Webcam'
+            post_to_server = True
+
+        alert_queue.add_alert({
+            'level': 'error',
+            'cause': 'connect_' + error_type,
+            'title': title,
+            'text': text,
+            'info_url': info_url,
+            'buttons': ['more_info', 'diagnose', 'never', 'ok']
+        }, plugin, post_to_server=post_to_server)
 
     def get_stat(self, error_type):
         with self._mutex:
