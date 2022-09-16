@@ -66,7 +66,14 @@ def cpu_watch_dog(watched_process, plugin, max, interval):
 
             cpu_pct = watched_process.cpu_percent(interval=None)
             if cpu_pct > max:
-                alert_queue.add_alert({'level': 'warning', 'cause': 'cpu'}, plugin)
+                alert_queue.add_alert({
+                    'level': 'warning',
+                    'cause': 'cpu',
+                    'title': 'Streaming Excessive CPU Usage',
+                    'text': 'The webcam streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the webcam streaming.',
+                    'info_url': 'https://www.obico.io/docs/user-guides/warnings/compatibility-mode-excessive-cpu/',
+                    'buttons': ['more_info', 'never', 'ok'],
+                }, plugin, post_to_server=True)
 
             time.sleep(interval)
 
@@ -132,7 +139,12 @@ class WebcamStreamer:
                     if octolapse_enabled:
                         _logger.warning('Octolapse is enabled. Switching to compat mode.')
                         compatible_mode = 'always'
-                        alert_queue.add_alert({'level': 'warning', 'cause': 'octolapse_compat_mode'}, self.plugin)
+                        alert_queue.add_alert({
+                            'level': 'warning',
+                            'cause': 'octolapse_compat_mode',
+                            'text': 'Octolapse plugin detected! Obico has switched to "Premium (compatibility)" streaming mode.',
+                            'buttons': ['never', 'ok']
+                        }, self.plugin)
                 except Exception:
                     self.sentry.captureException()
 
@@ -173,7 +185,14 @@ class WebcamStreamer:
                 self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, profile='baseline')
                 self.pi_camera.wait_recording(0)
         except Exception:
-            alert_queue.add_alert({'level': 'warning', 'cause': 'streaming'}, self.plugin)
+            alert_queue.add_alert({
+                'level': 'warning',
+                'cause': 'streaming',
+                'title': 'Webcam Streaming Failed',
+                'text': 'The webcam streaming failed to start. Obico is now streaming your webcam at 0.1 FPS.',
+                'info_url': 'https://www.obico.io/docs/user-guides/warnings/webcam-streaming-failed-to-start/',
+                'buttons': ['more_info', 'never', 'ok']
+            }, self.plugin, post_to_server=True)
 
             wait_for_port('127.0.0.1', 8080)  # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()

@@ -198,6 +198,44 @@ $(function () {
         }
 
         self.displayAlert = function (alertMsg) {
+
+            var AVAILABLE_BUTTONS = {
+                more_info: {
+                    text: "More Info",
+                    click: function (notice) {
+                        window.open(alertMsg.info_url, '_blank');
+                        notice.remove();
+                    },
+                },
+                never: {
+                    text: "Never Show Again",
+                    click: function (notice) {
+                        saveToLocalStorage(ignoredItemPath, true);
+                        notice.remove();
+                    },
+                    addClass: "never_button"
+                },
+                ok: {
+                    text: "OK",
+                    click: function (notice) {
+                        notice.remove();
+                    },
+                    addClass: "ok_button"
+                },
+                close: {
+                    text: "Close",
+                    addClass: "remove_button"
+                },
+                diagnose: {
+                    text: "Details",
+                    click: function (notice) {
+                        self.showDiagnosticReportModal();
+                        notice.remove();
+                    }
+                },
+            };
+
+
             var ignoredItemPath = "ignored." + alertMsg.cause + "." + alertMsg.level;
             if (retrieveFromLocalStorage(ignoredItemPath, false)) {
                 return;
@@ -209,89 +247,29 @@ $(function () {
             }
             _.set(self.alertsShown, showItemPath, true);
 
-            var text = null;
             var msgType = "error";
             if (alertMsg.level === "warning") {
                 msgType = "notice";
             }
 
-            var buttons = [
-                {
-                    text: "Never show again",
-                    click: function (notice) {
-                        saveToLocalStorage(ignoredItemPath, true);
-                        notice.remove();
-                    },
-                    addClass: "never_button"
-                },
-                {
-                    text: "OK",
-                    click: function (notice) {
-                        notice.remove();
-                    },
-                    addClass: "ok_button"
-                },
-                {
-                    text: "Close",
-                    addClass: "remove_button"
-                },
-            ];
+            var buttons = _.map(alertMsg.buttons, function(k) {
+                return AVAILABLE_BUTTONS[k];
+            });
 
-            var hiddenButtons = ["remove_button", ];
+            hiddenButtons = [];
 
-            if (alertMsg.level === "error") {
-                var diagnosticReportAvailable = false;
-                if (alertMsg.cause === "server") {
-                    diagnosticReportAvailable = true
-                    text =
-                        "Obico failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.";
-                } else if (alertMsg.cause === "webcam") {
-                    diagnosticReportAvailable = true
-                    text =
-                        'Obico plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly. Or follow <a href="https://www.obico.io/docs/user-guides/warnings/webcam-connection-error-popup/">this troubleshooting guide</a>.';
-                } else if (alertMsg.cause === "bailed_because_tsd_plugin_running") {
-                    text =
-                        '<p>The Obico plugin failed to start because "Access Anywhere - The Spaghetti Detective" plugin is still installed and enabled.</p><p>Please remove or disable "Access Anywhere - The Spaghetti Detective" plugin and restart OctoPrint.</p><p><a href="https://www.obico.io/docs/user-guides/move-from-tsd-to-obico-in-octoprint">Learn more about migrating from The Spaghetti Detective to Obico.</a></p>';
-                } else if (alertMsg.cause === "shared_auth_token") {
-                    text = '<p>The same authentication token is being used by another printer. To ensure the security and correct function of your printer, please <a href="https://obico.io/docs/user-guides/relink-octoprint/">relink your printer immediately</a>. More details <a href="https://obico.io/docs/user-guides/warnings/shared-auth-token-error/">here >>></a></p>';
-                    hiddenButtons.push("never_button");
+            // PNotify needs this dance to hide the default "Ok" and "Cancel" button
+            ['ok', 'close'].forEach(function(k) {
+                if (!_.includes(alertMsg.buttons, k)) {
+                    buttons.push(AVAILABLE_BUTTONS[k]);
+                    hiddenButtons.push(AVAILABLE_BUTTONS[k].addClass);
                 }
+            })
 
-                if (diagnosticReportAvailable) {
-                    buttons.unshift(
-                        {
-                            text: "Details",
-                            click: function (notice) {
-                                self.showDiagnosticReportModal();
-                                notice.remove();
-                            }
-                        }
-                    );
-                }
-            }
-            if (alertMsg.level === "warning") {
-                if (alertMsg.cause === 'streaming') {
-                    text =
-                        '<p>The webcam streaming failed to start. Obico is now streaming your webcam at 0.1 FPS.</p><p><a href="https://www.obico.io/docs/user-guides/warnings/webcam-streaming-failed-to-start/">Learn more >>></a></p>';
-                }
-                if (alertMsg.cause === 'cpu') {
-                    text =
-                        '<p>The webcam streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the webcam streaming. <a href="https://www.obico.io/docs/user-guides/warnings/compatibility-mode-excessive-cpu/">Learn more >>></a></p>';
-                }
-                if (alertMsg.cause === 'octolapse_compat_mode') {
-                    text =
-                        '<p>Octolapse plugin detected! Obico has switched to "Premium (compatibility)" streaming mode.</p>';
-                }
-                if (alertMsg.cause === "restart_required") {
-                    text = '<p></p><p>Settings saved! If you are in the setup wizard, restart OctoPrint after the setup is done. Otherwise, restart OctoPrint now for the changes to take effect.</p>';
-                    hiddenButtons.push("never_button");
-                }
-            }
-
-            if (text) {
+            if (alertMsg.text) {
                 new PNotify({
                     title: "Obico",
-                    text: text,
+                    text: alertMsg.text,
                     type: msgType,
                     hide: false,
                     confirm: {
@@ -350,7 +328,7 @@ $(function () {
         });
     }
 
-    var LOCAL_STORAGE_KEY = 'plugin.tsd';
+    var LOCAL_STORAGE_KEY = 'plugin.obico';
 
     function localStorageObject() {
         var retrievedObject = localStorage.getItem(LOCAL_STORAGE_KEY);
