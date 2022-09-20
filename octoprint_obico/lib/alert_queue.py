@@ -22,7 +22,7 @@ def add_alert(alert, plugin, post_to_server=False, attach_snapshot=False):
     if post_to_server and alert_title and not alert_title in printer_events_posted:
         printer_events_posted.append(alert_title)
         plugin.post_printer_event_to_server(
-            'Plugin: ' + alert_title,
+            'Obico Plugin: ' + alert_title,
             '<p><i>OctoPrint plugin error:</i></p><div>' + alert['text'] + '</div>',
             event_class=('WARNING' if alert['level'] == 'warning' else 'ERROR'),
             attach_snapshot=attach_snapshot,
