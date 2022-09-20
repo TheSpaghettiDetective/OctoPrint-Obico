@@ -189,7 +189,7 @@ class WebcamStreamer:
                 'level': 'warning',
                 'cause': 'streaming',
                 'title': 'Webcam Streaming Failed',
-                'text': 'The webcam streaming failed to start. Obico is now streaming your webcam at 0.1 FPS.',
+                'text': 'The webcam streaming failed to start. Obico is now streaming at 0.1 FPS.',
                 'info_url': 'https://www.obico.io/docs/user-guides/warnings/webcam-streaming-failed-to-start/',
                 'buttons': ['more_info', 'never', 'ok']
             }, self.plugin, post_to_server=True)
