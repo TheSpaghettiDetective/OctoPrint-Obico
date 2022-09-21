@@ -343,12 +343,14 @@ class ObicoPlugin(
             except WebSocketConnectionException as e:
                 _logger.warning(e)
                 error_stats.add_connection_error('server', self)
-                self.ss.close()
+                if self.ss:
+                    self.ss.close()
                 server_ws_backoff.more(e)
             except Exception as e:
                 self.sentry.captureException()
                 error_stats.add_connection_error('server', self)
-                self.ss.close()
+                if self.ss:
+                    self.ss.close()
                 server_ws_backoff.more(e)
 
     def post_update_to_server(self, data=None):
