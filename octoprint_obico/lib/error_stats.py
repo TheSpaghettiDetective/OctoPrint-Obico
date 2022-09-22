@@ -45,8 +45,8 @@ class ErrorStats:
             text = 'Obico failed to connect to the server. Please make sure OctoPrint has a reliable internet connection.'
 
         if error_type == 'webcam':
-            text = 'Obico plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.',
-            info_url = 'https://www.obico.io/docs/user-guides/warnings/webcam-connection-error-popup/',
+            text = 'Obico plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.'
+            info_url = 'https://www.obico.io/docs/user-guides/warnings/webcam-connection-error-popup/'
             title = 'Failed to Snapshot Webcam'
             post_to_server = True
 
