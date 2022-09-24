@@ -52,7 +52,7 @@ class LocalTunnel(object):
                 headers={k: v for k, v in headers.items() if k != 'Cookie'},
                 data=data,
                 timeout=timeout,
-                allow_redirects=True)
+                allow_redirects=False)
 
             save_cookies = False
             if resp.status_code == 403:      # failed to authenticate
@@ -145,7 +145,7 @@ class LocalTunnel(object):
                 headers={k: v for k, v in headers.items()},
                 data=data,
                 timeout=timeout,
-                allow_redirects=True)
+                allow_redirects=False) # The redirect should happen in the browser, not the plugin. Otherwise it causes tricky problems.
 
             if sys.version_info[0] < 3:
                 cookies = [
