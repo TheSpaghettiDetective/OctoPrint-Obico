@@ -68,7 +68,7 @@ class JanusConn:
 
         def run_janus_forever():
 
-            @backoff.on_exception(backoff.expo, Exception, max_tries=3)
+            @backoff.on_exception(backoff.expo, Exception, max_tries=5)
             def run_janus():
                 janus_cmd = os.path.join(JANUS_DIR, 'run_janus.sh')
                 _logger.debug('Popen: {}'.format(janus_cmd))
@@ -84,7 +84,7 @@ class JanusConn:
 
             try:
                 run_janus()
-            except Exception() as ex:
+            except Exception as ex:
                 self.plugin.sentry.captureException()
                 alert_queue.add_alert({
                     'level': 'warning',
