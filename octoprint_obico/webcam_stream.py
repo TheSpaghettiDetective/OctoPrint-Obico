@@ -202,12 +202,13 @@ class WebcamStreamer:
         self.compat_streaming = True
 
     def start_ffmpeg(self, ffmpeg_args):
-        ffmpeg_cmd = '{} {} -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
+        ffmpeg_cmd = '{} {} -loglevel trace -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
 
         _logger.debug('Popen: {}'.format(ffmpeg_cmd))
         FNULL = open(os.devnull, 'w')
-        self.ffmpeg_proc = psutil.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
-        self.ffmpeg_proc.nice(10)
+        with open('/home/pi/ffmpeg.log', 'w') as logfile:
+            self.ffmpeg_proc = psutil.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=logfile)
+            self.ffmpeg_proc.nice(10)
 
         cpu_watch_dog(self.ffmpeg_proc, self.plugin, max=80, interval=20)
 
@@ -229,7 +230,7 @@ class WebcamStreamer:
 
         ffmpeg_thread = Thread(target=monitor_ffmpeg_process)
         ffmpeg_thread.daemon = True
-        ffmpeg_thread.start()
+        # ffmpeg_thread.start()
 
     def start_gst_memory_guard(self):
         # Hack to deal with gst command that causes memory leak
