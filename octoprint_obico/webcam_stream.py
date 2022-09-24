@@ -227,8 +227,18 @@ class WebcamStreamer:
         self.ffmpeg_proc = psutil.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
         self.ffmpeg_proc.nice(10)
 
+        try:
+            returncode = self.ffmpeg_proc.wait(timeout=10) # If ffmpeg fails, it usually does so without 10s
+            (stdoutdata, stderrdata) = self.ffmpeg_proc.communicate()
+            msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
+            _logger.error(msg)
+            raise Exception('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
+        except psutil.TimeoutExpired:
+           pass
+
         cpu_watch_dog(self.ffmpeg_proc, self.plugin, max=80, interval=20)
-        def monitor_ffmpeg_process():  # It's pointless to restart ffmpeg without calling pi_camera.record with the new input. Just capture unexpected exits not to see if it's a big problem
+        def monitor_ffmpeg_process():
+            # It seems important to drain the stderr output of ffmpeg, otherwise the whole process will get clogged
             ring_buffer = deque(maxlen=50)
             while True:
                 err = to_unicode(self.ffmpeg_proc.stderr.readline(), errors='replace')
