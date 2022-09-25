@@ -11,6 +11,7 @@ import sys
 import time
 import requests
 import backoff
+from collections import deque
 
 try:
     import queue
@@ -83,6 +84,8 @@ class ObicoPlugin(
         self.client_conn = ClientConn(self)
         self.discovery = None
         self.bailed_because_tsd_plugin_running = False
+        self.printer_events_posted = deque(maxlen=20)
+
 
     # ~~ Custom event registration
 
@@ -168,7 +171,8 @@ class ObicoPlugin(
                 self.octoprint_settings_updater.update_settings()
                 self.post_update_to_server()
             elif event == 'Error':
-                self.post_printer_event_to_server('OctoPrint Error', payload.get('error', 'Unknown Error'), attach_snapshot=True)
+                event_data = {'event_title': 'OctoPrint Error', 'event_text': payload.get('error', 'Unknown Error'), 'event_class': 'ERROR', 'event_type': 'PRINTER_ERROR'}
+                self.post_printer_event_to_server(event_data=event_data, attach_snapshot=True)
             elif event.startswith("Print") or event in (
                 'plugin_pi_support_throttle_state',
             ):
@@ -459,15 +463,22 @@ class ObicoPlugin(
         with self.status_update_lock:
             self.status_update_booster = 20
 
-    def post_printer_event_to_server(self, event_title, event_text, event_type='PRINTER_ERROR', event_class='ERROR', attach_snapshot=False, **kwargs):
+    def post_printer_event_to_server(self, event_data, attach_snapshot=False):
+        event_title = event_data['event_title']
+
+        # We dont' want to bombard the server with repeated events. So we keep track of the events sent since last restart.
+        # However, there are probably situations in the future repeated events do need to be propagated to the server.
+        if event_title in self.printer_events_posted:
+            return
+
+        self.printer_events_posted.append(event_title)
         files = None
         if attach_snapshot:
             try:
                 files = {'snapshot': capture_jpeg(self)}
             except:
                 pass
-        data = dict(event_title=event_title, event_text=event_text, event_type=event_type, event_class=event_class, **kwargs)
-        resp = server_request('POST', '/api/v1/octo/printer_events/', self, timeout=60, files=files, data=data, headers=self.auth_headers())
+        resp = server_request('POST', '/api/v1/octo/printer_events/', self, timeout=60, files=files, data=event_data, headers=self.auth_headers())
 
 
     # ~~ helper methods
