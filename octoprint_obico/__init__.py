@@ -172,7 +172,8 @@ class ObicoPlugin(
                 self.post_update_to_server()
             elif event == 'Error':
                 event_data = {'event_title': 'OctoPrint Error', 'event_text': payload.get('error', 'Unknown Error'), 'event_class': 'ERROR', 'event_type': 'PRINTER_ERROR'}
-                self.post_printer_event_to_server(event_data=event_data, attach_snapshot=True)
+                self.passthru_printer_event_to_client(event_data)
+                self.post_printer_event_to_server(event_data, attach_snapshot=True)
             elif event.startswith("Print") or event in (
                 'plugin_pi_support_throttle_state',
             ):
@@ -480,6 +481,9 @@ class ObicoPlugin(
                 pass
         resp = server_request('POST', '/api/v1/octo/printer_events/', self, timeout=60, files=files, data=event_data, headers=self.auth_headers())
 
+    def passthru_printer_event_to_client(self, event_data):
+        self.send_ws_msg_to_server(
+            {'passthru': {'printer_event': event_data}})
 
     # ~~ helper methods
 
