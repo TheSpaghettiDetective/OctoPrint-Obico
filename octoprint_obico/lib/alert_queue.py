@@ -23,7 +23,8 @@ def add_alert(alert, plugin, post_to_server=False, attach_snapshot=False):
             event_type = 'PRINTER_ERROR',
             info_url = alert.get('info_url', None),
         )
-        plugin.post_printer_event_to_server(event_data=event_data,attach_snapshot=attach_snapshot)
+        plugin.passthru_printer_event_to_client(event_data)
+        plugin.post_printer_event_to_server(event_data,attach_snapshot=attach_snapshot)
 
 
 def fetch_and_clear():
