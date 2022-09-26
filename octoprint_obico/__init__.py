@@ -482,8 +482,7 @@ class ObicoPlugin(
         resp = server_request('POST', '/api/v1/octo/printer_events/', self, timeout=60, files=files, data=event_data, headers=self.auth_headers())
 
     def passthru_printer_event_to_client(self, event_data):
-        self.send_ws_msg_to_server(
-            {'passthru': {'printer_event': event_data}})
+        self.send_ws_msg_to_server({'passthru': {'printer_event': event_data}})
 
     # ~~ helper methods
 
