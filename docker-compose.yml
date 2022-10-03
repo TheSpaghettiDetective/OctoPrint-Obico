@@ -14,6 +14,7 @@ services:
     environment:
         DEBUG: 'True'
         JANUS_SERVER: 'janus'
+        COMPRESS_DATA_CHANNEL: 'False'
     depends_on:
       - janus
     command: bash -c "sleep 11111111111"
@@ -31,6 +32,7 @@ services:
     environment:
         DEBUG: 'True'
         JANUS_SERVER: 'janus'
+        COMPRESS_DATA_CHANNEL: 'False'
     depends_on:
       - janus
     command: bash -c "sleep 11111111111"
