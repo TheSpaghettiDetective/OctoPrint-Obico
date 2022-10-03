@@ -22,6 +22,7 @@ _logger = logging.getLogger('octoprint.plugins.obico')
 
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
+COMPRESS_DATA_CHANNEL = os.getenv('COMPRESS_DATA_CHANNEL', 'True').lower() == 'true'
 JANUS_WS_PORT = 8188
 JANUS_DATA_PORT = 8009  # check streaming plugin config
 MAX_PAYLOAD_SIZE = 1500  # hardcoded in streaming plugin
