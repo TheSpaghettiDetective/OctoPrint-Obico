@@ -8,7 +8,7 @@ import sys
 import zlib
 from collections import deque
 
-from .janus import COMPRESS_DATA_CHANNEL, JANUS_SERVER, JANUS_DATA_PORT, MAX_PAYLOAD_SIZE
+from .janus import JANUS_SERVER, JANUS_DATA_PORT, MAX_PAYLOAD_SIZE
 
 __python_version__ = 3 if sys.version_info >= (3, 0) else 2
 
@@ -64,7 +64,7 @@ class ClientConn:
         compressed_data = compressor.compress(payload)
         compressed_data += compressor.flush()
 
-        self.data_channel_conn.send(compressed_data if COMPRESS_DATA_CHANNEL else payload)
+        self.data_channel_conn.send(compressed_data)
 
     def close(self):
         self.data_channel_conn.close()
