@@ -92,6 +92,7 @@ class DataChannelConn(object):
         self.sock_lock = threading.RLock()
 
     def send(self, payload):
+        return
         if len(payload) > MAX_PAYLOAD_SIZE:
             _logger.error('datachannel payload too big (%s)' % (len(payload), ))
             return

@@ -121,10 +121,46 @@ class WebcamStreamer:
             _logger.warning('picamera module is not found on a Pi. Seems like an installation error.')
             return
 
+
+    @backoff.on_exception(backoff.expo, Exception)
+    def mjpeg_loop(self):
+        bandwidth_throttle = 0.0001
+        if pi_version() == "0":    # If Pi Zero
+            bandwidth_throttle *= 2
+
+        mjpeg_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        last_frame_sent = 0
+
+        while True:
+            time.sleep( max(last_frame_sent+0.5-time.time(), 0) )  # No more than 1 frame per 0.5 second
+
+            jpg = None
+            try:
+                jpg = capture_jpeg(self.plugin)
+            except Exception as e:
+                _logger.warn('Failed to capture jpeg - ' + str(e))
+
+            if not jpg:
+                continue
+
+            print('jpg')
+            encoded = base64.b64encode(jpg)
+            mjpeg_sock.sendto(bytes('\r\n{}:{}\r\n'.format(len(encoded), len(jpg)), 'utf-8'), (JANUS_SERVER, 8009)) # simple header format for client to recognize
+            for chunk in [encoded[i:i+1400] for i in range(0, len(encoded), 1400)]:
+                mjpeg_sock.sendto(chunk, (JANUS_SERVER, 8009))
+                time.sleep(bandwidth_throttle)
+
+        last_frame_sent = time.time()
+
     def video_pipeline(self):
         if not pi_version():
             _logger.warning('Not running on a Pi. Quiting video_pipeline.')
             return
+
+        mjpeg_thread = Thread(target=self.mjpeg_loop)
+        mjpeg_thread.daemon = True
+        mjpeg_thread.start()
 
         try:
             if not self.plugin.is_pro_user():
