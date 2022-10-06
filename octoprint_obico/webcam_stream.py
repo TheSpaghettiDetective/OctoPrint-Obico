@@ -145,9 +145,10 @@ class WebcamStreamer:
                 continue
 
             print('jpg')
-            encoded = base64.b64encode(jpg)
-            mjpeg_sock.sendto(bytes('\r\n{}:{}\r\n'.format(len(encoded), len(jpg)), 'utf-8'), (JANUS_SERVER, 8009)) # simple header format for client to recognize
-            for chunk in [encoded[i:i+1400] for i in range(0, len(encoded), 1400)]:
+            #encoded = base64.b64encode(jpg)
+            # mjpeg_sock.sendto(bytes('\r\n{}:{}\r\n'.format(len(encoded), len(jpg)), 'utf-8'), (JANUS_SERVER, 8009)) # simple header format for client to recognize
+            for chunk in [jpg[i:i+1400] for i in range(0, len(jpg), 1400)]:
+            # for chunk in [encoded[i:i+1400] for i in range(0, len(encoded), 1400)]:
                 mjpeg_sock.sendto(chunk, (JANUS_SERVER, 8009))
                 time.sleep(bandwidth_throttle)
 
