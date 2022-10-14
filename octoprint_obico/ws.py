@@ -10,7 +10,7 @@ import sys
 
 if sys.version_info >= (3, 0):
     DISABLE_RECONNECT = inpsect.getfullargspec(websocket.WebSocketApp.run_forever)
-else
+else:
     DISABLE_RECONNECT = inpsect.getargspec(websocket.WebSocketApp.run_forever)
 
 
