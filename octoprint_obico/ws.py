@@ -4,8 +4,18 @@ import time
 import websocket
 import logging
 import threading
+import inspect
+import sys
+
+
+if sys.version_info >= (3, 0):
+    DISABLE_RECONNECT = 'reconnect' in inspect.getfullargspec(websocket.WebSocketApp.run_forever)
+else:
+    DISABLE_RECONNECT = 'reconnect' in inspect.getargspec(websocket.WebSocketApp.run_forever)
+
 
 _logger = logging.getLogger('octoprint.plugins.obico')
+
 
 class WebSocketConnectionException(Exception):
     pass
@@ -55,7 +65,12 @@ class WebSocketClient:
             header=header,
             subprotocols=subprotocols
         )
-        wst = threading.Thread(target=self.ws.run_forever)
+
+        run_forever_kwargs = {}
+        if DISABLE_RECONNECT:
+            run_forever_kwargs['reconnect'] = 0
+
+        wst = threading.Thread(target=self.ws.run_forever, kwargs=run_forever_kwargs)
         wst.daemon = True
         wst.start()
 
