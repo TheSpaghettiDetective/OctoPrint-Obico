@@ -8,6 +8,9 @@ import inspect
 import sys
 
 
+# Websocket-client has changed their behavior on reconnecting. The latest version allows global
+# setting on reconnecting interval. Let's disable that behavior to make it consistent with the older version.
+
 if sys.version_info >= (3, 0):
     DISABLE_RECONNECT = 'reconnect' in inspect.getfullargspec(websocket.WebSocketApp.run_forever)
 else:
