@@ -7,18 +7,7 @@ import threading
 import inspect
 import sys
 
-
-# Websocket-client has changed their behavior on reconnecting. The latest version allows global
-# setting on reconnecting interval. Let's disable that behavior to make it consistent with the older version.
-
-if sys.version_info >= (3, 0):
-    DISABLE_RECONNECT = 'reconnect' in inspect.getfullargspec(websocket.WebSocketApp.run_forever)
-else:
-    DISABLE_RECONNECT = 'reconnect' in inspect.getargspec(websocket.WebSocketApp.run_forever)
-
-
 _logger = logging.getLogger('octoprint.plugins.obico')
-
 
 class WebSocketConnectionException(Exception):
     pass
@@ -69,9 +58,13 @@ class WebSocketClient:
             subprotocols=subprotocols
         )
 
-        run_forever_kwargs = {}
-        if DISABLE_RECONNECT:
-            run_forever_kwargs['reconnect'] = 0
+        # Websocket-client has changed their behavior on reconnecting. The latest version allows global
+        # setting on reconnecting interval. Let's disable that behavior to make it consistent with the older version.
+
+        if sys.version_info >= (3, 0):
+            run_forever_kwargs = {'reconnect': 0} if 'reconnect' in inspect.getfullargspec(websocket.WebSocketApp.run_forever) else {}
+        else:
+            run_forever_kwargs = {'reconnect': 0} if 'reconnect' in inspect.getargspec(websocket.WebSocketApp.run_forever) else {}
 
         wst = threading.Thread(target=self.ws.run_forever, kwargs=run_forever_kwargs)
         wst.daemon = True
