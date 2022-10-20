@@ -62,7 +62,7 @@ class WebSocketClient:
         # setting on reconnecting interval. Let's disable that behavior to make it consistent with the older version.
 
         if sys.version_info >= (3, 0):
-            run_forever_kwargs = {'reconnect': 0} if 'reconnect' in inspect.getfullargspec(websocket.WebSocketApp.run_forever) else {}
+            run_forever_kwargs = {'reconnect': 0} if 'reconnect' in inspect.getfullargspec(websocket.WebSocketApp.run_forever).args else {}
         else:
             run_forever_kwargs = {'reconnect': 0} if 'reconnect' in inspect.getargspec(websocket.WebSocketApp.run_forever) else {}
 
