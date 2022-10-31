@@ -117,8 +117,8 @@ class WebcamStreamer:
                 _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, bitrate, self.pi_camera.resolution))
             except picamera.exc.PiCameraError:
                 return
-        except ModuleNotFoundError:
-            _logger.warning('picamera module is not found on a Pi. Seems like an installation error.')
+        except (ModuleNotFoundError, OSError):
+            _logger.warning('picamera module failed to load on a Pi. Seems like an installation error.')
             return
 
     def video_pipeline(self):
