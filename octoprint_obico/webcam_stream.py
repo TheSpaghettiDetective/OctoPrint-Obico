@@ -294,7 +294,7 @@ class WebcamStreamer:
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
                     _logger.debug(msg)
                     self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(returncode))
-                    gst_backoff.more('GST exited un-expectedly. Exit code: {}'.format(returncode))
+                    gst_backoff.more(Exception('GST exited un-expectedly. Exit code: {}'.format(returncode)))
 
                     ring_buffer = deque(maxlen=50)
                     gst_cmd = os.path.join(GST_DIR, 'run_gst.sh')
