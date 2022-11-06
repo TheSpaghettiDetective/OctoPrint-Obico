@@ -194,7 +194,6 @@ class WebcamStreamer:
                 'buttons': ['more_info', 'never', 'ok']
             }, self.plugin, post_to_server=True)
 
-            wait_for_port('127.0.0.1', 8080)  # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
             self.restore()
             self.sentry.captureException()
 
@@ -310,10 +309,12 @@ class WebcamStreamer:
     def restore(self):
         self.shutting_down = True
 
-        try:
-            requests.post('http://127.0.0.1:8080/shutdown')
-        except Exception:
-            pass
+        if self.webcam_server:
+            try:
+                wait_for_port('127.0.0.1', 8080)  # Wait for Flask to start running. Otherwise we will get connection refused when trying to post to '/shutdown'
+                requests.post('http://127.0.0.1:8080/shutdown')
+            except Exception:
+                pass
 
         if self.gst_proc:
             try:
@@ -336,9 +337,10 @@ class WebcamStreamer:
             except Exception:
                 pass
 
-        # wait for WebcamServer to be clear of port 8080. Otherwise mjpg-streamer may fail to bind 127.0.0.1:8080 (it can still bind :::8080)
-        wait_for_port_to_close('127.0.0.1', 8080)
-        sarge.run('sudo service webcamd start')   # failed to start streaming. falling back to mjpeg-streamer
+        if self.webcam_server:  # If self.webcam_server is not None, we have stopped webcamd and started a Flash server in the place of it. We need to reverse that process.
+            # wait for WebcamServer to be clear of port 8080. Otherwise mjpg-streamer may fail to bind 127.0.0.1:8080 (it can still bind :::8080)
+            wait_for_port_to_close('127.0.0.1', 8080)
+            sarge.run('sudo service webcamd start')
 
         self.gst_proc = None
         self.ffmpeg_proc = None
