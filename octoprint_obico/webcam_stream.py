@@ -154,13 +154,13 @@ class WebcamStreamer:
         last_frame_sent = time.time()
 
     def video_pipeline(self):
-        if not pi_version():
-            _logger.warning('Not running on a Pi. Quiting video_pipeline.')
-            return
-
         mjpeg_thread = Thread(target=self.mjpeg_loop)
         mjpeg_thread.daemon = True
         mjpeg_thread.start()
+
+        if not pi_version():
+            _logger.warning('Not running on a Pi. Quiting video_pipeline.')
+            return
 
         try:
             if not self.plugin.is_pro_user():
