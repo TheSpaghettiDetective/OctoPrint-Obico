@@ -133,7 +133,7 @@ general: {
 # example of how to create a simple H.264 mountpoint: you can feed it via
 # an x264enc+rtph264pay pipeline in gstreamer, an ffmpeg script or other.
 #
-h264-sample: {
+obico-video: {
 	type = "rtp"
 	id = 0
 	description = "H.264 live stream coming from gstreamer"
@@ -148,6 +148,19 @@ h264-sample: {
 	videofmtp = "profile-level-id=42e01f;packetization-mode=1"
 	data = true
 	dataport = 8009
+	datatype = "binary"
+	dataiface = "127.0.0.1"
+	databuffermsg = false
+}
+
+obico-data: {
+	type = "rtp"
+	id = 1
+	description = "state update and remote control stream"
+	audio = false
+	video = false
+	data = true
+	dataport = 8010
 	datatype = "binary"
 	dataiface = "127.0.0.1"
 	databuffermsg = false
