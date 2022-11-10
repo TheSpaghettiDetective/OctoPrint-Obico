@@ -2,6 +2,8 @@ import os
 import logging
 import subprocess
 import time
+import random
+import string
 
 from threading import Thread
 import backoff
@@ -13,6 +15,13 @@ try:
     import queue
 except ImportError:
     import Queue as queue
+
+try:
+    from secrets import token_hex
+except ImportError:
+    def token_hex(n):
+        letters = string.ascii_letters + string.digits
+        return "".join([random.choice(letters) for i in range(n)])
 
 from .utils import ExpoBackoff, pi_version
 from .ws import WebSocketClient
@@ -60,10 +69,14 @@ class JanusConn:
             video_enabled = 'true' if self.plugin._settings.get(["disable_video_streaming"]) is not True else 'false'
             streaming_conf_tmp = os.path.join(JANUS_DIR, 'etc/janus/janus.plugin.streaming.jcfg.template')
             streaming_conf_path = os.path.join(JANUS_DIR, 'etc/janus/janus.plugin.streaming.jcfg')
+
+            admin_key = secret = token_hex(32)
             with open(streaming_conf_tmp, "rt") as fin:
                 with open(streaming_conf_path, "wt") as fout:
                     for line in fin:
                         line = line.replace('{VIDEO_ENABLED}', video_enabled)
+                        line = line.replace('{SECRET}', secret)
+                        line = line.replace('{ADMIN_KEY}', admin_key)
                         fout.write(line)
 
         def run_janus_forever():
