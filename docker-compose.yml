@@ -43,7 +43,7 @@ services:
     command: sh -c "/opt/janus/bin/janus"
     ports:
       - '${EXPOSED_IP-127.0.0.1}:8188:8188'
-      - '${EXPOSED_IP-127.0.0.1}:8009:8009'
+      - '${EXPOSED_IP-127.0.0.1}:8009:8009/udp'
       - '${EXPOSED_IP-127.0.0.1}:8004:8004'
   mjpeg:
     hostname: mjpeg
