@@ -1,93 +1,80 @@
 accessControl:
-    enabled: false
-    salt: 4fa5glqoqruGhWOxOdKnUhEHjXQlHEHa
+  salt: cFjdkL47gnzJhSxd7PUOfW9mhF2zYNur
 api:
-    key: 96ABF309D50B40458FE380AE270D690C
+  key: D72ED4FE5E9C48D4AFBEBE8561FA94D6
 devel:
-    cache:
-        enabled: false
-        preemptive: false
-    stylesheet: css
-    webassets:
-        bundle: false
-        clean_on_startup: true
-        minify: true
-feature:
-    modelSizeDetection: false
+  cache:
+    enabled: false
+    preemptive: false
+  stylesheet: css
+  webassets:
+    bundle: false
+    clean_on_startup: true
+    minify: true
 plugins:
-    announcements:
-        _config_version: 1
-        channels:
-            _blog:
-                read_until: 2612178700
-            _important:
-                read_until: 2521111600
-            _octopi:
-                read_until: 2611568800
-            _plugins:
-                read_until: 2613541600
-            _releases:
-                read_until: 2611052200
-    cura:
-        cura_engine: /usr/bin/CuraEngine
-    discovery:
-        upnpUuid: 17f58ec6-03a1-4594-98dc-435676ebf2ca
-    errortracking:
-        unique_id: af8924dc-a122-4b7d-9d4e-fed7e98b188a
-    gcodeviewer:
-        _config_version: 1
-    softwareupdate:
-        _config_version: 9
-    obico:
-        auth_token: b7588cf3a16c787c7203
-        # endpoint_prefix: https://app-stg.obico.io
-        # endpoint_prefix: http://docker.for.mac.host.internal:3334
-        sentry_opt: in
-    thespaghettidetective:
-        auth_token: b7588cf3a16c787c7203
-        # endpoint_prefix: https://app-stg.thespaghettidetective.com
-        # endpoint_prefix: http://docker.for.mac.host.internal:3334
-        sentry_opt: in
-    tracking:
-        enabled: false
-        unique_id: e6b528a5-a4c9-4ecd-bbd6-b0fc3abb8c4a
-    virtual_printer:
-        _config_version: 1
-        enabled: true
-        movementSpeed:
-            e: 300
-            x: 6000
-            y: 6000
-            z: 200
-        okWithLinenumber: false
-        repetierStyleResends: false
-        sendWait: false
-printerProfiles:
-    default: _default
+  announcements:
+    _config_version: 1
+    channels:
+      _blog:
+        read_until: 1668080700
+      _important:
+        read_until: 1521111600
+      _octopi:
+        read_until: 1659616200
+      _plugins:
+        read_until: 1664427600
+      _releases:
+        read_until: 1666085100
+  discovery:
+    upnpUuid: 6c0a6d28-453f-4a42-836c-40e57dca0385
+  errortracking:
+    unique_id: a6dd8216-f4eb-4ea1-9d17-9dfa01d2ab4a
+  gcodeviewer:
+    _config_version: 1
+  obico:
+    auth_token: a4d125f8f1e03b6f52c8
+    endpoint_prefix: http://docker.for.mac.host.internal:3334
+    sentry_opt: in
+    tsd_migrated: confirmed
+  softwareupdate:
+    _config_version: 9
+  tracking:
+    enabled: false
+    unique_id: f559f7c2-42db-4d95-9ad8-a5207e8b5780
+  virtual_printer:
+    _config_version: 1
+    enabled: true
+    movementSpeed:
+      e: 300
+      x: 6000
+      y: 6000
+      z: 200
+    okWithLinenumber: false
+    repetierStyleResends: false
+    sendWait: false
 server:
-    firstRun: false
-    onlineCheck:
-        enabled: false
-    pluginBlacklist:
-        enabled: false
-    secretKey: x66O1rtsIf0m7oERjbLb0PY4wy1ghD4u
-    seenWizards:
-        corewizard: 3
-        cura: null
-        softwareupdate: null
-        tracking: null
+  firstRun: false
+  onlineCheck:
+    enabled: false
+  pluginBlacklist:
+    enabled: false
+  secretKey: DHqhKnZ3h93vojEA4b5QWfRiSe28PH1r
+  seenWizards:
+    backup: null
+    corewizard: 4
+    tracking: null
 temperature:
-    profiles:
-    -   bed: 100
-        chamber: null
-        extruder: 210
-        name: ABS
-    -   bed: 60
-        chamber: null
-        extruder: 180
-        name: PLA
+  profiles:
+  - bed: 100
+    chamber: null
+    extruder: 210
+    name: ABS
+  - bed: 60
+    chamber: null
+    extruder: 180
+    name: PLA
 webcam:
-    ffmpeg: /usr/bin/avconv
-    snapshot: http://mjpeg:8080/?action=snapshot
-    stream: http://localhost:8080/?action=stream
-    streamRatio: '4:3'
+  ffmpeg: /usr/bin/avconv
+  snapshot: http://mjpeg:8080/?action=snapshot
+  stream: http://localhost:8080/?action=stream
+  streamRatio: '4:3'

@@ -1,12 +1,12 @@
-test:
-    active: true
-    apikey: null
-    groups:
-    - admins
-    - users
-    password: 261f17870fea1f8337db03a48b150d09f64be251b32d5012e283cb6fd7b9fb7b94129298497f8f760efc1042994a133c8868513ed01121ed072c3a86524fa7ff
-    permissions: []
-    roles:
-    - user
-    - admin
-    settings: {}
+octoprint:
+  active: true
+  apikey: null
+  groups:
+  - admins
+  - users
+  password: 15c6a0cc41783d204fe655a2eb11ab69dc64d186ef65cc631c2d6a15c5671a51e173069efdd2a0b0b2c51bbbce9bfc823a0a85f4b3dc18582a31f3891be392f9
+  permissions: []
+  roles:
+  - user
+  - admin
+  settings: {}
