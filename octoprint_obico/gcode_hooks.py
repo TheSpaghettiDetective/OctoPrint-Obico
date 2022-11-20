@@ -7,9 +7,9 @@ _logger = logging.getLogger('octoprint.plugins.obico')
 
 class GCodeHooks:
 
-    def __init__(self, plugin, _print_event_tracker):
+    def __init__(self, plugin, _print_job_tracker):
         self.plugin = plugin
-        self._print_event_tracker = _print_event_tracker
+        self._print_job_tracker = _print_job_tracker
         self.num_gcode_until_next_filament_change = -1
 
     def queuing_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
@@ -38,6 +38,6 @@ class GCodeHooks:
 
         if filament_change_event:
             self.num_gcode_until_next_filament_change = 50  # 50 gcode (sent+received) before we can send another filament change event
-            event_payload = self._print_event_tracker.on_event(self.plugin, 'FilamentChange', None)
+            event_payload = self._print_job_tracker.on_event(self.plugin, 'FilamentChange', None)
             if event_payload:
                 self.plugin.post_update_to_server(data=event_payload)

@@ -7,12 +7,12 @@ from octoprint.filemanager.analysis import QueueEntry
 _logger = logging.getLogger('octoprint.plugins.obico')
 
 
-class PrintEventTracker:
+class PrintJobTracker:
 
     def __init__(self):
         self._mutex = threading.RLock()
-        self.current_print_ts = -1    # timestamp as print_ts coming from octoprint
-        self.tsd_gcode_file_id = None
+        self.current_print_ts = -1    # timestamp when current print started, acting as a unique identifier for a print
+        self.obico_gcode_file = None
         self._file_metadata_cache = None
 
     def on_event(self, plugin, event, payload):
@@ -20,6 +20,8 @@ class PrintEventTracker:
             if event == 'PrintStarted':
                 self.current_print_ts = int(time.time())
                 self._file_metadata_cache = None
+                if self.obico_gcode_file['filename'] != payload['name']: # If user starts printing a different file before Obico has done downloading the gcode file
+                    self.set_obico_gcode_file(None)
 
         data = self.status(plugin)
         data['event'] = {
@@ -31,7 +33,7 @@ class PrintEventTracker:
         with self._mutex:
             if event == 'PrintFailed' or event == 'PrintDone':
                 self.current_print_ts = -1
-                self.tsd_gcode_file_id = None
+                self.set_obico_gcode_file(None)
                 self._file_metadata_cache = None
 
         return data
@@ -43,8 +45,9 @@ class PrintEventTracker:
 
         with self._mutex:
             data['current_print_ts'] = self.current_print_ts
-            if self.tsd_gcode_file_id:
-                data['tsd_gcode_file_id'] = self.tsd_gcode_file_id
+            current_file = data.get('status', {}).get('job', {}).get('file')
+            if self.get_obico_gcode_file() and current_file:
+                current_file['obico_gcode_file_id'] = self.get_obico_gcode_file()['id']
 
         # Apparently printers like Prusa throws random temperatures here. This should be consistent with OctoPrint, which only keeps r"^(tool\d+|bed|chamber)$"
         temperatures = {}
@@ -68,13 +71,13 @@ class PrintEventTracker:
 
         return data
 
-    def set_tsd_gcode_file_id(self, tsd_gcode_file_id):
+    def set_obico_gcode_file(self, obico_gcode_file):
         with self._mutex:
-            self.tsd_gcode_file_id = tsd_gcode_file_id
+            self.obico_gcode_file = obico_gcode_file
 
-    def get_tsd_gcode_file_id(self):
+    def get_obico_gcode_file(self):
         with self._mutex:
-            return self.tsd_gcode_file_id
+            return self.obico_gcode_file
 
     def get_file_metadata(self, plugin, data):
         try:

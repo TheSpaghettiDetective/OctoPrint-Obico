@@ -26,7 +26,7 @@ from .utils import (
     server_request, migrate_tsd_settings)
 from .lib.error_stats import error_stats
 from .lib import alert_queue
-from .print_event import PrintEventTracker
+from .print_job_tracker import PrintJobTracker
 from .janus import JanusConn
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
@@ -49,7 +49,7 @@ POST_STATUS_INTERVAL_SECONDS = 50.0
 
 DEFAULT_LINKED_PRINTER = {'is_pro': False}
 
-_print_event_tracker = PrintEventTracker()
+_print_job_tracker = PrintJobTracker()
 
 
 class ObicoPlugin(
@@ -63,7 +63,7 @@ class ObicoPlugin(
         octoprint.plugin.TemplatePlugin,):
 
     def __init__(self):
-        global _print_event_tracker
+        global _print_job_tracker
 
         self.shutting_down = False
         self.ss = None
@@ -73,10 +73,10 @@ class ObicoPlugin(
         self.status_update_lock = threading.RLock()
         self.remote_status = RemoteStatus()
         self.pause_resume_sequence = PauseResumeGCodeSequence()
-        self.gcode_hooks = GCodeHooks(self, _print_event_tracker)
+        self.gcode_hooks = GCodeHooks(self, _print_job_tracker)
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
-        self.file_downloader = FileDownloader(self, _print_event_tracker)
+        self.file_downloader = FileDownloader(self, _print_job_tracker)
         self.webcam_streamer = None
         self.linked_printer = DEFAULT_LINKED_PRINTER
         self.local_tunnel = None
@@ -159,7 +159,7 @@ class ObicoPlugin(
     # ~~ Eventhandler mixin
 
     def on_event(self, event, payload):
-        global _print_event_tracker
+        global _print_job_tracker
 
         self.boost_status_update()
 
@@ -177,7 +177,7 @@ class ObicoPlugin(
             elif event.startswith("Print") or event in (
                 'plugin_pi_support_throttle_state',
             ):
-                event_payload = _print_event_tracker.on_event(self, event, payload)
+                event_payload = _print_job_tracker.on_event(self, event, payload)
                 if event_payload:
                     self.post_update_to_server(data=event_payload)
         except Exception as e:
@@ -229,7 +229,7 @@ class ObicoPlugin(
         return {"Authorization": "Token " + self.auth_token(auth_token)}
 
     def main_loop(self):
-        global _print_event_tracker
+        global _print_job_tracker
         self.sentry = SentryWrapper(self)
 
         if not self.is_configured() and self.canonical_endpoint_prefix():
@@ -360,7 +360,7 @@ class ObicoPlugin(
 
     def post_update_to_server(self, data=None):
         if not data:
-            data = _print_event_tracker.status(self)
+            data = _print_job_tracker.status(self)
         self.send_ws_msg_to_server(data)
         self.status_posted_to_server_ts = time.time()
 
@@ -371,7 +371,7 @@ class ObicoPlugin(
             _logger.warning("Server message queue is full, msg dropped")
 
     def process_server_msg(self, ws, raw_data):
-        global _print_event_tracker
+        global _print_job_tracker
         try:
             # raw_data can be both json or bson
             # no py2 compat way to properly detect type here
@@ -452,7 +452,7 @@ class ObicoPlugin(
                 self.status_update_booster -= 1
 
     def post_printer_status_to_client(self):
-        status = _print_event_tracker.status(self, status_only=True)
+        status = _print_job_tracker.status(self, status_only=True)
         # Backward compatibility: mobile apps 1.66 or earlier expects {octoprint_data: ...}
         status_data = status.get('status', {})
         status = {'status': status_data, 'octoprint_data': status_data}
