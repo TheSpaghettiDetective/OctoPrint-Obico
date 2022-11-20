@@ -35,22 +35,22 @@ class FileDownloader:
         self.plugin = plugin
         self._print_job_tracker = _print_job_tracker
 
-    def download(self, gcode_file):
+    def download(self, g_code_file):
         try:
             _logger.warning(
-                'Received download command for {} '.format(gcode_file))
+                'Received download command for {} '.format(g_code_file))
 
-            if self._print_job_tracker.get_obico_gcode_file() or self.plugin._printer.get_current_data().get('state', {}).get('text') != 'Operational':
+            if self._print_job_tracker.get_obico_g_code_file() or self.plugin._printer.get_current_data().get('state', {}).get('text') != 'Operational':
                 return {'error': 'Currently downloading or printing!'}
 
             self.__ensure_storage__()
 
-            safe_filename = octoprint.server.fileManager.sanitize_name('local', gcode_file['safe_filename'])
+            safe_filename = octoprint.server.fileManager.sanitize_name('local', g_code_file['safe_filename'])
             target_path = os.path.join(self.g_code_folder, safe_filename)
-            self._print_job_tracker.set_obico_gcode_file({'id': gcode_file['id'], 'filename': safe_filename})
+            self._print_job_tracker.set_obico_g_code_file({'id': g_code_file['id'], 'filename': safe_filename})
 
             print_thread = threading.Thread(target=self.__download_and_print__, args=(
-                gcode_file, target_path, gcode_file['filename']))
+                g_code_file, target_path, g_code_file['filename']))
             print_thread.daemon = True
             print_thread.start()
 
@@ -59,11 +59,11 @@ class FileDownloader:
         except Exception as e:
             self.plugin.sentry.captureException()
 
-    def __download_and_print__(self, gcode_file, target_path, display_filename):
+    def __download_and_print__(self, g_code_file, target_path, display_filename):
         try:
             _logger.warning(
                 'Downloading to target_path: {}'.format(target_path))
-            r = requests.get(gcode_file['url'],
+            r = requests.get(g_code_file['url'],
                              allow_redirects=True, timeout=60*30)
             r.raise_for_status()
             _logger.warning(
