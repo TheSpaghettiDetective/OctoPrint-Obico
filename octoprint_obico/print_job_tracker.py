@@ -4,6 +4,7 @@ import time
 import threading
 from octoprint.filemanager.analysis import QueueEntry
 
+from .utils import server_request
 _logger = logging.getLogger('octoprint.plugins.obico')
 
 
@@ -12,16 +13,20 @@ class PrintJobTracker:
     def __init__(self):
         self._mutex = threading.RLock()
         self.current_print_ts = -1    # timestamp when current print started, acting as a unique identifier for a print
-        self.obico_g_code_file = None
+        self.obico_g_code_file_id = None
         self._file_metadata_cache = None
 
     def on_event(self, plugin, event, payload):
-        with self._mutex:
-            if event == 'PrintStarted':
+        if event == 'PrintStarted':
+            with self._mutex:
                 self.current_print_ts = int(time.time())
                 self._file_metadata_cache = None
-                if self.obico_g_code_file['filename'] != payload['name']: # If user starts printing a different file before Obico has done downloading the gcode file
-                    self.set_obico_g_code_file(None)
+
+            md5_hash = plugin._file_manager.get_metadata(path=payload['path'], destination=payload['origin'])['hash']
+            g_code_data = dict(filename=payload['name'], safe_filename=payload['path'], num_bytes=payload['size'], agent_signature='md5:{}'.format(md5_hash))
+            resp = server_request('POST', '/api/v1/octo/g_codes/', plugin, timeout=60, data=g_code_data, headers=plugin.auth_headers())
+            resp.raise_for_status()
+            self.set_obico_g_code_file_id(resp.json()['id'])
 
         data = self.status(plugin)
         data['event'] = {
@@ -33,7 +38,7 @@ class PrintJobTracker:
         with self._mutex:
             if event == 'PrintFailed' or event == 'PrintDone':
                 self.current_print_ts = -1
-                self.set_obico_g_code_file(None)
+                self.set_obico_g_code_file_id(None)
                 self._file_metadata_cache = None
 
         return data
@@ -46,8 +51,8 @@ class PrintJobTracker:
         with self._mutex:
             data['current_print_ts'] = self.current_print_ts
             current_file = data.get('status', {}).get('job', {}).get('file')
-            if self.get_obico_g_code_file() and current_file:
-                current_file['obico_g_code_file_id'] = self.get_obico_g_code_file()['id']
+            if self.get_obico_g_code_file_id() and current_file:
+                current_file['obico_g_code_file_id_id'] = self.get_obico_g_code_file_id()
 
         # Apparently printers like Prusa throws random temperatures here. This should be consistent with OctoPrint, which only keeps r"^(tool\d+|bed|chamber)$"
         temperatures = {}
@@ -71,13 +76,13 @@ class PrintJobTracker:
 
         return data
 
-    def set_obico_g_code_file(self, obico_g_code_file):
+    def set_obico_g_code_file_id(self, obico_g_code_file_id):
         with self._mutex:
-            self.obico_g_code_file = obico_g_code_file
+            self.obico_g_code_file_id = obico_g_code_file_id
 
-    def get_obico_g_code_file(self):
+    def get_obico_g_code_file_id(self):
         with self._mutex:
-            return self.obico_g_code_file
+            return self.obico_g_code_file_id
 
     def get_file_metadata(self, plugin, data):
         try:
