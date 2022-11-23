@@ -2,6 +2,7 @@ import re
 import logging
 import time
 import threading
+import os
 from octoprint.filemanager.analysis import QueueEntry
 
 from .utils import server_request
@@ -23,7 +24,12 @@ class PrintJobTracker:
                 self._file_metadata_cache = None
 
             md5_hash = plugin._file_manager.get_metadata(path=payload['path'], destination=payload['origin'])['hash']
-            g_code_data = dict(filename=payload['name'], safe_filename=payload['path'], num_bytes=payload['size'], agent_signature='md5:{}'.format(md5_hash))
+            g_code_data = dict(
+                filename=payload['name'],
+                safe_filename=os.path.basename(payload['path']),
+                num_bytes=payload['size'],
+                agent_signature='md5:{}'.format(md5_hash)
+                )
             resp = server_request('POST', '/api/v1/octo/g_codes/', plugin, timeout=60, data=g_code_data, headers=plugin.auth_headers())
             resp.raise_for_status()
             self.set_obico_g_code_file_id(resp.json()['id'])
@@ -52,7 +58,7 @@ class PrintJobTracker:
             data['current_print_ts'] = self.current_print_ts
             current_file = data.get('status', {}).get('job', {}).get('file')
             if self.get_obico_g_code_file_id() and current_file:
-                current_file['obico_g_code_file_id_id'] = self.get_obico_g_code_file_id()
+                current_file['obico_g_code_file_id'] = self.get_obico_g_code_file_id()
 
         # Apparently printers like Prusa throws random temperatures here. This should be consistent with OctoPrint, which only keeps r"^(tool\d+|bed|chamber)$"
         temperatures = {}
