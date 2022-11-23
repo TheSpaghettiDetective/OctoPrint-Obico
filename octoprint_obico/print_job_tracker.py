@@ -30,7 +30,7 @@ class PrintJobTracker:
                 num_bytes=payload['size'],
                 agent_signature='md5:{}'.format(md5_hash)
                 )
-            resp = server_request('POST', '/api/v1/octo/g_codes/', plugin, timeout=60, data=g_code_data, headers=plugin.auth_headers())
+            resp = server_request('POST', '/api/v1/octo/g_code_files/', plugin, timeout=60, data=g_code_data, headers=plugin.auth_headers())
             resp.raise_for_status()
             self.set_obico_g_code_file_id(resp.json()['id'])
 

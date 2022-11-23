@@ -71,7 +71,7 @@ class FileDownloader:
             md5_hash = self.plugin._file_manager.get_metadata(path=target_path, destination=octoprint_storage)['hash']
 
             g_code_data = dict(agent_signature='md5:{}'.format(md5_hash), safe_filename=os.path.basename(target_path))
-            resp = server_request('PATCH', '/api/v1/octo/g_codes/{}/'.format(g_code_file['id']), self.plugin, timeout=60, data=g_code_data, headers=self.plugin.auth_headers())
+            resp = server_request('PATCH', '/api/v1/octo/g_code_files/{}/'.format(g_code_file['id']), self.plugin, timeout=60, data=g_code_data, headers=self.plugin.auth_headers())
 
             self.plugin._printer.select_file(target_path, False, printAfterSelect=True)
 
