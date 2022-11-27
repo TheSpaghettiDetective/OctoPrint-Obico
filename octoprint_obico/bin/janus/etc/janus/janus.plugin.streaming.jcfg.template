@@ -135,7 +135,7 @@ general: {
 #
 h264-sample: {
 	type = "rtp"
-	id = 0
+	id = 1
 	description = "H.264 live stream coming from gstreamer"
 	audio = false
 	audioiface = "127.0.0.1"
