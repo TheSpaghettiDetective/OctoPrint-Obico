@@ -139,7 +139,7 @@ h264-sample: {
 	description = "H.264 live stream coming from gstreamer"
 	audio = false
 	audioiface = "127.0.0.1"
-	video = {VIDEO_ENABLED}
+	video = __VIDEO_ENABLED__
 	videoport = 8004
 	videortcpport = 8005
 	videoiface = "127.0.0.1"

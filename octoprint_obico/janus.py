@@ -7,6 +7,7 @@ from threading import Thread
 import backoff
 import json
 import socket
+import psutil
 from octoprint.util import to_unicode
 
 try:
@@ -37,34 +38,29 @@ class JanusConn:
         self.shutting_down = False
 
     def start(self):
-
+        
         if os.getenv('JANUS_SERVER', '').strip() != '':
             _logger.warning('Using an external Janus gateway. Not starting the built-in Janus gateway.')
             self.start_janus_ws()
             return
 
-        if not pi_version():
-            _logger.warning('No external Janus gateway. Not on a Pi. Skipping Janus connection.')
-            return
-
-        def ensure_janus_config():
-            janus_conf_tmp = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg.template')
-            janus_conf_path = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg')
-            with open(janus_conf_tmp, "rt") as fin:
-                with open(janus_conf_path, "wt") as fout:
-                    for line in fin:
-                        line = line.replace('{JANUS_HOME}', JANUS_DIR)
-                        line = line.replace('{TURN_CREDENTIAL}', self.plugin._settings.get(["auth_token"]))
-                        fout.write(line)
-
+        def setup_janus_config():
             video_enabled = 'true' if self.plugin._settings.get(["disable_video_streaming"]) is not True else 'false'
-            streaming_conf_tmp = os.path.join(JANUS_DIR, 'etc/janus/janus.plugin.streaming.jcfg.template')
-            streaming_conf_path = os.path.join(JANUS_DIR, 'etc/janus/janus.plugin.streaming.jcfg')
-            with open(streaming_conf_tmp, "rt") as fin:
-                with open(streaming_conf_path, "wt") as fout:
-                    for line in fin:
-                        line = line.replace('{VIDEO_ENABLED}', video_enabled)
-                        fout.write(line)
+            auth_token = self.plugin._settings.get(["auth_token"])
+
+            cmd_path = os.path.join(JANUS_DIR, 'setup.sh')
+            setup_cmd = '{} -A {} -V {}'.format(cmd_path, auth_token, video_enabled)
+
+            setup_proc = psutil.Popen(setup_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+            returncode = setup_proc.wait()
+            (stdoutdata, stderrdata) = setup_proc.communicate()
+            if returncode != 0:
+                _logger.warning('Janus setup failed:\n{}\nSkipping Janus connection.'.format(stderrdata))
+                return False
+
+            return True
+            
 
         def run_janus():
             janus_backoff = ExpoBackoff(60, max_attempts=20)
@@ -92,7 +88,9 @@ class JanusConn:
                     janus_backoff.more(Exception(msg))
                     self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-        ensure_janus_config()
+        if not setup_janus_config():
+            return
+
         janus_proc_thread = Thread(target=run_janus)
         janus_proc_thread.daemon = True
         janus_proc_thread.start()

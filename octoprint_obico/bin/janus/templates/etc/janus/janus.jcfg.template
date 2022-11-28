@@ -5,15 +5,19 @@
 # between application(s) and Janus.
 general: {
 	#configs_folder = "/opt/janus/etc/janus"			# Configuration files folder
-	plugins_folder = "{JANUS_HOME}/lib/janus/plugins"			# Plugins folder
-	transports_folder = "{JANUS_HOME}/lib/janus/transports"	# Transports folder
-	events_folder = "{JANUS_HOME}/lib/janus/events"			# Event handlers folder
+	#plugins_folder = "/home/pi/OctoPrint-Obico/octoprint_obico/bin/janus/lib/janus/plugins"			# Plugins folder
+	#transports_folder = "/home/pi/OctoPrint-Obico/octoprint_obico/bin/janus/lib/janus/transports"	# Transports folder
+	#events_folder = "/home/pi/OctoPrint-Obico/octoprint_obico/bin/janus/lib/janus/events"			# Event handlers folder
+        plugins_folder = "/usr/lib/aarch64-linux-gnu/janus/plugins"                     # Plugins folder
+        transports_folder = "/usr/lib/aarch64-linux-gnu/janus/transports"       # Transports folder
+        events_folder = "/usr/lib/aarch64-linux-gnu/janus/events"                       # Event handlers folder
+        loggers_folder = "/usr/lib/aarch64-linux-gnu/janus/loggers"
 
 		# The next settings configure logging
 	#log_to_stdout = false					# Whether the Janus output should be written
 											# to stdout or not (default=true)
 	#log_to_file = "/path/to/janus.log"		# Whether to use a log file or not
-	debug_level = 4							# Debug/logging level, valid values are 0-7
+	# debug_level = 4							# Debug/logging level, valid values are 0-7
 	#debug_timestamps = true				# Whether to show a timestamp for each log line
 	#debug_colors = false					# Whether colors should be disabled in the log
 	#debug_locks = true						# Whether to enable debugging of locks (very verbose!)
@@ -123,11 +127,11 @@ general: {
 # self-signed certificates are fine for the purpose of WebRTC DTLS
 # connectivity, for the time being, at least until Identity Providers
 # are standardized and implemented in browsers.
-certificates: {
+#certificates: {
 	#cert_pem = "/path/to/certificate.pem"
 	#cert_key = "/path/to/key.pem"
 	#cert_pwd = "secretpassphrase"
-}
+#}
 
 # Media-related stuff: you can configure whether if you want
 # to enable IPv6 support, if RFC4588 support for retransmissions
@@ -146,7 +150,7 @@ certificates: {
 # that lower values (e.g., 100ms) will typically get you faster connection
 # times, but may not work in case the RTT of the user is high: as such,
 # you should pick a reasonable trade-off (usually 2*max expected RTT).
-media: {
+#media: {
 	# ipv6 = true
 	#max_nack_queue = 500
 	#rfc_4588 = true
@@ -156,7 +160,7 @@ media: {
 	#slowlink_threshold = 4
 	#twcc_period = 200
 	#dtls_timeout = 500
-}
+#}
 
 # NAT-related stuff: specifically, you can configure the STUN/TURN
 # servers to use to gather candidates if the gateway is behind a NAT,
@@ -177,7 +181,7 @@ media: {
 nat: {
 	#stun_server = "stun.voip.eutelia.it"
 	#stun_port = 3478
-	nice_debug = false
+	#nice_debug = false
 	#full_trickle = true
 	#ice_lite = true
 	#ice_tcp = true
@@ -199,8 +203,8 @@ nat: {
 	turn_server = "turn.obico.io"
 	turn_port = 80
 	turn_type = "tcp"
-	turn_user = "{TURN_CREDENTIAL}"
-	turn_pwd = "{TURN_CREDENTIAL}"
+	turn_user = "a4d125f8f1e03b6f52c8"
+	turn_pwd = "a4d125f8f1e03b6f52c8"
 
 	# ... or you can make use of the TURN REST API to get info on one or more
 	# TURN services dynamically. This makes use of the proposed standard of
@@ -262,7 +266,7 @@ nat: {
 # names to identify the plugins to disable. By default all available
 # plugins are enabled and loaded at startup.
 plugins: {
-	#disable = "libjanus_voicemail.so,libjanus_recordplay.so"
+	disable = "libjanus_voicemail.so,libjanus_recordplay.so"
 }
 
 # You can choose which of the available transports should be enabled or
@@ -271,7 +275,7 @@ plugins: {
 # to identify the transports to disable. By default all available
 # transports are enabled and loaded at startup.
 transports: {
-	#disable = "libjanus_rabbitmq.so"
+	disable = "libjanus_rabbitmq.so"
 }
 
 # Event handlers allow you to receive live events from Janus happening
