@@ -19,7 +19,7 @@ _term() {
 
 trap _term SIGTERM
 
-LD_LIBRARY_PATH="${LIB_PATH}" nice ${JANUS_CMD} -o --stun-server=stun.l.google.com:19302 --configs-folder="${RUNTIME_JANUS_ETC_DIR}"
+LD_LIBRARY_PATH="${LIB_PATH}" nice "${JANUS_CMD}" -o --stun-server=stun.l.google.com:19302 --configs-folder="${RUNTIME_JANUS_ETC_DIR}" &
 
 child=$!
 wait "$child"
