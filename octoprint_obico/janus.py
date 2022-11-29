@@ -45,7 +45,7 @@ class JanusConn:
             return
 
         def setup_janus_config():
-            video_enabled = 'true' if self.plugin._settings.get(["disable_video_streaming"]) is not True else 'false'
+            video_enabled = 'true' if pi_version() and self.plugin._settings.get(["disable_video_streaming"]) is not True else 'false'
             auth_token = self.plugin._settings.get(["auth_token"])
 
             cmd_path = os.path.join(JANUS_DIR, 'setup.sh')

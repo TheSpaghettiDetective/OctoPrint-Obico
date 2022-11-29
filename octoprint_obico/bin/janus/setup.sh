@@ -95,12 +95,6 @@ gen_janus_transport_websocket_jcfg() {
   cp "${tpl_path}" "${target_path}"
 }
 
-gen_janus_transport_http_jcfg() {
-  target_path="${RUNTIME_JANUS_ETC_DIR}/janus.transport.http.jcfg"
-  tpl_path="${TPL_JANUS_ETC_DIR}/janus.transport.http.jcfg.template"
-  cp "${tpl_path}" "${target_path}"
-}
-
 while getopts "A:V:" arg; do
   case $arg in
     A) AUTH_TOKEN=${OPTARG};; 
@@ -111,4 +105,3 @@ done
 gen_janus_jcfg
 gen_janus_plugin_streaming_jcfg
 gen_janus_transport_websocket_jcfg
-gen_janus_transport_http_jcfg
