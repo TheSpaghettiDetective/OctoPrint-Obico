@@ -24,7 +24,7 @@ _logger = logging.getLogger('octoprint.plugins.obico')
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 JANUS_WS_PORT = 17058
-JANUS_DATA_PORT = 17739 # check streaming plugin config
+JANUS_PRINTER_DATA_PORT = 17739
 MAX_PAYLOAD_SIZE = 1500  # hardcoded in streaming plugin
 
 
@@ -98,8 +98,11 @@ class JanusConn:
         self.wait_for_janus()
         self.start_janus_ws()
 
+    def connected_to_janus(self):
+        return self.janus_ws and self.janus_ws.connected()
+
     def pass_to_janus(self, msg):
-        if self.janus_ws and self.janus_ws.connected():
+        if self.connected_to_janus():
             self.janus_ws.send(msg)
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=10)

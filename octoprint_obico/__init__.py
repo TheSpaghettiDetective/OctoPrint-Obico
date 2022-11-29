@@ -248,7 +248,7 @@ class ObicoPlugin(
 
         if not self._settings.get(["disable_video_streaming"]):
             _logger.info('Starting webcam streamer')
-            self.webcam_streamer = WebcamStreamer(self, self.sentry)
+            self.webcam_streamer = WebcamStreamer(self)
             stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
             stream_thread.daemon = True
             stream_thread.start()

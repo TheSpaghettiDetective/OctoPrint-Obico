@@ -34,6 +34,7 @@ from .webcam_capture import capture_jpeg, webcam_full_url
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
+JANUS_MJPEG_DATA_PORT = 17740
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 
@@ -93,9 +94,9 @@ def is_octolapse_enabled(plugin):
 
 class WebcamStreamer:
 
-    def __init__(self, plugin, sentry):
+    def __init__(self, plugin):
         self.plugin = plugin
-        self.sentry = sentry
+        self.sentry = plugin.sentry
 
         self.pi_camera = None
         self.webcam_server = None
@@ -128,11 +129,18 @@ class WebcamStreamer:
         if pi_version() == "0":    # If Pi Zero
             bandwidth_throttle *= 2
 
-        mjpeg_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.mjpeg_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         last_frame_sent = 0
 
         while True:
+            if self.shutting_down:
+                return
+
+            if not self.janus.connected():
+                time.sleep(1)
+                continue
+
             time.sleep( max(last_frame_sent+0.5-time.time(), 0) )  # No more than 1 frame per 0.5 second
 
             jpg = None
@@ -144,22 +152,17 @@ class WebcamStreamer:
             if not jpg:
                 continue
 
-            print('jpg')
             encoded = base64.b64encode(jpg)
-            mjpeg_sock.sendto(bytes('\r\n{}:{}\r\n'.format(len(encoded), len(jpg)), 'utf-8'), (JANUS_SERVER, 8009)) # simple header format for client to recognize
+            self.mjpeg_sock.sendto(bytes('\r\n{}:{}\r\n'.format(len(encoded), len(jpg)), 'utf-8'), (JANUS_SERVER, JANUS_MJPEG_DATA_PORT)) # simple header format for client to recognize
             for chunk in [encoded[i:i+1400] for i in range(0, len(encoded), 1400)]:
-                mjpeg_sock.sendto(chunk, (JANUS_SERVER, 8009))
+                self.mjpeg_sock.sendto(chunk, (JANUS_SERVER, JANUS_MJPEG_DATA_PORT))
                 time.sleep(bandwidth_throttle)
 
         last_frame_sent = time.time()
 
     def video_pipeline(self):
-        mjpeg_thread = Thread(target=self.mjpeg_loop)
-        mjpeg_thread.daemon = True
-        mjpeg_thread.start()
-
         if not pi_version():
-            _logger.warning('Not running on a Pi. Quiting video_pipeline.')
+            self.mjpeg_loop()
             return
 
         try:
@@ -371,6 +374,8 @@ class WebcamStreamer:
                 self.pi_camera.close()
             except Exception:
                 pass
+        if self.mjpeg_sock:
+            self.mjpeg_sock.close()
 
         # wait for WebcamServer to be clear of port 8080. Otherwise mjpg-streamer may fail to bind 127.0.0.1:8080 (it can still bind :::8080)
         wait_for_port_to_close('127.0.0.1', 8080)

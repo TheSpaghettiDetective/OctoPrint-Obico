@@ -8,7 +8,7 @@ import sys
 import zlib
 from collections import deque
 
-from .janus import JANUS_SERVER, JANUS_DATA_PORT, MAX_PAYLOAD_SIZE
+from .janus import JANUS_SERVER, JANUS_PRINTER_DATA_PORT, MAX_PAYLOAD_SIZE
 
 __python_version__ = 3 if sys.version_info >= (3, 0) else 2
 
@@ -18,7 +18,7 @@ class ClientConn:
 
     def __init__(self, plugin):
         self.plugin = plugin
-        self.data_channel_conn = DataChannelConn(JANUS_SERVER, JANUS_DATA_PORT)
+        self.printer_data_channel_conn = DataChannelConn(JANUS_SERVER, JANUS_PRINTER_DATA_PORT)
         self.seen_refs = deque(maxlen=25)  # contains "last" 25 passthru refs
         self.seen_refs_lock = threading.RLock()
 
@@ -64,10 +64,10 @@ class ClientConn:
         compressed_data = compressor.compress(payload)
         compressed_data += compressor.flush()
 
-        self.data_channel_conn.send(compressed_data)
+        self.printer_data_channel_conn.send(compressed_data)
 
     def close(self):
-        self.data_channel_conn.close()
+        self.printer_data_channel_conn.close()
 
 
     def extract_args(self, msg):
@@ -92,7 +92,6 @@ class DataChannelConn(object):
         self.sock_lock = threading.RLock()
 
     def send(self, payload):
-        return
         if len(payload) > MAX_PAYLOAD_SIZE:
             _logger.error('datachannel payload too big (%s)' % (len(payload), ))
             return
