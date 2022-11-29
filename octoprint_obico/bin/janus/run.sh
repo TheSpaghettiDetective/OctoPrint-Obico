@@ -7,7 +7,7 @@ RUNTIME_JANUS_ETC_DIR="${JANUS_ROOT_DIR}/runtime/etc/janus"
 
 . "${JANUS_ROOT_DIR}/../utils.sh"
 
-if is_rapsberry_pi; then
+if is_raspberry_pi; then
   LIB_PATH="${JANUS_ROOT_DIR}/rpi_os/lib:${LD_LIBRARY_PATH}"
   JANUS_CMD="${JANUS_ROOT_DIR}/rpi_os/bin/janus"
 else

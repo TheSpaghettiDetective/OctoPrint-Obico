@@ -135,7 +135,7 @@ general: {
 #
 h264-video: {
 	type = "rtp"
-	id = 1
+	id = __DEFAULT_CHANNEL_ID__
 	description = "h264-video"
 	enabled = __VIDEO_ENABLED__
 	audio = false
@@ -147,6 +147,11 @@ h264-video: {
 	videopt = 96
 	videortpmap = "H264/90000"
 	videofmtp = "profile-level-id=42e01f;packetization-mode=1"
+        data = true
+	dataport = 17739
+        datatype = "binary"
+        dataiface = "127.0.0.1"
+        databuffermsg = false
 }
 
 #
@@ -158,18 +163,6 @@ h264-video: {
 # Notice that the 'rtp' type just indicates this is a live mountpoint:
 # datachannel messages will be sent as usual, and not use RTP at all.
 #
-printer-data: {
-	type = "rtp"
-	id = 2
-	description = "printer-data"
-	audio = false
-	video = false
-	data = true
-	dataport = 17739
-	datatype = "binary"
-	dataiface = "127.0.0.1"
-	databuffermsg = false
-}
 
 mjpeg-data: {
 	type = "rtp"
