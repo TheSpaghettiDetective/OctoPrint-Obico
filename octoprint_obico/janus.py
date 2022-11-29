@@ -56,7 +56,7 @@ class JanusConn:
             returncode = setup_proc.wait()
             (stdoutdata, stderrdata) = setup_proc.communicate()
             if returncode != 0:
-                _logger.warning('Janus setup failed:\n{}\nSkipping Janus connection.'.format(stderrdata))
+                _logger.warning('Janus setup failed. Skipping Janus connection. Error: \n{}'.format(stdoutdata))
                 return False
 
             return True
@@ -64,7 +64,7 @@ class JanusConn:
 
         def run_janus():
             janus_backoff = ExpoBackoff(60, max_attempts=20)
-            janus_cmd = os.path.join(JANUS_DIR, 'run_janus.sh')
+            janus_cmd = os.path.join(JANUS_DIR, 'run.sh')
             _logger.debug('Popen: {}'.format(janus_cmd))
             self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 

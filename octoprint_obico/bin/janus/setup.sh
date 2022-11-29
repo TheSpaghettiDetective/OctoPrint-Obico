@@ -1,4 +1,6 @@
-#!/bin/bash -e
+#!/bin/bash
+
+set -e
 
 JANUS_ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 RUNTIME_JANUS_ETC_DIR="${JANUS_ROOT_DIR}/runtime/etc/janus"
@@ -8,7 +10,7 @@ TPL_JANUS_ETC_DIR="${JANUS_ROOT_DIR}/templates/etc/janus"
 
 mkdir -p "${RUNTIME_JANUS_ETC_DIR}"
 
-rpi_janus_jcfg_folders_section() {
+embedded_janus_jcfg_folders_section() {
   lib_janus_dir="${JANUS_ROOT_DIR}/rpi_os/lib/janus"
   cat <<EOT
         plugins_folder = "${lib_janus_dir}/plugins"                     # Plugins folder
@@ -16,6 +18,11 @@ rpi_janus_jcfg_folders_section() {
         events_folder = "${lib_janus_dir}/events"                       # Event handlers folder
         loggers_folder = "${lib_janus_dir}/loggers"
 EOT
+}
+
+system_janus_jcfg_folders_section() {
+  system_janus_jcfg_path=$(dpkg -L janus | grep /janus.jcfg)
+  grep -E '^\s*plugins_folder\s*=|^\s*transports_folder\s*=|^\s*events_folder\s*=|^\s*loggers_folder\s*=' "${system_janus_jcfg_path}"
 }
 
 janus_jcfg_turns_cred_section() {
@@ -39,7 +46,9 @@ general: {
 EOT
 
   if is_rapsberry_pi; then
-    rpi_janus_jcfg_folders_section >>"${janus_jcfg_path}"
+    embedded_janus_jcfg_folders_section >>"${janus_jcfg_path}"  # Janus binary is embedded for Raspberry Pi for easier installation
+  else
+    system_janus_jcfg_folders_section >>"${janus_jcfg_path}"
   fi
 
   cat <<EOT >>"${janus_jcfg_path}"
@@ -58,10 +67,10 @@ EOT
         ignore_unreachable_ice_server = true
 }
 plugins: {
-        disable = "libjanus_voicemail.so,libjanus_recordplay.so"
+        disable = "libjanus_audiobridge.so,libjanus_echotest.so,libjanus_nosip.so,libjanus_sip.so,libjanus_textroom.so,libjanus_videoroom.so,libjanus_duktape.so,libjanus_lua.so,libjanus_recordplay.so,libjanus_videocall.so,libjanus_voicemail.so"
 }
 transports: {
-        disable = "libjanus_rabbitmq.so"
+        disable = "libjanus_mqtt.so,libjanus_nanomsg.so,libjanus_pfunix.so,libjanus_rabbitmq.so"
 }
 events: {
 }
