@@ -166,7 +166,7 @@ h264-video: {
 
 mjpeg-data: {
 	type = "rtp"
-	id = 3
+	id = 2
 	description = "mjpeg-data"
 	audio = false
 	video = false
