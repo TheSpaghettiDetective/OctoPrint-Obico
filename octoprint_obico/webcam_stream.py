@@ -97,6 +97,7 @@ class WebcamStreamer:
     def __init__(self, plugin):
         self.plugin = plugin
         self.sentry = plugin.sentry
+        self.janus = plugin.janus
 
         self.pi_camera = None
         self.webcam_server = None

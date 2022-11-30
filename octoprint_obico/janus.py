@@ -98,11 +98,11 @@ class JanusConn:
         self.wait_for_janus()
         self.start_janus_ws()
 
-    def connected_to_janus(self):
+    def connected(self):
         return self.janus_ws and self.janus_ws.connected()
 
     def pass_to_janus(self, msg):
-        if self.connected_to_janus():
+        if self.connected():
             self.janus_ws.send(msg)
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=10)
