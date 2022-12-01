@@ -38,7 +38,7 @@ class JanusConn:
         self.shutting_down = False
 
     def start(self):
-        
+
         if os.getenv('JANUS_SERVER', '').strip() != '':
             _logger.warning('Using an external Janus gateway. Not starting the built-in Janus gateway.')
             self.start_janus_ws()
@@ -60,38 +60,40 @@ class JanusConn:
                 return False
 
             return True
-            
 
-        def run_janus():
-            janus_backoff = ExpoBackoff(60, max_attempts=20)
-            janus_cmd = os.path.join(JANUS_DIR, 'run.sh')
-            _logger.debug('Popen: {}'.format(janus_cmd))
-            self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        def run_janus_forever():
 
-            while not self.shutting_down:
-                line = to_unicode(self.janus_proc.stdout.readline(), errors='replace')
-                if line:
-                    _logger.debug('JANUS: ' + line.rstrip())
-                elif not self.shutting_down:
-                    self.janus_proc.wait()
-                    msg = 'Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode)
-                    self.plugin.sentry.captureMessage(msg)
-                    alert_queue.add_alert({
-                        'level': 'warning',
-                        'cause': 'streaming',
-                        'title': 'Webcam Streaming Failed',
-                        'text': 'The webcam streaming failed to start. Obico is now streaming your webcam at 0.1 FPS.',
-                        'info_url': 'https://www.obico.io/docs/user-guides/warnings/webcam-streaming-failed-to-start/',
-                        'buttons': ['more_info', 'never', 'ok']
-                    }, self.plugin, post_to_server=True)
+            @backoff.on_exception(backoff.expo, Exception, max_tries=5)
+            def run_janus():
+                janus_cmd = os.path.join(JANUS_DIR, 'run.sh')
+                _logger.debug('Popen: {}'.format(janus_cmd))
+                self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-                    janus_backoff.more(Exception(msg))
-                    self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                while not self.shutting_down:
+                    line = to_unicode(self.janus_proc.stdout.readline(), errors='replace')
+                    if line:
+                        _logger.debug('JANUS: ' + line.rstrip())
+                    elif not self.shutting_down:
+                        self.janus_proc.wait()
+                        raise Exception('Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode))
+
+            try:
+                run_janus()
+            except Exception as ex:
+                self.plugin.sentry.captureException()
+                alert_queue.add_alert({
+                    'level': 'warning',
+                    'cause': 'streaming',
+                    'title': 'Webcam Streaming Failed',
+                    'text': 'The webcam streaming failed to start. Obico is now streaming your webcam at 0.1 FPS.',
+                    'info_url': 'https://www.obico.io/docs/user-guides/warnings/webcam-streaming-failed-to-start/',
+                    'buttons': ['more_info', 'never', 'ok']
+                }, self.plugin, post_to_server=True)
 
         if not setup_janus_config():
             return
 
-        janus_proc_thread = Thread(target=run_janus)
+        janus_proc_thread = Thread(target=run_janus_forever)
         janus_proc_thread.daemon = True
         janus_proc_thread.start()
 

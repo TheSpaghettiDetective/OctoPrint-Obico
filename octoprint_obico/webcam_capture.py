@@ -63,6 +63,9 @@ def capture_jpeg(plugin):
     else:
         stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
 
+        if not stream_url:
+            raise Exception('Neither snapshot URL nor stream URL is configured.')
+
         with closing(urlopen(stream_url)) as res:
             chunker = MjpegStreamChunker()
 

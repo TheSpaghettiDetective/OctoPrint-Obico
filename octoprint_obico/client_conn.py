@@ -45,7 +45,7 @@ class ClientConn:
             self.plugin.send_ws_msg_to_server(
                 {'passthru': {'ref': ack_ref, 'ret': ret}})
             self.send_msg_to_client(
-                {'ref': ack_ref, 'ret': ret, '_webrtc': True})
+                {'ref': ack_ref, 'ret': ret})
 
         time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
         self.plugin.post_update_to_server()
