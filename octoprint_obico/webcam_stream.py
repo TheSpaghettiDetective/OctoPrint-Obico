@@ -103,6 +103,7 @@ class WebcamStreamer:
         self.webcam_server = None
         self.gst_proc = None
         self.ffmpeg_proc = None
+        self.mjpeg_sock = None
         self.shutting_down = False
         self.compat_streaming = False
 
@@ -385,6 +386,7 @@ class WebcamStreamer:
         self.gst_proc = None
         self.ffmpeg_proc = None
         self.pi_camera = None
+        self.mjpeg_sock = None
 
 
 class UsbCamWebServer:

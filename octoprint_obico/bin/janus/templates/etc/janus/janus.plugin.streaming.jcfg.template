@@ -172,6 +172,7 @@ mjpeg-data: {
 	video = false
 	data = true
 	dataport = 17740
+        datatype = "binary"
 	dataiface = "127.0.0.1"
 	databuffermsg = false
 }
