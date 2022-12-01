@@ -7,6 +7,7 @@ from threading import Thread
 import backoff
 import json
 import socket
+import psutil
 from octoprint.util import to_unicode
 
 try:
@@ -22,8 +23,8 @@ _logger = logging.getLogger('octoprint.plugins.obico')
 
 JANUS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'janus')
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
-JANUS_WS_PORT = 8188
-JANUS_DATA_PORT = 8009  # check streaming plugin config
+JANUS_WS_PORT = 17058
+JANUS_PRINTER_DATA_PORT = 17739
 MAX_PAYLOAD_SIZE = 1500  # hardcoded in streaming plugin
 
 
@@ -43,34 +44,28 @@ class JanusConn:
             self.start_janus_ws()
             return
 
-        if not pi_version():
-            _logger.warning('No external Janus gateway. Not on a Pi. Skipping Janus connection.')
-            return
+        def setup_janus_config():
+            video_enabled = 'true' if pi_version() and self.plugin._settings.get(["disable_video_streaming"]) is not True else 'false'
+            auth_token = self.plugin._settings.get(["auth_token"])
 
-        def ensure_janus_config():
-            janus_conf_tmp = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg.template')
-            janus_conf_path = os.path.join(JANUS_DIR, 'etc/janus/janus.jcfg')
-            with open(janus_conf_tmp, "rt") as fin:
-                with open(janus_conf_path, "wt") as fout:
-                    for line in fin:
-                        line = line.replace('{JANUS_HOME}', JANUS_DIR)
-                        line = line.replace('{TURN_CREDENTIAL}', self.plugin._settings.get(["auth_token"]))
-                        fout.write(line)
+            cmd_path = os.path.join(JANUS_DIR, 'setup.sh')
+            setup_cmd = '{} -A {} -V {}'.format(cmd_path, auth_token, video_enabled)
 
-            video_enabled = 'true' if self.plugin._settings.get(["disable_video_streaming"]) is not True else 'false'
-            streaming_conf_tmp = os.path.join(JANUS_DIR, 'etc/janus/janus.plugin.streaming.jcfg.template')
-            streaming_conf_path = os.path.join(JANUS_DIR, 'etc/janus/janus.plugin.streaming.jcfg')
-            with open(streaming_conf_tmp, "rt") as fin:
-                with open(streaming_conf_path, "wt") as fout:
-                    for line in fin:
-                        line = line.replace('{VIDEO_ENABLED}', video_enabled)
-                        fout.write(line)
+            setup_proc = psutil.Popen(setup_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+            returncode = setup_proc.wait()
+            (stdoutdata, stderrdata) = setup_proc.communicate()
+            if returncode != 0:
+                _logger.warning('Janus setup failed. Skipping Janus connection. Error: \n{}'.format(stdoutdata))
+                return False
+
+            return True
 
         def run_janus_forever():
 
             @backoff.on_exception(backoff.expo, Exception, max_tries=5)
             def run_janus():
-                janus_cmd = os.path.join(JANUS_DIR, 'run_janus.sh')
+                janus_cmd = os.path.join(JANUS_DIR, 'run.sh')
                 _logger.debug('Popen: {}'.format(janus_cmd))
                 self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -78,7 +73,7 @@ class JanusConn:
                     line = to_unicode(self.janus_proc.stdout.readline(), errors='replace')
                     if line:
                         _logger.debug('JANUS: ' + line.rstrip())
-                    elif not self.shutting_down:  # line == None means the process quits
+                    elif not self.shutting_down:
                         self.janus_proc.wait()
                         raise Exception('Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode))
 
@@ -95,7 +90,9 @@ class JanusConn:
                     'buttons': ['more_info', 'never', 'ok']
                 }, self.plugin, post_to_server=True)
 
-        ensure_janus_config()
+        if not setup_janus_config():
+            return
+
         janus_proc_thread = Thread(target=run_janus_forever)
         janus_proc_thread.daemon = True
         janus_proc_thread.start()
@@ -103,8 +100,11 @@ class JanusConn:
         self.wait_for_janus()
         self.start_janus_ws()
 
+    def connected(self):
+        return self.janus_ws and self.janus_ws.connected()
+
     def pass_to_janus(self, msg):
-        if self.janus_ws and self.janus_ws.connected():
+        if self.connected():
             self.janus_ws.send(msg)
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=10)

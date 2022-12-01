@@ -34,6 +34,7 @@ from .webcam_capture import capture_jpeg, webcam_full_url
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
+JANUS_MJPEG_DATA_PORT = 17740
 FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 
@@ -93,14 +94,16 @@ def is_octolapse_enabled(plugin):
 
 class WebcamStreamer:
 
-    def __init__(self, plugin, sentry):
+    def __init__(self, plugin):
         self.plugin = plugin
-        self.sentry = sentry
+        self.sentry = plugin.sentry
+        self.janus = plugin.janus
 
         self.pi_camera = None
         self.webcam_server = None
         self.gst_proc = None
         self.ffmpeg_proc = None
+        self.mjpeg_sock = None
         self.shutting_down = False
         self.compat_streaming = False
 
@@ -121,9 +124,47 @@ class WebcamStreamer:
             _logger.warning('picamera module is not found on a Pi. Seems like an installation error.')
             return
 
+
+    @backoff.on_exception(backoff.expo, Exception)
+    def mjpeg_loop(self):
+        bandwidth_throttle = 0.0001
+        if pi_version() == "0":    # If Pi Zero
+            bandwidth_throttle *= 2
+
+        self.mjpeg_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        last_frame_sent = 0
+
+        while True:
+            if self.shutting_down:
+                return
+
+            if not self.janus.connected():
+                time.sleep(1)
+                continue
+
+            time.sleep( max(last_frame_sent+0.5-time.time(), 0) )  # No more than 1 frame per 0.5 second
+
+            jpg = None
+            try:
+                jpg = capture_jpeg(self.plugin)
+            except Exception as e:
+                _logger.warn('Failed to capture jpeg - ' + str(e))
+
+            if not jpg:
+                continue
+
+            encoded = base64.b64encode(jpg)
+            self.mjpeg_sock.sendto(bytes('\r\n{}:{}\r\n'.format(len(encoded), len(jpg)), 'utf-8'), (JANUS_SERVER, JANUS_MJPEG_DATA_PORT)) # simple header format for client to recognize
+            for chunk in [encoded[i:i+1400] for i in range(0, len(encoded), 1400)]:
+                self.mjpeg_sock.sendto(chunk, (JANUS_SERVER, JANUS_MJPEG_DATA_PORT))
+                time.sleep(bandwidth_throttle)
+
+        last_frame_sent = time.time()
+
     def video_pipeline(self):
         if not pi_version():
-            _logger.warning('Not running on a Pi. Quiting video_pipeline.')
+            self.mjpeg_loop()
             return
 
         try:
@@ -220,7 +261,7 @@ class WebcamStreamer:
         self.compat_streaming = True
 
     def start_ffmpeg(self, ffmpeg_args):
-        ffmpeg_cmd = '{} -loglevel error {} -bsf dump_extra -an -f rtp rtp://{}:8004?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
+        ffmpeg_cmd = '{} -loglevel error {} -bsf dump_extra -an -f rtp rtp://{}:17734?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
 
         _logger.debug('Popen: {}'.format(ffmpeg_cmd))
         FNULL = open(os.devnull, 'w')
@@ -335,6 +376,8 @@ class WebcamStreamer:
                 self.pi_camera.close()
             except Exception:
                 pass
+        if self.mjpeg_sock:
+            self.mjpeg_sock.close()
 
         # wait for WebcamServer to be clear of port 8080. Otherwise mjpg-streamer may fail to bind 127.0.0.1:8080 (it can still bind :::8080)
         wait_for_port_to_close('127.0.0.1', 8080)
@@ -343,6 +386,7 @@ class WebcamStreamer:
         self.gst_proc = None
         self.ffmpeg_proc = None
         self.pi_camera = None
+        self.mjpeg_sock = None
 
 
 class UsbCamWebServer:
