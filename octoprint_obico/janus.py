@@ -44,24 +44,21 @@ class JanusConn:
             self.start_janus_ws()
             return
 
-        def setup_janus_config():
-            video_enabled = 'true' if pi_version() and self.plugin._settings.get(["disable_video_streaming"]) is not True else 'false'
-            auth_token = self.plugin._settings.get(["auth_token"])
-
-            cmd_path = os.path.join(JANUS_DIR, 'setup.sh')
-            setup_cmd = '{} -A {} -V {}'.format(cmd_path, auth_token, video_enabled)
-
-            setup_proc = psutil.Popen(setup_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-            returncode = setup_proc.wait()
-            (stdoutdata, stderrdata) = setup_proc.communicate()
-            if returncode != 0:
-                _logger.warning('Janus setup failed. Skipping Janus connection. Error: \n{}'.format(stdoutdata))
-                return False
-
-            return True
-
         def run_janus_forever():
+
+            def setup_janus_config():
+                video_enabled = 'true' if pi_version() and self.plugin._settings.get(["disable_video_streaming"]) is not True else 'false'
+                auth_token = self.plugin._settings.get(["auth_token"])
+
+                cmd_path = os.path.join(JANUS_DIR, 'setup.sh')
+                setup_cmd = '{} -A {} -V {}'.format(cmd_path, auth_token, video_enabled)
+
+                setup_proc = psutil.Popen(setup_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+                returncode = setup_proc.wait()
+                (stdoutdata, stderrdata) = setup_proc.communicate()
+                if returncode != 0:
+                    raise Exception('Janus setup failed. Skipping Janus connection. Error: \n{}'.format(stdoutdata))
 
             @backoff.on_exception(backoff.expo, Exception, max_tries=5)
             def run_janus():
@@ -78,6 +75,7 @@ class JanusConn:
                         raise Exception('Janus quit! This should not happen. Exit code: {}'.format(self.janus_proc.returncode))
 
             try:
+                setup_janus_config()
                 run_janus()
             except Exception as ex:
                 self.plugin.sentry.captureException()
@@ -90,8 +88,6 @@ class JanusConn:
                     'buttons': ['more_info', 'never', 'ok']
                 }, self.plugin, post_to_server=True)
 
-        if not setup_janus_config():
-            return
 
         janus_proc_thread = Thread(target=run_janus_forever)
         janus_proc_thread.daemon = True
