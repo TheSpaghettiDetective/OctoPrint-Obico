@@ -189,6 +189,22 @@ def get_tags():
     except:
         pass
 
+    try:
+        distro = run("cat /etc/os-release | grep PRETTY_NAME | sed s/PRETTY_NAME=//", stdout=Capture())
+        distro_out = ''.join(distro.stdout.text).replace('"', '').replace('\n', '')
+        if distro_out:
+            tags['distro'] = distro_out
+    except:
+        pass
+
+    try:
+        long_bit = run("getconf LONG_BIT", stdout=Capture())
+        long_bit_out = ''.join(long_bit.stdout.text).replace('\n', '')
+        if long_bit_out:
+            tags['long_bit'] = long_bit_out
+    except:
+        pass
+
     with tags_mutex:
         system_tags = tags
         return system_tags
