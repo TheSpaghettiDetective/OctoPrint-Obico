@@ -127,7 +127,7 @@ class WebcamStreamer:
 
     @backoff.on_exception(backoff.expo, Exception)
     def mjpeg_loop(self):
-        bandwidth_throttle = 0.0001
+        bandwidth_throttle = 0.004
         if pi_version() == "0":    # If Pi Zero
             bandwidth_throttle *= 2
 
