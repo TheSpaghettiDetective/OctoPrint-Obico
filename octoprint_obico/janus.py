@@ -66,9 +66,11 @@ class JanusConn:
                 _logger.debug('Popen: {}'.format(janus_cmd))
                 self.janus_proc = subprocess.Popen(janus_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
+                num_line_output = 0
                 while not self.shutting_down:
                     line = to_unicode(self.janus_proc.stdout.readline(), errors='replace')
-                    if line:
+                    if line and num_line_output < 1000:
+                        num_line_output += 1
                         _logger.debug('JANUS: ' + line.rstrip())
                     elif not self.shutting_down:
                         self.janus_proc.wait()
