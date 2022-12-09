@@ -93,6 +93,8 @@ class OctoPrintSettingsUpdater:
 class SentryWrapper:
 
     def __init__(self, plugin):
+        if not self.enabled():
+            return
 
         # https://github.com/getsentry/sentry-python/issues/149
         def before_send(event, hint):
