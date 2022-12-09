@@ -27,6 +27,8 @@ JANUS_WS_PORT = 17058
 JANUS_PRINTER_DATA_PORT = 17739
 MAX_PAYLOAD_SIZE = 1500  # hardcoded in streaming plugin
 
+class JanusNotSupportedException(Exception):
+    pass
 
 class JanusConn:
 
@@ -58,7 +60,7 @@ class JanusConn:
                 returncode = setup_proc.wait()
                 (stdoutdata, stderrdata) = setup_proc.communicate()
                 if returncode != 0:
-                    raise Exception('Janus setup failed. Skipping Janus connection. Error: \n{}'.format(stdoutdata))
+                    raise JanusNotSupportedException('Janus setup failed. Skipping Janus connection. Error: \n{}'.format(stdoutdata))
 
             @backoff.on_exception(backoff.expo, Exception, max_tries=5)
             def run_janus():
@@ -79,6 +81,8 @@ class JanusConn:
             try:
                 setup_janus_config()
                 run_janus()
+            except JanusNotSupportedException as e:
+                _logger.warning(e)
             except Exception as ex:
                 self.plugin.sentry.captureException()
                 alert_queue.add_alert({
