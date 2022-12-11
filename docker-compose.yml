@@ -41,10 +41,6 @@ services:
     image: thespaghettidetective/janus:ubuntu-1.2
     #command: sh -c "/opt/janus/bin/janus --stun-server=stun.l.google.com:19302"
     command: sh -c "/opt/janus/bin/janus"
-    ports:
-      - '${EXPOSED_IP-127.0.0.1}:8188:8188'
-      - '${EXPOSED_IP-127.0.0.1}:8009:8009'
-      - '${EXPOSED_IP-127.0.0.1}:8004:8004'
   mjpeg:
     hostname: mjpeg
     restart: unless-stopped
