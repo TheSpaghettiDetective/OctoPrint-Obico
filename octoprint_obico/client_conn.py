@@ -39,7 +39,7 @@ class ClientConn:
                 # as deque manages that when maxlen is set
                 self.seen_refs.append(ack_ref)
 
-        ret = func(*(self.extract_args(msg)))
+        ret = func(*(self.extract_args(msg)), **(self.extract_kwargs(msg)))
 
         if ack_ref:
             self.plugin.send_ws_msg_to_server(
@@ -82,6 +82,8 @@ class ClientConn:
 
         return args
 
+    def extract_kwargs(self, msg):
+        return msg.get("kwargs", {})
 
 class DataChannelConn(object):
 
