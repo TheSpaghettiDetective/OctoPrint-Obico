@@ -40,13 +40,21 @@ class ClientConn:
                 # as deque manages that when maxlen is set
                 self.seen_refs.append(ack_ref)
 
-        ret = func(*(self.extract_args(msg)), **(self.extract_kwargs(msg)))
+        error = None
+        try:
+            ret = func(*(self.extract_args(msg)), **(self.extract_kwargs(msg)))
+        except Exception as e:
+            error = 'Error in calling "{}" - {}'.format(msg['func'], e)
 
         if ack_ref:
-            self.plugin.send_ws_msg_to_server(
-                {'passthru': {'ref': ack_ref, 'ret': ret}})
-            self.send_msg_to_client(
-                {'ref': ack_ref, 'ret': ret})
+
+            if error:
+                resp = {'ref': ack_ref, 'error': error}
+            else:
+                resp = {'ref': ack_ref, 'ret': ret}
+
+            self.plugin.send_ws_msg_to_server({'passthru': resp})
+            self.send_msg_to_client(resp)
 
         time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
         self.plugin.post_update_to_server()
