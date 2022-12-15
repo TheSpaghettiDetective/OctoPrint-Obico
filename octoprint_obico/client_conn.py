@@ -6,6 +6,7 @@ import threading
 import time
 import sys
 import zlib
+import re
 from collections import deque
 
 from .janus import JANUS_SERVER, JANUS_PRINTER_DATA_PORT, MAX_PAYLOAD_SIZE
@@ -69,7 +70,6 @@ class ClientConn:
     def close(self):
         self.printer_data_channel_conn.close()
 
-
     def extract_args(self, msg):
         args = msg.get("args", [])
         if 'jog' == msg['func']:
@@ -83,7 +83,16 @@ class ClientConn:
         return args
 
     def extract_kwargs(self, msg):
-        return msg.get("kwargs", {})
+        kwargs = msg.get("kwargs", {})
+        if 'list_files' == msg['func'] and 'filter' in kwargs:
+
+            def filter_by_name(keyword):
+                return lambda x: re.search(keyword, x['name'], re.IGNORECASE)
+
+            # filter is a lambda function in octoprint api
+            kwargs['filter'] = filter_by_name(kwargs['filter'])
+
+        return kwargs
 
 class DataChannelConn(object):
 
