@@ -46,7 +46,7 @@ services:
     restart: unless-stopped
     image: thespaghettidetective/mjpg-streamer
     ports:
-      - '${EXPOSED_IP-127.0.0.1}:8080:8080'
+      - '8080:8080'
     command: sh -c "/mjpg-streamer/mjpg_streamer -o '/mjpg-streamer/output_http.so -w /mjpg-streamer/www' -i '/mjpg-streamer/input_file.so -f /mjpg-streamer/jpgs -e -d 1'"
 
   video:
