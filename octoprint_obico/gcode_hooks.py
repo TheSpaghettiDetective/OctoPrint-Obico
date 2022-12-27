@@ -21,7 +21,8 @@ class GCodeHooks:
         return line
 
     def check_for_filament_change(self, gcode=None, line=None):
-        self.num_gcode_until_next_filament_change -= 1
+        if gcode:
+            self.num_gcode_until_next_filament_change -= 1
         if self.num_gcode_until_next_filament_change > 0:
             return
 
