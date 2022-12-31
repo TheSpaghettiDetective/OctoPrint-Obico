@@ -11,6 +11,7 @@ import sys
 import time
 import requests
 import backoff
+from datetime import datetime
 from collections import deque
 
 try:
@@ -231,6 +232,31 @@ class ObicoPlugin(
     def main_loop(self):
         global _print_job_tracker
         self.sentry = SentryWrapper(self)
+
+        last_collect = 0.0
+        data_dirname = None
+        while True:
+            if self._printer.get_state_id() in ['PRINTING','PAUSED', 'PAUSING', 'RESUMING', ]:
+                if data_dirname == None:
+                    filename = self._printer.get_current_job().get('file', {}).get('name')
+                    if not filename:
+                        continue
+
+                    print_id = str(int(datetime.now().timestamp()))
+                    data_dirname = os.path.join(os.path.expanduser('~'), f'{filename}.{print_id}')
+                    os.mkdir(data_dirname)
+
+                ts = datetime.now().timestamp()
+                if ts - last_collect >= 1.0:
+                    last_collect = ts
+                    jpg = capture_jpeg(self)
+                    with open(f'{data_dirname}/{ts}.jpg', 'wb') as f:
+                        f.write(jpg)
+            else:
+                data_dirname = None
+                continue
+
+            time.sleep(0.02)
 
         if not self.is_configured() and self.canonical_endpoint_prefix():
             self.discovery = PrinterDiscovery(plugin=self)
