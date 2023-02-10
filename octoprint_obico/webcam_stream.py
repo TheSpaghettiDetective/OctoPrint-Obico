@@ -35,8 +35,9 @@ from .webcam_capture import capture_jpeg, webcam_full_url
 _logger = logging.getLogger('octoprint.plugins.obico')
 
 JANUS_MJPEG_DATA_PORT = 17740
-FFMPEG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
+FFMPEG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
+FFMPEG = os.path.join(FFMPEG_DIR, 'run.sh')
 
 PI_CAM_RESOLUTIONS = {
     'low': ((320, 240), (480, 270)),  # resolution for 4:3 and 16:9
@@ -244,8 +245,21 @@ class WebcamStreamer:
         def wait_for_webcamd():
             return capture_jpeg(self.plugin)
 
+        def h264_encoder():
+            test_video = os.path.join(FFMPEG_DIR, 'test-video.mp4')
+            FNULL = open(os.devnull, 'w')
+            for encoder in ['h264_omx', 'h264_v4l2m2m']:
+                ffmpeg_cmd = '{} -re -i {} -pix_fmt yuv420p -vcodec {} -an -f rtp rtp://localhost:8014?pkt_size=1300'.format(FFMPEG, test_video, encoder)
+                _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+                ffmpeg_test_proc = psutil.Popen(ffmpeg_cmd.split(' '), stdout=FNULL, stderr=FNULL)
+                if ffmpeg_test_proc.wait() == 0:
+                    return encoder
+            raise Exception('No ffmpeg found, or ffmpeg does NOT support h264_omx/h264_v4l2m2m encoding.')
+
         wait_for_port_to_close('127.0.0.1', 8080)  # wait for WebcamServer to be clear of port 8080
         sarge.run('sudo service webcamd start')
+
+        encoder = h264_encoder()
 
         jpg = wait_for_webcamd()
         (_, img_w, img_h) = get_image_info(jpg)
@@ -256,7 +270,7 @@ class WebcamStreamer:
             fps = 5
             bitrate = int(bitrate/4)
 
-        self.start_ffmpeg('-re -i {} -filter:v fps={} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec h264_omx'.format(stream_url, fps, bitrate, img_w, img_h))
+        self.start_ffmpeg('-re -i {} -filter:v fps={} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec {}'.format(stream_url, fps, bitrate, img_w, img_h, encoder))
         self.compat_streaming = True
 
     def start_ffmpeg(self, ffmpeg_args):

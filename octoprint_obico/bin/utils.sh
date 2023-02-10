@@ -8,3 +8,10 @@ is_raspberry_pi() {
   return 1
 }
 
+debian_release() {
+  cat /etc/debian_version | cut -d '.' -f1
+}
+
+debian_variant() {
+  echo $( debian_release ).$( uname -m )
+}
