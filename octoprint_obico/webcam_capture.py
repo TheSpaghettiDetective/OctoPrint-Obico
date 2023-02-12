@@ -118,7 +118,7 @@ class JpegPoster:
             return
 
         data = {'viewing_boost': 'true'} if viewing_boost else {}
-        resp = server_request('POST', '/api/v1/octo/pic/', self.plugin, timeout=60, files=files, data=data, headers=self.plugin.auth_headers())
+        resp = server_request('POST', '/api/v1/octo/pic/', self.plugin, timeout=60, files=files, data=data, skip_debug_logging=True, headers=self.plugin.auth_headers())
         _logger.debug('Jpeg posted to server - {0}'.format(resp))
 
     def pic_post_loop(self):

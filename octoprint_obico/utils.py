@@ -19,8 +19,10 @@ from contextlib import closing
 import backoff
 import octoprint
 import requests
+import curlify
 
 from .lib.error_stats import error_stats
+from .lib import curlify
 
 PRINTER_SETTINGS_UPDATE_INTERVAL = 60*30.0  # Update printer settings at max 30 minutes interval, as they are relatively static.
 
@@ -287,7 +289,7 @@ def wait_for_port_to_close(host, port):
             time.sleep(0.5)
 
 
-def server_request(method, uri, plugin, timeout=30, raise_exception=False, **kwargs):
+def server_request(method, uri, plugin, timeout=30, raise_exception=False, skip_debug_logging=False, **kwargs):
     '''
     Return: A requests response object if it reaches the server. Otherwise None. Connections errors are printed to console but NOT raised
     '''
@@ -296,6 +298,10 @@ def server_request(method, uri, plugin, timeout=30, raise_exception=False, **kwa
     try:
         error_stats.attempt('server')
         resp = requests.request(method, endpoint, timeout=timeout, **kwargs)
+
+        if not skip_debug_logging:
+            _logger.debug(curlify.to_curl(resp.request))
+
         if not resp.ok and not resp.status_code == 401:
             error_stats.add_connection_error('server', plugin)
 

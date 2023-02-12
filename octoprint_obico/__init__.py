@@ -73,7 +73,7 @@ class ObicoPlugin(
         self.status_update_lock = threading.RLock()
         self.remote_status = RemoteStatus()
         self.pause_resume_sequence = PauseResumeGCodeSequence()
-        self.gcode_hooks = GCodeHooks(self, _print_job_tracker)
+        self.gcode_hooks = GCodeHooks(self)
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_job_tracker)
@@ -84,7 +84,7 @@ class ObicoPlugin(
         self.client_conn = ClientConn(self)
         self.discovery = None
         self.bailed_because_tsd_plugin_running = False
-        self.printer_events_posted = deque(maxlen=20)
+        self.printer_events_posted = dict()
 
 
     # ~~ Custom event registration
@@ -173,7 +173,7 @@ class ObicoPlugin(
             elif event == 'Error':
                 event_data = {'event_title': 'OctoPrint Error', 'event_text': payload.get('error', 'Unknown Error'), 'event_class': 'ERROR', 'event_type': 'PRINTER_ERROR'}
                 self.passthru_printer_event_to_client(event_data)
-                self.post_printer_event_to_server(event_data, attach_snapshot=True)
+                self.post_printer_event_to_server(event_data, attach_snapshot=True, spam_tolerance_seconds=60*30)
             elif event.startswith("Print") or event in (
                 'plugin_pi_support_throttle_state',
             ):
@@ -464,15 +464,15 @@ class ObicoPlugin(
         with self.status_update_lock:
             self.status_update_booster = 20
 
-    def post_printer_event_to_server(self, event_data, attach_snapshot=False):
+    def post_printer_event_to_server(self, event_data, attach_snapshot=False, spam_tolerance_seconds=60*60*24*1000):
         event_title = event_data['event_title']
 
-        # We dont' want to bombard the server with repeated events. So we keep track of the events sent since last restart.
-        # However, there are probably situations in the future repeated events do need to be propagated to the server.
-        if event_title in self.printer_events_posted:
+        last_sent = self.printer_events_posted.get(event_title, 0)
+        if time.time() < last_sent + spam_tolerance_seconds:
             return
 
-        self.printer_events_posted.append(event_title)
+        self.printer_events_posted[event_title] = time.time()
+
         files = None
         if attach_snapshot:
             try:
@@ -480,6 +480,14 @@ class ObicoPlugin(
             except:
                 pass
         resp = server_request('POST', '/api/v1/octo/printer_events/', self, timeout=60, files=files, data=event_data, headers=self.auth_headers())
+
+    def post_filament_change_event(self):
+        event_text = '<div><i>Printer:</i> {}</div><div><i>G-Code:</i> {}</div>'.format(
+            self.linked_printer.get('name', 'Unknown printer'),
+            self._printer.get_current_data().get('job', {}).get('file', {}).get('name', 'Unknown G-Code or not printing')
+        )
+        event_data = dict(event_title = 'Filament Change Required', event_text = event_text, event_class = 'WARNING', event_type = 'FILAMENT_CHANGE',)
+        self.post_printer_event_to_server(event_data,attach_snapshot=True, spam_tolerance_seconds=60*10) # Allow to nudge the user for filament change every 10 minutes
 
     def passthru_printer_event_to_client(self, event_data):
         self.send_ws_msg_to_server({'passthru': {'printer_event': event_data}})
