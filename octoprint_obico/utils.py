@@ -19,7 +19,6 @@ from contextlib import closing
 import backoff
 import octoprint
 import requests
-import curlify
 
 from .lib.error_stats import error_stats
 from .lib import curlify
