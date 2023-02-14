@@ -486,7 +486,7 @@ class ObicoPlugin(
             self.linked_printer.get('name', 'Unknown printer'),
             self._printer.get_current_data().get('job', {}).get('file', {}).get('name', 'Unknown G-Code or not printing')
         )
-        event_data = dict(event_title = 'Filament Change Required', event_text = event_text, event_class = 'WARNING', event_type = 'FILAMENT_CHANGE',)
+        event_data = dict(event_title = 'Filament Change Required', event_text = event_text, event_class = 'WARNING', event_type = 'FILAMENT_CHANGE', notify='true')
         self.post_printer_event_to_server(event_data,attach_snapshot=True, spam_tolerance_seconds=60*10) # Allow to nudge the user for filament change every 10 minutes
 
     def passthru_printer_event_to_client(self, event_data):
