@@ -17,3 +17,4 @@ npm-debug.log
 .config*
 .v
 .v2
+.env
