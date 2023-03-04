@@ -194,7 +194,9 @@ class WebcamStreamer:
                 self.ffmpeg_from_mjpeg()
                 return
 
-            sarge.run('sudo service webcamd stop')
+            if sarge.run('sudo service webcamd stop').returncodes[0] != 0:
+                self.ffmpeg_from_mjpeg()
+                return
 
             self.__init_camera__()
 
