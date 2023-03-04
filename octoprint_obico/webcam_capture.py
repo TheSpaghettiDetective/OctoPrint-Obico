@@ -47,8 +47,6 @@ def webcam_full_url(url):
     return full_url
 
 
-@backoff.on_exception(backoff.expo, Exception, max_tries=3)
-@backoff.on_predicate(backoff.expo, max_tries=3)
 def capture_jpeg(plugin):
     webcam_settings = plugin._settings.global_get(["webcam"])
     snapshot_url = webcam_full_url(webcam_settings.get("snapshot", ''))
@@ -59,26 +57,30 @@ def capture_jpeg(plugin):
         r.raise_for_status()
         jpg = r.content
         return jpg
-
     else:
-        stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
+        return capture_jpeg_from_mjpeg_source(plugin)
 
-        if not stream_url:
-            raise Exception('Neither snapshot URL nor stream URL is configured.')
 
-        with closing(urlopen(stream_url)) as res:
-            chunker = MjpegStreamChunker()
+def capture_jpeg_from_mjpeg_source(plugin):
+    webcam_settings = plugin._settings.global_get(["webcam"])
+    stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
 
-            while True:
-                data = res.readline()
-                mjpg = chunker.findMjpegChunk(data)
-                if mjpg:
-                    res.close()
-                    mjpeg_headers_index = mjpg.find(MJPEG_HDR)
-                    if mjpeg_headers_index > 0:
-                        return mjpg[mjpeg_headers_index+4:]
-                    else:
-                        raise Exception('Wrong mjpeg data format')
+    if not stream_url:
+        raise Exception('Invalid Webcam snapshot URL nor stream URL configuration.')
+
+    with closing(urlopen(stream_url)) as res:
+        chunker = MjpegStreamChunker()
+
+        while True:
+            data = res.readline()
+            mjpg = chunker.findMjpegChunk(data)
+            if mjpg:
+                res.close()
+                mjpeg_headers_index = mjpg.find(MJPEG_HDR)
+                if mjpeg_headers_index > 0:
+                    return mjpg[mjpeg_headers_index+4:]
+                else:
+                    raise Exception('Wrong mjpeg data format')
 
 
 class MjpegStreamChunker:
@@ -113,8 +115,9 @@ class JpegPoster:
         try:
             error_stats.attempt('webcam')
             files = {'pic': capture_jpeg(self.plugin)}
-        except:
+        except Exception as e:
             error_stats.add_connection_error('webcam', self.plugin)
+            _logger.warn('Failed to capture jpeg - ' + str(e))
             return
 
         data = {'viewing_boost': 'true'} if viewing_boost else {}

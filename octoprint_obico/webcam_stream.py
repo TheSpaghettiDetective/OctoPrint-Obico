@@ -30,7 +30,7 @@ from octoprint.util import to_unicode
 from .janus import JANUS_SERVER
 from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close
 from .lib import alert_queue
-from .webcam_capture import capture_jpeg, webcam_full_url
+from .webcam_capture import capture_jpeg, webcam_full_url, capture_jpeg_from_mjpeg_source
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
@@ -243,9 +243,10 @@ class WebcamStreamer:
 
     def ffmpeg_from_mjpeg(self):
 
-        @backoff.on_exception(backoff.expo, Exception, jitter=None, max_tries=4)
-        def wait_for_webcamd():
-            return capture_jpeg(self.plugin)
+        @backoff.on_exception(backoff.expo, Exception, max_tries=10)
+        @backoff.on_predicate(backoff.expo, max_tries=3)
+        def wait_for_mjpeg_source():
+            return capture_jpeg_from_mjpeg_source(self.plugin)
 
         def h264_encoder():
             test_video = os.path.join(FFMPEG_DIR, 'test-video.mp4')
@@ -263,7 +264,7 @@ class WebcamStreamer:
 
         encoder = h264_encoder()
 
-        jpg = wait_for_webcamd()
+        jpg = wait_for_mjpeg_source()
         (_, img_w, img_h) = get_image_info(jpg)
         stream_url = webcam_full_url(self.plugin._settings.global_get(["webcam"]).get("stream", "/webcam/?action=stream"))
         bitrate = bitrate_for_dim(img_w, img_h)
