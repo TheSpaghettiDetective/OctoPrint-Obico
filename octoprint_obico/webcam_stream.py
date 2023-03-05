@@ -194,6 +194,17 @@ class WebcamStreamer:
                 self.ffmpeg_from_mjpeg()
                 return
 
+            # camera-stream is introduced in OctoPi 1.0.
+            try:
+                camera_streamer_mp4_url = 'http://127.0.0.1:8080/video.mp4'
+                _logger.info('Trying to start ffmpeg using camera-stream H.264 source')
+                self.start_ffmpeg('-re -i {} -c:v copy'.format(camera_streamer_mp4_url))
+                return
+            except Exception:
+                _logger.info('No camera-stream H.264 source found. Continue to legacy streaming')
+                pass
+
+            # The streaming mechansim for pre-1.0 OctoPi versions
             if sarge.run('sudo service webcamd stop').returncodes[0] != 0:
                 self.ffmpeg_from_mjpeg()
                 return
@@ -222,7 +233,7 @@ class WebcamStreamer:
 
             # Use ffmpeg for Pi Camera. When it's used for USB Camera it has problems (SPS/PPS not sent in-band?)
             else:
-                self.start_ffmpeg('-re -i pipe:0 -flags:v +global_header -c:v copy')
+                self.start_ffmpeg('-re -i pipe:0 -flags:v +global_header -c:v copy -bsf dump_extra')
 
                 self.webcam_server = PiCamWebServer(self.pi_camera, self.sentry)
                 self.webcam_server.start()
@@ -273,11 +284,11 @@ class WebcamStreamer:
             fps = 5
             bitrate = int(bitrate/4)
 
-        self.start_ffmpeg('-re -i {} -filter:v fps={} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec {}'.format(stream_url, fps, bitrate, img_w, img_h, encoder))
+        self.start_ffmpeg('-re -i {} -filter:v fps={} -b:v {} -pix_fmt yuv420p -s {}x{} -flags:v +global_header -vcodec {} -bsf dump_extra'.format(stream_url, fps, bitrate, img_w, img_h, encoder))
         self.compat_streaming = True
 
     def start_ffmpeg(self, ffmpeg_args):
-        ffmpeg_cmd = '{} -loglevel error {} -bsf dump_extra -an -f rtp rtp://{}:17734?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
+        ffmpeg_cmd = '{} -loglevel error {} -an -f rtp rtp://{}:17734?pkt_size=1300'.format(FFMPEG, ffmpeg_args, JANUS_SERVER)
 
         _logger.debug('Popen: {}'.format(ffmpeg_cmd))
         FNULL = open(os.devnull, 'w')
@@ -289,7 +300,7 @@ class WebcamStreamer:
             (stdoutdata, stderrdata) = self.ffmpeg_proc.communicate()
             msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
             _logger.error(msg)
-            raise Exception('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
+            raise Exception('ffmpeg quit! Exit code: {}'.format(returncode))
         except psutil.TimeoutExpired:
            pass
 
@@ -306,7 +317,7 @@ class WebcamStreamer:
                     returncode = self.ffmpeg_proc.wait()
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
                     _logger.error(msg)
-                    self.sentry.captureMessage('ffmpeg quit! This should not happen. Exit code: {}'.format(returncode))
+                    self.sentry.captureMessage('ffmpeg quit! Exit code: {}'.format(returncode))
                     return
                 else:
                     ring_buffer.append(err)
