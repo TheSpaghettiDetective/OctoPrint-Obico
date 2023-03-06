@@ -109,7 +109,7 @@ class WebcamStreamer:
         self.compat_streaming = False
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=5)
-    def __init_camera__(self):
+    def init_legacy_picamera(self):
         try:
             import picamera
             try:
@@ -209,7 +209,7 @@ class WebcamStreamer:
                 self.ffmpeg_from_mjpeg()
                 return
 
-            self.__init_camera__()
+            self.init_legacy_picamera()
 
             # Use GStreamer for USB Camera. When it's used for Pi Camera it has problems (video is not playing. Not sure why)
             if not self.pi_camera:
