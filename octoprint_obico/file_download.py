@@ -61,8 +61,10 @@ class FileDownloader:
         try:
             self.__ensure_storage__()
 
+            _logger.debug('Start downloading...' + g_code_file['url'])
             display_filename = g_code_file['filename']
             r = requests.get(g_code_file['url'], allow_redirects=True, timeout=60*30)
+            _logger.debug('Done downloading...' + g_code_file['url'])
             r.raise_for_status()
 
             octoprint_storage = 'local'
@@ -71,7 +73,9 @@ class FileDownloader:
 
             target_path = os.path.join(UPLOAD_FOLDER, g_code_file['safe_filename'])
             target_path = self.plugin._file_manager.add_file(octoprint_storage, target_path, file_object, links=None, allow_overwrite=True, display=display_filename,)
+            _logger.debug('Start getting metadata...')
             md5_hash = self.plugin._file_manager.get_metadata(path=target_path, destination=octoprint_storage)['hash']
+            _logger.debug('Done getting metadata...')
 
             g_code_data = dict(agent_signature='md5:{}'.format(md5_hash), safe_filename=os.path.basename(target_path))
             resp = server_request('PATCH', '/api/v1/octo/g_code_files/{}/'.format(g_code_file['id']), self.plugin, timeout=60, data=g_code_data, headers=self.plugin.auth_headers())
