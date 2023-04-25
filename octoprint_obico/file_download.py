@@ -27,7 +27,7 @@ class RequestFileWrapper(AbstractFileWrapper):
             os.chmod(path, permissions)
 
     def stream(self):
-        return io.StringIO(self.req.content)
+        return io.BytesIO(self.req.content)
 
 
 class FileDownloader:
