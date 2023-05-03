@@ -18,12 +18,12 @@ class PrintJobTracker:
         self._file_metadata_cache = None
 
     def on_event(self, plugin, event, payload):
-        if event == 'PrintStarted':
-            with self._mutex:
-                self.current_print_ts = int(time.time())
-                self._file_metadata_cache = None
 
-            md5_hash = plugin._file_manager.get_metadata(path=payload['path'], destination=payload['origin'])['hash']
+        def find_obico_g_code_file_id(payload):
+            md5_hash = plugin._file_manager.get_metadata(path=payload['path'], destination=payload['origin']).get('hash')
+            if not md5_hash:
+                return None
+
             g_code_data = dict(
                 filename=payload['name'],
                 safe_filename=os.path.basename(payload['path']),
@@ -31,8 +31,15 @@ class PrintJobTracker:
                 agent_signature='md5:{}'.format(md5_hash)
                 )
             resp = server_request('POST', '/api/v1/octo/g_code_files/', plugin, timeout=60, data=g_code_data, headers=plugin.auth_headers())
-            resp.raise_for_status()
-            self.set_obico_g_code_file_id(resp.json()['id'])
+
+            return resp.json()['id'] if resp else None
+
+        if event == 'PrintStarted':
+            with self._mutex:
+                self.current_print_ts = int(time.time())
+                self._file_metadata_cache = None
+
+            self.set_obico_g_code_file_id(find_obico_g_code_file_id(payload))
 
         data = self.status(plugin)
         data['event'] = {
