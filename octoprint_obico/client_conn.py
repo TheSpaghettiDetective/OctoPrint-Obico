@@ -27,6 +27,7 @@ class ClientConn:
         target = getattr(self.plugin, msg.get('target'))
         func = getattr(target, msg['func'], None)
         if not func:
+            self.plugin.sentry.captureMessage('Function "{} in target "{}" not found'.format(msg['target'], msg['func']))
             return
 
         ack_ref = msg.get('ref')
@@ -45,6 +46,7 @@ class ClientConn:
             ret = func(*(self.extract_args(msg)), **(self.extract_kwargs(msg)))
         except Exception as e:
             error = 'Error in calling "{}" - {}'.format(msg['func'], e)
+            self.plugin.sentry.captureException()
 
         if ack_ref:
 
