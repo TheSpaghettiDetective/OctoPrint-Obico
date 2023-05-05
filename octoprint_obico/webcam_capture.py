@@ -117,7 +117,7 @@ class JpegPoster:
             files = {'pic': capture_jpeg(self.plugin)}
         except Exception as e:
             error_stats.add_connection_error('webcam', self.plugin)
-            _logger.warn('Failed to capture jpeg - ' + str(e))
+            _logger.warning('Failed to capture jpeg - ' + str(e))
             return
 
         data = {'viewing_boost': 'true'} if viewing_boost else {}

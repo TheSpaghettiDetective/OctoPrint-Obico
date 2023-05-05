@@ -478,7 +478,7 @@ class ObicoPlugin(
             try:
                 files = {'snapshot': capture_jpeg(self)}
             except Exception as e:
-                _logger.warn('Failed to capture jpeg - ' + str(e))
+                _logger.warning('Failed to capture jpeg - ' + str(e))
                 pass
         resp = server_request('POST', '/api/v1/octo/printer_events/', self, timeout=60, files=files, data=event_data, headers=self.auth_headers())
 
