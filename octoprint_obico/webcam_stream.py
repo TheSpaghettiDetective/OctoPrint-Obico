@@ -282,8 +282,11 @@ class WebcamStreamer:
         try:
             (_, img_w, img_h) = get_webcam_resolution(webcam_config)
             _logger.debug(f'Detected webcam resolution - w:{img_w} / h:{img_h}')
-        except Exception as e:
-            _logger.warn(f'Failed to detect webcam resolution. Using default.')
+        except (URLError, HTTPError, requests.exceptions.RequestException):
+            _logger.warn('Failed to connect to webcam to retrieve resolution. Using default.')
+        except Exception:
+            self.sentry.captureException()
+            _logger.warn('Failed to detect webcam resolution due to unexpected error. Using default.')
 
         bitrate = bitrate_for_dim(img_w, img_h)
         fps = 25
