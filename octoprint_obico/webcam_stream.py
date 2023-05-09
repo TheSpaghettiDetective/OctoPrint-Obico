@@ -255,8 +255,8 @@ class WebcamStreamer:
     def ffmpeg_from_mjpeg(self):
 
         @backoff.on_exception(backoff.expo, Exception, max_tries=20)
-        def get_webcam_resolution():
-            return get_image_info(capture_jpeg(webcam_config, force_stream_url=True))
+        def get_webcam_resolution(plugin):
+            return get_image_info(capture_jpeg(plugin, force_stream_url=True))
 
         def h264_encoder():
             test_video = os.path.join(FFMPEG_DIR, 'test-video.mp4')
@@ -280,10 +280,10 @@ class WebcamStreamer:
 
         (img_w, img_h) = (640, 480)
         try:
-            (_, img_w, img_h) = get_webcam_resolution(webcam_config)
+            (_, img_w, img_h) = get_webcam_resolution(self.plugin)
             _logger.debug(f'Detected webcam resolution - w:{img_w} / h:{img_h}')
         except Exception as e:
-            _logger.warn(f'Failed to detect webcam resolution. Using default.')
+            _logger.warn(f'Failed to detect webcam resolution. Using default. - {e}')
 
         bitrate = bitrate_for_dim(img_w, img_h)
         fps = 25
