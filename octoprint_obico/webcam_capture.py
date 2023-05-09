@@ -47,40 +47,54 @@ def webcam_full_url(url):
     return full_url
 
 
-def capture_jpeg(plugin):
+@backoff.on_exception(backoff.expo, Exception, max_tries=3)
+@backoff.on_predicate(backoff.expo, max_tries=3)
+def capture_jpeg(plugin, force_stream_url=False):
+    MAX_JPEG_SIZE = 5000000
+
     webcam_settings = plugin._settings.global_get(["webcam"])
     snapshot_url = webcam_full_url(webcam_settings.get("snapshot", ''))
-    if snapshot_url:
+    if snapshot_url and not force_stream_url:
         snapshot_validate_ssl = bool(webcam_settings.get("snapshotSslValidation", 'False'))
 
-        r = requests.get(snapshot_url, stream=True, timeout=5, verify=snapshot_validate_ssl )
+        r = requests.get(snapshot_url, stream=True, timeout=5, verify=snapshot_validate_ssl)
         r.raise_for_status()
-        jpg = r.content
-        return jpg
+
+        response_content = b''
+        start_time = time.monotonic()
+        for chunk in r.iter_content(chunk_size=1024):
+            response_content += chunk
+            if len(response_content) > MAX_JPEG_SIZE:
+                r.close()
+                raise Exception('Payload returned from the snapshot_url is too large. Did you configure stream_url as snapshot_url?')
+
+        r.close()
+        return response_content
+
     else:
-        return capture_jpeg_from_mjpeg_source(plugin)
+        stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
+        if not stream_url:
+            raise Exception('Invalid Webcam snapshot URL "{}" or stream URL: "{}"'.format(snapshot_url, stream_url))
 
+        with closing(urlopen(stream_url)) as res:
+            chunker = MjpegStreamChunker()
 
-def capture_jpeg_from_mjpeg_source(plugin):
-    webcam_settings = plugin._settings.global_get(["webcam"])
-    stream_url = webcam_full_url(webcam_settings.get("stream", "/webcam/?action=stream"))
+            data_bytes = 0
+            while True:
+                data = res.readline()
+                data_bytes += len(data)
+                if data_bytes > MAX_JPEG_SIZE:
+                    raise Exception('Payload returned from the snapshot_url is too large. Did you configure stream_url as snapshot_url?')
 
-    if not stream_url:
-        raise Exception('Invalid Webcam snapshot URL nor stream URL configuration.')
+                mjpg = chunker.findMjpegChunk(data)
+                if mjpg:
+                    res.close()
 
-    with closing(urlopen(stream_url)) as res:
-        chunker = MjpegStreamChunker()
-
-        while True:
-            data = res.readline()
-            mjpg = chunker.findMjpegChunk(data)
-            if mjpg:
-                res.close()
-                mjpeg_headers_index = mjpg.find(MJPEG_HDR)
-                if mjpeg_headers_index > 0:
-                    return mjpg[mjpeg_headers_index+4:]
-                else:
-                    raise Exception('Wrong mjpeg data format')
+                    mjpeg_headers_index = mjpg.find(MJPEG_HDR)
+                    if mjpeg_headers_index > 0:
+                        return mjpg[mjpeg_headers_index+4:]
+                    else:
+                        raise Exception('Wrong mjpeg data format')
 
 
 class MjpegStreamChunker:

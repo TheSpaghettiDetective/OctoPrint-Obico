@@ -30,7 +30,7 @@ from octoprint.util import to_unicode
 from .janus import JANUS_SERVER
 from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close
 from .lib import alert_queue
-from .webcam_capture import capture_jpeg, webcam_full_url, capture_jpeg_from_mjpeg_source
+from .webcam_capture import capture_jpeg, webcam_full_url
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
@@ -254,10 +254,9 @@ class WebcamStreamer:
 
     def ffmpeg_from_mjpeg(self):
 
-        @backoff.on_exception(backoff.expo, Exception, max_tries=10)
-        @backoff.on_predicate(backoff.expo, max_tries=3)
-        def wait_for_mjpeg_source():
-            return capture_jpeg_from_mjpeg_source(self.plugin)
+        @backoff.on_exception(backoff.expo, Exception, max_tries=20)
+        def get_webcam_resolution():
+            return get_image_info(capture_jpeg(webcam_config, force_stream_url=True))
 
         def h264_encoder():
             test_video = os.path.join(FFMPEG_DIR, 'test-video.mp4')
@@ -275,9 +274,17 @@ class WebcamStreamer:
 
         encoder = h264_encoder()
 
-        jpg = wait_for_mjpeg_source()
-        (_, img_w, img_h) = get_image_info(jpg)
         stream_url = webcam_full_url(self.plugin._settings.global_get(["webcam"]).get("stream", "/webcam/?action=stream"))
+        if not stream_url:
+            raise Exception('stream_url not configured. Unable to stream the webcam.')
+
+        (img_w, img_h) = (640, 480)
+        try:
+            (_, img_w, img_h) = get_webcam_resolution(webcam_config)
+            _logger.debug(f'Detected webcam resolution - w:{img_w} / h:{img_h}')
+        except Exception as e:
+            _logger.warn(f'Failed to detect webcam resolution. Using default.')
+
         bitrate = bitrate_for_dim(img_w, img_h)
         fps = 25
         if not self.plugin.is_pro_user():
