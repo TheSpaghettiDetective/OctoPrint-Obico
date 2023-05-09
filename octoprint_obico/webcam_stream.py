@@ -17,6 +17,7 @@ try:
 except NameError:
     ModuleNotFoundError = ImportError
 from threading import Thread, RLock
+from urllib.error import URLError, HTTPError
 import requests
 import backoff
 import json
