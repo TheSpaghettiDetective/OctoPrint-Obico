@@ -7,14 +7,18 @@ _logger = logging.getLogger('octoprint.plugins.obico')
 
 class GCodeHooks:
 
-    def __init__(self, plugin):
+    def __init__(self, plugin, _print_job_tracker):
         self.plugin = plugin
+        self._print_job_tracker = _print_job_tracker
 
     def queuing_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         self.plugin.pause_resume_sequence.track_gcode(comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs)
 
         if gcode and gcode in ('M600', 'M701' or 'M702'):
             self.plugin.post_filament_change_event()
+
+        elif gcode and 'M117 DASHBOARD_LAYER_INDICATOR' in cmd:
+            self._print_job_tracker.increment_layer_height(int(cmd.replace("M117 DASHBOARD_LAYER_INDICATOR ", "")))
 
     def received_gcode(self, comm, line, *args, **kwargs):
 

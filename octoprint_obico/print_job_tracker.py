@@ -16,12 +16,17 @@ class PrintJobTracker:
         self.current_print_ts = -1    # timestamp when current print started, acting as a unique identifier for a print
         self.obico_g_code_file_id = None
         self._file_metadata_cache = None
+        self.current_layer_height = -1
+        self.total_layers = -1
 
     def on_event(self, plugin, event, payload):
         if event == 'PrintStarted':
             with self._mutex:
+                plugin.load_from_meta(payload)
                 self.current_print_ts = int(time.time())
                 self._file_metadata_cache = None
+                self.current_layer_height = 1
+                self.total_layers = plugin.total_layers # grab total from main
 
             md5_hash = plugin._file_manager.get_metadata(path=payload['path'], destination=payload['origin'])['hash']
             g_code_data = dict(
@@ -57,6 +62,7 @@ class PrintJobTracker:
         with self._mutex:
             data['current_print_ts'] = self.current_print_ts
             current_file = data.get('status', {}).get('job', {}).get('file')
+            data['status']['total_layers'] = self.total_layers
             if self.get_obico_g_code_file_id() and current_file:
                 current_file['obico_g_code_file_id'] = self.get_obico_g_code_file_id()
 
@@ -68,6 +74,7 @@ class PrintJobTracker:
 
         data['status']['temperatures'] = temperatures
         data['status']['_ts'] = int(time.time())
+        data['status']['current_layer_height'] = self.current_layer_height
 
         if status_only:
             if self._file_metadata_cache:
@@ -81,6 +88,10 @@ class PrintJobTracker:
             data['settings'] = octo_settings
 
         return data
+    
+    def increment_layer_height(self, val):
+        with self._mutex:
+            self.current_layer_height = val
 
     def set_obico_g_code_file_id(self, obico_g_code_file_id):
         with self._mutex:
