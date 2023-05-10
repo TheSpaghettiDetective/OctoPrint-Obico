@@ -76,6 +76,7 @@ class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
 
             if re.match(layer_indicator_pattern['regx'], line):
                 self.layer_count += 1
+                print(self.layer_count, '- count in preprocess')
                 line = line + "M117 DASHBOARD_LAYER_INDICATOR " + str(self.layer_count) + "\r\n"
 
                 break
@@ -146,14 +147,17 @@ class ObicoPlugin(
         metaData = self._file_manager.get_metadata(payload.get("origin"), payload.get("path")) # Get OP metadata from file
 
         try:
-            self.total_layers = metaData['obico']['layer_count']
+            self.total_layers = metaData['obico']['obico_layer_count']
+            print('found layers in metadata')
 
-        except KeyError: pass
+        except KeyError:
+            pass
 
         if self.total_layers > 0:
             self.is_preprocessed = True
         else:
             if payload['origin'] == 'local':
+                print('not preprocessed - doing now')
                 _logger.warning("Gcode not pre-processed by Dashboard. Processing now.")
 
                 path = self._file_manager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, payload['path'])
@@ -170,7 +174,7 @@ class ObicoPlugin(
         return
     
     def unload_preprocesser(self, processor, payload):
-        additionalMetaData = {"layer_count": processor.layer_count}
+        additionalMetaData = {"obico_layer_count": processor.layer_count}
         self._file_manager.set_additional_metadata(payload.get("origin"), payload.get("path"), self._plugin_info.key, additionalMetaData, overwrite=True)
 
     # ~~ SettingsPlugin mixin
@@ -245,11 +249,13 @@ class ObicoPlugin(
         self.boost_status_update()
 
         try:
+            if event == 'PrintStarted':
+                self.load_from_meta(payload)
             if event == 'MetadataAnalysisFinished':
                 if payload['path'] in self.gcode_preprocessors:
                     gcpp = self.gcode_preprocessors.pop(payload['path'])
                     self.unload_preprocesser(gcpp, payload)
-            if event == 'FirmwareData':
+            elif event == 'FirmwareData':
                 self.octoprint_settings_updater.update_firmware(payload)
                 self.post_update_to_server()
             elif event == 'SettingsUpdated':
@@ -630,6 +636,7 @@ class ObicoPlugin(
         fileName = file_object.filename
         if not octoprint.filemanager.valid_file_type(fileName, type="gcode"):
             return file_object
+        print(file_object, 'findme')
         fileStream = file_object.stream()
         _logger.warning("GcodePreProcessor started processing.")
         self.gcode_preprocessors[path] = GcodePreProcessor(fileStream, self.layer_indicator_patterns )

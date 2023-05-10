@@ -22,7 +22,6 @@ class PrintJobTracker:
     def on_event(self, plugin, event, payload):
         if event == 'PrintStarted':
             with self._mutex:
-                plugin.load_from_meta(payload)
                 self.current_print_ts = int(time.time())
                 self._file_metadata_cache = None
                 self.current_layer_height = 1
