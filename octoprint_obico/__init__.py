@@ -38,6 +38,7 @@ from .client_conn import ClientConn
 import zlib
 from .printer_discovery import PrinterDiscovery
 from .gcode_hooks import GCodeHooks
+from .preprocessor import GcodePreProcessor
 
 import octoprint.filemanager
 import re
@@ -54,36 +55,6 @@ DEFAULT_LINKED_PRINTER = {'is_pro': False}
 
 _print_job_tracker = PrintJobTracker()
 
-
-class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
-
-    def __init__(self, fileBufferedReader, layer_indicator_patterns ):
-        super(GcodePreProcessor, self).__init__(fileBufferedReader)
-        self.layer_indicator_patterns = layer_indicator_patterns
-        self.python_version = __python_version__
-        self.layer_count = 0
-
-    def process_line(self, line):
-        if not len(line):
-            return None
-
-        if self.python_version == 3:
-            line = line.decode('utf-8').lstrip()
-        else:
-            line = line.lstrip()
-
-        for layer_indicator_pattern in self.layer_indicator_patterns:
-
-            if re.match(layer_indicator_pattern['regx'], line):
-                self.layer_count += 1
-                print(self.layer_count, '- count in preprocess')
-                line = line + "M117 DASHBOARD_LAYER_INDICATOR " + str(self.layer_count) + "\r\n"
-
-                break
-
-        line = line.encode('utf-8')
-
-        return line
 
 
 class ObicoPlugin(
@@ -148,7 +119,6 @@ class ObicoPlugin(
 
         try:
             self.total_layers = metaData['obico']['obico_layer_count']
-            print('found layers in metadata')
 
         except KeyError:
             pass
@@ -157,15 +127,12 @@ class ObicoPlugin(
             self.is_preprocessed = True
         else:
             if payload['origin'] == 'local':
-                print('not preprocessed - doing now')
-                _logger.warning("Gcode not pre-processed by Dashboard. Processing now.")
 
                 path = self._file_manager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, payload['path'])
                 file_object = octoprint.filemanager.util.DiskFileWrapper(payload['name'], path)
                 stream = self.createFilePreProcessor(path, file_object)
                 stream.save(path)
                 self.unload_preprocesser(self.gcode_preprocessors[path], payload)
-                _logger.warning("Gcode pre-processing done.")
                 self.load_from_meta(payload)
                 return
             else:
@@ -632,13 +599,11 @@ class ObicoPlugin(
         return self.linked_printer.get('is_pro')
 
     def createFilePreProcessor(self, path, file_object, blinks=None, printer_profile=None, allow_overwrite=True, *args, **kwargs):
-        #create instance of preprocessor if wanted - db pg
+        #create instance of preprocessor
         fileName = file_object.filename
         if not octoprint.filemanager.valid_file_type(fileName, type="gcode"):
             return file_object
-        print(file_object, 'findme')
         fileStream = file_object.stream()
-        _logger.warning("GcodePreProcessor started processing.")
         self.gcode_preprocessors[path] = GcodePreProcessor(fileStream, self.layer_indicator_patterns )
         return octoprint.filemanager.util.StreamWrapper(fileName, self.gcode_preprocessors[path])
     

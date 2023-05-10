@@ -18,7 +18,6 @@ class GCodeHooks:
             self.plugin.post_filament_change_event()
 
         if gcode and 'M117 DASHBOARD_LAYER_INDICATOR' in cmd:
-            print('new layer')
             self._print_job_tracker.increment_layer_height(int(cmd.replace("M117 DASHBOARD_LAYER_INDICATOR ", "")))
 
     def received_gcode(self, comm, line, *args, **kwargs):
