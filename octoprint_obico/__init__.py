@@ -110,10 +110,10 @@ class ObicoPlugin(
 
     def register_custom_events(*args, **kwargs):
       return ["command"]
-    
+
     def load_from_meta(self, payload):
         self.total_layers = 0
-        self.is_preprocessed = False
+        is_preprocessed = False
 
         metaData = self._file_manager.get_metadata(payload.get("origin"), payload.get("path")) # Get OP metadata from file
 
@@ -124,7 +124,7 @@ class ObicoPlugin(
             pass
 
         if self.total_layers > 0:
-            self.is_preprocessed = True
+            is_preprocessed = True
         else:
             if payload['origin'] == 'local':
 
