@@ -113,7 +113,6 @@ class ObicoPlugin(
 
     def load_from_meta(self, payload):
         self.total_layers = 0
-        is_preprocessed = False
 
         metaData = self._file_manager.get_metadata(payload.get("origin"), payload.get("path")) # Get OP metadata from file
 
@@ -123,9 +122,7 @@ class ObicoPlugin(
         except KeyError:
             pass
 
-        if self.total_layers > 0:
-            is_preprocessed = True
-        else:
+        if self.total_layers <= 0:
             if payload['origin'] == 'local':
 
                 path = self._file_manager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, payload['path'])
