@@ -39,9 +39,6 @@ import zlib
 from .printer_discovery import PrinterDiscovery
 from .gcode_hooks import GCodeHooks
 
-import octoprint.filemanager
-import re
-
 import octoprint.plugin
 
 __python_version__ = 3 if sys.version_info >= (3, 0) else 2
@@ -89,8 +86,6 @@ class ObicoPlugin(
         self.discovery = None
         self.bailed_because_tsd_plugin_running = False
         self.printer_events_posted = dict()
-
-        self.total_layers = 0
 
 
     # ~~ Custom event registration
