@@ -65,16 +65,16 @@ server:
     tracking: null
 temperature:
   profiles:
-  - bed: 100
-    chamber: null
-    extruder: 210
-    name: ABS
-  - bed: 60
-    chamber: null
-    extruder: 180
-    name: PLA
+    - bed: 100
+      chamber: null
+      extruder: 210
+      name: ABS
+    - bed: 60
+      chamber: null
+      extruder: 180
+      name: PLA
 webcam:
   ffmpeg: /usr/bin/avconv
   snapshot: http://mjpeg:8080/?action=snapshot
   stream: http://localhost:8080/?action=stream
-  streamRatio: '4:3'
+  streamRatio: "4:3"

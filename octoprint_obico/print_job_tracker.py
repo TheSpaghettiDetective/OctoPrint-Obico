@@ -16,6 +16,7 @@ class PrintJobTracker:
         self.current_print_ts = -1    # timestamp when current print started, acting as a unique identifier for a print
         self.obico_g_code_file_id = None
         self._file_metadata_cache = None
+        self.current_layer_height = None
 
     def on_event(self, plugin, event, payload):
 
@@ -53,6 +54,7 @@ class PrintJobTracker:
                 self.current_print_ts = -1
                 self.set_obico_g_code_file_id(None)
                 self._file_metadata_cache = None
+                self.current_layer_height = None
 
         return data
 
@@ -75,6 +77,7 @@ class PrintJobTracker:
 
         data['status']['temperatures'] = temperatures
         data['status']['_ts'] = int(time.time())
+        data['status']['currentLayerHeight'] = self.current_layer_height # use camel-case to be consistent with the existing convention
 
         if status_only:
             if self._file_metadata_cache:
@@ -88,6 +91,10 @@ class PrintJobTracker:
             data['settings'] = octo_settings
 
         return data
+
+    def increment_layer_height(self, val):
+        with self._mutex:
+            self.current_layer_height = val
 
     def set_obico_g_code_file_id(self, obico_g_code_file_id):
         with self._mutex:
@@ -105,8 +112,7 @@ class PrintJobTracker:
             if not origin or not path:
                 return None
 
-            file_metadata = plugin._file_manager._storage_managers.get(origin).get_metadata(path)
-            return {'analysis': {'printingArea': file_metadata.get('analysis', {}).get('printingArea')}} if file_metadata else None
+            return plugin._file_manager._storage_managers.get(origin).get_metadata(path) or {}
         except Exception as e:
             _logger.exception(e)
             return None

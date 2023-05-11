@@ -151,7 +151,7 @@ class WebcamStreamer:
             try:
                 jpg = capture_jpeg(self.plugin)
             except Exception as e:
-                _logger.warn('Failed to capture jpeg - ' + str(e))
+                _logger.warning('Failed to capture jpeg - ' + str(e))
 
             if not jpg:
                 continue

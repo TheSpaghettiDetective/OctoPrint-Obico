@@ -52,6 +52,7 @@ DEFAULT_LINKED_PRINTER = {'is_pro': False}
 _print_job_tracker = PrintJobTracker()
 
 
+
 class ObicoPlugin(
         octoprint.plugin.SettingsPlugin,
         octoprint.plugin.StartupPlugin,
@@ -73,7 +74,7 @@ class ObicoPlugin(
         self.status_update_lock = threading.RLock()
         self.remote_status = RemoteStatus()
         self.pause_resume_sequence = PauseResumeGCodeSequence()
-        self.gcode_hooks = GCodeHooks(self)
+        self.gcode_hooks = GCodeHooks(self, _print_job_tracker)
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_job_tracker)
@@ -478,7 +479,7 @@ class ObicoPlugin(
             try:
                 files = {'snapshot': capture_jpeg(self)}
             except Exception as e:
-                _logger.warn('Failed to capture jpeg - ' + str(e))
+                _logger.warning('Failed to capture jpeg - ' + str(e))
                 pass
         resp = server_request('POST', '/api/v1/octo/printer_events/', self, timeout=60, files=files, data=event_data, headers=self.auth_headers())
 
@@ -559,6 +560,7 @@ def __plugin_load__():
     __plugin_hooks__ = {
         "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.gcode_hooks.queuing_gcode,
         "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_hooks.received_gcode,
+        "octoprint.filemanager.preprocessor": __plugin_implementation__.gcode_hooks.file_preprocessor,
         "octoprint.comm.protocol.scripts": (__plugin_implementation__.pause_resume_sequence.script_hook, 100000),
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
         "octoprint.events.register_custom_events": __plugin_implementation__.register_custom_events,

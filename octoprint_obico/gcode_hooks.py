@@ -1,20 +1,72 @@
-import threading
 import logging
 import re
+import sys
+import octoprint
+
 
 _logger = logging.getLogger('octoprint.plugins.obico')
+__python_version__ = 3 if sys.version_info >= (3, 0) else 2
 
+
+# Credit: Thank you j7126 for your awesome octoprint plugin: https://github.com/j7126/OctoPrint-Dashboard
+class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
+
+    LAYER_INDICATOR_PATTERNS = [
+            dict(slicer='CURA',
+                regx=r'^;LAYER:([0-9]+)'),
+            dict(slicer='Simplify3D',
+                regx=r'^; layer ([0-9]+)'),
+            dict(slicer='Slic3r/PrusaSlicer',
+                regx=r'^;BEFORE_LAYER_CHANGE'),
+            dict(slicer='Almost Everyone',
+                regx=r"^;(( BEGIN_|BEFORE_)+LAYER_(CHANGE|OBJECT)|LAYER:[0-9]+| [<]{0,1}layer [0-9]+[>,]{0,1}).*$")
+        ]
+
+
+    def __init__(self, file_buffered_reader, plugin, file_path):
+        super(GcodePreProcessor, self).__init__(file_buffered_reader)
+        self.plugin = plugin
+        self.file_path = file_path
+        self.layer_count = -1
+
+    def process_line(self, line):
+        if not len(line):
+            return None
+
+        if __python_version__ == 3:
+            line = line.decode('utf-8').lstrip()
+        else:
+            line = line.lstrip()
+
+        for layer_indicator_pattern in self.LAYER_INDICATOR_PATTERNS:
+
+            if re.match(layer_indicator_pattern['regx'], line):
+                self.layer_count += 1
+                line = line + "M117 DASHBOARD_LAYER_INDICATOR " + str(self.layer_count) + "\r\n"
+
+                break
+
+        line = line.encode('utf-8')
+
+        return line
+
+    def close(self):
+        self.plugin._file_manager.set_additional_metadata('local', self.file_path, 'obico', {"totalLayerCount": self.layer_count}, overwrite=True)
 
 class GCodeHooks:
 
-    def __init__(self, plugin):
+    def __init__(self, plugin, _print_job_tracker):
         self.plugin = plugin
+        self._print_job_tracker = _print_job_tracker
 
     def queuing_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         self.plugin.pause_resume_sequence.track_gcode(comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs)
 
         if gcode and gcode in ('M600', 'M701' or 'M702'):
             self.plugin.post_filament_change_event()
+
+        if gcode and 'M117 DASHBOARD_LAYER_INDICATOR' in cmd:
+            self._print_job_tracker.increment_layer_height(int(cmd.replace("M117 DASHBOARD_LAYER_INDICATOR ", "")))
 
     def received_gcode(self, comm, line, *args, **kwargs):
 
@@ -26,3 +78,9 @@ class GCodeHooks:
             self.plugin.post_filament_change_event()
 
         return line
+
+    def file_preprocessor(self, path, file_object, blinks=None, printer_profile=None, allow_overwrite=True, *args, **kwargs):
+        filename = file_object.filename
+        if not octoprint.filemanager.valid_file_type(filename, type="gcode"):
+            return file_object
+        return octoprint.filemanager.util.StreamWrapper(filename, GcodePreProcessor(file_object.stream(), self.plugin, path))
