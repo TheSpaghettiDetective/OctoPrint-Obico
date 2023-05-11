@@ -30,7 +30,6 @@ class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
         self.layer_count = -1
 
     def process_line(self, line):
-        print(line)
         if not len(line):
             return None
 
