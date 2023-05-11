@@ -38,7 +38,6 @@ from .client_conn import ClientConn
 import zlib
 from .printer_discovery import PrinterDiscovery
 from .gcode_hooks import GCodeHooks
-from .preprocessor import GcodePreProcessor
 
 import octoprint.filemanager
 import re
@@ -91,55 +90,13 @@ class ObicoPlugin(
         self.bailed_because_tsd_plugin_running = False
         self.printer_events_posted = dict()
 
-        self.gcode_preprocessors = {}
         self.total_layers = 0
-
-        self.layer_indicator_patterns = [
-            dict(slicer='CURA',
-                regx=r'^;LAYER:([0-9]+)'),
-            dict(slicer='Simplify3D',
-                regx=r'^; layer ([0-9]+)'),
-            dict(slicer='Slic3r/PrusaSlicer',
-                regx=r'^;BEFORE_LAYER_CHANGE'),
-            dict(slicer='Almost Everyone',
-                regx=r"^;(( BEGIN_|BEFORE_)+LAYER_(CHANGE|OBJECT)|LAYER:[0-9]+| [<]{0,1}layer [0-9]+[>,]{0,1}).*$")
-        ]
 
 
     # ~~ Custom event registration
 
     def register_custom_events(*args, **kwargs):
       return ["command"]
-
-    def load_from_meta(self, payload):
-        self.total_layers = 0
-
-        metaData = self._file_manager.get_metadata(payload.get("origin"), payload.get("path")) # Get OP metadata from file
-
-        try:
-            self.total_layers = metaData['obico']['obico_layer_count']
-
-        except KeyError:
-            pass
-
-        if self.total_layers <= 0:
-            if payload['origin'] == 'local':
-
-                path = self._file_manager.path_on_disk(octoprint.filemanager.FileDestinations.LOCAL, payload['path'])
-                file_object = octoprint.filemanager.util.DiskFileWrapper(payload['name'], path)
-                stream = self.createFilePreProcessor(path, file_object)
-                stream.save(path)
-                self.unload_preprocesser(self.gcode_preprocessors[path], payload)
-                self.load_from_meta(payload)
-                return
-            else:
-                self._logger.warn("Gcode not pre-processed by Dashboard. Upload again to get layer metrics")
-
-        return
-    
-    def unload_preprocesser(self, processor, payload):
-        additionalMetaData = {"obico_layer_count": processor.layer_count}
-        self._file_manager.set_additional_metadata(payload.get("origin"), payload.get("path"), self._plugin_info.key, additionalMetaData, overwrite=True)
 
     # ~~ SettingsPlugin mixin
 
@@ -213,13 +170,7 @@ class ObicoPlugin(
         self.boost_status_update()
 
         try:
-            if event == 'PrintStarted':
-                self.load_from_meta(payload)
-            if event == 'MetadataAnalysisFinished':
-                if payload['path'] in self.gcode_preprocessors:
-                    gcpp = self.gcode_preprocessors.pop(payload['path'])
-                    self.unload_preprocesser(gcpp, payload)
-            elif event == 'FirmwareData':
+            if event == 'FirmwareData':
                 self.octoprint_settings_updater.update_firmware(payload)
                 self.post_update_to_server()
             elif event == 'SettingsUpdated':
@@ -595,15 +546,6 @@ class ObicoPlugin(
     def is_pro_user(self):
         return self.linked_printer.get('is_pro')
 
-    def createFilePreProcessor(self, path, file_object, blinks=None, printer_profile=None, allow_overwrite=True, *args, **kwargs):
-        #create instance of preprocessor
-        fileName = file_object.filename
-        if not octoprint.filemanager.valid_file_type(fileName, type="gcode"):
-            return file_object
-        fileStream = file_object.stream()
-        self.gcode_preprocessors[path] = GcodePreProcessor(fileStream, self.layer_indicator_patterns )
-        return octoprint.filemanager.util.StreamWrapper(fileName, self.gcode_preprocessors[path])
-    
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
@@ -623,8 +565,8 @@ def __plugin_load__():
     __plugin_hooks__ = {
         "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.gcode_hooks.queuing_gcode,
         "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_hooks.received_gcode,
+        "octoprint.filemanager.preprocessor": __plugin_implementation__.gcode_hooks.file_preprocessor,
         "octoprint.comm.protocol.scripts": (__plugin_implementation__.pause_resume_sequence.script_hook, 100000),
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
         "octoprint.events.register_custom_events": __plugin_implementation__.register_custom_events,
-         "octoprint.filemanager.preprocessor": __plugin_implementation__.createFilePreProcessor
     }
