@@ -16,14 +16,13 @@ class PrintJobTracker:
         self.current_print_ts = -1    # timestamp when current print started, acting as a unique identifier for a print
         self.obico_g_code_file_id = None
         self._file_metadata_cache = None
-        self.current_layer_height = -1
+        self.current_layer_height = None
 
     def on_event(self, plugin, event, payload):
         if event == 'PrintStarted':
             with self._mutex:
                 self.current_print_ts = int(time.time())
                 self._file_metadata_cache = None
-                self.current_layer_height = 1
 
             md5_hash = plugin._file_manager.get_metadata(path=payload['path'], destination=payload['origin'])['hash']
             g_code_data = dict(
@@ -48,6 +47,7 @@ class PrintJobTracker:
                 self.current_print_ts = -1
                 self.set_obico_g_code_file_id(None)
                 self._file_metadata_cache = None
+                self.current_layer_height = None
 
         return data
 
@@ -70,7 +70,7 @@ class PrintJobTracker:
 
         data['status']['temperatures'] = temperatures
         data['status']['_ts'] = int(time.time())
-        data['status']['current_layer_height'] = self.current_layer_height
+        data['status']['currentLayerHeight'] = self.current_layer_height # use camel-case to be consistent with the existing convention
 
         if status_only:
             if self._file_metadata_cache:
