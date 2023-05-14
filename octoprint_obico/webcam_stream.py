@@ -253,6 +253,7 @@ class WebcamStreamer:
             self.restore()
             self.sentry.captureException()
 
+    @backoff.on_exception(backoff.expo, Exception, max_tries=3)
     def ffmpeg_from_mjpeg(self):
 
         @backoff.on_exception(backoff.expo, Exception, max_tries=20)
