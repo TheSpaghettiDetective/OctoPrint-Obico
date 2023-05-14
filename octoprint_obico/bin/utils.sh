@@ -13,5 +13,11 @@ debian_release() {
 }
 
 debian_variant() {
-  echo $( debian_release ).$( uname -m )
+  variant=$(getconf LONG_BIT 2>/dev/null)
+  if [ -z "${variant}" ]; then
+    variant=$(uname -m)
+  else
+    variant="${variant}bit"
+  fi
+  echo $( debian_release ).${variant}
 }
