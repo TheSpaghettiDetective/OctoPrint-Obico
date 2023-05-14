@@ -527,7 +527,10 @@ class UsbCamWebServer:
 
         @webcam_server_app.route('/shutdown', methods=['POST'])
         def shutdown():
-            flask.request.environ.get('werkzeug.server.shutdown')()
+            try:
+                flask.request.environ.get('werkzeug.server.shutdown')()
+            except:
+                pass
             return 'Ok'
 
         webcam_server_app.run(port=8080, threaded=True)
