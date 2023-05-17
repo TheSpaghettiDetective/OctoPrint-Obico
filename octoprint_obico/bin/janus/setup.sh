@@ -31,7 +31,7 @@ janus_jcfg_turns_cred_section() {
     >&2 echo "AUTH_TOKEN not specified"
     exit 1
   fi
-  
+
   cat <<EOT
         turn_user = "${AUTH_TOKEN}"
         turn_pwd = "${AUTH_TOKEN}"
@@ -84,15 +84,9 @@ gen_janus_plugin_streaming_jcfg() {
     exit 1
   fi
 
-  DEFAULT_CHANNEL_ID=1
-  # We are still running Janus 0.x on Raspberry Pi and using channel_id=0 to be compatible with old mobile app versions. To be consolidated to using id 1 when old veresions have faded out.
-  if is_raspberry_pi; then
-    DEFAULT_CHANNEL_ID=0
-  fi
-
   streaming_jcfg_path="${RUNTIME_JANUS_ETC_DIR}/janus.plugin.streaming.jcfg"
   tpl_streaming_jcfg_path="${TPL_JANUS_ETC_DIR}/janus.plugin.streaming.jcfg.template"
-  sed "s/__VIDEO_ENABLED__/${VIDEO_ENABLED}/g" "${tpl_streaming_jcfg_path}" | sed "s/__DEFAULT_CHANNEL_ID__/${DEFAULT_CHANNEL_ID}/g" > "${streaming_jcfg_path}"
+  sed "s/__VIDEO_ENABLED__/${VIDEO_ENABLED}/g" "${tpl_streaming_jcfg_path}" > "${streaming_jcfg_path}"
 }
 
 gen_janus_transport_websocket_jcfg() {
@@ -103,8 +97,8 @@ gen_janus_transport_websocket_jcfg() {
 
 while getopts "A:V:" arg; do
   case $arg in
-    A) AUTH_TOKEN=${OPTARG};; 
-    V) VIDEO_ENABLED=${OPTARG};; 
+    A) AUTH_TOKEN=${OPTARG};;
+    V) VIDEO_ENABLED=${OPTARG};;
   esac
 done
 
