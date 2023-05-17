@@ -9,6 +9,8 @@ from .utils import server_request
 _logger = logging.getLogger('octoprint.plugins.obico')
 
 
+MAX_GCODE_DOWNLOAD_SECONDS = 10 * 60
+
 class PrintJobTracker:
 
     def __init__(self):
@@ -17,6 +19,7 @@ class PrintJobTracker:
         self.obico_g_code_file_id = None
         self._file_metadata_cache = None
         self.current_layer_height = None
+        self.gcode_downloading_started = None
 
     def on_event(self, plugin, event, payload):
 
@@ -69,6 +72,14 @@ class PrintJobTracker:
             if self.get_obico_g_code_file_id() and current_file:
                 current_file['obico_g_code_file_id'] = self.get_obico_g_code_file_id()
 
+            if self.gcode_downloading_started is not None:
+                if data.get('status', {}).get('state', {}).get('text') != 'Operational': # It is in an unexpected state. Something has gone wrong
+                    self.gcode_downloading_started = None
+                elif time.time() - self.gcode_downloading_started > MAX_GCODE_DOWNLOAD_SECONDS: # For the edge case that the download thread died without an exception
+                    self.gcode_downloading_started = None
+                else:
+                    data['status']['state']['text'] = 'Downloading G-Code'
+
         # Apparently printers like Prusa throws random temperatures here. This should be consistent with OctoPrint, which only keeps r"^(tool\d+|bed|chamber)$"
         temperatures = {}
         for (k,v) in plugin._printer.get_current_temperatures().items():
@@ -103,6 +114,10 @@ class PrintJobTracker:
     def get_obico_g_code_file_id(self):
         with self._mutex:
             return self.obico_g_code_file_id
+
+    def set_gcode_downloading_started(self, timestamp):
+        with self._mutex:
+            self.gcode_downloading_started = timestamp
 
     def get_file_metadata(self, plugin, data):
         try:

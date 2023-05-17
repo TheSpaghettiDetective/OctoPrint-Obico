@@ -46,6 +46,7 @@ class FileDownloader:
 
             # _print_job_tracker.obico_g_code_file_id is used as a latch to prevent double-clicking
             self._print_job_tracker.set_obico_g_code_file_id(g_code_file['id'])
+            self._print_job_tracker.set_gcode_downloading_started(time.time())
 
             print_thread = threading.Thread(target=self.__download_and_print__, args=(g_code_file,))
             print_thread.daemon = True
@@ -55,6 +56,7 @@ class FileDownloader:
 
         except Exception as e:
             self.plugin.sentry.captureException()
+            self._print_job_tracker.set_gcode_downloading_started(None)
             return {'error': str(e)}
 
     def __download_and_print__(self, g_code_file):
@@ -81,6 +83,9 @@ class FileDownloader:
 
         except Exception:
             self.plugin.sentry.captureException()
+
+        finally:
+            self._print_job_tracker.set_gcode_downloading_started(None)
 
     def __ensure_storage__(self):
         self.plugin._file_manager.add_folder(
