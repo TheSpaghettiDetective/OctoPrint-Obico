@@ -51,6 +51,11 @@ class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
         return line
 
     def close(self):
+        if self.layer_count == -1: 
+            self.layer_count = None #set None if no layers found - Klipper returns None as well so less checks needed on frontend
+        else:
+            self.layer_count += 1 #add last layer to count - match dashboard
+
         self.plugin._file_manager.set_additional_metadata('local', self.file_path, 'obico', {"totalLayerCount": self.layer_count}, overwrite=True)
 
 class GCodeHooks:
