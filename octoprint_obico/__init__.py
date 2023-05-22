@@ -31,7 +31,7 @@ from .janus import JanusConn
 from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster, capture_jpeg
-from .file_download import FileDownloader
+from .file_downloader import FileDownloader
 from .tunnel import LocalTunnel
 from . import plugin_apis
 from .client_conn import ClientConn

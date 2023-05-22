@@ -42,7 +42,7 @@ class FileDownloader:
                 'Received download command for {} '.format(g_code_file))
 
             if self.plugin._printer.get_current_data().get('state', {}).get('text') != 'Operational':
-                return {'error': 'Currently downloading or printing!'}
+                return {'error': 'Printer busy!'}
 
             self._print_job_tracker.set_gcode_downloading_started(time.time())
 
