@@ -41,11 +41,9 @@ class FileDownloader:
             _logger.warning(
                 'Received download command for {} '.format(g_code_file))
 
-            if self._print_job_tracker.get_obico_g_code_file_id() or self.plugin._printer.get_current_data().get('state', {}).get('text') != 'Operational':
+            if self.plugin._printer.get_current_data().get('state', {}).get('text') != 'Operational':
                 return {'error': 'Currently downloading or printing!'}
 
-            # _print_job_tracker.obico_g_code_file_id is used as a latch to prevent double-clicking
-            self._print_job_tracker.set_obico_g_code_file_id(g_code_file['id'])
             self._print_job_tracker.set_gcode_downloading_started(time.time())
 
             print_thread = threading.Thread(target=self.__download_and_print__, args=(g_code_file,))
