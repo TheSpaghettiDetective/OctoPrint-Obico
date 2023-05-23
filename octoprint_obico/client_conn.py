@@ -27,7 +27,7 @@ class ClientConn:
         target = getattr(self.plugin, msg.get('target'))
         func = getattr(target, msg['func'], None)
         if not func:
-            self.plugin.sentry.captureMessage('Function "{} in target "{}" not found'.format(msg['target'], msg['func']))
+            self.plugin.sentry.captureMessage('Function "{} in target "{}" not found'.format(msg['func'], msg['target']))
             return
 
         ack_ref = msg.get('ref')
