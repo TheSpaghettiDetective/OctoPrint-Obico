@@ -72,6 +72,7 @@ class GCodeHooks:
 
         if gcode and 'M117 DASHBOARD_LAYER_INDICATOR' in cmd:
             self._print_job_tracker.increment_layer_height(int(cmd.replace("M117 DASHBOARD_LAYER_INDICATOR ", "")))
+            return [] # remove layer indicator
 
     def received_gcode(self, comm, line, *args, **kwargs):
 
