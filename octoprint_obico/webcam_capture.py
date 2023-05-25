@@ -83,6 +83,8 @@ def capture_jpeg(plugin, force_stream_url=False):
             while True:
                 data = res.readline()
                 data_bytes += len(data)
+                if data == b'':
+                    raise Exception('End of stream before a valid jpeg is found')
                 if data_bytes > MAX_JPEG_SIZE:
                     raise Exception('Payload returned from the snapshot_url is too large. Did you configure stream_url as snapshot_url?')
 
