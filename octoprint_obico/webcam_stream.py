@@ -29,7 +29,7 @@ import psutil
 from octoprint.util import to_unicode
 
 from .janus import JANUS_SERVER
-from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close
+from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close, octoprint_webcam_settings
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 
@@ -117,7 +117,7 @@ class WebcamStreamer:
                 self.pi_camera = picamera.PiCamera()
                 self.pi_camera.framerate = 20
                 (res_43, res_169) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
-                self.pi_camera.resolution = res_169 if self.plugin._settings.effective.get('webcam', {}).get('streamRatio', '4:3') == '16:9' else res_43
+                self.pi_camera.resolution = res_169 if octoprint_webcam_settings(self.plugin._settings).get('streamRatio', '16:9') == '16:9' else res_43
                 bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
                 _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, bitrate, self.pi_camera.resolution))
             except picamera.exc.PiCameraError:
@@ -280,7 +280,7 @@ class WebcamStreamer:
 
         encoder = h264_encoder()
 
-        stream_url = webcam_full_url(self.plugin._settings.global_get(["webcam"]).get("stream", "/webcam/?action=stream"))
+        stream_url = webcam_full_url(octoprint_webcam_settings(self.plugin._settings).get("stream", "/webcam/?action=stream"))
         if not stream_url:
             raise Exception('stream_url not configured. Unable to stream the webcam.')
 
