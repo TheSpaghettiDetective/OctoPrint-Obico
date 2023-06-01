@@ -73,14 +73,14 @@ class PrintJobTracker:
             if self.get_obico_g_code_file_id() and current_file:
                 current_file['obico_g_code_file_id'] = self.get_obico_g_code_file_id()
 
-            # Injecting a 'Downloading G-Code' state so that the client side can treat it as a transition state
+            # Injecting a 'G-Code Downloading' state so that the client side can treat it as a transition state
             if self.gcode_downloading_started is not None:
                 if data.get('status', {}).get('state', {}).get('text') != 'Operational': # It is in an unexpected state. Something has gone wrong
                     self.set_gcode_downloading_started(None)
                 elif time.time() - self.gcode_downloading_started > MAX_GCODE_DOWNLOAD_SECONDS: # For the edge case that the download thread died without an exception
                     self.set_gcode_downloading_started(None)
                 else:
-                    data['status']['state']['text'] = 'Downloading G-Code'
+                    data['status']['state']['text'] = 'G-Code Downloading'
                     data['status']['state']['flags']['operational'] = False
 
         # Apparently printers like Prusa throws random temperatures here. This should be consistent with OctoPrint, which only keeps r"^(tool\d+|bed|chamber)$"

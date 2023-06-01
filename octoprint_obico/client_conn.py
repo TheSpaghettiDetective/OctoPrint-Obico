@@ -58,8 +58,7 @@ class ClientConn:
             self.plugin.send_ws_msg_to_server({'passthru': resp})
             self.send_msg_to_client(resp)
 
-        time.sleep(0.2)  # chnages, such as setting temp will take a bit of time to be reflected in the status. wait for it
-        self.plugin.post_update_to_server()
+        self.plugin.boost_status_update()
 
     def send_msg_to_client(self, data):
         payload = json.dumps(data, default=str).encode('utf8')
