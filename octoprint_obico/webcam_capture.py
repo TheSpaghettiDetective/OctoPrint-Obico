@@ -27,7 +27,7 @@ import requests
 import backoff
 
 from .lib.error_stats import error_stats
-from .utils import server_request
+from .utils import server_request, octoprint_webcam_settings
 
 
 POST_PIC_INTERVAL_SECONDS = 10.0
@@ -52,7 +52,7 @@ def webcam_full_url(url):
 def capture_jpeg(plugin, force_stream_url=False):
     MAX_JPEG_SIZE = 5000000
 
-    webcam_settings = plugin._settings.global_get(["webcam"])
+    webcam_settings = octoprint_webcam_settings(plugin._settings)
     snapshot_url = webcam_full_url(webcam_settings.get("snapshot", ''))
     if snapshot_url and not force_stream_url:
         snapshot_validate_ssl = bool(webcam_settings.get("snapshotSslValidation", 'False'))
@@ -83,6 +83,8 @@ def capture_jpeg(plugin, force_stream_url=False):
             while True:
                 data = res.readline()
                 data_bytes += len(data)
+                if data == b'':
+                    raise Exception('End of stream before a valid jpeg is found')
                 if data_bytes > MAX_JPEG_SIZE:
                     raise Exception('Payload returned from the snapshot_url is too large. Did you configure stream_url as snapshot_url?')
 

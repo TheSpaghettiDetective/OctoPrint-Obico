@@ -23,7 +23,7 @@ from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
     OctoPrintSettingsUpdater,
-    server_request, migrate_tsd_settings)
+    server_request, migrate_tsd_settings, octoprint_webcam_settings)
 from .lib.error_stats import error_stats
 from .lib import alert_queue
 from .print_job_tracker import PrintJobTracker
