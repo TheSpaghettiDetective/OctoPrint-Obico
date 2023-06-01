@@ -32,7 +32,8 @@ class PrintJobTracker:
                 filename=payload['name'],
                 safe_filename=os.path.basename(payload['path']),
                 num_bytes=payload['size'],
-                agent_signature='md5:{}'.format(md5_hash)
+                agent_signature='md5:{}'.format(md5_hash),
+                url = payload['path']
                 )
             resp = server_request('POST', '/api/v1/octo/g_code_files/', plugin, timeout=60, data=g_code_data, headers=plugin.auth_headers())
 
