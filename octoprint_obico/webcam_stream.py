@@ -301,8 +301,8 @@ class WebcamStreamer:
         bitrate = bitrate_for_dim(img_w, img_h)
         fps = 25
         if not self.plugin.is_pro_user():
-            fps = 5
-            bitrate = int(bitrate/4)
+            fps = 8 # For some reason, when fps is set to 5, it looks like 2FPS. 8fps looks more like 5
+            bitrate = int(bitrate/2)
 
         self.start_ffmpeg('-re -i {} -filter:v fps={} -b:v {} -pix_fmt yuv420p -s {}x{} {}'.format(stream_url, fps, bitrate, img_w, img_h, encoder))
         self.compat_streaming = True
