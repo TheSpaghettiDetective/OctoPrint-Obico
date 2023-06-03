@@ -28,7 +28,6 @@ from .lib.error_stats import error_stats
 from .lib import alert_queue
 from .print_job_tracker import PrintJobTracker
 from .janus import JanusConn
-from .webcam_stream import WebcamStreamer
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster, capture_jpeg
 from .file_downloader import FileDownloader
@@ -78,7 +77,6 @@ class ObicoPlugin(
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_job_tracker)
-        self.webcam_streamer = None
         self.linked_printer = DEFAULT_LINKED_PRINTER
         self.local_tunnel = None
         self.janus = JanusConn(self)
@@ -191,8 +189,6 @@ class ObicoPlugin(
             self.ss.close()
         if self.janus:
             self.janus.shutdown()
-        if self.webcam_streamer:
-            self.webcam_streamer.restore()
         if self.client_conn:
             self.client_conn.close()
 
@@ -251,13 +247,6 @@ class ObicoPlugin(
         janus_thread = threading.Thread(target=self.janus.start)
         janus_thread.daemon = True
         janus_thread.start()
-
-        if not self._settings.get(["disable_video_streaming"]):
-            _logger.info('Starting webcam streamer')
-            self.webcam_streamer = WebcamStreamer(self)
-            stream_thread = threading.Thread(target=self.webcam_streamer.video_pipeline)
-            stream_thread.daemon = True
-            stream_thread.start()
 
         url = 'http://{}:{}'.format('127.0.0.1', self.octoprint_port)
         self.local_tunnel = LocalTunnel(

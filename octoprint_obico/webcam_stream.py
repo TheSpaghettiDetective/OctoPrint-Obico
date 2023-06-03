@@ -28,13 +28,13 @@ from textwrap import wrap
 import psutil
 from octoprint.util import to_unicode
 
-from .janus import JANUS_SERVER
 from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close, octoprint_webcam_settings
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
+JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 JANUS_MJPEG_DATA_PORT = 17740
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 FFMPEG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
@@ -174,7 +174,22 @@ class WebcamStreamer:
                 self.ffmpeg_from_mjpeg()
                 return
 
+            # camera-stream is introduced in OctoPi 1.0.
+            try:
+                self.compat_streaming = True # If we are streaming from camera-streamer, it should be considered as compatibility mode
+                camera_streamer_mp4_url = 'http://127.0.0.1:8080/video.mp4'
+                _logger.info('Trying to start ffmpeg using camera-stream H.264 source')
+                # There seems to be a bug in camera-streamer that causes to close .mp4 connection after a random period of time. In that case, we rerun ffmpeg
+                self.start_ffmpeg('-re -i {} -c:v copy'.format(camera_streamer_mp4_url), retry_after_quit=True)
+                return
+            except Exception:
+                _logger.info('No camera-stream H.264 source found. Continue to legacy streaming')
+                pass
+
+            # The streaming mechansim for pre-1.0 OctoPi versions
+
             compatible_mode = self.plugin._settings.get(["video_streaming_compatible_mode"])
+            self.compat_streaming = False
 
             if compatible_mode == 'auto':
                 try:
@@ -195,18 +210,6 @@ class WebcamStreamer:
                 self.ffmpeg_from_mjpeg()
                 return
 
-            # camera-stream is introduced in OctoPi 1.0.
-            try:
-                camera_streamer_mp4_url = 'http://127.0.0.1:8080/video.mp4'
-                _logger.info('Trying to start ffmpeg using camera-stream H.264 source')
-                # There seems to be a bug in camera-streamer that causes to close .mp4 connection after a random period of time. In that case, we rerun ffmpeg
-                self.start_ffmpeg('-re -i {} -c:v copy'.format(camera_streamer_mp4_url), retry_after_quit=True)
-                return
-            except Exception:
-                _logger.info('No camera-stream H.264 source found. Continue to legacy streaming')
-                pass
-
-            # The streaming mechansim for pre-1.0 OctoPi versions
             if sarge.run('sudo service webcamd stop').returncodes[0] != 0:
                 self.ffmpeg_from_mjpeg()
                 return

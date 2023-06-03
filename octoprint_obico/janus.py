@@ -15,9 +15,10 @@ try:
 except ImportError:
     import Queue as queue
 
-from .utils import ExpoBackoff, pi_version
+from .utils import ExpoBackoff, pi_version, is_port_open
 from .ws import WebSocketClient
 from .lib import alert_queue
+from .webcam_stream import WebcamStreamer
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
@@ -26,6 +27,7 @@ JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 JANUS_WS_PORT = 17058
 JANUS_PRINTER_DATA_PORT = 17739
 MAX_PAYLOAD_SIZE = 1500  # hardcoded in streaming plugin
+CAMERA_STREAMER_RTSP_PORT = 8554
 
 class JanusNotSupportedException(Exception):
     pass
@@ -38,6 +40,8 @@ class JanusConn:
         self.janus_ws = None
         self.janus_proc = None
         self.shutting_down = False
+        self.webcam_streamer = None
+        self.use_camera_streamer_rtsp = False
 
     def start(self):
 
@@ -54,6 +58,8 @@ class JanusConn:
 
                 cmd_path = os.path.join(JANUS_DIR, 'setup.sh')
                 setup_cmd = '{} -A {} -V {}'.format(cmd_path, auth_token, video_enabled)
+                if self.use_camera_streamer_rtsp:
+                    setup_cmd += ' -r'
 
                 _logger.debug('Popen: {}'.format(setup_cmd))
                 setup_proc = psutil.Popen(setup_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -94,6 +100,19 @@ class JanusConn:
                     'info_url': 'https://www.obico.io/docs/user-guides/warnings/webcam-streaming-failed-to-start/',
                     'buttons': ['more_info', 'never', 'ok']
                 }, self.plugin, post_to_server=True)
+
+        self.use_camera_streamer_rtsp = self.plugin.is_pro_user() and is_port_open('127.0.0.1', CAMERA_STREAMER_RTSP_PORT)
+        _logger.debug(f'Using camera streamer RSTP? {self.use_camera_streamer_rtsp}')
+
+        self.webcam_streamer = WebcamStreamer(self.plugin)
+        if self.use_camera_streamer_rtsp:
+            self.webcam_streamer.compat_streaming = True # If we are streaming RTSP, it should be considered as compatibility mode
+
+        if not self.plugin._settings.get(["disable_video_streaming"]) and not self.use_camera_streamer_rtsp:
+            _logger.info('Starting webcam streamer')
+            stream_thread = Thread(target=self.webcam_streamer.video_pipeline)
+            stream_thread.daemon = True
+            stream_thread.start()
 
         janus_proc_thread = Thread(target=run_janus_forever)
         janus_proc_thread.daemon = True
@@ -148,6 +167,9 @@ class JanusConn:
                 pass
 
         self.janus_proc = None
+
+        if self.webcam_streamer:
+            self.webcam_streamer.restore()
 
     def process_janus_msg(self, raw_msg):
         try:

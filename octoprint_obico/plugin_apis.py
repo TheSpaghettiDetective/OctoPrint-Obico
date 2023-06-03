@@ -45,6 +45,7 @@ def on_api_command(plugin, command, data):
             return flask.jsonify(verify_code(plugin, data))
 
         if command == "get_plugin_status":
+            webcam_streamer = plugin.janus and plugin.janus.webcam_streamer
             results = dict(
                 server_status=dict(
                     is_connected=plugin.ss and plugin.ss.connected(),
@@ -53,9 +54,9 @@ def on_api_command(plugin, command, data):
                 ),
                 linked_printer=plugin.linked_printer,
                 streaming_status=dict(
-                    is_pi_camera=plugin.webcam_streamer and bool(plugin.webcam_streamer.pi_camera),
-                    webrtc_streaming=plugin.webcam_streamer and not plugin.webcam_streamer.shutting_down,
-                    compat_streaming=plugin.webcam_streamer and plugin.webcam_streamer.compat_streaming),
+                    is_pi_camera=webcam_streamer and bool(webcam_streamer.pi_camera),
+                    webrtc_streaming=webcam_streamer and not webcam_streamer.shutting_down,
+                    compat_streaming=webcam_streamer and webcam_streamer.compat_streaming),
                     error_stats=error_stats.as_dict(),
                     alerts=alert_queue.fetch_and_clear(),
                 )
