@@ -37,6 +37,7 @@ from .client_conn import ClientConn
 import zlib
 from .printer_discovery import PrinterDiscovery
 from .gcode_hooks import GCodeHooks
+from .file_operations import FileOperations
 
 import octoprint.plugin
 
@@ -84,6 +85,7 @@ class ObicoPlugin(
         self.discovery = None
         self.bailed_because_tsd_plugin_running = False
         self.printer_events_posted = dict()
+        self.file_operations = FileOperations(self)
 
 
     # ~~ Custom event registration
