@@ -86,6 +86,8 @@ class ObicoPlugin(
         self.bailed_because_tsd_plugin_running = False
         self.printer_events_posted = dict()
         self.file_operations = FileOperations(self)
+        self.terminal_feed_sent = None
+        self.terminal_feed_recv = None
 
 
     # ~~ Custom event registration
@@ -551,6 +553,7 @@ def __plugin_load__():
     __plugin_hooks__ = {
         "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.gcode_hooks.queuing_gcode,
         "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_hooks.received_gcode,
+        "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_hooks.sent_gcode,
         "octoprint.filemanager.preprocessor": __plugin_implementation__.gcode_hooks.file_preprocessor,
         "octoprint.comm.protocol.scripts": (__plugin_implementation__.pause_resume_sequence.script_hook, 100000),
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
