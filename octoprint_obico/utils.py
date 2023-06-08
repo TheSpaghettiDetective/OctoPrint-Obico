@@ -75,8 +75,14 @@ class OctoPrintSettingsUpdater:
             if self.last_asked > time.time() - PRINTER_SETTINGS_UPDATE_INTERVAL:
                 return None
 
+        webcam_dict = dict((k, v) for k, v in octoprint_webcam_settings(self.plugin._settings).items() if k in ('flipV', 'flipH', 'rotate90', 'streamRatio'))
+        webcam_dict['rotation'] = 0
+        if 'rotate90' in webcam_dict:
+            webcam_dict['rotation'] = 270 if webcam_dict['rotate90'] else 0 # 270 = 90 degrees counterclockwise
+            del webcam_dict['rotate90']
+
         data = dict(
-            webcam=dict((k, v) for k, v in octoprint_webcam_settings(self.plugin._settings).items() if k in ('flipV', 'flipH', 'rotate90', 'streamRatio')),
+            webcam=webcam_dict,
             temperature=self.plugin._settings.settings.effective.get('temperature', {}),
             agent=dict(name='octoprint_obico', version=self.plugin._plugin_version),
             octoprint_version=octoprint.util.version.get_octoprint_version_string(),
