@@ -42,7 +42,7 @@ class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
 
             if re.match(layer_indicator_pattern['regx'], line):
                 self.layer_count += 1
-                line = line + "M117 DASHBOARD_LAYER_INDICATOR " + str(self.layer_count) + "\r\n"
+                line = line + "M117 OBICO_LAYER_INDICATOR " + str(self.layer_count) + "\r\n"
 
                 break
 
@@ -70,8 +70,8 @@ class GCodeHooks:
         if gcode and gcode in ('M600', 'M701' or 'M702'):
             self.plugin.post_filament_change_event()
 
-        if gcode and 'M117 DASHBOARD_LAYER_INDICATOR' in cmd:
-            self._print_job_tracker.increment_layer_height(int(cmd.replace("M117 DASHBOARD_LAYER_INDICATOR ", "")))
+        if gcode and 'M117 OBICO_LAYER_INDICATOR' in cmd:
+            self._print_job_tracker.increment_layer_height(int(cmd.replace("M117 OBICO_LAYER_INDICATOR ", "")))
             return [] # remove layer indicator
 
     def received_gcode(self, comm, line, *args, **kwargs):
