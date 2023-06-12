@@ -358,6 +358,13 @@ class ObicoPlugin(
         self.send_ws_msg_to_server(data)
         self.status_posted_to_server_ts = time.time()
 
+    def post_terminal_feed_msg(self, message):
+        data = {'terminal_feed': {
+                'msg': message,
+                '_ts': time.time()
+            }}
+        self.send_ws_msg_to_server(data)
+
     def send_ws_msg_to_server(self, data, as_binary=False):
         try:
             self.message_queue_to_server.put_nowait((data, as_binary))

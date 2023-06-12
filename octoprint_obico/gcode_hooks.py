@@ -84,29 +84,17 @@ class GCodeHooks:
 
             self.plugin.post_filament_change_event()
 
-        if line and lineLower not in ['wait', 'not sd printing', 'echo:']:
-            if lineLower.startswith("t:") and "b:" in lineLower and "@" in lineLower:
-                return
-            else:
-                self.plugin.terminal_feed_recv = {
-                            'msg': 'Recv: ' + line,
-                            '_ts': int(time.time()),
-                        }
-                            
-                # print(self.plugin.terminal_feed_recv)
-                self.plugin.post_update_to_server()
+        if line and lineLower not in ['wait', 'echo:']:
+            newMessage = 'Recv: ' + line
+            self.plugin.post_terminal_feed_msg(newMessage)
 
 
         return line
     
     def sent_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         if cmd:
-            self.plugin.terminal_feed_sent = {                   
-                'msg': 'Sent: ' + cmd,
-                '_ts': int(time.time()),
-                }
-            # print(self.plugin.terminal_feed_sent)
-            self.plugin.post_update_to_server()
+            newMessage = 'Sent: ' + cmd
+            self.plugin.post_terminal_feed_msg(newMessage)
 
 
 

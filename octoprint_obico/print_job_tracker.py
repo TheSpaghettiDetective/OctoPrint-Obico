@@ -67,9 +67,6 @@ class PrintJobTracker:
             'status': plugin._printer.get_current_data()
         }
 
-        data['status']['terminal_feed'] = {}
-        data['status']['terminal_feed']['sent'] = plugin.terminal_feed_sent
-        data['status']['terminal_feed']['recv'] = plugin.terminal_feed_recv
 
         with self._mutex:
             data['current_print_ts'] = self.current_print_ts
