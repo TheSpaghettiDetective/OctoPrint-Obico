@@ -84,17 +84,15 @@ class GCodeHooks:
 
             self.plugin.post_filament_change_event()
 
-        if line and lineLower not in ['wait', 'echo:']:
-            newMessage = 'Recv: ' + line
-            self.plugin.post_terminal_feed_msg(newMessage)
+        if line and lineLower not in ['wait']:
+            self.plugin.post_terminal_feed_msg(line)
 
 
         return line
     
     def sent_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         if cmd:
-            newMessage = 'Sent: ' + cmd
-            self.plugin.post_terminal_feed_msg(newMessage)
+            self.plugin.post_terminal_feed_msg(cmd)
 
 
 
