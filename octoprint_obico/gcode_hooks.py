@@ -93,8 +93,6 @@ class GCodeHooks:
         if cmd:
             self.plugin.send_ws_msg_to_server({'passthru': {'terminal_feed': {'msg': cmd,'_ts': time.time()}}})
 
-
-
     def file_preprocessor(self, path, file_object, blinks=None, printer_profile=None, allow_overwrite=True, *args, **kwargs):
         filename = file_object.filename
         if not octoprint.filemanager.valid_file_type(filename, type="gcode"):
