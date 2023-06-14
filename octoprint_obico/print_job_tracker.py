@@ -67,7 +67,6 @@ class PrintJobTracker:
             'status': plugin._printer.get_current_data()
         }
 
-
         with self._mutex:
             data['current_print_ts'] = self.current_print_ts
             current_file = data.get('status', {}).get('job', {}).get('file')

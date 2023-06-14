@@ -86,8 +86,6 @@ class ObicoPlugin(
         self.bailed_because_tsd_plugin_running = False
         self.printer_events_posted = dict()
         self.file_operations = FileOperations(self)
-        self.terminal_feed_sent = None
-        self.terminal_feed_recv = None
 
 
     # ~~ Custom event registration
@@ -357,13 +355,6 @@ class ObicoPlugin(
             data = _print_job_tracker.status(self)
         self.send_ws_msg_to_server(data)
         self.status_posted_to_server_ts = time.time()
-
-    def post_terminal_feed_msg(self, message):
-        data = {'terminal_feed': {
-                'msg': message,
-                '_ts': time.time()
-            }}
-        self.send_ws_msg_to_server(data)
 
     def send_ws_msg_to_server(self, data, as_binary=False):
         try:
