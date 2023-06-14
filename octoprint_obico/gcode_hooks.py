@@ -64,12 +64,6 @@ class GCodeHooks:
     def __init__(self, plugin, _print_job_tracker):
         self.plugin = plugin
         self._print_job_tracker = _print_job_tracker
-
-    def generate_terminal_passthru_msg(self, str):
-        return {'terminal_feed': {
-                'msg': str,
-                '_ts': time.time()
-            }}
     
     def queuing_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         self.plugin.pause_resume_sequence.track_gcode(comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs)
@@ -91,16 +85,13 @@ class GCodeHooks:
             self.plugin.post_filament_change_event()
 
         if line and lineLower not in ['wait']:
-            new_terminal_message = self.generate_terminal_passthru_msg(line)
-            self.plugin.passthru_printer_event_to_client(new_terminal_message)
-
+            self.plugin.send_ws_msg_to_server({'passthru': {'terminal_feed': {'msg': line,'_ts': time.time()}}})
 
         return line
     
     def sent_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         if cmd:
-            new_terminal_message = self.generate_terminal_passthru_msg(cmd)
-            self.plugin.passthru_printer_event_to_client(new_terminal_message)
+            self.plugin.send_ws_msg_to_server({'passthru': {'terminal_feed': {'msg': cmd,'_ts': time.time()}}})
 
 
 
