@@ -74,7 +74,7 @@ class ObicoPlugin(
         self.status_update_lock = threading.RLock()
         self.remote_status = RemoteStatus()
         self.pause_resume_sequence = PauseResumeGCodeSequence()
-        self.gcode_hooks = GCodeHooks(self, _print_job_tracker)
+        self.gcode_hooks = GCodeHooks(self, _print_job_tracker, self.remote_status)
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_job_tracker)
@@ -551,6 +551,7 @@ def __plugin_load__():
     __plugin_hooks__ = {
         "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.gcode_hooks.queuing_gcode,
         "octoprint.comm.protocol.gcode.received": __plugin_implementation__.gcode_hooks.received_gcode,
+        "octoprint.comm.protocol.gcode.sent": __plugin_implementation__.gcode_hooks.sent_gcode,
         "octoprint.filemanager.preprocessor": __plugin_implementation__.gcode_hooks.file_preprocessor,
         "octoprint.comm.protocol.scripts": (__plugin_implementation__.pause_resume_sequence.script_hook, 100000),
         "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,

@@ -1,6 +1,7 @@
 import logging
 import re
 import sys
+import time
 import octoprint
 
 
@@ -60,10 +61,11 @@ class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
 
 class GCodeHooks:
 
-    def __init__(self, plugin, _print_job_tracker):
+    def __init__(self, plugin, _print_job_tracker, remote_status):
         self.plugin = plugin
         self._print_job_tracker = _print_job_tracker
-
+        self.remote_status = remote_status
+    
     def queuing_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         self.plugin.pause_resume_sequence.track_gcode(comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs)
 
@@ -83,7 +85,14 @@ class GCodeHooks:
 
             self.plugin.post_filament_change_event()
 
+        if line and lineLower not in ['wait'] and self.remote_status['viewing']:
+            self.plugin.send_ws_msg_to_server({'passthru': {'terminal_feed': {'msg': line,'_ts': time.time()}}})
+
         return line
+    
+    def sent_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
+        if cmd and self.remote_status['viewing']:
+            self.plugin.send_ws_msg_to_server({'passthru': {'terminal_feed': {'msg': cmd,'_ts': time.time()}}})
 
     def file_preprocessor(self, path, file_object, blinks=None, printer_profile=None, allow_overwrite=True, *args, **kwargs):
         filename = file_object.filename
