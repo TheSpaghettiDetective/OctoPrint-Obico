@@ -74,7 +74,7 @@ class ObicoPlugin(
         self.status_update_lock = threading.RLock()
         self.remote_status = RemoteStatus()
         self.pause_resume_sequence = PauseResumeGCodeSequence()
-        self.gcode_hooks = GCodeHooks(self, _print_job_tracker, self.remote_status)
+        self.gcode_hooks = GCodeHooks(self, _print_job_tracker)
         self.octoprint_settings_updater = OctoPrintSettingsUpdater(self)
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_job_tracker)

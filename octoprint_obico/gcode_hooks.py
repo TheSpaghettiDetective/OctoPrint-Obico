@@ -52,7 +52,7 @@ class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
         return line
 
     def close(self):
-        if self.layer_count == -1: 
+        if self.layer_count == -1:
             self.layer_count = None #set None if no layers found - Klipper returns None as well so less checks needed on frontend
         else:
             self.layer_count += 1 #add last layer to count - match dashboard
@@ -61,11 +61,10 @@ class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
 
 class GCodeHooks:
 
-    def __init__(self, plugin, _print_job_tracker, remote_status):
+    def __init__(self, plugin, _print_job_tracker):
         self.plugin = plugin
         self._print_job_tracker = _print_job_tracker
-        self.remote_status = remote_status
-    
+
     def queuing_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         self.plugin.pause_resume_sequence.track_gcode(comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs)
 
@@ -85,17 +84,21 @@ class GCodeHooks:
 
             self.plugin.post_filament_change_event()
 
-        if line and lineLower not in ['wait'] and self.remote_status['viewing']:
-            self.plugin.send_ws_msg_to_server({'passthru': {'terminal_feed': {'msg': line,'_ts': time.time()}}})
+        if line and lineLower not in ['wait']:
+            self.pass_thru_terminal_feed(line)
 
         return line
-    
+
     def sent_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
-        if cmd and self.remote_status['viewing']:
-            self.plugin.send_ws_msg_to_server({'passthru': {'terminal_feed': {'msg': cmd,'_ts': time.time()}}})
+        if cmd:
+            self.pass_thru_terminal_feed(cmd)
 
     def file_preprocessor(self, path, file_object, blinks=None, printer_profile=None, allow_overwrite=True, *args, **kwargs):
         filename = file_object.filename
         if not octoprint.filemanager.valid_file_type(filename, type="gcode"):
             return file_object
         return octoprint.filemanager.util.StreamWrapper(filename, GcodePreProcessor(file_object.stream(), self.plugin, path))
+
+    def pass_thru_terminal_feed(self, msg):
+        if self.plugin.remote_status['viewing']:
+            self.plugin.send_ws_msg_to_server({'passthru': {'terminal_feed': {'msg': msg,'_ts': time.time()}}})
