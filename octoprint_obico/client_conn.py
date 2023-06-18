@@ -51,7 +51,7 @@ class ClientConn:
         if ack_ref:
 
             if error:
-                resp = {'ref': ack_ref, 'ret': {'error': error}}
+                resp = {'ref': ack_ref, 'error': error}
             else:
                 resp = {'ref': ack_ref, 'ret': ret}
 
