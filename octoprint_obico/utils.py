@@ -136,7 +136,7 @@ class SentryWrapper:
 
     def enabled(self):
         return self.plugin._settings.get(["sentry_opt"]) != 'out' \
-            and ( self.plugin.canonical_endpoint_prefix() is None or self.plugin.canonical_endpoint_prefix().endswith('obico.io') )
+            and ( self.plugin.canonical_endpoint_prefix() is None or self.plugin.canonical_endpoint_prefix().endswith('app.obico.io') )
 
     def init_context(self):
         if self.enabled():
