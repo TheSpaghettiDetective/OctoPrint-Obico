@@ -42,7 +42,7 @@ class FileDownloader:
                 'Received download command for {} '.format(g_code_file))
 
             if self.plugin._printer.get_current_data().get('state', {}).get('text') != 'Operational':
-                return {'error': 'Printer busy!'}
+                raise Exception('Printer busy!')
 
             self._print_job_tracker.set_gcode_downloading_started(time.time())
 
@@ -53,9 +53,8 @@ class FileDownloader:
             return {'target_path': g_code_file['safe_filename']}
 
         except Exception as e:
-            self.plugin.sentry.captureException()
             self._print_job_tracker.set_gcode_downloading_started(None)
-            return {'error': str(e)}
+            raise
 
     def __download_and_print__(self, g_code_file):
         try:

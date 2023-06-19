@@ -45,7 +45,7 @@ class ClientConn:
         try:
             ret = func(*(self.extract_args(msg)), **(self.extract_kwargs(msg)))
         except Exception as e:
-            error = 'Error in calling "{}" - {}'.format(msg['func'], e)
+            error = str(e)
             self.plugin.sentry.captureException()
 
         if ack_ref:
