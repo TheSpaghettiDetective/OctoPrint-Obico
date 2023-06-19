@@ -100,6 +100,12 @@ class OctoPrintSettingsUpdater:
 class SentryWrapper:
 
     def __init__(self, plugin):
+        self.plugin = plugin
+        self._enabled = plugin._settings.get(["sentry_opt"]) != 'out' \
+            and ( plugin.canonical_endpoint_prefix() is None or plugin.canonical_endpoint_prefix().endswith('app.obico.io') )
+
+        if not self._enabled:
+            return
 
         # https://github.com/getsentry/sentry-python/issues/149
         def before_send(event, hint):
@@ -110,9 +116,6 @@ class SentryWrapper:
                     return None
             return event
 
-        self.plugin = plugin
-        if not self.enabled():
-            return
 
         sentry_sdk.init(
             dsn='https://f0356e1461124e69909600a64c361b71@sentry.obico.io/4',
@@ -135,13 +138,12 @@ class SentryWrapper:
         )
 
     def enabled(self):
-        return self.plugin._settings.get(["sentry_opt"]) != 'out' \
-            and ( self.plugin.canonical_endpoint_prefix() is None or self.plugin.canonical_endpoint_prefix().endswith('app.obico.io') )
+        return self._enabled
 
     def init_context(self):
         if self.enabled():
             sentry_sdk.set_user({'id': self.plugin.auth_token()})
-            for (k, v) in get_tags().items():
+            for (k, v) in self.get_tags().items():
                 sentry_sdk.set_tag(k, v)
 
     def captureException(self, *args, **kwargs):
@@ -152,6 +154,44 @@ class SentryWrapper:
     def captureMessage(self, *args, **kwargs):
         if self.enabled():
             sentry_sdk.capture_message(*args, **kwargs)
+
+    def get_tags(self):
+        import pdb; pdb.set_trace()
+        (os, _, ver, _, arch, _) = platform.uname()
+        tags = dict(os=os, os_ver=ver, arch=arch)
+        try:
+            v4l2 = run('v4l2-ctl --list-devices', stdout=Capture())
+            v4l2_out = ''.join(re.compile(r"^([^\t]+)", re.MULTILINE).findall(v4l2.stdout.text)).replace('\n', '')
+            if v4l2_out:
+                tags['v4l2'] = v4l2_out
+        except:
+            pass
+
+        try:
+            usb = run("lsusb | cut -d ' ' -f 7- | grep -vE ' hub| Hub' | grep -v 'Standard Microsystems Corp'", stdout=Capture())
+            usb_out = ''.join(usb.stdout.text).replace('\n', '')
+            if usb_out:
+                tags['usb'] = usb_out
+        except:
+            pass
+
+        try:
+            distro = run("cat /etc/os-release | grep PRETTY_NAME | sed s/PRETTY_NAME=//", stdout=Capture())
+            distro_out = ''.join(distro.stdout.text).replace('"', '').replace('\n', '')
+            if distro_out:
+                tags['distro'] = distro_out
+        except:
+            pass
+
+        try:
+            long_bit = run("getconf LONG_BIT", stdout=Capture())
+            long_bit_out = ''.join(long_bit.stdout.text).replace('\n', '')
+            if long_bit_out:
+                tags['long_bit'] = long_bit_out
+        except:
+            pass
+
+        return tags
 
 
 def pi_version():
@@ -164,55 +204,6 @@ def pi_version():
                 return None
     except:
         return None
-
-
-system_tags = None
-tags_mutex = threading.RLock()
-
-def get_tags():
-    global system_tags, tags_mutex
-
-    with tags_mutex:
-        if system_tags:
-            return system_tags
-
-    (os, _, ver, _, arch, _) = platform.uname()
-    tags = dict(os=os, os_ver=ver, arch=arch)
-    try:
-        v4l2 = run('v4l2-ctl --list-devices', stdout=Capture())
-        v4l2_out = ''.join(re.compile(r"^([^\t]+)", re.MULTILINE).findall(v4l2.stdout.text)).replace('\n', '')
-        if v4l2_out:
-            tags['v4l2'] = v4l2_out
-    except:
-        pass
-
-    try:
-        usb = run("lsusb | cut -d ' ' -f 7- | grep -vE ' hub| Hub' | grep -v 'Standard Microsystems Corp'", stdout=Capture())
-        usb_out = ''.join(usb.stdout.text).replace('\n', '')
-        if usb_out:
-            tags['usb'] = usb_out
-    except:
-        pass
-
-    try:
-        distro = run("cat /etc/os-release | grep PRETTY_NAME | sed s/PRETTY_NAME=//", stdout=Capture())
-        distro_out = ''.join(distro.stdout.text).replace('"', '').replace('\n', '')
-        if distro_out:
-            tags['distro'] = distro_out
-    except:
-        pass
-
-    try:
-        long_bit = run("getconf LONG_BIT", stdout=Capture())
-        long_bit_out = ''.join(long_bit.stdout.text).replace('\n', '')
-        if long_bit_out:
-            tags['long_bit'] = long_bit_out
-    except:
-        pass
-
-    with tags_mutex:
-        system_tags = tags
-        return system_tags
 
 
 def get_image_info(data):
