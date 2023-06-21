@@ -11,8 +11,10 @@ USE_RTSP="n"
 
 mkdir -p "${RUNTIME_JANUS_ETC_DIR}"
 
-embedded_janus_jcfg_folders_section() {
-  lib_janus_dir="${JANUS_ROOT_DIR}/rpi_os/lib/janus"
+PRECOMPILED_DIR="${JANUS_ROOT_DIR}/precomplied/debian.$( debian_variant )"
+
+precompiled_janus_jcfg_folders_section() {
+  lib_janus_dir="${PRECOMPILED_DIR}/lib/janus"
   cat <<EOT
         plugins_folder = "${lib_janus_dir}/plugins"                     # Plugins folder
         transports_folder = "${lib_janus_dir}/transports"       # Transports folder
@@ -46,11 +48,11 @@ gen_janus_jcfg() {
 general: {
 EOT
 
-  if is_raspberry_pi; then
-    embedded_janus_jcfg_folders_section >>"${janus_jcfg_path}"  # Janus binary is embedded for Raspberry Pi for easier installation
-  else
-    system_janus_jcfg_folders_section >>"${janus_jcfg_path}"
-  fi
+if [ -d "${PRECOMPILED_DIR}" ]; then
+  precompiled_janus_jcfg_folders_section >>"${janus_jcfg_path}"  # Janus binary is embedded for Raspberry Pi for easier installation
+else
+  system_janus_jcfg_folders_section >>"${janus_jcfg_path}"
+fi
 
   cat <<EOT >>"${janus_jcfg_path}"
         admin_secret = "janusoverlord"  # String that all Janus requests must contain
