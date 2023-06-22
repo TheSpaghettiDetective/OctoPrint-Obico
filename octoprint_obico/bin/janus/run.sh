@@ -9,7 +9,7 @@ RUNTIME_JANUS_ETC_DIR="${JANUS_ROOT_DIR}/runtime/etc/janus"
 
 PRECOMPILED_DIR="${JANUS_ROOT_DIR}/precomplied/debian.$( debian_variant )"
 
-if [ -d "${PRECOMPILED_DIR}" ]; then
+if is_raspberry_pi && [ -d "${PRECOMPILED_DIR}" ]; then
   lib_janus_dir="${PRECOMPILED_DIR}/lib/janus"
   LIB_PATH="${PRECOMPILED_DIR}/lib:${LD_LIBRARY_PATH}"
   JANUS_CMD="${PRECOMPILED_DIR}/bin/janus"
