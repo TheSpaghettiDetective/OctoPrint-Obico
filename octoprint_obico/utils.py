@@ -156,7 +156,6 @@ class SentryWrapper:
             sentry_sdk.capture_message(*args, **kwargs)
 
     def get_tags(self):
-        import pdb; pdb.set_trace()
         (os, _, ver, _, arch, _) = platform.uname()
         tags = dict(os=os, os_ver=ver, arch=arch)
         try:
