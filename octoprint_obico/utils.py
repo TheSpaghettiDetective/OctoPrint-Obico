@@ -159,22 +159,6 @@ class SentryWrapper:
         (os, _, ver, _, arch, _) = platform.uname()
         tags = dict(os=os, os_ver=ver, arch=arch)
         try:
-            v4l2 = run('v4l2-ctl --list-devices', stdout=Capture())
-            v4l2_out = ''.join(re.compile(r"^([^\t]+)", re.MULTILINE).findall(v4l2.stdout.text)).replace('\n', '')
-            if v4l2_out:
-                tags['v4l2'] = v4l2_out
-        except:
-            pass
-
-        try:
-            usb = run("lsusb | cut -d ' ' -f 7- | grep -vE ' hub| Hub' | grep -v 'Standard Microsystems Corp'", stdout=Capture())
-            usb_out = ''.join(usb.stdout.text).replace('\n', '')
-            if usb_out:
-                tags['usb'] = usb_out
-        except:
-            pass
-
-        try:
             distro = run("cat /etc/os-release | grep PRETTY_NAME | sed s/PRETTY_NAME=//", stdout=Capture())
             distro_out = ''.join(distro.stdout.text).replace('"', '').replace('\n', '')
             if distro_out:
