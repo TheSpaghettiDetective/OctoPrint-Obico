@@ -48,10 +48,12 @@ gen_janus_jcfg() {
 general: {
 EOT
 
-if is_raspberry_pi && [ -d "${PRECOMPILED_DIR}" ]; then
+if which janus; then # janus is in system path
+  system_janus_jcfg_folders_section >>"${janus_jcfg_path}"
+elif is_raspberry_pi && [ -d "${PRECOMPILED_DIR}" ]; then
   precompiled_janus_jcfg_folders_section >>"${janus_jcfg_path}"  # Janus binary is embedded for Raspberry Pi for easier installation
 else
-  system_janus_jcfg_folders_section >>"${janus_jcfg_path}"
+  exit 1
 fi
 
   cat <<EOT >>"${janus_jcfg_path}"
