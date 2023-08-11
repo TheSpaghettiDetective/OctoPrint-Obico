@@ -96,7 +96,7 @@ class OctoPrintSettingsUpdater:
                 model = file.read().strip()
             data['platform_uname'].append(model)
         except:
-            data['platform_uname'].append('No SBC Found')
+            data['platform_uname'].append('')
 
         with self._mutex:
             self.last_asked = time.time()
