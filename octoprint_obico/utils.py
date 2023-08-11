@@ -91,6 +91,13 @@ class OctoPrintSettingsUpdater:
         if self.printer_metadata:
             data['printer_metadata'] = self.printer_metadata
 
+        try:
+            with open('/proc/device-tree/model', 'r') as file:
+                model = file.read().strip()
+            data['platform_uname'].append(model)
+        except:
+            data['platform_uname'].append('No SBC Found')
+
         with self._mutex:
             self.last_asked = time.time()
 
