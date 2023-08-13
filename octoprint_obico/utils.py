@@ -86,7 +86,8 @@ class OctoPrintSettingsUpdater:
             temperature=self.plugin._settings.settings.effective.get('temperature', {}),
             agent=dict(name='octoprint_obico', version=self.plugin._plugin_version),
             octoprint_version=octoprint.util.version.get_octoprint_version_string(),
-            platform_uname=list(platform.uname())
+            platform_uname=list(platform.uname()),
+            installed_plugins=[p.key for p in list(self.plugin._plugin_manager.enabled_plugins.values()) if not p.bundled],
         )
         if self.printer_metadata:
             data['printer_metadata'] = self.printer_metadata
