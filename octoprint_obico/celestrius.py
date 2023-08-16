@@ -1,5 +1,6 @@
 import logging
 import time
+from octoprint_obico.utils import server_request
 
 from octoprint_obico.webcam_capture import capture_jpeg
 
@@ -28,7 +29,7 @@ class Celestrius:
         if snapshot: #TODO update with new endpoint & 
             try:
                 files = {'pic': snapshot}
-                self.server_conn.send_http_request('POST', '/api/v1/octo/printer_events/', timeout=60, raise_exception=True, files=files, data=None)
+                server_request('POST', '/api/v1/octo/printer_events/', self.plugin, timeout=60, raise_exception=True, files=files, data=None, headers=self.plugin.auth_headers())
             except Exception as e:
                 _logger.warning('Failed to post jpeg - ' + str(e))
 
@@ -37,6 +38,6 @@ class Celestrius:
         try:
             data = {'celestrius_status': 'complete' }
             #TODO update with new endpoint & data
-            self.server_conn.send_http_request('POST', '/api/v1/octo/printer_events/', timeout=60, raise_exception=True, files=None, data=data)
+            server_request('POST', '/api/v1/octo/printer_events/', self.plugin, timeout=60, raise_exception=True, files=None, data=data, headers=self.plugin.auth_headers())
         except Exception as e:
             _logger.warning('Failed to notify celestrius completed' + str(e))
