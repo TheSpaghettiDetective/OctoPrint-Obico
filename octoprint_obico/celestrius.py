@@ -11,7 +11,6 @@ class Celestrius:
     def __init__(self, plugin):
         self.plugin = plugin
         self.on_first_layer = False
-        self.snapshot_count = 0 # index  / key attribute to give image a unique filename
 
     def start(self):
         #TODO block users with no nozzle cam config
