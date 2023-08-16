@@ -1,7 +1,5 @@
-import os
 import logging
 import time
-from zipfile import ZipFile
 
 from octoprint_obico.webcam_capture import capture_jpeg
 
