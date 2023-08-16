@@ -73,7 +73,6 @@ class GCodeHooks:
 
         if gcode and 'M117 OBICO_LAYER_INDICATOR' in cmd:
             layer_num = int(cmd.replace("M117 OBICO_LAYER_INDICATOR ", ""))
-            print(layer_num, '****')
             if layer_num == 0:
                 self.plugin.celestrius.on_first_layer = True
             elif layer_num > 0 and self.plugin.celestrius.on_first_layer == True:
