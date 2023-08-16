@@ -13,6 +13,7 @@ import requests
 import backoff
 from collections import deque
 
+from octoprint_obico.celestrius import Celestrius
 try:
     import queue
 except ImportError:
@@ -86,6 +87,7 @@ class ObicoPlugin(
         self.bailed_because_tsd_plugin_running = False
         self.printer_events_posted = dict()
         self.file_operations = FileOperations(self)
+        self.celestrius = Celestrius(self)
 
 
     # ~~ Custom event registration
@@ -269,6 +271,10 @@ class ObicoPlugin(
         message_to_server_thread = threading.Thread(target=self.message_to_server_loop)
         message_to_server_thread.daemon = True
         message_to_server_thread.start()
+
+        celestrius_thread = threading.Thread(target=self.celestrius.start)
+        celestrius_thread.daemon = True
+        celestrius_thread.start()
 
         while True:
             try:

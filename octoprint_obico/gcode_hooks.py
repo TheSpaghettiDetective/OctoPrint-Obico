@@ -72,7 +72,13 @@ class GCodeHooks:
             self.plugin.post_filament_change_event()
 
         if gcode and 'M117 OBICO_LAYER_INDICATOR' in cmd:
-            self._print_job_tracker.increment_layer_height(int(cmd.replace("M117 OBICO_LAYER_INDICATOR ", "")))
+            layer_num = int(cmd.replace("M117 OBICO_LAYER_INDICATOR ", ""))
+            print(layer_num, '****')
+            if layer_num == 0:
+                self.plugin.celestrius.on_first_layer = True
+            elif layer_num > 0 and self.plugin.celestrius.on_first_layer == True:
+                self.plugin.celestrius.dump_to_server()
+            self._print_job_tracker.increment_layer_height(layer_num)
             return [] # remove layer indicator
 
     def received_gcode(self, comm, line, *args, **kwargs):
