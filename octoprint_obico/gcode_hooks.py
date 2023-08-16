@@ -76,7 +76,7 @@ class GCodeHooks:
             if layer_num == 0:
                 self.plugin.celestrius.on_first_layer = True
             elif layer_num > 0 and self.plugin.celestrius.on_first_layer == True:
-                self.plugin.celestrius.dump_to_server()
+                self.plugin.celestrius.notify_server_celestrius_complete()
             self._print_job_tracker.increment_layer_height(layer_num)
             return [] # remove layer indicator
 
