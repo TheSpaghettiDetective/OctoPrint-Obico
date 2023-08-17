@@ -23,7 +23,7 @@ class Celestrius:
             time.sleep(0.2) #TODO how many photos do we want?
 
     def send_celestrius_jpeg(self, snapshot):
-        if snapshot: #TODO update with new endpoint & data
+        if snapshot:
             try:
                 files = {'pic': snapshot}
                 data = {'viewing_boost': 'true'}
@@ -33,7 +33,7 @@ class Celestrius:
 
     def notify_server_celestrius_complete(self):
         self.on_first_layer = False
-        try: #TODO update with new endpoint & data
+        try:
             data = {'celestrius_status': 'complete'}
             server_request('POST', '/ent/api/nozzle_cam/first_layer_done/', self.plugin, timeout=60, files={}, data=data, skip_debug_logging=True, headers=self.plugin.auth_headers())
             _logger.debug('server notified celestrius is done')
