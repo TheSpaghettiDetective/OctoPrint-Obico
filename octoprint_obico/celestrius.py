@@ -26,7 +26,8 @@ class Celestrius:
         if snapshot: #TODO update with new endpoint & data
             try:
                 files = {'pic': snapshot}
-                server_request('POST', '/api/v1/octo/printer_events/', self.plugin, timeout=60, raise_exception=True, files=files, data=None, headers=self.plugin.auth_headers())
+                data = {'viewing_boost': 'true'}
+                server_request('POST', '/ent/api/nozzle_cam/pic/', self.plugin, timeout=60, files=files, data=data, skip_debug_logging=True, headers=self.plugin.auth_headers())
             except Exception as e:
                 _logger.warning('Failed to post jpeg - ' + str(e))
 
@@ -34,7 +35,7 @@ class Celestrius:
         self.on_first_layer = False
         try: #TODO update with new endpoint & data
             data = {'celestrius_status': 'complete'}
-            server_request('POST', '/api/v1/octo/printer_events/', self.plugin, timeout=60, raise_exception=True, files=None, data=data, headers=self.plugin.auth_headers())
+            server_request('POST', '/ent/api/nozzle_cam/first_layer_done/', self.plugin, timeout=60, files={}, data=data, skip_debug_logging=True, headers=self.plugin.auth_headers())
             _logger.debug('server notified celestrius is done')
         except Exception as e:
             _logger.warning('Failed to notify celestrius completed' + str(e))
