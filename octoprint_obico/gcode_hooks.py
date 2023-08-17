@@ -74,9 +74,9 @@ class GCodeHooks:
         if gcode and 'M117 OBICO_LAYER_INDICATOR' in cmd:
             layer_num = int(cmd.replace("M117 OBICO_LAYER_INDICATOR ", ""))
             if layer_num == 0:
-                self.plugin.celestrius.on_first_layer = True
-            elif layer_num > 0 and self.plugin.celestrius.on_first_layer == True:
-                self.plugin.celestrius.notify_server_celestrius_complete()
+                self.plugin.nozzlecam.on_first_layer = True
+            elif layer_num > 0 and self.plugin.nozzlecam.on_first_layer == True:
+                self.plugin.nozzlecam.notify_server_nozzlecam_complete()
             self._print_job_tracker.increment_layer_height(layer_num)
             return [] # remove layer indicator
 
