@@ -2,7 +2,8 @@ import logging
 import time
 from octoprint_obico.utils import server_request
 from octoprint_obico.webcam_capture import capture_jpeg
-_logger = logging.getLogger('obico.nozzlecam')
+
+_logger = logging.getLogger('octoprint.plugins.obico')
 
 class NozzleCam:
 
@@ -12,8 +13,6 @@ class NozzleCam:
         self.nozzle_config = None
 
     def start(self):
-        while not self.plugin.linked_printer.get('id', None): #main loop waits for auth token -  need to guarantee we have the printerID before calling DB
-            time.sleep(1)
         self.nozzle_config = self.create_nozzlecam_config()
 
         while True:
@@ -50,6 +49,7 @@ class NozzleCam:
             printer_id = self.plugin.linked_printer.get('id')
             info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, files={}, data={}, skip_debug_logging=True, headers=self.plugin.auth_headers())
             ext_info = info.json().get('ext')
+            _logger.debug('Printer ext info: {}'.format(ext_info))
             nozzle_url = ext_info.get('nozzlecam_url')
             if len(nozzle_url) == 0:
                 return None
