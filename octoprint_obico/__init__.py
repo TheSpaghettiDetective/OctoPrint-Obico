@@ -13,6 +13,7 @@ import requests
 import backoff
 from collections import deque
 
+from octoprint_obico.nozzlecam import NozzleCam
 try:
     import queue
 except ImportError:
@@ -86,6 +87,7 @@ class ObicoPlugin(
         self.bailed_because_tsd_plugin_running = False
         self.printer_events_posted = dict()
         self.file_operations = FileOperations(self)
+        self.nozzlecam = NozzleCam(self)
 
 
     # ~~ Custom event registration
@@ -269,6 +271,10 @@ class ObicoPlugin(
         message_to_server_thread = threading.Thread(target=self.message_to_server_loop)
         message_to_server_thread.daemon = True
         message_to_server_thread.start()
+
+        nozzlecam_thread = threading.Thread(target=self.nozzlecam.start)
+        nozzlecam_thread.daemon = True
+        nozzlecam_thread.start()
 
         while True:
             try:

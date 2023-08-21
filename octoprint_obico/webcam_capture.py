@@ -49,11 +49,16 @@ def webcam_full_url(url):
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 @backoff.on_predicate(backoff.expo, max_tries=3)
-def capture_jpeg(plugin, force_stream_url=False):
+def capture_jpeg(plugin, force_stream_url=False, use_nozzle_config=False):
     MAX_JPEG_SIZE = 5000000
 
-    webcam_settings = octoprint_webcam_settings(plugin._settings)
-    snapshot_url = webcam_full_url(webcam_settings.get("snapshot", ''))
+    if use_nozzle_config:
+        webcam_settings = plugin
+        snapshot_url = webcam_settings.get("snapshot", '')
+    else:
+        webcam_settings = octoprint_webcam_settings(plugin._settings)
+        snapshot_url = webcam_full_url(webcam_settings.get("snapshot", ''))
+    
     if snapshot_url and not force_stream_url:
         snapshot_validate_ssl = bool(webcam_settings.get("snapshotSslValidation", 'False'))
 

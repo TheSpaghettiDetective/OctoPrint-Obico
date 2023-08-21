@@ -28,7 +28,7 @@ class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
         super(GcodePreProcessor, self).__init__(file_buffered_reader)
         self.plugin = plugin
         self.file_path = file_path
-        self.layer_count = -1
+        self.layer_count = 0
 
     def process_line(self, line):
         if not len(line):
@@ -52,7 +52,7 @@ class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
         return line
 
     def close(self):
-        if self.layer_count == -1:
+        if self.layer_count == 0:
             self.layer_count = None #set None if no layers found - Klipper returns None as well so less checks needed on frontend
         else:
             self.layer_count += 1 #add last layer to count - match dashboard
@@ -72,7 +72,12 @@ class GCodeHooks:
             self.plugin.post_filament_change_event()
 
         if gcode and 'M117 OBICO_LAYER_INDICATOR' in cmd:
-            self._print_job_tracker.increment_layer_height(int(cmd.replace("M117 OBICO_LAYER_INDICATOR ", "")))
+            layer_num = int(cmd.replace("M117 OBICO_LAYER_INDICATOR ", ""))
+            if layer_num == 1:
+                self.plugin.nozzlecam.on_first_layer = True
+            elif layer_num > 1 and self.plugin.nozzlecam.on_first_layer == True:
+                self.plugin.nozzlecam.notify_server_nozzlecam_complete()
+            self._print_job_tracker.increment_layer_height(layer_num)
             return [] # remove layer indicator
 
     def received_gcode(self, comm, line, *args, **kwargs):
