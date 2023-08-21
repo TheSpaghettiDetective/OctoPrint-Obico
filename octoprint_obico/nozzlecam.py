@@ -50,8 +50,8 @@ class NozzleCam:
             info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, files={}, data={}, skip_debug_logging=True, headers=self.plugin.auth_headers())
             ext_info = info.json().get('ext')
             _logger.debug('Printer ext info: {}'.format(ext_info))
-            nozzle_url = ext_info.get('nozzlecam_url')
-            if len(nozzle_url) == 0:
+            nozzle_url = ext_info.get('nozzlecam_url', None)
+            if not nozzle_url or len(nozzle_url) == 0:
                 return None
             else:
                 return {
