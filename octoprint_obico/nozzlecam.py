@@ -19,11 +19,14 @@ class NozzleCam:
             if not self.nozzle_config: # cut out loop if nozzlecam not set up
                 return
             if self.on_first_layer == True:
-                try:
-                    self.send_nozzlecam_jpeg(capture_jpeg(self.nozzle_config, use_nozzle_config=True))
-                    _logger.debug('Nozzle cam Jpeg captured & sent')
-                except Exception as e:
-                    _logger.warning('Failed to capture jpeg - ' + str(e))
+                if self.plugin._printer.is_printing():
+                    try:
+                        self.send_nozzlecam_jpeg(capture_jpeg(self.nozzle_config, use_nozzle_config=True))
+                        _logger.debug('Nozzle cam Jpeg captured & sent')
+                    except Exception as e:
+                        _logger.warning('Failed to capture jpeg - ' + str(e))
+                else:
+                    self.notify_server_nozzlecam_complete() # edge case of single layer print - no 2nd layer to stop snapshots
             time.sleep(0.2)
 
     def send_nozzlecam_jpeg(self, snapshot):
