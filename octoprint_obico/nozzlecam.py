@@ -40,7 +40,7 @@ class NozzleCam:
             return
         try:
             data = {'nozzlecam_status': 'complete'}
-            server_request('POST', '/ent/api/nozzle_cam/first_layer_done/', self.plugin, timeout=60, data=data, skip_debug_logging=True, headers=self.plugin.auth_headers())
+            server_request('POST', '/ent/api/nozzle_cam/first_layer_done/', self.plugin, timeout=60, data=data, headers=self.plugin.auth_headers())
             _logger.debug('server notified 1st layer is done')
         except Exception:
             _logger.error('Failed to notify 1st layer completed', exc_info=True)
@@ -53,7 +53,7 @@ class NozzleCam:
             _logger.debug('Printer ext info: {}'.format(ext_info))
             nozzle_url = ext_info.get('nozzlecam_url', None)
             if not nozzle_url or len(nozzle_url) == 0:
-                _logger.error('No nozzlecam config found')
+                _logger.warning('No nozzlecam config found')
                 return None
             else:
                 return {
