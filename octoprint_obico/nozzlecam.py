@@ -23,18 +23,16 @@ class NozzleCam:
                     try:
                         self.send_nozzlecam_jpeg(capture_jpeg(self.nozzle_config, use_nozzle_config=True))
                     except Exception:
-                        _logger.error('Failed to capture jpeg', exc_info=True)
+                        _logger.error('Failed to capture and send nozzle cam jpeg', exc_info=True)
                 else:
                     self.notify_server_nozzlecam_complete() # edge case of single layer print - no 2nd layer to stop snapshots
-            time.sleep(0.2)
+            time.sleep(5)
 
     def send_nozzlecam_jpeg(self, snapshot):
         if snapshot:
-            try:
-                files = {'pic': snapshot}
-                server_request('POST', '/ent/api/nozzle_cam/pic/', self.plugin, timeout=60, files=files, skip_debug_logging=True, headers=self.plugin.auth_headers())
-            except Exception:
-                _logger.error('Failed to post jpeg', exc_info=True)
+            files = {'pic': snapshot}
+            resp = server_request('POST', '/ent/api/nozzle_cam/pic/', self.plugin, timeout=60, files=files, skip_debug_logging=True, headers=self.plugin.auth_headers())
+            _logger.debug('nozzle cam jpeg posted to server - {0}'.format(resp))
 
     def notify_server_nozzlecam_complete(self):
         self.on_first_layer = False
@@ -50,7 +48,7 @@ class NozzleCam:
     def create_nozzlecam_config(self):
         try:
             printer_id = self.plugin.linked_printer.get('id')
-            info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, skip_debug_logging=True, headers=self.plugin.auth_headers())
+            info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, headers=self.plugin.auth_headers())
             ext_info = info.json().get('ext')
             _logger.debug('Printer ext info: {}'.format(ext_info))
             nozzle_url = ext_info.get('nozzlecam_url', None)
