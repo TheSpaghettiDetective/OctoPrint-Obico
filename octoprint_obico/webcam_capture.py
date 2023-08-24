@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import absolute_import
+import base64
 from datetime import datetime, timedelta
 import time
 import logging
@@ -169,3 +170,8 @@ class JpegPoster:
                 self.post_pic_to_server()
             except:
                 self.plugin.sentry.captureException()
+
+    def web_snapshot_request(self, url):
+        snapshot = capture_jpeg({'snapshot': url, "snapshotSslValidation": False}, use_nozzle_config=True)
+        base64_image = base64.b64encode(snapshot).decode('utf-8')
+        return {'pic': base64_image}
