@@ -55,11 +55,10 @@ def capture_jpeg(plugin, force_stream_url=False, use_nozzle_config=False):
 
     if use_nozzle_config:
         webcam_settings = plugin
-        snapshot_url = webcam_settings.get("snapshot", '')
     else:
         webcam_settings = octoprint_webcam_settings(plugin._settings)
-        snapshot_url = webcam_full_url(webcam_settings.get("snapshot", ''))
     
+    snapshot_url = webcam_full_url(webcam_settings.get("snapshot", ''))
     if snapshot_url and not force_stream_url:
         snapshot_validate_ssl = bool(webcam_settings.get("snapshotSslValidation", 'False'))
 
