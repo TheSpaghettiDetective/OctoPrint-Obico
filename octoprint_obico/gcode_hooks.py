@@ -64,6 +64,7 @@ class GCodeHooks:
     def __init__(self, plugin, _print_job_tracker):
         self.plugin = plugin
         self._print_job_tracker = _print_job_tracker
+        self.terminal_is_on = False
 
     def queuing_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         self.plugin.pause_resume_sequence.track_gcode(comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs)
@@ -105,5 +106,12 @@ class GCodeHooks:
         return octoprint.filemanager.util.StreamWrapper(filename, GcodePreProcessor(file_object.stream(), self.plugin, path))
 
     def pass_thru_terminal_feed(self, msg):
-        if self.plugin.remote_status['viewing']:
+        if self.plugin.remote_status['viewing'] and self.terminal_is_on:
             self.plugin.send_ws_msg_to_server({'passthru': {'terminal_feed': {'msg': msg,'_ts': time.time()}}})
+
+    def toggle_terminal_power(self, msg):
+        if msg == 'on':
+            self.terminal_is_on = True
+        elif msg == 'off':
+            self.terminal_is_on = False
+        return self.terminal_is_on
