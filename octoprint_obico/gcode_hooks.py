@@ -64,7 +64,7 @@ class GCodeHooks:
     def __init__(self, plugin, _print_job_tracker):
         self.plugin = plugin
         self._print_job_tracker = _print_job_tracker
-        self.terminal_is_on = False
+        self.terminal_feed_is_on = False
 
     def queuing_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         self.plugin.pause_resume_sequence.track_gcode(comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs)
@@ -91,13 +91,13 @@ class GCodeHooks:
             self.plugin.post_filament_change_event()
 
         if line and lineLower not in ['wait']:
-            self.pass_thru_terminal_feed(line)
+            self.passthru_terminal_feed(line)
 
         return line
 
     def sent_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         if cmd:
-            self.pass_thru_terminal_feed(cmd)
+            self.passthru_terminal_feed(cmd)
 
     def file_preprocessor(self, path, file_object, blinks=None, printer_profile=None, allow_overwrite=True, *args, **kwargs):
         filename = file_object.filename
@@ -105,13 +105,13 @@ class GCodeHooks:
             return file_object
         return octoprint.filemanager.util.StreamWrapper(filename, GcodePreProcessor(file_object.stream(), self.plugin, path))
 
-    def pass_thru_terminal_feed(self, msg):
-        if self.plugin.remote_status['viewing'] and self.terminal_is_on:
+    def passthru_terminal_feed(self, msg):
+        if self.plugin.remote_status['viewing'] and self.terminal_feed_is_on:
             self.plugin.send_ws_msg_to_server({'passthru': {'terminal_feed': {'msg': msg,'_ts': time.time()}}})
 
-    def toggle_terminal_power(self, msg):
+    def toggle_terminal_feed(self, msg):
         if msg == 'on':
-            self.terminal_is_on = True
+            self.terminal_feed_is_on = True
         elif msg == 'off':
-            self.terminal_is_on = False
-        return self.terminal_is_on
+            self.terminal_feed_is_on = False
+        return self.terminal_feed_is_on
