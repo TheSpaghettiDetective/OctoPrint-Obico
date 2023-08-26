@@ -4,6 +4,8 @@ import sys
 import time
 import octoprint
 
+from .utils import run_in_thread
+
 _logger = logging.getLogger('octoprint.plugins.obico')
 
 class GCodeHooks:
@@ -17,14 +19,17 @@ class GCodeHooks:
         self.plugin.pause_resume_sequence.track_gcode(comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs)
 
         if gcode and gcode in ('M600', 'M701' or 'M702'):
-            self.plugin.post_filament_change_event()
+            run_in_thread(self.plugin.post_filament_change_event)
 
         if gcode and 'M117 OBICO_LAYER_INDICATOR' in cmd:
             layer_num = int(cmd.replace("M117 OBICO_LAYER_INDICATOR ", ""))
+
+            # First layer AI-related
             if layer_num == 1:
                 self.plugin.nozzlecam.on_first_layer = True
             elif layer_num > 1 and self.plugin.nozzlecam.on_first_layer == True:
-                self.plugin.nozzlecam.notify_server_nozzlecam_complete()
+                run_in_thread(self.plugin.nozzlecam.notify_server_nozzlecam_complete)
+
             self._print_job_tracker.increment_layer_height(layer_num)
             return [] # remove layer indicator
 
@@ -34,8 +39,7 @@ class GCodeHooks:
         lineLower = line.lower()
         if "m600" in lineLower or ("fsensor_update" in lineLower and "m600" in lineLower) \
             or "paused for user" in lineLower or "// action:paused" in lineLower:
-
-            self.plugin.post_filament_change_event()
+            run_in_thread(self.plugin.post_filament_change_event)
 
         if line and lineLower not in ['wait']:
             self.passthru_terminal_feed(line)
@@ -47,6 +51,7 @@ class GCodeHooks:
             self.passthru_terminal_feed(cmd)
 
     def passthru_terminal_feed(self, msg):
+        # No need to run in thread, as send_ws_msg_to_server is non-blocking
         if self.plugin.remote_status['viewing'] and self.terminal_feed_is_on:
             self.plugin.send_ws_msg_to_server({'passthru': {'terminal_feed': {'msg': msg,'_ts': time.time()}}})
 

@@ -342,3 +342,10 @@ def migrate_tsd_settings(plugin):
 # Provide compatibility for OctoPrint 1.9+ and the older versions
 def octoprint_webcam_settings(octoprint_settings):
     return octoprint_settings.global_get(["plugins", "classicwebcam"]) or octoprint_settings.global_get(["webcam"]) or {}
+
+
+def run_in_thread(long_running_func, *args, **kwargs):
+    daemon_thread = threading.Thread(target=long_running_func,  args=args, kwargs=kwargs)
+    daemon_thread.daemon = True  # Setting the thread as daemon
+    daemon_thread.start()
+    return daemon_thread
