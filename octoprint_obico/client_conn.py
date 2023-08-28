@@ -62,6 +62,7 @@ class ClientConn:
 
     def send_msg_to_client(self, data):
         payload = json.dumps(data, default=str).encode('utf8')
+        _logger.debug('msg to client: {}'.format(payload))
         if __python_version__ == 3:
             compressor  = zlib.compressobj(
                 level=zlib.Z_DEFAULT_COMPRESSION, method=zlib.DEFLATED,
