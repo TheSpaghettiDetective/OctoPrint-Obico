@@ -24,7 +24,7 @@ def add_alert(alert, plugin, post_to_server=False, attach_snapshot=False):
             info_url = alert.get('info_url', None),
         )
         plugin.passthru_printer_event_to_client(event_data)
-        plugin.post_printer_event_to_server(event_data, attach_snapshot=attach_snapshot, spam_tolerance_seconds=60*10)
+        plugin.post_printer_event_to_server(event_data, attach_snapshot=attach_snapshot, spam_tolerance_seconds=60*60*24)
 
 
 def fetch_and_clear():
