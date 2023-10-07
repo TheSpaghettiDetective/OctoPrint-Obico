@@ -60,6 +60,9 @@ class PrintJobTracker:
                 self._file_metadata_cache = None
                 self.current_layer_height = None
 
+                # First layer AI
+                plugin.nozzlecam.on_first_layer = False # catch-all to make sure /nozzle_cam/first_layer_done/ is called in case such as canceled mid first layer.
+
         return data
 
     def status(self, plugin, status_only=False):

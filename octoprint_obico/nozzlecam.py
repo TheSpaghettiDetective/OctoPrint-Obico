@@ -24,8 +24,9 @@ class NozzleCam:
                         self.send_nozzlecam_jpeg(capture_jpeg(self.nozzle_config, use_nozzle_config=True))
                     except Exception:
                         _logger.error('Failed to capture and send nozzle cam jpeg', exc_info=True)
-                else:
-                    self.notify_server_nozzlecam_complete() # edge case of single layer print - no 2nd layer to stop snapshots
+            else:
+                self.notify_server_nozzlecam_complete() # edge case of single layer print - no 2nd layer to stop snapshots
+                return
             time.sleep(1)
 
     def send_nozzlecam_jpeg(self, snapshot):

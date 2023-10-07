@@ -27,8 +27,9 @@ class GCodeHooks:
             # First layer AI-related
             if layer_num == 1:
                 self.plugin.nozzlecam.on_first_layer = True
-            elif layer_num > 1 and self.plugin.nozzlecam.on_first_layer == True:
-                run_in_thread(self.plugin.nozzlecam.notify_server_nozzlecam_complete)
+                run_in_thread(self.plugin.nozzlecam.start)
+            else:
+                self.plugin.nozzlecam.on_first_layer = False
 
             self._print_job_tracker.increment_layer_height(layer_num)
             return [] # remove layer indicator
