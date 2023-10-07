@@ -26,8 +26,9 @@ class GCodeHooks:
 
             # First layer AI-related
             if layer_num == 1:
-                self.plugin.nozzlecam.on_first_layer = True
-                run_in_thread(self.plugin.nozzlecam.start)
+                if not self.plugin.nozzlecam.on_first_layer:
+                    self.plugin.nozzlecam.on_first_layer = True
+                    run_in_thread(self.plugin.nozzlecam.start)
             else:
                 self.plugin.nozzlecam.on_first_layer = False
 

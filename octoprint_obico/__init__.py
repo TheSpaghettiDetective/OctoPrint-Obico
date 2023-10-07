@@ -273,6 +273,8 @@ class ObicoPlugin(
         message_to_server_thread.daemon = True
         message_to_server_thread.start()
 
+        self.nozzlecam.create_nozzlecam_config()
+
         while True:
             try:
                 interval_in_seconds = POST_STATUS_INTERVAL_SECONDS
