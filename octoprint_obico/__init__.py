@@ -23,7 +23,7 @@ from .ws import WebSocketClient, WebSocketConnectionException
 from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
-    OctoPrintSettingsUpdater,
+    OctoPrintSettingsUpdater, run_in_thread,
     server_request, migrate_tsd_settings, octoprint_webcam_settings)
 from .lib.error_stats import error_stats
 from .lib import alert_queue
@@ -184,6 +184,8 @@ class ObicoPlugin(
                 event_payload = _print_job_tracker.on_event(self, event, payload)
                 if event_payload:
                     self.post_update_to_server(data=event_payload)
+            elif event == 'FilamentChange':
+                run_in_thread(self.post_filament_change_event)
         except Exception as e:
             self.sentry.captureException()
     # ~~Shutdown Plugin
