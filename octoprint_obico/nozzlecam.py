@@ -48,17 +48,16 @@ class NozzleCam:
             #prepare for scan
             self.plugin._printer.extrude(-10) #replace with saved val TODO
             self.plugin._printer.set_temperature('tool0', 170) #how many tools? TODO
-            self.plugin._printer.jog({'z':10}, True,) #move up 10m relative to current TODO -> replace with kenneth calculation
+            self.plugin._printer.jog({'z':10}, False,) #move to 10m relative to current TODO -> replace with kenneth calculation
             #move to corner of print & start photos
             self.plugin._printer.jog({'x':minX, 'y':minY }, False)
-            # run_in_thread(self.start)
+            run_in_thread(self.start)
 
             #scan bed
             for i in range(round(minY), round(maxY), 10):
-                self.plugin._printer.jog({'y':i }, False, 600)
+                self.plugin._printer.jog({'y':i }, False, 300)
                 for k in range(round(minX), round(maxX), 10):
-                    self.plugin._printer.jog({'x':k }, False, 600)
-            # import pdb; pdb.set_trace()
+                    self.plugin._printer.jog({'x':k }, False, 300)
 
             #stop photos & notify to server
             self.on_first_layer = False
