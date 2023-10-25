@@ -37,9 +37,9 @@ class NozzleCam:
             filepath = job_info.get('file', {}).get('path', None)
             file_metadata = self.plugin._file_manager.get_metadata(path=filepath, destination='local')
             maxX = file_metadata.get('analysis', {}).get('printingArea', {}).get('maxX', None)
-            minX = file_metadata.get('analysis', {}).get('printingArea', {}).get('maxX', None)
+            minX = file_metadata.get('analysis', {}).get('printingArea', {}).get('minX', None)
             maxY = file_metadata.get('analysis', {}).get('printingArea', {}).get('maxY', None)
-            minY = file_metadata.get('analysis', {}).get('printingArea', {}).get('maxY', None)
+            minY = file_metadata.get('analysis', {}).get('printingArea', {}).get('minY', None)
 
             #get temperature info
             job_temps = self.plugin._printer.get_current_temperatures()
@@ -53,17 +53,13 @@ class NozzleCam:
             self.plugin._printer.jog({'x':minX, 'y':minY }, False)
             # run_in_thread(self.start)
 
-
             #scan bed
             for i in range(round(minY), round(maxY), 10):
-                _logger.debug('Y = {0}'.format(i))
                 self.plugin._printer.jog({'y':i }, False, 600)
                 for k in range(round(minX), round(maxX), 10):
-                    self.plugin._printer.jog({'y':i }, False, 600)
-                    _logger.debug('Y = {0}'.format(k))
+                    self.plugin._printer.jog({'x':k }, False, 600)
             # import pdb; pdb.set_trace()
 
-            
             #stop photos & notify to server
             self.on_first_layer = False
             #wait & heat back up to job temps
