@@ -27,7 +27,7 @@ class GCodeHooks:
             layer_num = int(cmd.replace("M117 OBICO_LAYER_INDICATOR ", ""))
 
             # First layer AI-related
-            if layer_num == 1 and self.plugin._printer.set_job_on_hold(True): #TODO remove 1 -> 2 layer
+            if layer_num == 2 and self.plugin._printer.set_job_on_hold(True):
                 self.plugin.nozzlecam.inject_cmds_and_initiate_scan()
 
             self._print_job_tracker.increment_layer_height(layer_num)
