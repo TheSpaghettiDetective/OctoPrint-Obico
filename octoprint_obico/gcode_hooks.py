@@ -14,6 +14,8 @@ class GCodeHooks:
         self.plugin = plugin
         self._print_job_tracker = _print_job_tracker
         self.terminal_feed_is_on = False
+        # self.last_coords = {'x': None, 'y': None, 'z': None}
+        self.job_temps = {'bed': None, 'tool0': None}
 
     def queuing_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         self.plugin.pause_resume_sequence.track_gcode(comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs)
@@ -25,10 +27,8 @@ class GCodeHooks:
             layer_num = int(cmd.replace("M117 OBICO_LAYER_INDICATOR ", ""))
 
             # First layer AI-related
-            if layer_num == 1:
-                if not self.plugin.nozzlecam.on_first_layer:
-                    self.plugin.nozzlecam.on_first_layer = True
-                    run_in_thread(self.plugin.nozzlecam.start)
+            if layer_num == 2 and octoprint.set_job_on_hold(True):
+                self.plugin.nozzlecam.inject_cmds_and_initiate_scan()
             else:
                 self.plugin.nozzlecam.on_first_layer = False
 

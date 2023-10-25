@@ -1,7 +1,9 @@
 import logging
 import time
+import octoprint
 from octoprint_obico.utils import server_request
 from octoprint_obico.webcam_capture import capture_jpeg
+from .utils import run_in_thread
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
@@ -29,6 +31,32 @@ class NozzleCam:
 
             time.sleep(1)
 
+    def inject_cmds_and_initiate_scan(self):
+        if not self.on_first_layer:
+            self.on_first_layer = True
+
+            job_info = self.plugin._printer.get_current_job() #store current job info
+            job_temps = self.plugin._printer.get_current_temperatures() #store current temps for job
+            
+            self.plugin._printer.extrude(-10) #replace with saved val TODO
+            self.plugin._printer.set_temperature('tool0', 170) #how many tools? TODO
+
+            self.plugin._printer.jog([0,0,10]) #move up 10m relative to current TODO -> replace with kenneth calculation
+
+            #SCAN DIMENSIONS OF PRINT - for loop using job values
+                #move back left of print
+                #start photos
+                    # run_in_thread(self.plugin.nozzlecam.start)
+                #for loop using jog command - SLOW SPEED  
+
+                #stop photos / thread & send to server
+
+            #HEAT BACK UP TO JOB_TEMPS
+            #WHEN DONE, CONTINUE TO FINAL CMDS
+
+            self.plugin._printer.extrude(10) #replace with saved val TODO
+            octoprint.set_job_on_hold(False) #resume print
+
     def send_nozzlecam_jpeg(self, snapshot):
         if snapshot:
             files = {'pic': snapshot}
@@ -50,6 +78,8 @@ class NozzleCam:
             printer_id = self.plugin.linked_printer.get('id')
             info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, headers=self.plugin.auth_headers())
             ext_info = info.json().get('ext')
+            # get retract info from API
+            # retract_value = ext_info.get('retract_value', 10) # default to 10mm TODO
             _logger.debug('Printer ext info: {}'.format(ext_info))
             nozzle_url = ext_info.get('nozzlecam_url', None)
             if not nozzle_url or len(nozzle_url) == 0:
@@ -58,7 +88,8 @@ class NozzleCam:
             else:
                 self.nozzle_config = {
                     'snapshot': nozzle_url,
-                    'snapshotSslValidation': False
+                    'snapshotSslValidation': False,
+                    # 'retract_value': retract_value,
                 }
         except Exception:
             _logger.error('Failed to build nozzle config', exc_info=True)
