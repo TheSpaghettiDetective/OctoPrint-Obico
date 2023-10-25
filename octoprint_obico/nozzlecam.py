@@ -25,37 +25,56 @@ class NozzleCam:
                     self.send_nozzlecam_jpeg(capture_jpeg(self.nozzle_config, use_nozzle_config=True))
                 except Exception:
                     _logger.error('Failed to capture and send nozzle cam jpeg', exc_info=True)
-            else:
-                self.notify_server_nozzlecam_complete() # edge case of single layer print - no 2nd layer to stop snapshots
-                return
 
             time.sleep(1)
 
     def inject_cmds_and_initiate_scan(self):
         if not self.on_first_layer:
             self.on_first_layer = True
-
-            job_info = self.plugin._printer.get_current_job() #store current job info
-            job_temps = self.plugin._printer.get_current_temperatures() #store current temps for job
             
+            #get job info
+            job_info = self.plugin._printer.get_current_job()
+            filepath = job_info.get('file', {}).get('path', None)
+            file_metadata = self.plugin._file_manager.get_metadata(path=filepath, destination='local')
+            maxX = file_metadata.get('analysis', {}).get('printingArea', {}).get('maxX', None)
+            minX = file_metadata.get('analysis', {}).get('printingArea', {}).get('maxX', None)
+            maxY = file_metadata.get('analysis', {}).get('printingArea', {}).get('maxY', None)
+            minY = file_metadata.get('analysis', {}).get('printingArea', {}).get('maxY', None)
+
+            #get temperature info
+            job_temps = self.plugin._printer.get_current_temperatures()
+            tool0_temp = job_temps.get('tool0', {}).get('actual', 220)
+
+            #prepare for scan
             self.plugin._printer.extrude(-10) #replace with saved val TODO
             self.plugin._printer.set_temperature('tool0', 170) #how many tools? TODO
+            self.plugin._printer.jog({'z':10}, True,) #move up 10m relative to current TODO -> replace with kenneth calculation
+            #move to corner of print & start photos
+            self.plugin._printer.jog({'x':minX, 'y':minY }, False)
+            # run_in_thread(self.start)
 
-            self.plugin._printer.jog([0,0,10]) #move up 10m relative to current TODO -> replace with kenneth calculation
 
-            #SCAN DIMENSIONS OF PRINT - for loop using job values
-                #move back left of print
-                #start photos
-                    # run_in_thread(self.plugin.nozzlecam.start)
-                #for loop using jog command - SLOW SPEED  
+            #scan bed
+            for i in range(round(minY), round(maxY), 10):
+                _logger.debug('Y = {0}'.format(i))
+                self.plugin._printer.jog({'y':i }, False, 600)
+                for k in range(round(minX), round(maxX), 10):
+                    self.plugin._printer.jog({'y':i }, False, 600)
+                    _logger.debug('Y = {0}'.format(k))
+            # import pdb; pdb.set_trace()
 
-                #stop photos / thread & send to server
-
-            #HEAT BACK UP TO JOB_TEMPS
-            #WHEN DONE, CONTINUE TO FINAL CMDS
-
+            
+            #stop photos & notify to server
+            self.on_first_layer = False
+            #wait & heat back up to job temps
+            self.plugin._printer.set_temperature('tool0', tool0_temp) #how many tools? TODO
+            while self.plugin._printer.get_current_temperatures().get('tool0', {}).get('actual', 0) < tool0_temp:
+                time.sleep(1)
             self.plugin._printer.extrude(10) #replace with saved val TODO
-            octoprint.set_job_on_hold(False) #resume print
+
+            #resume print
+            self.notify_server_nozzlecam_complete()
+            self.plugin._printer.set_job_on_hold(False) 
 
     def send_nozzlecam_jpeg(self, snapshot):
         if snapshot:
@@ -76,10 +95,12 @@ class NozzleCam:
     def create_nozzlecam_config(self):
         try:
             printer_id = self.plugin.linked_printer.get('id')
-            info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, headers=self.plugin.auth_headers())
-            ext_info = info.json().get('ext')
+            raw_ext_info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, headers=self.plugin.auth_headers())
+            # general_printer_info = server_request('GET', f'/api/v1/printers/{printer_id}/', self.plugin, timeout=60, headers=self.plugin.auth_headers())
+            ext_info = raw_ext_info.json().get('ext')
+            # import pdb; pdb.set_trace()
             # get retract info from API
-            # retract_value = ext_info.get('retract_value', 10) # default to 10mm TODO
+            # retract_value = general_printer_info.get('retract_value', 10) # default to 10mm TODO
             _logger.debug('Printer ext info: {}'.format(ext_info))
             nozzle_url = ext_info.get('nozzlecam_url', None)
             if not nozzle_url or len(nozzle_url) == 0:

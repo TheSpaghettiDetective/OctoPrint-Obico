@@ -27,10 +27,8 @@ class GCodeHooks:
             layer_num = int(cmd.replace("M117 OBICO_LAYER_INDICATOR ", ""))
 
             # First layer AI-related
-            if layer_num == 2 and octoprint.set_job_on_hold(True):
+            if layer_num == 1 and self.plugin._printer.set_job_on_hold(True): #TODO remove 1 -> 2 layer
                 self.plugin.nozzlecam.inject_cmds_and_initiate_scan()
-            else:
-                self.plugin.nozzlecam.on_first_layer = False
 
             self._print_job_tracker.increment_layer_height(layer_num)
             return [] # remove layer indicator
