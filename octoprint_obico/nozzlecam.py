@@ -1,6 +1,7 @@
 import logging
 import time
 import octoprint
+import re
 from octoprint_obico.utils import server_request
 from octoprint_obico.webcam_capture import capture_jpeg
 from .utils import run_in_thread
@@ -41,19 +42,24 @@ class NozzleCam:
             maxY = file_metadata.get('analysis', {}).get('printingArea', {}).get('maxY', None)
             minY = file_metadata.get('analysis', {}).get('printingArea', {}).get('minY', None)
 
-            #get temperature info
-            job_temps = self.plugin._printer.get_current_temperatures()
+            #fallback to bed size if print size is unavailable
+            if not maxX or not minX or not maxY or not minY:
+                printer_profile = self.plugin._printer_profile_manager.get_current_or_default()
+                maxX = printer_profile['volume']['width']
+                maxX = printer_profile['volume']['depth']
+                minX = 0
+                minY = 0
 
-            #GRAB ALL JOB TEMPS
-            # tool0_temp = job_temps.get('tool0', {}).get('target', 220)
-
-            #prepare for scan
             self.plugin._printer.extrude(-10) #replace with saved val TODO
 
-            #TODO LOOP JOB TEMPS & CHANGE ALL TOOLS TO 170
-            #TODO self.plugin._printer.set_temperature('tool0', 170) #how many tools? TODO
-            self.plugin._printer.jog({'z':1}, False,)
+            #get job temperature info & set to 170
+            job_temps = self.plugin._printer.get_current_temperatures()
+            for key, value in job_temps.items():
+                if re.match(r'tool\d', key):
+                    self.plugin._printer.set_temperature(key, 170)
+
             #move to corner of print & start photos
+            self.plugin._printer.jog({'z':1}, False,)
             self.plugin._printer.jog({'x':minX, 'y':minY }, False)
             run_in_thread(self.start)
 
@@ -65,16 +71,29 @@ class NozzleCam:
 
             #stop photos & notify to server
             self.on_first_layer = False
-            #wait & heat back up to job temps
-            #TODO LOOP TOOLS & WAIT FOR ALL (loop to check if all tools are at temp)
-            #TODO self.plugin._printer.set_temperature('tool0', tool0_temp) #how many tools? TODO
-            while self.plugin._printer.get_current_temperatures().get('tool0', {}).get('actual', 0) < tool0_temp:
-                time.sleep(1)
-            self.plugin._printer.extrude(10) #replace with saved val TODO
-
-            #resume print
             self.notify_server_nozzlecam_complete()
+
+            #heat back up to job temps
+            for key, value in job_temps.items():
+                if re.match(r'tool\d', key):
+                    self.plugin._printer.set_temperature(key, value.get('target', 220))
+
+            #wait for temps to reach targets before resuming print
+            below_targets = True
+            while below_targets:
+                current_temps = self.plugin._printer.get_current_temperatures()
+                count = 0
+                for key, value in current_temps.items():
+                        if value.get('actual') >= value.get('target'):
+                            count += 1
+                if len(current_temps.items()) == count:
+                    below_targets = False
+                time.sleep(1)
+
+            self.plugin._printer.extrude(10) #replace with saved val TODO
             self.plugin._printer.set_job_on_hold(False) 
+        else:
+            self.plugin._printer.set_job_on_hold(False)
 
     def send_nozzlecam_jpeg(self, snapshot):
         if snapshot:
