@@ -85,7 +85,9 @@ class NozzleCam:
                 current_temps = self.plugin._printer.get_current_temperatures()
                 count = 0
                 for key, value in current_temps.items():
-                        if value.get('actual', 220) >= value.get('target', 220):
+                        if value.get('actual') is None or value.get('target') is None:
+                            count += 1
+                        elif value.get('actual', 220) >= value.get('target', 220):
                             count += 1
                 if len(current_temps.items()) == count:
                     below_targets = False
