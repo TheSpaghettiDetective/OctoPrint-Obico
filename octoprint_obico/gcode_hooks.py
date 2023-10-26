@@ -14,8 +14,6 @@ class GCodeHooks:
         self.plugin = plugin
         self._print_job_tracker = _print_job_tracker
         self.terminal_feed_is_on = False
-        # self.last_coords = {'x': None, 'y': None, 'z': None}
-        self.job_temps = {'bed': None, 'tool0': None}
 
     def queuing_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
         self.plugin.pause_resume_sequence.track_gcode(comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs)
