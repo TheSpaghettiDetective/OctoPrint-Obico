@@ -30,7 +30,7 @@ class NozzleCam:
             time.sleep(1)
 
     def inject_cmds_and_initiate_scan(self):
-        if not self.on_first_layer:
+        if not self.on_first_layer: #TODO add scan enabled check
             self.on_first_layer = True
             
             #get job info
@@ -50,7 +50,8 @@ class NozzleCam:
                 minX = 0
                 minY = 0
 
-            self.plugin._printer.extrude(-10) #replace with saved val TODO
+            retract_on_pause = self.plugin.linked_printer.get('retract_on_pause', 10)
+            self.plugin._printer.extrude(retract_on_pause * -1)
 
             #get job temperature info & set to 170
             job_temps = self.plugin._printer.get_current_temperatures()
@@ -90,7 +91,7 @@ class NozzleCam:
                     below_targets = False
                 time.sleep(1)
 
-            self.plugin._printer.extrude(10) #replace with saved val TODO
+            self.plugin._printer.extrude(retract_on_pause)
             self.plugin._printer.set_job_on_hold(False) 
         else:
             self.plugin._printer.set_job_on_hold(False)
@@ -115,13 +116,10 @@ class NozzleCam:
         try:
             printer_id = self.plugin.linked_printer.get('id')
             raw_ext_info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, headers=self.plugin.auth_headers())
-            # general_printer_info = server_request('GET', f'/api/v1/printers/{printer_id}/', self.plugin, timeout=60, headers=self.plugin.auth_headers())
             ext_info = raw_ext_info.json().get('ext')
-            # import pdb; pdb.set_trace()
-            # get retract info from API
-            # retract_value = general_printer_info.get('retract_value', 10) # default to 10mm TODO
-            _logger.debug('Printer ext info: {}'.format(ext_info))
             nozzle_url = ext_info.get('nozzlecam_url', None)
+            scan_enabled = ext_info.get('scan_enabled', True)
+            _logger.debug('Printer ext info: {}'.format(ext_info))
             if not nozzle_url or len(nozzle_url) == 0:
                 _logger.warning('No nozzlecam config found')
                 return
@@ -129,7 +127,7 @@ class NozzleCam:
                 self.nozzle_config = {
                     'snapshot': nozzle_url,
                     'snapshotSslValidation': False,
-                    # 'retract_value': retract_value,
+                    'scan_enabled': scan_enabled,
                 }
         except Exception:
             _logger.error('Failed to build nozzle config', exc_info=True)
