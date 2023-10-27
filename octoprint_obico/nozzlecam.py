@@ -59,7 +59,7 @@ class NozzleCam:
             #move to corner of print & start photos
             self.plugin._printer.jog({'z':1}, False,)
             self.plugin._printer.jog({'x':minX, 'y':minY }, False)
-            run_in_thread(self.start)
+            # run_in_thread(self.start)
 
             #scan bed
             for i in range(round(minY), round(maxY), 10):
@@ -75,20 +75,6 @@ class NozzleCam:
             for key, value in job_temps.items():
                 if re.match(r'tool\d', key):
                     self.plugin._printer.set_temperature(key, value.get('target', 220))
-
-            #wait for temps to reach targets before resuming print
-            below_targets = True
-            while below_targets:
-                current_temps = self.plugin._printer.get_current_temperatures()
-                count = 0
-                for key, value in current_temps.items():
-                        if value.get('actual') is None or value.get('target') is None:
-                            count += 1
-                        elif value.get('actual', 220) >= value.get('target', 220):
-                            count += 1
-                if len(current_temps.items()) == count:
-                    below_targets = False
-                time.sleep(1)
 
             self.plugin._printer.extrude(retract_on_pause)
             self.plugin._printer.set_job_on_hold(False) 
