@@ -14,12 +14,9 @@ class NozzleCam:
         self.plugin = plugin
         self.on_first_layer = False
         self.nozzle_config = None
+        self.first_layer_scan_enabled = True
 
     def start(self):
-        if not self.nozzle_config: # cut out loop if nozzlecam not set up
-            self.on_first_layer = False
-            return
-
         while True:
             if self.on_first_layer == True:
                 try:
@@ -30,7 +27,7 @@ class NozzleCam:
             time.sleep(1)
 
     def inject_cmds_and_initiate_scan(self):
-        if not self.on_first_layer: #TODO add scan enabled check
+        if not self.on_first_layer and self.nozzle_config and self.first_layer_scan_enabled:
             self.on_first_layer = True
             
             #get job info
@@ -120,7 +117,7 @@ class NozzleCam:
             raw_ext_info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, headers=self.plugin.auth_headers())
             ext_info = raw_ext_info.json().get('ext')
             nozzle_url = ext_info.get('nozzlecam_url', None)
-            scan_enabled = ext_info.get('scan_enabled', True)
+            self.first_layer_scan_enabled = ext_info.get('first_layer_scan_enabled', True)
             _logger.debug('Printer ext info: {}'.format(ext_info))
             if not nozzle_url or len(nozzle_url) == 0:
                 _logger.warning('No nozzlecam config found')
@@ -129,7 +126,6 @@ class NozzleCam:
                 self.nozzle_config = {
                     'snapshot': nozzle_url,
                     'snapshotSslValidation': False,
-                    'scan_enabled': scan_enabled,
                 }
         except Exception:
             _logger.error('Failed to build nozzle config', exc_info=True)
