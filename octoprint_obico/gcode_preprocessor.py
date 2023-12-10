@@ -9,13 +9,6 @@ _logger = logging.getLogger('octoprint.plugins.obico')
 __python_version__ = 3 if sys.version_info >= (3, 0) else 2
 
 
-def gcode_preprocessor(path, file_object, blinks=None, printer_profile=None, allow_overwrite=True, *args, **kwargs):
-    filename = file_object.filename
-    if not octoprint.filemanager.valid_file_type(filename, type="gcode"):
-        return file_object
-    return octoprint.filemanager.util.StreamWrapper(filename, GcodePreProcessor(file_object.stream(), path))
-
-
 # Credit: Thank you j7126 for your awesome octoprint plugin: https://github.com/j7126/OctoPrint-Dashboard
 class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
 
@@ -31,8 +24,9 @@ class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
         ]
 
 
-    def __init__(self, file_buffered_reader, file_path):
+    def __init__(self, file_buffered_reader, plugin, file_path):
         super(GcodePreProcessor, self).__init__(file_buffered_reader)
+        self.plugin = plugin
         self.file_path = file_path
         self.layer_count = 0
 
@@ -63,4 +57,17 @@ class GcodePreProcessor(octoprint.filemanager.util.LineProcessorStream):
         else:
             self.layer_count += 1 #add last layer to count - match dashboard
 
-        octoprint.filemanager.set_additional_metadata('local', self.file_path, 'obico', {"totalLayerCount": self.layer_count}, overwrite=True)
+        self.plugin._file_manager.set_additional_metadata('local', self.file_path, 'obico', {"totalLayerCount": self.layer_count}, overwrite=True)
+
+
+## A Wrapper so that the preprocessor can access the plugin itself.
+class GcodePreProcessorWrapper:
+
+    def __init__(self, plugin):
+        self.plugin = plugin
+
+    def gcode_preprocessor(self, path, file_object, blinks=None, printer_profile=None, allow_overwrite=True, *args, **kwargs):
+        filename = file_object.filename
+        if not octoprint.filemanager.valid_file_type(filename, type="gcode"):
+            return file_object
+        return octoprint.filemanager.util.StreamWrapper(filename, GcodePreProcessor(file_object.stream(), self.plugin, path))
