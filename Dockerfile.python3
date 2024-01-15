@@ -1,5 +1,16 @@
 FROM kennethjiang/octopi-1.7.2.2:python3
 
+
+RUN echo "deb http://archive.debian.org/debian/ stretch main non-free contrib" > /etc/apt/sources.list && \
+    echo "deb-src http://archive.debian.org/debian/ stretch main non-free contrib" >> /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security/ stretch/updates main" >> /etc/apt/sources.list && \
+    echo "deb-src http://archive.debian.org/debian-security/ stretch/updates main" >> /etc/apt/sources.list
+
+RUN echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+
+
+RUN apt-get update
+
 RUN apt-get install -y netcat
 
 RUN pip3 install ipdb
