@@ -31,7 +31,7 @@ In another terminal:
 
 To install the plugin in the container run:
 ```bash
-docker compose exec {op/op_python2} octoprint dev plugin:install
+docker compose exec {op/op_python2} pip3 install -e /app
 ```
 
 Then to start octoprint (and by extension the plugin) run:
