@@ -188,7 +188,8 @@ class ObicoPlugin(
             elif event == 'FilamentChange':
                 run_in_thread(self.post_filament_change_event)
         except Exception as e:
-            self.sentry.captureException()
+            _logger.error(e)
+            # self.sentry.captureException()
     # ~~Shutdown Plugin
 
     def on_shutdown(self):
@@ -288,7 +289,8 @@ class ObicoPlugin(
                     self.post_update_to_server()
 
             except Exception as e:
-                self.sentry.captureException()
+                _logger.error(e)
+                # self.sentry.captureException()
 
             time.sleep(1)
 
@@ -352,7 +354,8 @@ class ObicoPlugin(
                     self.ss.close()
                 server_ws_backoff.more(e)
             except Exception as e:
-                self.sentry.captureException()
+                # self.sentry.captureException()
+                _logger.error(e)
                 error_stats.add_connection_error('server', self)
                 if self.ss:
                     self.ss.close()
@@ -440,8 +443,9 @@ class ObicoPlugin(
 
             if need_status_boost:
                 self.boost_status_update()
-        except:
-            self.sentry.captureException()
+        except BaseException as e:
+            _logger.error(e)
+            # self.sentry.captureException()
 
     def status_update_to_client_loop(self):
         while self.shutting_down is False:

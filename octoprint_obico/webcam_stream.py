@@ -203,8 +203,9 @@ class WebcamStreamer:
                             'text': 'Octolapse plugin detected! Obico has switched to "Premium (compatibility)" streaming mode.',
                             'buttons': ['never', 'ok']
                         }, self.plugin)
-                except Exception:
-                    self.sentry.captureException()
+                except Exception as e:
+                    _logger.error(e)
+                    # self.sentry.captureException()
 
             if compatible_mode == 'always':
                 self.ffmpeg_from_mjpeg()
@@ -244,7 +245,7 @@ class WebcamStreamer:
                 self.webcam_server.start()
                 self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, profile='baseline')
                 self.pi_camera.wait_recording(0)
-        except Exception:
+        except Exception as e:
             alert_queue.add_alert({
                 'level': 'warning',
                 'cause': 'streaming',
@@ -255,7 +256,8 @@ class WebcamStreamer:
             }, self.plugin, post_to_server=True)
 
             self.restore()
-            self.sentry.captureException()
+            _logger.error(e)
+            # self.sentry.captureException()
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=3)
     def ffmpeg_from_mjpeg(self):
@@ -294,8 +296,9 @@ class WebcamStreamer:
             _logger.debug(f'Detected webcam resolution - w:{img_w} / h:{img_h}')
         except (URLError, HTTPError, requests.exceptions.RequestException):
             _logger.warn('Failed to connect to webcam to retrieve resolution. Using default.')
-        except Exception:
-            self.sentry.captureException()
+        except Exception as e:
+            _logger.error(e)
+            # self.sentry.captureException()
             _logger.warn('Failed to detect webcam resolution due to unexpected error. Using default.')
 
         bitrate = bitrate_for_dim(img_w, img_h)
@@ -463,10 +466,12 @@ class UsbCamWebServer:
             pass
         except socket.error as err:
             if err.errno not in [errno.ECONNREFUSED, ]:
-                self.sentry.captureException()
+                _logger.error(err)
+                # self.sentry.captureException()
             raise
-        except Exception:
-            self.sentry.captureException()
+        except Exception as e:
+            _logger.error(e)
+            # self.sentry.captureException()
             raise
         finally:
             s.close()
@@ -499,8 +504,9 @@ class UsbCamWebServer:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             _logger.error(exc_obj)
             raise
-        except Exception:
-            self.sentry.captureException()
+        except Exception as e:
+            _logger.error(e)
+            # self.sentry.captureException()
             raise
         finally:
             s.close()
@@ -580,8 +586,9 @@ class PiCamWebServer:
                     self.last_capture = time.time()
 
                 self.img_q.put(chunk)
-        except Exception:
-            self.sentry.captureException()
+        except Exception as e:
+            _logger.error(e)
+            # self.sentry.captureException()
             raise
 
     def mjpeg_generator(self, boundary):
@@ -597,8 +604,9 @@ class PiCamWebServer:
                 time.sleep(0.15)  # slow down mjpeg streaming so that it won't use too much cpu or bandwidth
         except GeneratorExit:
             pass
-        except Exception:
-            self.sentry.captureException()
+        except Exception as e:
+            _logger.error(e)
+            # self.sentry.captureException()
             raise
 
     def get_snapshot(self):

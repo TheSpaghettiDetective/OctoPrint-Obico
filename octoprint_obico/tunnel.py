@@ -111,8 +111,9 @@ class LocalTunnel(object):
                 self.on_ws_message(
                     {'ws.tunnel': {'ref': ref, 'data': data, 'type': 'octoprint_message'}},
                     as_binary=True)
-            except:
-                self.sentry.captureException()
+            except BaseException as e:
+                _logger.error(e)
+                # self.sentry.captureException()
                 ws.close()
 
         url = urljoin(self.base_url, path)
