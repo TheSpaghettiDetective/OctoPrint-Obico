@@ -210,7 +210,7 @@ class WebcamStreamer:
                 self.ffmpeg_from_mjpeg()
                 return
 
-            if sarge.run('sudo service webcamd stop').returncodes[0] != 0:
+            if sarge.run('systemctl is-active webcamd').returncodes[0] == 0 and sarge.run('sudo service webcamd stop').returncodes[0] != 0:
                 self.ffmpeg_from_mjpeg()
                 return
 
