@@ -24,7 +24,7 @@ class PrintJobTracker:
     def on_event(self, plugin, event, payload):
 
         def find_obico_g_code_file_id(payload):
-            md5_hash = plugin._file_manager.get_metadata(path=payload['path'], destination=payload['origin']).get('hash')
+            md5_hash = plugin._file_manager.get_metadata(path=payload['path'], location=payload['origin']).get('hash')
             if not md5_hash:
                 return None
 

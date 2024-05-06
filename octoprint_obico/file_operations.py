@@ -5,7 +5,7 @@ class FileOperations:
 
     def check_filepath_and_agent_signature(self, filepath, server_signature):
         try:
-            md5_hash = self.plugin._file_manager.get_metadata(path=filepath, destination='local').get('hash')
+            md5_hash = self.plugin._file_manager.get_metadata(path=filepath, location='local').get('hash')
             if md5_hash:
                 filepath_signature = 'md5:{}'.format(md5_hash)
                 return filepath_signature == server_signature # check if signatures match -> Boolean
