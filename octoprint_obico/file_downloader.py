@@ -7,7 +7,7 @@ import threading
 from octoprint.filemanager.util import AbstractFileWrapper
 import io
 
-from .utils import server_request
+from .utils import server_request, get_file_metadata
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 UPLOAD_FOLDER = 'ObicoUpload'
@@ -70,7 +70,7 @@ class FileDownloader:
 
             target_path = os.path.join(UPLOAD_FOLDER, g_code_file['safe_filename'])
             target_path = self.plugin._file_manager.add_file(octoprint_storage, target_path, file_object, links=None, allow_overwrite=True, display=display_filename,)
-            md5_hash = self.plugin._file_manager.get_metadata(path=target_path).get('hash')
+            md5_hash = get_file_metadata(self.plugin._file_manager, target_path, octoprint_storage).get('hash')
 
             if md5_hash:
                 g_code_data = dict(agent_signature='md5:{}'.format(md5_hash), safe_filename=os.path.basename(target_path))
