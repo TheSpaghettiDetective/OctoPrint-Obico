@@ -352,6 +352,6 @@ def run_in_thread(long_running_func, *args, **kwargs):
 
 def get_file_metadata(file_manager, target_path, location):
     try:
-        return file_manager.get_metadata(path=target_path, destination=location).get('hash') # Compatibility with OctoPrint 1.9.x and earlier.
+        return file_manager.get_metadata(path=target_path, destination=location) # Compatibility with OctoPrint 1.9.x and earlier.
     except Exception:
-        return file_manager.get_metadata(path=target_path, location=location).get('hash')
+        return file_manager.get_metadata(path=target_path, location=location)
