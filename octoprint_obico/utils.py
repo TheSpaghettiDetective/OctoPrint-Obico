@@ -384,6 +384,7 @@ def derive_webcam_configs_from_octoprint():
             'rotate90': webcam_config.get('rotate90', False),
             'stream': webcam_config.get('compat', {}).get('stream', None),
             'snapshot': webcam_config.get('compat', {}).get('snapshot', None),
+            'is_nozzle_camera': False,
         }
 
     webcam_configs = []
