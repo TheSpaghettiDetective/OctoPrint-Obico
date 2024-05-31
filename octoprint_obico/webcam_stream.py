@@ -31,14 +31,20 @@ from octoprint.util import to_unicode
 from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close, octoprint_webcam_settings
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
+from .janus_config_builder import build_janus_config
+
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
-JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
-JANUS_MJPEG_DATA_PORT = 17740
 GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
+
+JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 FFMPEG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 FFMPEG = os.path.join(FFMPEG_DIR, 'run.sh')
+
+JANUS_WS_PORT = 17730   # Janus needs to use 17730 up to 17750. Hard-coded for now. may need to make it dynamic if the problem of port conflict is too much
+JANUS_ADMIN_WS_PORT = JANUS_WS_PORT + 1
+
 
 PI_CAM_RESOLUTIONS = {
     'low': ((320, 240), (480, 270)),  # resolution for 4:3 and 16:9
@@ -58,6 +64,35 @@ def bitrate_for_dim(img_w, img_h):
         return 2000*1000
     else:
         return 3000*1000
+
+
+@backoff.on_exception(backoff.expo, Exception, max_tries=3)
+def get_webcam_resolution(webcam_config):
+    (img_w, img_h) = (640, 360)
+    try:
+        (_, img_w, img_h) = get_image_info(capture_jpeg(webcam_config, force_stream_url=True))
+        _logger.debug(f'Detected webcam resolution - w:{img_w} / h:{img_h}')
+    except Exception:
+        _logger.exception('Failed to connect to webcam to retrieve resolution. Using default.')
+
+    return (img_w, img_h)
+
+
+def find_ffmpeg_h264_encoder():
+    test_video = os.path.join(FFMPEG_DIR, 'test-video.mp4')
+    FNULL = open(os.devnull, 'w')
+    for encoder in ['h264_omx', 'h264_v4l2m2m']:
+        ffmpeg_cmd = '{} -re -i {} -pix_fmt yuv420p -vcodec {} -an -f rtp rtp://127.0.0.1:8014?pkt_size=1300'.format(FFMPEG, test_video, encoder)
+        _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+        ffmpeg_test_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdout=FNULL, stderr=FNULL)
+        if ffmpeg_test_proc.wait() == 0:
+            if encoder == 'h264_omx':
+                return '-flags:v +global_header -c:v {} -bsf dump_extra'.format(encoder)  # Apparently OMX encoder needs extra param to get the stream to work
+            else:
+                return '-c:v {}'.format(encoder)
+
+    _logger.warn('No ffmpeg found, or ffmpeg does NOT support h264_omx/h264_v4l2m2m encoding.')
+    return None
 
 
 def cpu_watch_dog(watched_process, plugin, max, interval):
@@ -98,33 +133,323 @@ class WebcamStreamer:
 
     def __init__(self, plugin):
         self.plugin = plugin
-        self.sentry = plugin.sentry
-        self.janus = plugin.janus
-
-        self.pi_camera = None
-        self.webcam_server = None
-        self.gst_proc = None
+        self.janus = None
+        self.ffmpeg_out_rtp_ports = set()
+        self.mjpeg_sock_list = []
+        self.janus = None
         self.ffmpeg_proc = None
-        self.mjpeg_sock = None
         self.shutting_down = False
-        self.compat_streaming = False
 
-    @backoff.on_exception(backoff.expo, Exception, max_tries=5)
-    def init_legacy_picamera(self):
+    def start(self, webcam_configs):
+
+        self.shutdown_subprocesses()
+        self.close_all_mjpeg_socks()
+
+        self.webcams = webcam_configs
+        self.find_streaming_params()
+        self.assign_janus_params()
         try:
-            import picamera
-            try:
-                self.pi_camera = picamera.PiCamera()
-                self.pi_camera.framerate = 20
-                (res_43, res_169) = PI_CAM_RESOLUTIONS[self.plugin._settings.get(["pi_cam_resolution"])]
-                self.pi_camera.resolution = res_169 if octoprint_webcam_settings(self.plugin._settings).get('streamRatio', '16:9') == '16:9' else res_43
-                bitrate = bitrate_for_dim(self.pi_camera.resolution[0], self.pi_camera.resolution[1])
-                _logger.debug('Pi Camera: framerate: {} - bitrate: {} - resolution: {}'.format(self.pi_camera.framerate, bitrate, self.pi_camera.resolution))
-            except picamera.exc.PiCameraError:
+            (janus_bin_path, ld_lib_path) = build_janus_config(self.webcams, self.plugin.auth_token(), JANUS_WS_PORT, JANUS_ADMIN_WS_PORT)
+            if not janus_bin_path:
+                _logger.error('Janus not found or not configured correctly. Quiting webcam streaming.')
+                self.send_streaming_failed_event()
+                self.shutdown()
                 return
-        except (ModuleNotFoundError, OSError):
-            _logger.warning('picamera module failed to load on a Pi. Seems like an installation error.')
+
+            self.janus = JanusConn(self.plugin)
+            self.janus.start(janus_bin_path, ld_lib_path)
+
+            if not self.wait_for_janus():
+                for webcam in self.webcams:
+                    webcam['error'] = 'Janus failed to start'
+
+            for webcam in self.webcams:
+                if webcam['streaming_params']['mode'] == 'h264_transcode':
+                    self.h264_transcode(webcam)
+                elif webcam['streaming_params']['mode'] == 'mjpeg_webrtc':
+                    self.mjpeg_webrtc(webcam)
+                else:
+                    raise Exception('Unsupported streaming mode: {}'.format(webcam['streaming_params']['mode']))
+
+            normalized_webcams = [self.normalized_webcam_dict(webcam) for webcam in self.webcams]
+            self.printer_state.set_webcams(normalized_webcams)
+            self.server_conn.post_status_update_to_server(with_settings=True)
+
+            return (normalized_webcams, None)  # return value expected for a passthru target
+        except Exception:
+            self.plugin.sentry.captureException()
+            _logger.error('Error. Quitting webcam streaming.', exc_info=True)
+            self.send_streaming_failed_event()
+            self.shutdown()
             return
+
+
+    def shutdown(self):
+        self.shutting_down = True
+        self.shutdown_subprocesses()
+        self.close_all_mjpeg_socks()
+        return ('ok', None)  # return value expected for a passthru target
+
+    def send_streaming_failed_event(self):
+        event_data = {
+            'event_title': 'Obico for OctoPrint: Webcam Streaming Failed',
+            'event_text': 'Follow the webcam troubleshooting guide to resolve the issue.',
+            'event_class': 'WARNING',
+            'event_type': 'PRINTER_ERROR',
+            'info_url': 'https://obico.io/docs/user-guides/webcam-feed-is-not-showing/',
+        }
+        self.plugin.passthru_printer_event_to_client(event_data)
+        self.plugin.post_printer_event_to_server(event_data, attach_snapshot=False, spam_tolerance_seconds=60*30)
+
+    def find_streaming_params(self):
+        ffmpeg_h264_encoder = find_ffmpeg_h264_encoder()
+        webcams = []
+        for webcam in self.webcams:
+            stream_mode = 'h264_transcode' if ffmpeg_h264_encoder else 'mjpeg_webrtc'
+            webcam['streaming_params'] = dict(
+                    mode=stream_mode,
+                    h264_encoder=ffmpeg_h264_encoder,
+            )
+
+    def assign_janus_params(self):
+        first_h264_webcam = next(filter(lambda item: 'h264' in item['streaming_params']['mode'] and item['is_primary_camera'], self.webcams), None)
+        if first_h264_webcam:
+            first_h264_webcam['runtime'] = {}
+            first_h264_webcam['runtime']['stream_id'] = 1  # Set janus id to 1 for the first h264 stream to be compatible with old mobile app versions
+
+        first_mjpeg_webcam = next(filter(lambda item: 'mjpeg' in item['streaming_params']['mode'] and item['is_primary_camera'], self.webcams), None)
+        if first_mjpeg_webcam:
+            first_mjpeg_webcam['runtime'] = {}
+            first_mjpeg_webcam['runtime']['stream_id'] = 2  # Set janus id to 2 for the first mjpeg stream to be compatible with old mobile app versions
+
+        cur_stream_id = 3
+        cur_port_num = JANUS_ADMIN_WS_PORT + 1
+        for webcam in self.webcams:
+            if not hasattr(webcam, 'runtime'):
+                webcam['runtime'] = {}
+
+            if not webcam['runtime'].get('stream_id'):
+                webcam['runtime']['stream_id'] = cur_stream_id
+                cur_stream_id += 1
+
+            if webcam['streaming_params']['mode'] == 'h264_rtsp':
+                 webcam['runtime']['dataport'] = cur_port_num
+                 cur_port_num += 1
+            elif webcam['streaming_params']['mode'] in ('h264_copy', 'h264_transcode', 'h264_device'):
+                 webcam['runtime']['videoport'] = cur_port_num
+                 cur_port_num += 1
+                 webcam['runtime']['videortcpport'] = cur_port_num
+                 cur_port_num += 1
+                 webcam['runtime']['dataport'] = cur_port_num
+                 cur_port_num += 1
+            elif webcam['streaming_params']['mode'] == 'mjpeg_webrtc':
+                 webcam['runtime']['mjpeg_dataport'] = cur_port_num
+                 cur_port_num += 1
+
+
+    def wait_for_janus(self):
+        for i in range(100):
+            time.sleep(0.1)
+            if self.janus and self.janus.janus_ws and self.janus.janus_ws.connected():
+                return True
+
+        return False
+
+
+    def h264_transcode(self, webcam):
+
+        try:
+            stream_url = webcam.stream_url
+            if not stream_url:
+                raise Exception('stream_url not configured. Unable to stream the webcam.')
+
+            (img_w, img_h) = (parse_integer_or_none(webcam['streaming_params'].get('recode_width')), parse_integer_or_none(webcam['streaming_params'].get('recode_height')))
+            if not img_w or not img_h:
+                _logger.warn('width and/or height not specified or invalid in streaming parameters. Getting the values from the source.')
+                (img_w, img_h) = get_webcam_resolution(webcam)
+
+            fps = parse_integer_or_none(webcam['streaming_params'].get('recode_fps'))
+            if not fps:
+                _logger.warn('FPS not specified or invalid in streaming parameters. Getting the values from the source.')
+                fps = webcam.target_fps
+
+            bitrate = bitrate_for_dim(img_w, img_h)
+            if not self.is_pro:
+                fps = min(8, fps) # For some reason, when fps is set to 5, it looks like 2FPS. 8fps looks more like 5
+                bitrate = int(bitrate/2)
+
+            rtp_port = webcam['runtime']['videoport']
+            self.start_ffmpeg(rtp_port, '-re -i {stream_url} -filter:v fps={fps} -b:v {bitrate} -pix_fmt yuv420p -s {img_w}x{img_h} {encoder}'.format(stream_url=stream_url, fps=fps, bitrate=bitrate, img_w=img_w, img_h=img_h, encoder=webcam['streaming_params'].get('h264_encoder')))
+        except Exception:
+            self.plugin.sentry.captureException()
+
+
+    def start_ffmpeg(self, rtp_port, ffmpeg_args, retry_after_quit=False):
+        ffmpeg_cmd = '{ffmpeg} -loglevel error {ffmpeg_args} -an -f rtp rtp://{janus_server}:{rtp_port}?pkt_size=1300'.format(ffmpeg=FFMPEG, ffmpeg_args=ffmpeg_args, janus_server=JANUS_SERVER, rtp_port=rtp_port)
+
+        _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+        FNULL = open(os.devnull, 'w')
+        ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+
+        self.ffmpeg_out_rtp_ports.add(str(rtp_port))
+
+        with open(self.ffmpeg_pid_file_path(rtp_port), 'w') as pid_file:
+            pid_file.write(str(ffmpeg_proc.pid))
+
+        try:
+            returncode = ffmpeg_proc.wait(timeout=10) # If ffmpeg fails, it usually does so without 10s
+            (stdoutdata, stderrdata) = ffmpeg_proc.communicate()
+            msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
+            _logger.error(msg)
+            raise Exception('ffmpeg failed! Exit code: {}'.format(returncode))
+        except subprocess.TimeoutExpired:
+           pass
+
+        def monitor_ffmpeg_process(ffmpeg_proc, retry_after_quit=False):
+            # It seems important to drain the stderr output of ffmpeg, otherwise the whole process will get clogged
+            ring_buffer = deque(maxlen=50)
+            ffmpeg_backoff = ExpoBackoff(3)
+            while True:
+                line = to_unicode(ffmpeg_proc.stderr.readline(), errors='replace')
+                if not line:  # line == None means the process quits
+                    if self.shutting_down:
+                        return
+
+                    returncode = ffmpeg_proc.wait()
+                    msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
+                    _logger.debug(msg)
+
+                    if retry_after_quit:
+                        ffmpeg_backoff.more('ffmpeg exited un-expectedly. Exit code: {}'.format(returncode))
+                        ring_buffer = deque(maxlen=50)
+                        _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+                        ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+                    else:
+                        self.plugin.sentry.captureMessage('ffmpeg exited un-expectedly. Exit code: {}'.format(returncode))
+                        return
+                else:
+                    ring_buffer.append(line)
+
+        ffmpeg_thread = Thread(target=monitor_ffmpeg_process, kwargs=dict(ffmpeg_proc=ffmpeg_proc, retry_after_quit=retry_after_quit))
+        ffmpeg_thread.daemon = True
+        ffmpeg_thread.start()
+
+    def mjpeg_webrtc(self, webcam):
+
+        @backoff.on_exception(backoff.expo, Exception)
+        def mjpeg_loop():
+
+            mjpeg_dataport = webcam['runtime']['mjpeg_dataport']
+
+            min_interval_btw_frames = 1.0 / webcam.target_fps
+            bandwidth_throttle = 0.004
+            if pi_version() == "0":    # If Pi Zero
+                bandwidth_throttle *= 2
+
+            mjpeg_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.mjpeg_sock_list.append(mjpeg_sock)
+
+            last_frame_sent = 0
+
+            while True:
+                if self.shutting_down:
+                    return
+
+                time.sleep( max(last_frame_sent + min_interval_btw_frames - time.time(), 0) )
+                last_frame_sent = time.time()
+
+                jpg = None
+                try:
+                    jpg = capture_jpeg(webcam)
+                except Exception as e:
+                    _logger.warning('Failed to capture jpeg - ' + str(e))
+
+                if not jpg:
+                    continue
+
+                encoded = base64.b64encode(jpg)
+                mjpeg_sock.sendto(bytes('\r\n{}:{}\r\n'.format(len(encoded), len(jpg)), 'utf-8'), (JANUS_SERVER, mjpeg_dataport)) # simple header format for client to recognize
+                for chunk in [encoded[i:i+1400] for i in range(0, len(encoded), 1400)]:
+                    mjpeg_sock.sendto(chunk, (JANUS_SERVER, mjpeg_dataport))
+                    time.sleep(bandwidth_throttle)
+
+        mjpeg_loop_thread = Thread(target=mjpeg_loop)
+        mjpeg_loop_thread.daemon = True
+        mjpeg_loop_thread.start()
+
+    def ffmpeg_pid_file_path(self, rtp_port):
+        return '/tmp/obico-ffmpeg-{rtp_port}.pid'.format(rtp_port=rtp_port)
+
+    def kill_all_ffmpeg_if_running(self):
+        for rtc_port in self.ffmpeg_out_rtp_ports:
+            self.kill_ffmpeg_if_running(rtc_port)
+
+        self.ffmpeg_out_rtp_ports = set()
+
+    def kill_ffmpeg_if_running(self, rtc_port):
+        # It is possible that some orphaned ffmpeg process is running (maybe previous python process was killed -9?).
+        # Ensure all ffmpeg processes are killed
+        with open(self.ffmpeg_pid_file_path(rtc_port), 'r') as pid_file:
+            try:
+                subprocess.run(['kill', pid_file.read()], check=True)
+            except Exception as e:
+                _logger.warning('Failed to shutdown ffmpeg - ' + str(e))
+
+    def shutdown_subprocesses(self):
+        if self.janus:
+            self.janus.shutdown()
+        self.kill_all_ffmpeg_if_running()
+
+    def close_all_mjpeg_socks(self):
+        for mjpeg_sock in self.mjpeg_sock_list:
+            mjpeg_sock.close()
+
+    def normalized_webcam_dict(self, webcam):
+        return dict(
+                name=webcam.name,
+                is_primary_camera=webcam['is_primary_camera'],
+                is_nozzle_camera=webcam.is_nozzle_camera,
+                stream_mode=webcam['streaming_params'].get('mode'),
+                stream_id=webcam['runtime'].get('stream_id'),
+                flipV=webcam.flip_v,
+                flipH=webcam.flip_h,
+                rotation=webcam.rotation,
+                streamRatio='16:9' if webcam.aspect_ratio_169 else '4:3',
+                )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     @backoff.on_exception(backoff.expo, Exception)
@@ -204,7 +529,7 @@ class WebcamStreamer:
                             'buttons': ['never', 'ok']
                         }, self.plugin)
                 except Exception:
-                    self.sentry.captureException()
+                    self.plugin.sentry.captureException()
 
             if compatible_mode == 'always':
                 self.ffmpeg_from_mjpeg()
@@ -231,7 +556,7 @@ class WebcamStreamer:
                     self.ffmpeg_from_mjpeg()
                     return
 
-                self.webcam_server = UsbCamWebServer(self.sentry)
+                self.webcam_server = UsbCamWebServer(self.plugin.sentry)
                 self.webcam_server.start()
 
                 self.start_gst_memory_guard()
@@ -240,7 +565,7 @@ class WebcamStreamer:
             else:
                 self.start_ffmpeg('-re -i pipe:0 -flags:v +global_header -c:v copy -bsf dump_extra')
 
-                self.webcam_server = PiCamWebServer(self.pi_camera, self.sentry)
+                self.webcam_server = PiCamWebServer(self.pi_camera, self.plugin.sentry)
                 self.webcam_server.start()
                 self.pi_camera.start_recording(self.ffmpeg_proc.stdin, format='h264', quality=23, intra_period=25, profile='baseline')
                 self.pi_camera.wait_recording(0)
@@ -255,29 +580,10 @@ class WebcamStreamer:
             }, self.plugin, post_to_server=True)
 
             self.restore()
-            self.sentry.captureException()
+            self.plugin.sentry.captureException()
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=3)
     def ffmpeg_from_mjpeg(self):
-
-        @backoff.on_exception(backoff.expo, Exception, max_tries=20)
-        def get_webcam_resolution(plugin):
-            return get_image_info(capture_jpeg(plugin, force_stream_url=True))
-
-        def h264_encoder():
-            test_video = os.path.join(FFMPEG_DIR, 'test-video.mp4')
-            FNULL = open(os.devnull, 'w')
-            for encoder in ['h264_omx', 'h264_v4l2m2m']:
-                ffmpeg_cmd = '{} -re -i {} -pix_fmt yuv420p -vcodec {} -an -f rtp rtp://localhost:8014?pkt_size=1300'.format(FFMPEG, test_video, encoder)
-                _logger.debug('Popen: {}'.format(ffmpeg_cmd))
-                ffmpeg_test_proc = psutil.Popen(ffmpeg_cmd.split(' '), stdout=FNULL, stderr=FNULL)
-                if ffmpeg_test_proc.wait() == 0:
-                    if encoder == 'h264_omx':
-                        return '-flags:v +global_header -c:v {} -bsf dump_extra'.format(encoder)  # Apparently OMX encoder needs extra param to get the stream to work
-                    else:
-                        return '-c:v {}'.format(encoder)
-
-            raise Exception('No ffmpeg found, or ffmpeg does NOT support h264_omx/h264_v4l2m2m encoding.')
 
         wait_for_port_to_close('127.0.0.1', 8080)  # wait for WebcamServer to be clear of port 8080
         sarge.run('sudo service webcamd start')
@@ -290,12 +596,12 @@ class WebcamStreamer:
 
         (img_w, img_h) = (640, 480)
         try:
-            (_, img_w, img_h) = get_webcam_resolution(self.plugin)
+            (img_w, img_h) = get_webcam_resolution(self.plugin)
             _logger.debug(f'Detected webcam resolution - w:{img_w} / h:{img_h}')
         except (URLError, HTTPError, requests.exceptions.RequestException):
             _logger.warn('Failed to connect to webcam to retrieve resolution. Using default.')
         except Exception:
-            self.sentry.captureException()
+            self.plugin.sentry.captureException()
             _logger.warn('Failed to detect webcam resolution due to unexpected error. Using default.')
 
         bitrate = bitrate_for_dim(img_w, img_h)
@@ -339,7 +645,7 @@ class WebcamStreamer:
                     returncode = self.ffmpeg_proc.wait()
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
                     _logger.debug(msg)
-                    self.sentry.captureMessage('ffmpeg exited un-expectedly. Exit code: {}'.format(returncode))
+                    self.plugin.sentry.captureMessage('ffmpeg exited un-expectedly. Exit code: {}'.format(returncode))
                     if retry_after_quit:
                         ffmpeg_backoff.more('ffmpeg exited un-expectedly. Exit code: {}'.format(returncode))
                         ring_buffer = deque(maxlen=50)
@@ -389,7 +695,7 @@ class WebcamStreamer:
                     returncode = self.gst_proc.wait()
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
                     _logger.debug(msg)
-                    self.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(returncode))
+                    self.plugin.sentry.captureMessage('GST exited un-expectedly. Exit code: {}'.format(returncode))
                     gst_backoff.more(Exception('GST exited un-expectedly. Exit code: {}'.format(returncode)))
 
                     ring_buffer = deque(maxlen=50)
@@ -450,7 +756,7 @@ class WebcamStreamer:
 class UsbCamWebServer:
 
     def __init__(self, sentry):
-        self.sentry = sentry
+        self.plugin.sentry = sentry
         self.web_server = None
 
     def mjpeg_generator(self):
@@ -463,10 +769,10 @@ class UsbCamWebServer:
             pass
         except socket.error as err:
             if err.errno not in [errno.ECONNREFUSED, ]:
-                self.sentry.captureException()
+                self.plugin.sentry.captureException()
             raise
         except Exception:
-            self.sentry.captureException()
+            self.plugin.sentry.captureException()
             raise
         finally:
             s.close()
@@ -500,7 +806,7 @@ class UsbCamWebServer:
             _logger.error(exc_obj)
             raise
         except Exception:
-            self.sentry.captureException()
+            self.plugin.sentry.captureException()
             raise
         finally:
             s.close()
@@ -559,7 +865,7 @@ class UsbCamWebServer:
 
 class PiCamWebServer:
     def __init__(self, camera, sentry):
-        self.sentry = sentry
+        self.plugin.sentry = sentry
         self.pi_camera = camera
         self.img_q = queue.Queue(maxsize=1)
         self.last_capture = 0
@@ -581,7 +887,7 @@ class PiCamWebServer:
 
                 self.img_q.put(chunk)
         except Exception:
-            self.sentry.captureException()
+            self.plugin.sentry.captureException()
             raise
 
     def mjpeg_generator(self, boundary):
@@ -598,7 +904,7 @@ class PiCamWebServer:
         except GeneratorExit:
             pass
         except Exception:
-            self.sentry.captureException()
+            self.plugin.sentry.captureException()
             raise
 
     def get_snapshot(self):
