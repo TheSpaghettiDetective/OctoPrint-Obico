@@ -157,7 +157,7 @@ class WebcamStreamer:
                 self.shutdown()
                 return
 
-            self.janus = JanusConn(self.plugin)
+            self.janus = JanusConn(self.plugin, JANUS_WS_PORT)
             self.janus.start(janus_bin_path, ld_lib_path)
 
             if not self.wait_for_janus():
