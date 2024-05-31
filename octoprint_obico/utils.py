@@ -392,14 +392,14 @@ def derive_webcam_configs_from_octoprint():
     # Select the 'classic' webcam as the primary camera if it exists, otherwise select the first webcam
     primary_camera = octoprint_webcams.get('classic') if octoprint_webcams else None
     primary_camera = primary_camera or (list(octoprint_webcams.values())[0] if octoprint_webcams else None)
+    # Select the first webcam that is not the primary camera as the secondary camera
+    secondary_camera = next((cam for cam in octoprint_webcams.values() if cam is not primary_camera), None)
 
     if primary_camera:
         primary_camera = webcam_config_dict(primary_camera)
         primary_camera['is_primary_camera'] = True
         webcam_configs.append(primary_camera)
 
-    # Select the first webcam that is not the primary camera as the secondary camera
-    secondary_camera = next((cam for cam in octoprint_webcams.values() if cam is not primary_camera), None)
     if secondary_camera:
         secondary_camera = webcam_config_dict(secondary_camera)
         secondary_camera['is_primary_camera'] = False
