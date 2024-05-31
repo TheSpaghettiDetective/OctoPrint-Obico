@@ -32,6 +32,7 @@ from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 from .janus_config_builder import build_janus_config
+from .janus import JanusConn
 
 
 _logger = logging.getLogger('octoprint.plugins.obico')
