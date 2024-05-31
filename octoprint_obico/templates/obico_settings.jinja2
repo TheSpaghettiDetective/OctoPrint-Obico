@@ -150,24 +150,34 @@
             </div>
           </form>
           <form class="form">
-              <div data-bind="visible: (streaming.is_pi_camera() && !settingsViewModel.settings.plugins.obico.disable_video_streaming())" class="control-group" title="{{ _('Pi Camera resolution') }}">
-                  <label class="control-label" for="pi-cam-resolution">{{ _('Webcam resolution') }}</label>
-                  <div class="controls">
-                      <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.obico.pi_cam_resolution" id="pi-cam-resolution"></select>
+              <div data-bind="visible: !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
+                  <div style="display: flex; flex-direction: row; gap: 20px">
+                      <div style="display: flex; flex-direction: column;">
+                          <label class="control-label" for="primary-camera">{{ _('Primary Camera') }}</label>
+                          <div class="controls">
+                              <select data-bind="options: cameraOptions, optionsValue: 'name', optionsText: 'name', value: settingsViewModel.settings.plugins.obico.primary_camera" id="primary-camera"></select>
+                          </div>
+                      </div>
+                      <div style="display: flex; flex-direction: column;">
+                          <label class="control-label">Nozzle Camera</label>
+                          <div class="controls">
+                              <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.is_primary_nozzle_camera">
+                          </div>
+                      </div>
                   </div>
-              </div>
-              <div data-bind="visible: linkedPrinter.is_pro() && !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
-                  <label class="control-label">Compatibility mode <a href="https://www.obico.io/docs/user-guides/streaming-compatibility-mode/">(What is it?)</a></label>
-                  <div class="controls">
-                      <label class="radio">
-                          <input type="radio" name="webcamCompatibleModeGroup" value="auto" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Automatic (default). Obico will automatically switch to compatibility mode if necessary. Select this option if you are not sure.
-                      </label>
-                      <label class="radio">
-                          <input type="radio" name="webcamCompatibleModeGroup" value="always" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Always stream in compatibility mode
-                      </label>
-                      <label class="radio">
-                          <input type="radio" name="webcamCompatibleModeGroup" value="never" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Never stream in compatibility mode
-                      </label>
+                  <div data-bind="visible: isMultiCam" style="display: flex; flex-direction: row; gap: 20px">
+                      <div style="display: flex; flex-direction: column;">
+                          <label class="control-label" for="second-camera">{{ _('Second Camera') }}</label>
+                          <div class="controls">
+                              <select data-bind="options: secondCameraOptions, optionsValue: 'name', optionsText: 'name', value: settingsViewModel.settings.plugins.obico.secondary_camera" id="second-camera"></select>
+                          </div>
+                      </div>
+                      <div style="display: flex; flex-direction: column;">
+                          <label class="control-label">Nozzle Camera</label>
+                          <div class="controls">
+                              <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.is_secondary_nozzle_camera">
+                          </div>
+                      </div>
                   </div>
               </div>
           </form>

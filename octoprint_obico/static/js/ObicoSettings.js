@@ -28,6 +28,31 @@ $(function () {
 
         self.alertsShown = {};
         self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
+        
+        self.cameraOptions = ko.pureComputed(function() {
+            available_webcams = self.settingsViewModel.settings.plugins.multicam.multicam_profiles();
+            webcamsToDisplay = available_webcams.map((webcam) => { 
+                return { name: webcam.name()}
+                }
+            );
+            return webcamsToDisplay;
+        }, self);
+
+        self.secondCameraOptions = ko.pureComputed(function() {
+            var primaryCamera = self.settingsViewModel.settings.plugins.obico.primary_camera();
+            var filteredOptions = self.cameraOptions().filter(function(option) {
+                return option.name != primaryCamera;
+            });
+
+            //Add null option option to disable second camera stream
+            var optionsWithNone = [{ name: "Disable" }].concat(filteredOptions);
+            return optionsWithNone;
+        }, self);
+
+        self.isMultiCam = ko.pureComputed(function() {
+            return self.cameraOptions().length > 1;
+        },self)
+        
         self.isWizardShown = ko.observable(
             retrieveFromLocalStorage('disableTSDWizardAutoPopupUntil', 0) > new Date().getTime()
         );
