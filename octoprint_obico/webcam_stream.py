@@ -407,15 +407,15 @@ class WebcamStreamer:
 
     def normalized_webcam_dict(self, webcam):
         return dict(
-                name=webcam.name,
+                name=webcam['name'],
                 is_primary_camera=webcam['is_primary_camera'],
-                is_nozzle_camera=webcam.is_nozzle_camera,
+                is_nozzle_camera=webcam['is_nozzle_camera'],
                 stream_mode=webcam['streaming_params'].get('mode'),
                 stream_id=webcam['runtime'].get('stream_id'),
-                flipV=webcam.flip_v,
-                flipH=webcam.flip_h,
-                rotation=webcam.rotation,
-                streamRatio='16:9' if webcam.aspect_ratio_169 else '4:3',
+                flipV=webcam['flip_v'],
+                flipH=webcam['flip_h'],
+                rotation=webcam['rotation'],
+                streamRatio=webcam['streamRatio'],
                 )
 
 
