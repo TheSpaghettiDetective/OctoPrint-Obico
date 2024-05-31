@@ -122,7 +122,7 @@ class JanusConn:
                 _logger.debug('Processing WebRTC data channel msg from client:')
                 _logger.debug(msg)
                 # TODO: make data channel work again
-                self.plugin.client_conn.on_message_to_plugin(to_plugin)
+                # self.plugin.client_conn.on_message_to_plugin(to_plugin)
                 return
 
             _logger.debug('Relaying Janus msg')
