@@ -109,6 +109,7 @@ class ObicoPlugin(
             pi_cam_resolution='medium',
             sentry_opt='out',
             video_streaming_compatible_mode='auto',
+            webcam_streams=[],
         )
 
     def on_settings_save(self, data):
