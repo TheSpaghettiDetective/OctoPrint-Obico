@@ -15,7 +15,7 @@ try:
 except ImportError:
     import Queue as queue
 
-from .utils import ExpoBackoff, pi_version, is_port_open, run_in_thread
+from .utils import ExpoBackoff, pi_version, is_port_open, wait_for_port, wait_for_port_to_close, run_in_thread
 from .ws import WebSocketClient
 from .lib import alert_queue
 
