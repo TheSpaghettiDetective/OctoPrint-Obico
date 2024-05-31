@@ -30,22 +30,33 @@ $(function () {
         self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
         
         self.cameraOptions = ko.pureComputed(function() {
-            available_webcams = self.settingsViewModel.settings.plugins.multicam.multicam_profiles();
-            webcamsToDisplay = available_webcams.map((webcam) => { 
-                return { name: webcam.name()}
+            var multicamWebcams = self.settingsViewModel.settings.plugins.multicam.multicam_profiles();
+            var webcamsToDisplay = multicamWebcams.map((multiCamWebcam) => {
+                return { name: multiCamWebcam.name() }
                 }
             );
             return webcamsToDisplay;
         }, self);
 
-        self.secondCameraOptions = ko.pureComputed(function() {
-            var primaryCamera = self.settingsViewModel.settings.plugins.obico.primary_camera();
-            var filteredOptions = self.cameraOptions().filter(function(option) {
-                return option.name != primaryCamera;
+        self.isPrimaryANozzleCam = ko.pureComputed(function() {
+            var primaryCamera = self.settingsViewModel.settings.plugins.obico.primary_camera;
+            var obicoPluginWebcams = self.settingsViewModel.settings.plugins.obico.webcam_streams();
+            var primaryCameraObicoSettings = obicoPluginWebcams.find(function(option) {
+                return option.name() === primaryCamera();
             });
+    
+            return primaryCameraObicoSettings.is_primary_camera()? true : false;                
 
+        }, self);
+
+        self.secondCameraOptions = ko.pureComputed(function() {
+            var primaryCamera = self.settingsViewModel.settings.plugins.obico.primary_camera;
+            var filteredOptions = self.cameraOptions().filter(function(option) {
+                return option.name != primaryCamera();
+            });
             //Add null option option to disable second camera stream
             var optionsWithNone = [{ name: "Disable" }].concat(filteredOptions);
+            console.log(optionsWithNone)
             return optionsWithNone;
         }, self);
 
