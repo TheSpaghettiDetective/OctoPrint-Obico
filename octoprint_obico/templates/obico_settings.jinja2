@@ -150,6 +150,36 @@
             </div>
           </form>
           <form class="form">
+              <div data-bind="visible: !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
+                  <div style="display: flex; flex-direction: row; gap: 20px">
+                      <div style="display: flex; flex-direction: column;">
+                          <label class="control-label" for="primary-camera">{{ _('Primary Camera') }}</label>
+                          <div class="controls">
+                              <select data-bind="options: cameraOptions, optionsValue: 'id', optionsText: 'name', value: settingsViewModel.settings.plugins.obico.primary_camera" id="primary-camera"></select>
+                          </div>
+                      </div>
+                      <div style="display: flex; flex-direction: column;">
+                          <label class="control-label">Nozzle Camera</label>
+                          <div class="controls">
+                              <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.is_primary_nozzle_camera">
+                          </div>
+                      </div>
+                  </div>
+                  <div data-bind="visible: cameraOptions.length > 1" style="display: flex; flex-direction: row; gap: 20px">
+                      <div style="display: flex; flex-direction: column;">
+                          <label class="control-label" for="second-camera">{{ _('Second Camera') }}</label>
+                          <div class="controls">
+                              <select data-bind="options: secondCameraOptions, optionsValue: 'id', optionsText: 'name', value: settingsViewModel.settings.plugins.obico.secondary_camera" id="second-camera"></select>
+                          </div>
+                      </div>
+                      <div style="display: flex; flex-direction: column;">
+                          <label class="control-label">Nozzle Camera</label>
+                          <div class="controls">
+                              <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.is_secondary_nozzle_camera">
+                          </div>
+                      </div>
+                  </div>
+              </div>
               <div data-bind="visible: (streaming.is_pi_camera() && !settingsViewModel.settings.plugins.obico.disable_video_streaming())" class="control-group" title="{{ _('Pi Camera resolution') }}">
                   <label class="control-label" for="pi-cam-resolution">{{ _('Webcam resolution') }}</label>
                   <div class="controls">
