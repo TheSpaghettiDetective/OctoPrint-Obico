@@ -18,6 +18,8 @@ except ImportError:
 from .utils import ExpoBackoff, pi_version, is_port_open, wait_for_port, wait_for_port_to_close, run_in_thread
 from .ws import WebSocketClient
 from .lib import alert_queue
+from .janus_config_builder import RUNTIME_JANUS_ETC_DIR
+
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
