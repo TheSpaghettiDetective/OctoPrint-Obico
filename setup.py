@@ -35,7 +35,7 @@ plugin_url = "https://www.obico.io/"
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = ["OctoPrint>=1.5.0", "backoff>=1.4.3", "sentry-sdk>=1.5.12", "bson>=0.5.10"]
+plugin_requires = ["OctoPrint>=1.5.0", "backoff>=1.4.3", "sentry-sdk>=1.5.12", "bson>=0.5.10", "distro>=1.9.0"]
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point

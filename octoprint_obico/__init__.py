@@ -24,11 +24,11 @@ from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
     OctoPrintSettingsUpdater, run_in_thread,
-    server_request, migrate_tsd_settings, octoprint_webcam_settings)
+    server_request, migrate_tsd_settings, octoprint_webcam_settings,
+    derive_webcam_configs_from_octoprint,)
 from .lib.error_stats import error_stats
 from .lib import alert_queue
 from .print_job_tracker import PrintJobTracker
-from .janus import JanusConn
 from .remote_status import RemoteStatus
 from .webcam_capture import JpegPoster, capture_jpeg
 from .file_downloader import FileDownloader
@@ -40,6 +40,7 @@ from .printer_discovery import PrinterDiscovery
 from .gcode_hooks import GCodeHooks
 from .gcode_preprocessor import GcodePreProcessorWrapper
 from .file_operations import FileOperations
+from .webcam_stream import WebcamStreamer
 
 import octoprint.plugin
 
@@ -83,13 +84,14 @@ class ObicoPlugin(
         self.file_downloader = FileDownloader(self, _print_job_tracker)
         self.linked_printer = DEFAULT_LINKED_PRINTER
         self.local_tunnel = None
-        self.janus = JanusConn(self)
         self.client_conn = ClientConn(self)
         self.discovery = None
         self.bailed_because_tsd_plugin_running = False
         self.printer_events_posted = dict()
         self.file_operations = FileOperations(self)
         self.nozzlecam = NozzleCam(self)
+        self.webcam_streamer = WebcamStreamer(self)
+        self.webcam_configs = []
 
 
     # ~~ Custom event registration
@@ -195,8 +197,8 @@ class ObicoPlugin(
         self.shutting_down = True
         if self.ss is not None:
             self.ss.close()
-        if self.janus:
-            self.janus.shutdown()
+        if self.webcam_streamer:
+            self.webcam_streamer.shutdown()
         if self.client_conn:
             self.client_conn.close()
 
@@ -251,10 +253,9 @@ class ObicoPlugin(
         # Notify plugin UI about the server connection status change
         self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
 
-        # Janus may take a while to start, or fail to start. Put it in thread to make sure it does not block
-        janus_thread = threading.Thread(target=self.janus.start)
-        janus_thread.daemon = True
-        janus_thread.start()
+        self.webcam_configs = derive_webcam_configs_from_octoprint()
+        run_in_thread(self.webcam_streamer.start, self.webcam_configs)
+
 
         url = 'http://{}:{}'.format('127.0.0.1', self.octoprint_port)
         self.local_tunnel = LocalTunnel(
@@ -408,8 +409,8 @@ class ObicoPlugin(
                 self.client_conn.on_message_to_plugin(msg.get('passthru'))
                 need_status_boost = True
 
-            if msg.get('janus') and self.janus:
-                self.janus.pass_to_janus(msg.get('janus'))
+            if msg.get('janus') and self.webcam_streamer and self.webcam_streamer.janus:
+                self.webcam_streamer.janus.pass_to_janus(msg.get('janus'))
 
             if msg.get('remote_status'):
                 self.remote_status.update(msg.get('remote_status'))
@@ -457,7 +458,7 @@ class ObicoPlugin(
         status_data = status.get('status', {})
         status = {'status': status_data, 'octoprint_data': status_data}
 
-        self.client_conn.send_msg_to_client(status)
+        # self.client_conn.send_msg_to_client(status)
 
     def boost_status_update(self):
         self.post_printer_status_to_client()
