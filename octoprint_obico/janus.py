@@ -24,8 +24,6 @@ _logger = logging.getLogger('octoprint.plugins.obico')
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 MAX_PAYLOAD_SIZE = 1500  # hardcoded in streaming plugin
 
-class JanusNotSupportedException(Exception):
-    pass
 
 class JanusConn:
 
@@ -63,6 +61,11 @@ class JanusConn:
                         return
             except Exception as ex:
                 self.plugin.sentry.captureException()
+
+        self.kill_janus_if_running()
+        run_in_thread(run_janus_forever)
+        self.wait_for_janus()
+        self.start_janus_ws()
 
     def connected(self):
         return self.janus_ws and self.janus_ws.connected()
