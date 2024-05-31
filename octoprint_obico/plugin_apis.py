@@ -45,7 +45,7 @@ def on_api_command(plugin, command, data):
             return flask.jsonify(verify_code(plugin, data))
 
         if command == "get_plugin_status":
-            webcam_streamer = plugin.janus and plugin.janus.webcam_streamer
+            webcam_streamer = plugin.webcam_streamer
             results = dict(
                 server_status=dict(
                     is_connected=plugin.ss and plugin.ss.connected(),
@@ -54,12 +54,12 @@ def on_api_command(plugin, command, data):
                 ),
                 linked_printer=plugin.linked_printer,
                 streaming_status=dict(
-                    is_pi_camera=webcam_streamer and bool(webcam_streamer.pi_camera),
+                    is_pi_camera=False,
                     webrtc_streaming=webcam_streamer and not webcam_streamer.shutting_down,
-                    compat_streaming=webcam_streamer and webcam_streamer.compat_streaming),
-                    error_stats=error_stats.as_dict(),
-                    alerts=alert_queue.fetch_and_clear(),
-                )
+                    compat_streaming=True),
+                error_stats=error_stats.as_dict(),
+                alerts=alert_queue.fetch_and_clear(),
+            )
             if plugin._settings.get(["auth_token"]):     # Ask to opt in sentry only after wizard is done.
                 sentry_opt = plugin._settings.get(["sentry_opt"])
                 if sentry_opt == 'out':

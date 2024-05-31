@@ -9,7 +9,7 @@ import zlib
 import re
 from collections import deque
 
-from .janus import JANUS_SERVER, JANUS_PRINTER_DATA_PORT, MAX_PAYLOAD_SIZE
+from .janus import JANUS_SERVER, MAX_PAYLOAD_SIZE
 
 __python_version__ = 3 if sys.version_info >= (3, 0) else 2
 
@@ -19,7 +19,7 @@ class ClientConn:
 
     def __init__(self, plugin):
         self.plugin = plugin
-        self.printer_data_channel_conn = DataChannelConn(JANUS_SERVER, JANUS_PRINTER_DATA_PORT)
+        # self.printer_data_channel_conn = DataChannelConn(JANUS_SERVER)
         self.seen_refs = deque(maxlen=25)  # contains "last" 25 passthru refs
         self.seen_refs_lock = threading.RLock()
 

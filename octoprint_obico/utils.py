@@ -350,8 +350,59 @@ def run_in_thread(long_running_func, *args, **kwargs):
     daemon_thread.start()
     return daemon_thread
 
+
 def get_file_metadata(file_manager, target_path, location):
     try:
         return file_manager.get_metadata(path=target_path, destination=location) # Compatibility with OctoPrint 1.9.x and earlier.
     except Exception:
         return file_manager.get_metadata(path=target_path, location=location)
+
+
+def os_bit():
+    return platform.architecture()[0].replace("bit", "-bit")
+
+
+def board_id():
+    model_file = "/sys/firmware/devicetree/base/model"
+    if os.path.isfile(model_file):
+        with open(model_file, 'r') as file:
+            data = file.read()
+            if "raspberry" in data.lower():
+                return "rpi"
+            elif "makerbase" in data.lower() or "roc-rk3328-cc" in data:
+                return "mks"
+    return "NA"
+
+
+def derive_webcam_configs_from_octoprint():
+    def webcam_config_dict(webcam):
+        webcam_config = webcam.config.dict() # This turns out to be the best way to get a dict from octoprint.webcam.Webcam
+        return {
+            'name': webcam_config.get('name', 'Unknown'),
+            'flipH': webcam_config.get('flipH', False),
+            'flipV': webcam_config.get('flipV', False),
+            'rotate90': webcam_config.get('rotate90', False),
+            'stream': webcam_config.get('compat', {}).get('stream', None),
+            'snapshot': webcam_config.get('compat', {}).get('snapshot', None),
+        }
+
+    webcam_configs = []
+    octoprint_webcams = octoprint.webcams.get_webcams()
+
+    # Select the 'classic' webcam as the primary camera if it exists, otherwise select the first webcam
+    primary_camera = octoprint_webcams.get('classic') if octoprint_webcams else None
+    primary_camera = primary_camera or (list(octoprint_webcams.values())[0] if octoprint_webcams else None)
+    # Select the first webcam that is not the primary camera as the secondary camera
+    secondary_camera = next((cam for cam in octoprint_webcams.values() if cam is not primary_camera), None)
+
+    if primary_camera:
+        primary_camera = webcam_config_dict(primary_camera)
+        primary_camera['is_primary_camera'] = True
+        webcam_configs.append(primary_camera)
+
+    if secondary_camera:
+        secondary_camera = webcam_config_dict(secondary_camera)
+        secondary_camera['is_primary_camera'] = False
+        webcam_configs.append(secondary_camera)
+
+    return webcam_configs
