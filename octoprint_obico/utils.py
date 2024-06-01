@@ -384,6 +384,7 @@ def derive_webcam_configs_from_octoprint():
             'rotation': 270 if webcam_config.get('rotate90', False) else 0, # 270 = 90 degrees counterclockwise
             'stream': webcam_config.get('compat', {}).get('stream', None),
             'snapshot': webcam_config.get('compat', {}).get('snapshot', None),
+            'streamRatio': webcam_config.get('compat', {}).get('streamRatio', '4:3'),
             'is_nozzle_camera': False,
         }
 
