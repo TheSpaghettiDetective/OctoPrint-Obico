@@ -28,7 +28,7 @@ from textwrap import wrap
 import psutil
 from octoprint.util import to_unicode
 
-from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close, octoprint_webcam_settings
+from .utils import pi_version, ExpoBackoff, get_image_info, parse_integer_or_none
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 from .janus_config_builder import build_janus_config
@@ -36,8 +36,6 @@ from .janus import JanusConn
 
 
 _logger = logging.getLogger('octoprint.plugins.obico')
-
-GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
 
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 FFMPEG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
@@ -96,40 +94,6 @@ def find_ffmpeg_h264_encoder():
     return None
 
 
-def cpu_watch_dog(watched_process, plugin, max, interval):
-
-    def watch_process_cpu(watched_process, max, interval, plugin):
-        while True:
-            if not watched_process.is_running():
-                return
-
-            cpu_pct = watched_process.cpu_percent(interval=None)
-            if cpu_pct > max:
-                alert_queue.add_alert({
-                    'level': 'warning',
-                    'cause': 'cpu',
-                    'title': 'Streaming Excessive CPU Usage',
-                    'text': 'The webcam streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the webcam streaming.',
-                    'info_url': 'https://www.obico.io/docs/user-guides/warnings/compatibility-mode-excessive-cpu/',
-                    'buttons': ['more_info', 'never', 'ok'],
-                }, plugin, post_to_server=True)
-
-            time.sleep(interval)
-
-    watch_thread = Thread(target=watch_process_cpu, args=(watched_process, max, interval, plugin))
-    watch_thread.daemon = True
-    watch_thread.start()
-
-
-def is_octolapse_enabled(plugin):
-    octolapse_plugin = plugin._plugin_manager.get_plugin_info('octolapse', True)
-    if octolapse_plugin is None:
-        # not installed or not enabled
-        return False
-
-    return octolapse_plugin.implementation._octolapse_settings.main_settings.is_octolapse_enabled
-
-
 class WebcamStreamer:
 
     def __init__(self, plugin):
@@ -140,6 +104,7 @@ class WebcamStreamer:
         self.janus = None
         self.ffmpeg_proc = None
         self.shutting_down = False
+        self.normalized_webcams = []
 
     def start(self, webcam_configs):
 
@@ -172,11 +137,11 @@ class WebcamStreamer:
                 else:
                     raise Exception('Unsupported streaming mode: {}'.format(webcam['streaming_params']['mode']))
 
-            normalized_webcams = [self.normalized_webcam_dict(webcam) for webcam in self.webcams]
-            self.printer_state.set_webcams(normalized_webcams)
-            self.server_conn.post_status_update_to_server(with_settings=True)
+            self.normalized_webcams = [self.normalized_webcam_dict(webcam) for webcam in self.webcams]
+            self.plugin.octoprint_settings_updater.update_settings()
+            self.plugin.post_update_to_server()
 
-            return (normalized_webcams, None)  # return value expected for a passthru target
+            return (self.normalized_webcams, None)  # return value expected for a passthru target
         except Exception:
             self.plugin.sentry.captureException()
             _logger.error('Error. Quitting webcam streaming.', exc_info=True)
@@ -260,7 +225,7 @@ class WebcamStreamer:
     def h264_transcode(self, webcam):
 
         try:
-            stream_url = webcam.stream_url
+            stream_url = webcam_full_url(webcam.get("stream"))
             if not stream_url:
                 raise Exception('stream_url not configured. Unable to stream the webcam.')
 
@@ -272,10 +237,10 @@ class WebcamStreamer:
             fps = parse_integer_or_none(webcam['streaming_params'].get('recode_fps'))
             if not fps:
                 _logger.warn('FPS not specified or invalid in streaming parameters. Getting the values from the source.')
-                fps = webcam.target_fps
+                fps = webcam['target_fps']
 
             bitrate = bitrate_for_dim(img_w, img_h)
-            if not self.is_pro:
+            if not self.plugin.linked_printer.get('is_pro'):
                 fps = min(8, fps) # For some reason, when fps is set to 5, it looks like 2FPS. 8fps looks more like 5
                 bitrate = int(bitrate/2)
 
@@ -342,7 +307,7 @@ class WebcamStreamer:
 
             mjpeg_dataport = webcam['runtime']['mjpeg_dataport']
 
-            min_interval_btw_frames = 1.0 / webcam.target_fps
+            min_interval_btw_frames = 1.0 / webcam['target_fps']
             bandwidth_throttle = 0.004
             if pi_version() == "0":    # If Pi Zero
                 bandwidth_throttle *= 2
@@ -412,8 +377,8 @@ class WebcamStreamer:
                 is_nozzle_camera=webcam['is_nozzle_camera'],
                 stream_mode=webcam['streaming_params'].get('mode'),
                 stream_id=webcam['runtime'].get('stream_id'),
-                flipV=webcam['flip_v'],
-                flipH=webcam['flip_h'],
+                flipV=webcam['flipV'],
+                flipH=webcam['flipH'],
                 rotation=webcam['rotation'],
                 streamRatio=webcam['streamRatio'],
                 )

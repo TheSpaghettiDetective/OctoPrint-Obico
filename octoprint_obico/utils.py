@@ -75,20 +75,15 @@ class OctoPrintSettingsUpdater:
             if self.last_asked > time.time() - PRINTER_SETTINGS_UPDATE_INTERVAL:
                 return None
 
-        webcam_dict = dict((k, v) for k, v in octoprint_webcam_settings(self.plugin._settings).items() if k in ('flipV', 'flipH', 'rotate90', 'streamRatio'))
-        webcam_dict['rotation'] = 0
-        if 'rotate90' in webcam_dict:
-            webcam_dict['rotation'] = 270 if webcam_dict['rotate90'] else 0 # 270 = 90 degrees counterclockwise
-            del webcam_dict['rotate90']
-
         data = dict(
-            webcam=webcam_dict,
             temperature=self.plugin._settings.settings.effective.get('temperature', {}),
             agent=dict(name='octoprint_obico', version=self.plugin._plugin_version),
             octoprint_version=octoprint.util.version.get_octoprint_version_string(),
             platform_uname=list(platform.uname()),
             installed_plugins=[p.key for p in list(self.plugin._plugin_manager.enabled_plugins.values()) if not p.bundled],
         )
+        if self.plugin.webcam_streamer.normalized_webcams:
+            data['webcams'] = self.plugin.webcam_streamer.normalized_webcams
         if self.printer_metadata:
             data['printer_metadata'] = self.printer_metadata
 
@@ -267,8 +262,8 @@ def is_port_open(host, port):
         return sock.connect_ex((host, port)) == 0
 
 
-@backoff.on_exception(backoff.expo, Exception, max_tries=3, jitter=None)
-@backoff.on_predicate(backoff.expo, max_tries=3, jitter=None)
+@backoff.on_exception(backoff.expo, Exception, max_tries=5, jitter=None)
+@backoff.on_predicate(backoff.expo, max_tries=5, jitter=None)
 def wait_for_port(host, port):
     return is_port_open(host, port)
 
@@ -339,9 +334,12 @@ def migrate_tsd_settings(plugin):
         plugin._settings.set(["tsd_migrated"], 'yes', force=True)
         plugin._settings.save(force=True)
 
-# Provide compatibility for OctoPrint 1.9+ and the older versions
-def octoprint_webcam_settings(octoprint_settings):
-    return octoprint_settings.global_get(["plugins", "classicwebcam"]) or octoprint_settings.global_get(["webcam"]) or {}
+
+def parse_integer_or_none(s):
+    try:
+        return int(s)
+    except:
+        return None
 
 
 def run_in_thread(long_running_func, *args, **kwargs):
@@ -381,9 +379,12 @@ def derive_webcam_configs_from_octoprint():
             'name': webcam_config.get('name', 'Unknown'),
             'flipH': webcam_config.get('flipH', False),
             'flipV': webcam_config.get('flipV', False),
-            'rotate90': webcam_config.get('rotate90', False),
+            'rotation': 270 if webcam_config.get('rotate90', False) else 0, # 270 = 90 degrees counterclockwise
             'stream': webcam_config.get('compat', {}).get('stream', None),
             'snapshot': webcam_config.get('compat', {}).get('snapshot', None),
+            'streamRatio': webcam_config.get('compat', {}).get('streamRatio', '4:3'),
+            'target_fps': 25,
+            'is_nozzle_camera': False,
         }
 
     webcam_configs = []

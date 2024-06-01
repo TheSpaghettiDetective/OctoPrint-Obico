@@ -24,7 +24,7 @@ from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
     OctoPrintSettingsUpdater, run_in_thread,
-    server_request, migrate_tsd_settings, octoprint_webcam_settings,
+    server_request, migrate_tsd_settings,
     derive_webcam_configs_from_octoprint,)
 from .lib.error_stats import error_stats
 from .lib import alert_queue
