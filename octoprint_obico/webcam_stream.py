@@ -240,7 +240,7 @@ class WebcamStreamer:
                 fps = webcam['target_fps']
 
             bitrate = bitrate_for_dim(img_w, img_h)
-            if not self.is_pro:
+            if not self.plugin.linked_printer.get('is_pro'):
                 fps = min(8, fps) # For some reason, when fps is set to 5, it looks like 2FPS. 8fps looks more like 5
                 bitrate = int(bitrate/2)
 
