@@ -27,6 +27,7 @@ import base64
 from textwrap import wrap
 import psutil
 from octoprint.util import to_unicode
+import octoprint
 
 from .utils import pi_version, ExpoBackoff, get_image_info, parse_integer_or_none
 from .lib import alert_queue
@@ -92,6 +93,72 @@ def find_ffmpeg_h264_encoder():
 
     _logger.warn('No ffmpeg found, or ffmpeg does NOT support h264_omx/h264_v4l2m2m encoding.')
     return None
+
+
+def get_webcam_configs(plugin):
+
+    DEFAULT_WEBCAM_CONFIG = {
+        'name': 'classic',
+        'is_primary_camera': True,
+        'is_nozzle_camera': False,
+        'target_fps': 25,
+    }
+
+    def webcam_config_dict(webcam):
+        webcam_config = webcam.config.dict() # This turns out to be the best way to get a dict from octoprint.webcam.Webcam
+        return {
+            'name': webcam_config.get('name', 'Unknown'),
+            'flipH': webcam_config.get('flipH', False),
+            'flipV': webcam_config.get('flipV', False),
+            'rotation': 270 if webcam_config.get('rotate90', False) else 0, # 270 = 90 degrees counterclockwise
+            'stream': webcam_config.get('compat', {}).get('stream', None),
+            'snapshot': webcam_config.get('compat', {}).get('snapshot', None),
+            'streamRatio': webcam_config.get('compat', {}).get('streamRatio', '4:3'),
+        }
+
+    octoprint_webcams = octoprint.webcams.get_webcams()
+
+    if len(plugin._settings.get(["webcams"])) == 0:
+        if 'classic' in octoprint_webcams:
+            plugin._settings.set(["webcams"], [DEFAULT_WEBCAM_CONFIG,], force=True) # use 'classic' to be backward compatible
+        elif octoprint_webcams:
+            first_webcam_name = list(octoprint_webcams.keys())[0]
+            DEFAULT_WEBCAM_CONFIG['name'] = first_webcam_name
+            plugin._settings.set(["webcams"], [DEFAULT_WEBCAM_CONFIG,], force=True)
+
+    configured_webcams = plugin._settings.get(["webcams"])
+
+    webcam_configs = []
+
+    for webcam in configured_webcams:
+        octoprint_webcam = octoprint_webcams.get(webcam['name'])
+        if not octoprint_webcam:
+            alert_queue.add_alert({
+                'level': 'warning',
+                'cause': 'streaming',
+                'title': 'Wrong Webcam Configuration',
+                'text': 'Obico can not find the webcam {}. Skipping it for streaming.'.format(webcam['name']),
+                'info_url': '#',
+                'buttons': ['more_info', 'never', 'ok']
+            }, plugin)
+
+            continue
+
+        webcam_config = webcam_config_dict(octoprint_webcam)
+        webcam_config.update(webcam)
+        webcam_configs.append(webcam_config)
+
+    if not webcam_configs:
+        alert_queue.add_alert({
+            'level': 'warning',
+            'cause': 'streaming',
+            'title': 'No Webcam Streams',
+            'text': 'No properly configured webcam for streaming.',
+            'info_url': '#',
+            'buttons': ['more_info', 'never', 'ok']
+        }, plugin)
+
+    return webcam_configs
 
 
 class WebcamStreamer:

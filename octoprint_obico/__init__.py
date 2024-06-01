@@ -24,8 +24,7 @@ from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
     OctoPrintSettingsUpdater, run_in_thread,
-    server_request, migrate_tsd_settings,
-    derive_webcam_configs_from_octoprint,)
+    server_request, migrate_tsd_settings,)
 from .lib.error_stats import error_stats
 from .lib import alert_queue
 from .print_job_tracker import PrintJobTracker
@@ -40,7 +39,7 @@ from .printer_discovery import PrinterDiscovery
 from .gcode_hooks import GCodeHooks
 from .gcode_preprocessor import GcodePreProcessorWrapper
 from .file_operations import FileOperations
-from .webcam_stream import WebcamStreamer
+from .webcam_stream import WebcamStreamer, get_webcam_configs
 
 import octoprint.plugin
 
@@ -108,7 +107,7 @@ class ObicoPlugin(
             disable_video_streaming=False,
             pi_cam_resolution='medium',
             sentry_opt='out',
-            webcam_streams=[],
+            webcams=[],
         )
 
     def on_settings_save(self, data):
@@ -253,7 +252,7 @@ class ObicoPlugin(
         # Notify plugin UI about the server connection status change
         self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
 
-        self.webcam_configs = derive_webcam_configs_from_octoprint()
+        self.webcam_configs = get_webcam_configs(self)
         run_in_thread(self.webcam_streamer.start, self.webcam_configs)
 
 

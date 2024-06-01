@@ -49,13 +49,13 @@ $(function () {
         self.serverType = ko.observable('cloud');
         self.hasTsdMigratedModalShown = ko.observable(false);
         self.primaryWebcamStream = ko.pureComputed(function() {
-            var primaryStream = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.obico.webcam_streams(), function(stream) {
+            var primaryStream = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.obico.webcam(), function(stream) {
                 return stream.is_primary_camera && stream.is_primary_camera() === true;
             });
 
             if (!primaryStream) {
                 primaryStream = { is_primary_camera: ko.observable(true), name: ko.observable('classic') };
-                self.settingsViewModel.settings.plugins.obico.webcam_streams.push(primaryStream);
+                self.settingsViewModel.settings.plugins.obico.webcam.push(primaryStream);
             }
 
             return primaryStream;
