@@ -28,41 +28,42 @@ $(function () {
 
         self.alertsShown = {};
         self.piCamResolutionOptions = [{ id: "low", text: "Low" }, { id: "medium", text: "Medium" }, { id: "high", text: "High" }, { id: "ultra_high", text: "Ultra High" }];
-        
-        self.cameraOptions = ko.pureComputed(function() {
+
+        self.primaryCameraOptions = ko.pureComputed(function() {
             var multicamWebcams = self.settingsViewModel.settings.plugins.multicam.multicam_profiles();
-            var webcamsToDisplay = multicamWebcams.map((multiCamWebcam) => {
-                return { name: multiCamWebcam.name() }
-                }
-            );
-            return webcamsToDisplay;
-        }, self);
-
-        self.isPrimaryANozzleCam = ko.pureComputed(function() {
-            var primaryCamera = self.settingsViewModel.settings.plugins.obico.primary_camera;
-            var obicoPluginWebcams = self.settingsViewModel.settings.plugins.obico.webcam_streams();
-            var primaryCameraObicoSettings = obicoPluginWebcams.find(function(option) {
-                return option.name() === primaryCamera();
-            });
-    
-            return primaryCameraObicoSettings.is_primary_camera()? true : false;                
-
+            return multicamWebcams;
         }, self);
 
         self.secondCameraOptions = ko.pureComputed(function() {
-            var primaryCamera = self.settingsViewModel.settings.plugins.obico.primary_camera;
-            var filteredOptions = self.cameraOptions().filter(function(option) {
-                return option.name != primaryCamera();
+            var primaryCamera = self.settingsViewModel.settings.plugins.obico.primary_camera();
+            var filteredOptions = self.primaryCameraOptions().filter(function(option) {
+                return option.name() != primaryCamera;
             });
-            //Add null option option to disable second camera stream
-            var optionsWithNone = [{ name: "Disable" }].concat(filteredOptions);
-            console.log(optionsWithNone)
-            return optionsWithNone;
+            return filteredOptions;
         }, self);
-
+    
+        self.isPrimaryANozzleCam = ko.pureComputed(function() {
+            var primaryCamera = self.settingsViewModel.settings.plugins.obico.primary_camera();
+            var obicoPluginWebcams = self.settingsViewModel.settings.plugins.obico.webcam_streams();
+            var primaryCameraObicoSettings = obicoPluginWebcams.find( (option)=> {
+                return option.name() === primaryCamera;
+            });
+            return primaryCameraObicoSettings ?  self.settingsViewModel.settings.plugins.obico.is_primary_nozzle_camera() : false;
+        }, self);
+    
+        self.isSecondaryANozzleCam = ko.pureComputed(function() {
+            var secondaryCamera = self.settingsViewModel.settings.plugins.obico.secondary_camera();
+            var obicoPluginWebcams = self.settingsViewModel.settings.plugins.obico.webcam_streams();
+            var secondaryCameraObicoSettings = obicoPluginWebcams.find((option) => {
+                return option.name() === secondaryCamera;
+            });
+            return secondaryCameraObicoSettings ? self.settingsViewModel.settings.plugins.obico.is_secondary_nozzle_camera() : false;
+        }, self);
+    
         self.isMultiCam = ko.pureComputed(function() {
-            return self.cameraOptions().length > 1;
-        },self)
+            return self.primaryCameraOptions().length > 1;
+        }, self);
+    
         
         self.isWizardShown = ko.observable(
             retrieveFromLocalStorage('disableTSDWizardAutoPopupUntil', 0) > new Date().getTime()
@@ -93,6 +94,7 @@ $(function () {
 
         self.onSettingsBeforeSave = function() {
             self.serverType(getServerType(self.settingsViewModel.settings.plugins.obico.endpoint_prefix()));
+            self.sendCameraData();
         }
 
         self.hasServerErrors = function() {
@@ -181,6 +183,30 @@ $(function () {
             });
             return true;
         };
+
+        self.sendCameraData = function() { // Integration with backend part
+            var primaryCamera = self.settingsViewModel.settings.plugins.obico.primary_camera();
+            var secondaryCamera = self.settingsViewModel.settings.plugins.obico.secondary_camera();
+
+            var primaryCameraData = {
+                name: primaryCamera,
+                is_nozzle_camera: self.isPrimaryANozzleCam()
+            };
+
+            var secondaryCameraData = secondaryCamera ? {
+                name: secondaryCamera,
+                is_nozzle_camera: self.isSecondaryANozzleCam()
+            } : null;
+
+            console.log(primaryCameraData);
+            console.log(secondaryCameraData);
+            // apiCommand({
+            //     command: "save_camera_data",
+            //     primary_camera: primaryCameraData,
+            //     secondary_camera: secondaryCameraData
+            // });
+        };
+
 
         self.resetEndpointPrefix = function () {
             self.settingsViewModel.settings.plugins.obico.endpoint_prefix(defaultServerAddress);

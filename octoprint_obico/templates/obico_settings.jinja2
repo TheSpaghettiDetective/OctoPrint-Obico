@@ -110,7 +110,6 @@
                     data-bind="checked: serverType, click: resetEndpointPrefix"
                   >
                     The Obico Cloud
-                  </input>
                 </label>
                 <div class="radio obico-text-muted">Proudly maintained by <a href="https://www.obico.io/team.html">the Obico team</a>.</div>
                 <div class="radio obico-text-muted">Free for 1 printer. Pro plan starts from $4/month. <a href="https://app.obico.io/ent_pub/pricing/">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
@@ -120,10 +119,8 @@
                     type="radio"
                     name="serverAddressRadioGroup2"
                     value="self-hosted"
-                    data-bind="checked: serverType, click: clearEndpointPrefix"
-                  >
+                    data-bind="checked: serverType, click: clearEndpointPrefix">
                     A self-hosted Obico Server.
-                  </input>
                 </label>
                 <div class="radio obico-text-muted">Learn more about <a href="https://www.obico.io/docs/server-guides/">hosting your own Obico Server <i class="fa fa-external-link" aria-hidden="true"></i></a>.</div>
                 <div class="radio">
@@ -131,8 +128,7 @@
                     type="text"
                     class="endpoint-prefix"
                     data-bind="value: settingsViewModel.settings.plugins.obico.endpoint_prefix, hidden: serverType() === 'cloud'"
-                    style="width: 100%"
-                  ></input>
+                    style="width: 100%">
                 </div>
               </div>
           </div>
@@ -140,48 +136,48 @@
       </section>
       <section data-bind="visible: linkedPrinter.id">
         <h1 class="obico-settings-page__section-title">Webcam Streaming</h1>
-        <div class="obico-settings-page__section-content">
-          <form class="form-horizontal">
-            <div class="form-check" style="margin-bottom: 24px;">
-              <input id="disable-streaming" class="form-check-input" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.disable_video_streaming" style="margin-top: 0px;">
-              <label class="form-check-label" for="disable-streaming" style="display: inline">
-                Disable webcam streaming. <a href="https://www.obico.io/docs/user-guides/disable-25-fps-streaming/">(Why would I want to do that?)</a>
-              </label>
-            </div>
-          </form>
-          <form class="form">
-              <div data-bind="visible: !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
-                  <div style="display: flex; flex-direction: row; gap: 20px">
-                      <div style="display: flex; flex-direction: column;">
-                          <label class="control-label" for="primary-camera">{{ _('Primary Camera') }}</label>
+          <div class="obico-settings-page__section-content">
+            <form class="form-horizontal">
+                <div class="form-check" style="margin-bottom: 24px;">
+                  <input id="disable-streaming" class="form-check-input" type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.disable_video_streaming" style="margin-top: 0px;">
+                  <label class="form-check-label" for="disable-streaming" style="display: inline">
+                    Disable webcam streaming. <a href="https://www.obico.io/docs/user-guides/disable-25-fps-streaming/">(Why would I want to do that?)</a>
+                  </label>
+                </div>
+              </form>
+              <form class="form">
+                <div data-bind="visible: !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
+                    <div style="display: flex; flex-direction: row; gap: 20px;">
+                        <div style="display: flex; flex-direction: column; margin-right: 20px;">
+                            <label for="primary-camera">{{ _('Primary Camera') }}</label>
+                            <div class="controls">
+                                <select data-bind="options: primaryCameraOptions , optionsValue: 'name', optionsText: 'name', value: settingsViewModel.settings.plugins.obico.primary_camera"></select>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <label class="control-label">Nozzle Camera</label>
+                            <div class="controls">
+                                <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.is_primary_nozzle_camera">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: row; gap: 20px;">
+                      <div style="display: flex; flex-direction: column; margin-right: 20px;">
+                          <label for="second-camera">{{ _('Second Camera') }}</label>
                           <div class="controls">
-                              <select data-bind="options: cameraOptions, optionsValue: 'name', optionsText: 'name', value: settingsViewModel.settings.plugins.obico.primary_camera" id="primary-camera"></select>
+                              <select data-bind="options: secondCameraOptions, optionsValue: 'name', optionsText: 'name', value: settingsViewModel.settings.plugins.obico.secondary_camera, optionsCaption: 'Choose a secondary camera', attr: { disabled: !isMultiCam() }"></select>
                           </div>
                       </div>
                       <div style="display: flex; flex-direction: column;">
                           <label class="control-label">Nozzle Camera</label>
                           <div class="controls">
-                              <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.is_primary_nozzle_camera">
+                              <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.is_secondary_nozzle_camera, attr: { disabled: !isMultiCam() }">
                           </div>
                       </div>
                   </div>
-                  <div data-bind="visible: isMultiCam" style="display: flex; flex-direction: row; gap: 20px">
-                      <div style="display: flex; flex-direction: column;">
-                          <label class="control-label" for="second-camera">{{ _('Second Camera') }}</label>
-                          <div class="controls">
-                              <select data-bind="options: secondCameraOptions, optionsValue: 'name', optionsText: 'name', value: settingsViewModel.settings.plugins.obico.secondary_camera" id="second-camera"></select>
-                          </div>
-                      </div>
-                      <div style="display: flex; flex-direction: column;">
-                          <label class="control-label">Nozzle Camera</label>
-                          <div class="controls">
-                              <input type="checkbox" data-bind="checked: settingsViewModel.settings.plugins.obico.is_secondary_nozzle_camera">
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </form>
-        </div>
+                </div>
+            </form>
+          </div>
       </section>
       <section class="obico-settings-page__section">
         <h1 class="obico-settings-page__section-title">Opt In</h1>
