@@ -383,6 +383,7 @@ def derive_webcam_configs_from_octoprint():
             'stream': webcam_config.get('compat', {}).get('stream', None),
             'snapshot': webcam_config.get('compat', {}).get('snapshot', None),
             'streamRatio': webcam_config.get('compat', {}).get('streamRatio', '4:3'),
+            'target_fps': 25,
             'is_nozzle_camera': False,
         }
 
