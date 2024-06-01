@@ -14,8 +14,7 @@ $(function () {
 
     function ObicoSettingsViewModel(parameters) {
         var self = this;
-
-        const defaultServerAddress = 'https://app.obico.io';
+        var defaultServerAddress = 'https://app.obico.io';
         function getServerType(serverAddress) {
             return serverAddress == defaultServerAddress ? 'cloud' : 'self-hosted';
         }
@@ -49,16 +48,31 @@ $(function () {
         self.serverType = ko.observable('cloud');
         self.hasTsdMigratedModalShown = ko.observable(false);
         self.primaryWebcamStream = ko.pureComputed(function() {
-            var primaryStream = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.obico.webcam(), function(stream) {
+            var primaryStream = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.obico.webcams(), function(stream) {
                 return stream.is_primary_camera && stream.is_primary_camera() === true;
             });
 
             if (!primaryStream) {
-                primaryStream = { is_primary_camera: ko.observable(true), name: ko.observable('classic') };
-                self.settingsViewModel.settings.plugins.obico.webcam.push(primaryStream);
+                primaryStream = {
+                    name: ko.observable('classic'),
+                    is_primary_camera: ko.observable(true),
+                    is_nozzle_camera: ko.observable(false),
+                };
+                self.settingsViewModel.settings.plugins.obico.webcams.push(primaryStream);
             }
 
             return primaryStream;
+        });
+        self.secondaryWebcamStream = ko.pureComputed(function() {
+            return ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.obico.webcams(), function(stream) {
+                return !(stream.is_primary_camera && stream.is_primary_camera() === true)
+            }) || ko.observable(null);
+        });
+        self.secondaryWebcamStreamExists = ko.pureComputed(function() {
+            var matchingStream = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.obico.webcams(), function(stream) {
+                return !(stream.is_primary_camera && stream.is_primary_camera() === true)
+            });
+            return matchingStream != null;
         });
         self.onStartupComplete = function (plugin, data) {
             self.fetchPluginStatus();
@@ -322,10 +336,24 @@ $(function () {
         self.showTsdMigratedModal = function (maybeViewModel) {
             $('#tsdMigratedModal').modal();
         };
+
         self.hideTsdMigratedModal = function() {
             $('#tsdMigratedModal').modal('hide');
             self.settingsViewModel.saveData({plugins: {obico: {tsd_migrated: 'confirmed'}}});
         }
+
+        self.addSecondaryWebcam = function () {
+            var secondaryStream = {
+                is_primary_camera: ko.observable(false),
+                is_nozzle_camera: ko.observable(false),
+            };
+            self.settingsViewModel.settings.plugins.obico.webcams.push(secondaryStream);
+        };
+        self.removeSecondaryWebcam = function () {
+            self.settingsViewModel.settings.plugins.obico.webcams.remove(function(stream) {
+                return !(stream.is_primary_camera && stream.is_primary_camera() === true)
+            });
+        };
     }
 
 

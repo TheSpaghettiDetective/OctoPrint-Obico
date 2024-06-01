@@ -107,7 +107,7 @@ def get_webcam_configs(plugin):
     def webcam_config_dict(webcam):
         webcam_config = webcam.config.dict() # This turns out to be the best way to get a dict from octoprint.webcam.Webcam
         return {
-            'name': webcam_config.get('name', 'Unknown'),
+            'displayName': webcam_config.get('displayName', 'Unknown'),
             'flipH': webcam_config.get('flipH', False),
             'flipV': webcam_config.get('flipV', False),
             'rotation': 270 if webcam_config.get('rotate90', False) else 0, # 270 = 90 degrees counterclockwise
@@ -439,7 +439,7 @@ class WebcamStreamer:
 
     def normalized_webcam_dict(self, webcam):
         return dict(
-                name=webcam['name'],
+                name=webcam['displayName'],
                 is_primary_camera=webcam['is_primary_camera'],
                 is_nozzle_camera=webcam['is_nozzle_camera'],
                 stream_mode=webcam['streaming_params'].get('mode'),
