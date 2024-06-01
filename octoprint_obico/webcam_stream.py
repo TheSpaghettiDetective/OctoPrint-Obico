@@ -412,8 +412,8 @@ class WebcamStreamer:
                 is_nozzle_camera=webcam['is_nozzle_camera'],
                 stream_mode=webcam['streaming_params'].get('mode'),
                 stream_id=webcam['runtime'].get('stream_id'),
-                flipV=webcam['flip_v'],
-                flipH=webcam['flip_h'],
+                flipV=webcam['flipV'],
+                flipH=webcam['flipH'],
                 rotation=webcam['rotation'],
                 streamRatio=webcam['streamRatio'],
                 )
