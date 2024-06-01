@@ -37,8 +37,6 @@ from .janus import JanusConn
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
-GST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'gst')
-
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 FFMPEG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 FFMPEG = os.path.join(FFMPEG_DIR, 'run.sh')
