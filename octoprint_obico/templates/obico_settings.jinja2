@@ -140,7 +140,6 @@
       </section>
       <section data-bind="visible: linkedPrinter.id">
         <h1 class="obico-settings-page__section-title">Webcam Streaming</h1>
-        <p style="margin-bottom: 24px;">You can select up to two webcam streams to be displayed in the Obico app.</p>
         <div class="obico-settings-page__section-content">
           <form class="form-horizontal">
             <div class="form-check" style="margin-bottom: 18px;">
@@ -151,6 +150,7 @@
             </div>
             <div data-bind="visible: !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
               <h4>Primary Webcam Stream</h4>
+              <div style="margin-top: -4px" class="obico-text-muted">Primary webcam is the one used for failure detection.</div>
               <select data-bind="options: settingsViewModel.settings.webcam.webcams(),
                          optionsText: 'displayName',
                          optionsValue: 'name',
@@ -162,7 +162,7 @@
                   This is a nozzle camera. <a href="#">(What is it?)</a>
                 </label>
               </div>
-              <div style="margin-top: 18px;" data-bind="visible: secondaryWebcamStreamExists()">
+              <div style="margin-top: 24px;" data-bind="visible: secondaryWebcamStreamExists()">
                 <h4>Secondary Webcam Stream</h4>
                 <select data-bind="options: settingsViewModel.settings.webcam.webcams(),
                           optionsText: 'displayName',
@@ -176,10 +176,11 @@
                   </label>
                 </div>
               </div>
-              <div style="margin-top: 24px;" data-bind="visible: secondaryWebcamStreamExists()">
+              <p style="margin-top: 24px;">You can select up to two webcam streams to be displayed in the Obico app.</p>
+              <div data-bind="visible: secondaryWebcamStreamExists()">
                 <a href="#" class="btn" data-bind="click: removeSecondaryWebcam">Remove Secondary Webcam</a>
               </div>
-              <div style="margin-top: 24px;" data-bind="visible: !secondaryWebcamStreamExists()">
+              <div data-bind="visible: !secondaryWebcamStreamExists()">
                 <a href="#" class="btn" data-bind="click: addSecondaryWebcam">Configure Secondary Webcam</a>
               </div>
             </div>
