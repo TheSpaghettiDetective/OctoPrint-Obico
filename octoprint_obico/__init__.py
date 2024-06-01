@@ -90,7 +90,6 @@ class ObicoPlugin(
         self.file_operations = FileOperations(self)
         self.nozzlecam = NozzleCam(self)
         self.webcam_streamer = WebcamStreamer(self)
-        self.webcam_configs = []
 
 
     # ~~ Custom event registration
@@ -252,9 +251,10 @@ class ObicoPlugin(
         # Notify plugin UI about the server connection status change
         self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
 
-        self.webcam_configs = get_webcam_configs(self)
-        self.primary_webcam_config = next((config for config in self.webcam_configs if config.get('is_primary_camera', False)), None)
-        run_in_thread(self.webcam_streamer.start, self.webcam_configs)
+        webcam_configs = get_webcam_configs(self)
+        self.primary_webcam_config = next((config for config in webcam_configs if config.get('is_primary_camera', False)), None)
+        run_in_thread(self.webcam_streamer.start, webcam_configs)
+        self.nozzlecam.create_nozzlecam_config(webcam_configs)
 
         url = 'http://{}:{}'.format('127.0.0.1', self.octoprint_port)
         self.local_tunnel = LocalTunnel(
@@ -275,8 +275,6 @@ class ObicoPlugin(
         message_to_server_thread = threading.Thread(target=self.message_to_server_loop)
         message_to_server_thread.daemon = True
         message_to_server_thread.start()
-
-        self.nozzlecam.create_nozzlecam_config()
 
         while True:
             try:

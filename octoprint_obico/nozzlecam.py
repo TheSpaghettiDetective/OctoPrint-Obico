@@ -45,11 +45,17 @@ class NozzleCam:
         except Exception:
             _logger.error('Failed to notify 1st layer completed', exc_info=True)
 
-    def create_nozzlecam_config(self):
+    def create_nozzlecam_config(self, webcam_configs):
         try:
+            nozzle_cam_config = next((config for config in webcam_configs if config.get('is_nozzle_camera', False)), None)
+            if nozzle_cam_config:
+                _logger.info(f'Nozzle camera found: {nozzle_cam_config}')
+                self.nozzle_config = nozzle_cam_config
+                return
+
+            # For Celestrius alpha testers
             printer_id = self.plugin.linked_printer.get('id')
-            info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, headers=self.plugin.auth_headers())
-            ext_info = info.json().get('ext')
+            ext_info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, headers=self.plugin.auth_headers()).json().get('ext', {})
             _logger.debug('Printer ext info: {}'.format(ext_info))
             nozzle_url = ext_info.get('nozzlecam_url', None)
             if not nozzle_url or len(nozzle_url) == 0:
