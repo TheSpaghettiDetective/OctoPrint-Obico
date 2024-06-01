@@ -225,7 +225,7 @@ class WebcamStreamer:
     def h264_transcode(self, webcam):
 
         try:
-            stream_url = webcam.get('stream')
+            stream_url = webcam_full_url(webcam.get("stream"))
             if not stream_url:
                 raise Exception('stream_url not configured. Unable to stream the webcam.')
 
