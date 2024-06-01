@@ -8,7 +8,7 @@ services:
         context: .
         dockerfile: Dockerfile.python2
     ports:
-      - "${OP_PYTHON2_PORT-5004}:5000"
+      - "${OP_PYTHON2_PORT-5002}:5000"
     volumes:
      - ./:/app
     environment:
@@ -25,7 +25,7 @@ services:
         context: .
         dockerfile: Dockerfile.python3
     ports:
-      - "${OP_PYTHON3_PORT-5005}:5000"
+      - "${OP_PYTHON3_PORT-5003}:5000"
     volumes:
      - ./:/app
     environment:
@@ -34,8 +34,6 @@ services:
     depends_on:
       - janus
     command: bash -c "sleep 11111111111"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 
   janus:
     hostname: janus
@@ -48,7 +46,7 @@ services:
     restart: unless-stopped
     image: thespaghettidetective/mjpg-streamer
     ports:
-      - "${MJPEG_PORT-8081}:8080"
+      - "${MJPEG_PORT-8080}:8080"
     command: sh -c "/mjpg-streamer/mjpg_streamer -o '/mjpg-streamer/output_http.so -w /mjpg-streamer/www' -i '/mjpg-streamer/input_file.so -f /mjpg-streamer/jpgs -e -d 1'"
 
   video:
