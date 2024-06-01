@@ -96,40 +96,6 @@ def find_ffmpeg_h264_encoder():
     return None
 
 
-def cpu_watch_dog(watched_process, plugin, max, interval):
-
-    def watch_process_cpu(watched_process, max, interval, plugin):
-        while True:
-            if not watched_process.is_running():
-                return
-
-            cpu_pct = watched_process.cpu_percent(interval=None)
-            if cpu_pct > max:
-                alert_queue.add_alert({
-                    'level': 'warning',
-                    'cause': 'cpu',
-                    'title': 'Streaming Excessive CPU Usage',
-                    'text': 'The webcam streaming uses excessive CPU. This may negatively impact your print quality. Consider switching "compatibility mode" to "auto" or "never", or disable the webcam streaming.',
-                    'info_url': 'https://www.obico.io/docs/user-guides/warnings/compatibility-mode-excessive-cpu/',
-                    'buttons': ['more_info', 'never', 'ok'],
-                }, plugin, post_to_server=True)
-
-            time.sleep(interval)
-
-    watch_thread = Thread(target=watch_process_cpu, args=(watched_process, max, interval, plugin))
-    watch_thread.daemon = True
-    watch_thread.start()
-
-
-def is_octolapse_enabled(plugin):
-    octolapse_plugin = plugin._plugin_manager.get_plugin_info('octolapse', True)
-    if octolapse_plugin is None:
-        # not installed or not enabled
-        return False
-
-    return octolapse_plugin.implementation._octolapse_settings.main_settings.is_octolapse_enabled
-
-
 class WebcamStreamer:
 
     def __init__(self, plugin):
