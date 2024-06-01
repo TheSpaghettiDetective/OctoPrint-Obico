@@ -148,6 +148,20 @@
                 Disable webcam streaming. <a href="https://www.obico.io/docs/user-guides/disable-25-fps-streaming/">(Why would I want to do that?)</a>
               </label>
             </div>
+            <div data-bind="visible: !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
+              <h4>Primary Webcam Stream</h4>
+              <select data-bind="options: settingsViewModel.settings.webcam.webcams(),
+                         optionsText: 'displayName',
+                         optionsValue: 'name',
+                         value: primaryWebcamStream().name">
+              </select>
+              <div class="form-check" style="margin-top: 8px;">
+                <input id="primary-camera-is-nozzle-camera" class="form-check-input" type="checkbox" data-bind="checked: primaryWebcamStream.is_nozzle_camera" style="margin-top: 0px;">
+                <label class="form-check-label" for="primary-camera-is-nozzle-camera" style="display: inline">
+                  This is a nozzle camera. <a href="#">(What is it?)</a>
+                </label>
+              </div>
+            </div>
           </form>
         </div>
       </section>
