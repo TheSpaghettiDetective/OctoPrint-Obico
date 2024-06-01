@@ -253,8 +253,8 @@ class ObicoPlugin(
         self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
 
         self.webcam_configs = get_webcam_configs(self)
+        self.primary_webcam_config = next((config for config in self.webcam_configs if config.get('is_primary_camera', False)), None)
         run_in_thread(self.webcam_streamer.start, self.webcam_configs)
-
 
         url = 'http://{}:{}'.format('127.0.0.1', self.octoprint_port)
         self.local_tunnel = LocalTunnel(
@@ -476,7 +476,7 @@ class ObicoPlugin(
         files = None
         if attach_snapshot:
             try:
-                files = {'snapshot': capture_jpeg(self)}
+                files = {'snapshot': capture_jpeg(self.primary_webcam_config)}
             except Exception as e:
                 _logger.warning('Failed to capture jpeg - ' + str(e))
                 pass

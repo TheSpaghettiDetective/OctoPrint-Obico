@@ -128,7 +128,7 @@ class JpegPoster:
     def post_pic_to_server(self, viewing_boost=False):
         try:
             error_stats.attempt('webcam')
-            files = {'pic': capture_jpeg(self.plugin)}
+            files = {'pic': capture_jpeg(self.plugin.primary_webcam_config)}
         except Exception as e:
             error_stats.add_connection_error('webcam', self.plugin)
             _logger.warning('Failed to capture jpeg - ' + str(e))
@@ -168,7 +168,8 @@ class JpegPoster:
             except:
                 self.plugin.sentry.captureException()
 
+    # TODO: remove when celestrius is removed
     def web_snapshot_request(self, url):
-        snapshot = capture_jpeg({'snapshot': url, "snapshotSslValidation": False}, use_nozzle_config=True)
+        snapshot = capture_jpeg({'snapshot': url}, use_nozzle_config=True)
         base64_image = base64.b64encode(snapshot).decode('utf-8')
         return {'pic': base64_image}

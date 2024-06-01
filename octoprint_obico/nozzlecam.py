@@ -58,7 +58,6 @@ class NozzleCam:
             else:
                 self.nozzle_config = {
                     'snapshot': nozzle_url,
-                    'snapshotSslValidation': False
                 }
         except Exception:
             _logger.error('Failed to build nozzle config', exc_info=True)
