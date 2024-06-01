@@ -75,20 +75,15 @@ class OctoPrintSettingsUpdater:
             if self.last_asked > time.time() - PRINTER_SETTINGS_UPDATE_INTERVAL:
                 return None
 
-        webcam_dict = dict((k, v) for k, v in octoprint_webcam_settings(self.plugin._settings).items() if k in ('flipV', 'flipH', 'rotate90', 'streamRatio'))
-        webcam_dict['rotation'] = 0
-        if 'rotate90' in webcam_dict:
-            webcam_dict['rotation'] = 270 if webcam_dict['rotate90'] else 0 # 270 = 90 degrees counterclockwise
-            del webcam_dict['rotate90']
-
         data = dict(
-            webcam=webcam_dict,
             temperature=self.plugin._settings.settings.effective.get('temperature', {}),
             agent=dict(name='octoprint_obico', version=self.plugin._plugin_version),
             octoprint_version=octoprint.util.version.get_octoprint_version_string(),
             platform_uname=list(platform.uname()),
             installed_plugins=[p.key for p in list(self.plugin._plugin_manager.enabled_plugins.values()) if not p.bundled],
         )
+        if self.plugin.webcam_streamer.normalized_webcams:
+            data['webcams'] = self.plugin.webcam_streamer.normalized_webcams
         if self.printer_metadata:
             data['printer_metadata'] = self.printer_metadata
 
@@ -338,10 +333,6 @@ def migrate_tsd_settings(plugin):
 
         plugin._settings.set(["tsd_migrated"], 'yes', force=True)
         plugin._settings.save(force=True)
-
-# Provide compatibility for OctoPrint 1.9+ and the older versions
-def octoprint_webcam_settings(octoprint_settings):
-    return octoprint_settings.global_get(["plugins", "classicwebcam"]) or octoprint_settings.global_get(["webcam"]) or {}
 
 
 def run_in_thread(long_running_func, *args, **kwargs):

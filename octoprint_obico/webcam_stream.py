@@ -28,7 +28,7 @@ from textwrap import wrap
 import psutil
 from octoprint.util import to_unicode
 
-from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close, octoprint_webcam_settings
+from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 from .janus_config_builder import build_janus_config
@@ -140,6 +140,7 @@ class WebcamStreamer:
         self.janus = None
         self.ffmpeg_proc = None
         self.shutting_down = False
+        self.normalized_webcams = []
 
     def start(self, webcam_configs):
 
@@ -172,11 +173,11 @@ class WebcamStreamer:
                 else:
                     raise Exception('Unsupported streaming mode: {}'.format(webcam['streaming_params']['mode']))
 
-            normalized_webcams = [self.normalized_webcam_dict(webcam) for webcam in self.webcams]
-            self.printer_state.set_webcams(normalized_webcams)
-            self.server_conn.post_status_update_to_server(with_settings=True)
+            self.normalized_webcams = [self.normalized_webcam_dict(webcam) for webcam in self.webcams]
+            self.plugin.octoprint_settings_updater.update_settings()
+            self.plugin.post_update_to_server()
 
-            return (normalized_webcams, None)  # return value expected for a passthru target
+            return (self.normalized_webcams, None)  # return value expected for a passthru target
         except Exception:
             self.plugin.sentry.captureException()
             _logger.error('Error. Quitting webcam streaming.', exc_info=True)
