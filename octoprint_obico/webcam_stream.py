@@ -237,7 +237,7 @@ class WebcamStreamer:
             fps = parse_integer_or_none(webcam['streaming_params'].get('recode_fps'))
             if not fps:
                 _logger.warn('FPS not specified or invalid in streaming parameters. Getting the values from the source.')
-                fps = webcam.target_fps
+                fps = webcam['target_fps']
 
             bitrate = bitrate_for_dim(img_w, img_h)
             if not self.is_pro:
@@ -307,7 +307,7 @@ class WebcamStreamer:
 
             mjpeg_dataport = webcam['runtime']['mjpeg_dataport']
 
-            min_interval_btw_frames = 1.0 / webcam.target_fps
+            min_interval_btw_frames = 1.0 / webcam['target_fps']
             bandwidth_throttle = 0.004
             if pi_version() == "0":    # If Pi Zero
                 bandwidth_throttle *= 2
