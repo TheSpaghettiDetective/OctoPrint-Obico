@@ -149,28 +149,6 @@
               </label>
             </div>
           </form>
-          <form class="form">
-              <div data-bind="visible: (streaming.is_pi_camera() && !settingsViewModel.settings.plugins.obico.disable_video_streaming())" class="control-group" title="{{ _('Pi Camera resolution') }}">
-                  <label class="control-label" for="pi-cam-resolution">{{ _('Webcam resolution') }}</label>
-                  <div class="controls">
-                      <select data-bind="options: piCamResolutionOptions, optionsValue: 'id', optionsText: 'text', value: settingsViewModel.settings.plugins.obico.pi_cam_resolution" id="pi-cam-resolution"></select>
-                  </div>
-              </div>
-              <div data-bind="visible: linkedPrinter.is_pro() && !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
-                  <label class="control-label">Compatibility mode <a href="https://www.obico.io/docs/user-guides/streaming-compatibility-mode/">(What is it?)</a></label>
-                  <div class="controls">
-                      <label class="radio">
-                          <input type="radio" name="webcamCompatibleModeGroup" value="auto" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Automatic (default). Obico will automatically switch to compatibility mode if necessary. Select this option if you are not sure.
-                      </label>
-                      <label class="radio">
-                          <input type="radio" name="webcamCompatibleModeGroup" value="always" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Always stream in compatibility mode
-                      </label>
-                      <label class="radio">
-                          <input type="radio" name="webcamCompatibleModeGroup" value="never" data-bind="checked: settingsViewModel.settings.plugins.obico.video_streaming_compatible_mode"> Never stream in compatibility mode
-                      </label>
-                  </div>
-              </div>
-          </form>
         </div>
       </section>
       <section class="obico-settings-page__section">

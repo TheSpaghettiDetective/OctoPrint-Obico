@@ -54,7 +54,6 @@ def on_api_command(plugin, command, data):
                 ),
                 linked_printer=plugin.linked_printer,
                 streaming_status=dict(
-                    is_pi_camera=False,
                     webrtc_streaming=webcam_streamer and not webcam_streamer.shutting_down,),
                 error_stats=error_stats.as_dict(),
                 alerts=alert_queue.fetch_and_clear(),
