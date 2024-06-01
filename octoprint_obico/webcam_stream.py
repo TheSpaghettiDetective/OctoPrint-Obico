@@ -28,7 +28,7 @@ from textwrap import wrap
 import psutil
 from octoprint.util import to_unicode
 
-from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close
+from .utils import pi_version, ExpoBackoff, get_image_info, wait_for_port, wait_for_port_to_close, parse_integer_or_none
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 from .janus_config_builder import build_janus_config
