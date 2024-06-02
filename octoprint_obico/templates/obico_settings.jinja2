@@ -179,8 +179,16 @@
               </div>
               <div class="obico-text-muted" style="margin-top: 4px;">The real FPS may be lower based on your hardware and bandwidth.</div>
 
+              <h4 style="margin-top: 32px">Secondary Webcam</h4>
+              <p style="margin-top: 8px;">You can select up to two webcam streams to be displayed in the Obico app.</p>
+              <div style="margin-bottom: 12px;" data-bind="visible: secondaryWebcamStreamExists()">
+                <a href="#" class="btn" data-bind="click: removeSecondaryWebcam">Remove Secondary Webcam</a>
+              </div>
+              <div style="margin-bottom: 12px;" data-bind="visible: !secondaryWebcamStreamExists()">
+                <a href="#" class="btn" data-bind="click: addSecondaryWebcam">Configure Secondary Webcam</a>
+              </div>
+
               <!-- ko if: secondaryWebcamStreamExists() -->
-                <h4>Secondary Webcam</h4>
                 <select data-bind="options: settingsViewModel.settings.webcam.webcams(),
                           optionsText: 'displayName',
                           optionsValue: 'name',
@@ -216,14 +224,7 @@
 
               <!-- /ko -->
 
-              <p style="margin-top: 24px;">You can select up to two webcam streams to be displayed in the Obico app.</p>
-              <div data-bind="visible: secondaryWebcamStreamExists()">
-                <a href="#" class="btn" data-bind="click: removeSecondaryWebcam">Remove Secondary Webcam</a>
-              </div>
-              <div data-bind="visible: !secondaryWebcamStreamExists()">
-                <a href="#" class="btn" data-bind="click: addSecondaryWebcam">Configure Secondary Webcam</a>
-              </div>
-              <h4 style="margin-top: 24px;">Nozzle Camera  <a href="#">(What is it?)</a></h4>
+              <h4 style="margin-top: 32px;">Nozzle Camera  <a href="#">(What is it?)</a></h4>
               <select data-bind="options: nozzleCameraChoices(),
                          optionsCaption: 'I do not have a nozzle camera',
                          optionsText: 'displayName',
