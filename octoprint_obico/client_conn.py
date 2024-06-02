@@ -19,9 +19,12 @@ class ClientConn:
 
     def __init__(self, plugin):
         self.plugin = plugin
-        # self.printer_data_channel_conn = DataChannelConn(JANUS_SERVER)
+        self.printer_data_channel_conn = None
         self.seen_refs = deque(maxlen=25)  # contains "last" 25 passthru refs
         self.seen_refs_lock = threading.RLock()
+
+    def open_data_channel(self, port):
+        self.printer_data_channel_conn = DataChannelConn(JANUS_SERVER, port)
 
     def on_message_to_plugin(self, msg):
         target = getattr(self.plugin, msg.get('target'))
@@ -61,6 +64,9 @@ class ClientConn:
         self.plugin.boost_status_update()
 
     def send_msg_to_client(self, data):
+        if self.printer_data_channel_conn is None:
+            return
+
         payload = json.dumps(data, default=str).encode('utf8')
         if __python_version__ == 3:
             compressor  = zlib.compressobj(
@@ -77,7 +83,8 @@ class ClientConn:
         self.printer_data_channel_conn.send(compressed_data)
 
     def close(self):
-        self.printer_data_channel_conn.close()
+        if self.printer_data_channel_conn:
+            self.printer_data_channel_conn.close()
 
     def extract_args(self, msg):
         args = msg.get("args", [])
