@@ -211,7 +211,7 @@ class WebcamStreamer:
         # Now we know if we have a data channel, we can tell client_conn to start the data channel
         first_webcam_with_dataport = next((webcam for webcam in self.webcams if webcam.get('runtime', {}).get('dataport')), None)
         if first_webcam_with_dataport:
-            first_webcam_with_dataport['runtime']['data_available'] = True
+            first_webcam_with_dataport['runtime']['data_channel_available'] = True
             self.plugin.client_conn.open_data_channel(first_webcam_with_dataport['runtime']['dataport'])
 
         try:
@@ -503,6 +503,7 @@ class WebcamStreamer:
                 is_primary_camera=webcam['is_primary_camera'],
                 stream_mode=webcam['streaming_params'].get('mode'),
                 stream_id=webcam['runtime'].get('stream_id'),
+                data_channel_available=webcam['runtime'].get('data_channel_available',False),
                 flipV=webcam['flipV'],
                 flipH=webcam['flipH'],
                 rotation=webcam['rotation'],
