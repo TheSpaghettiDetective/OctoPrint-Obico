@@ -45,12 +45,16 @@ FFMPEG = os.path.join(FFMPEG_DIR, 'run.sh')
 JANUS_WS_PORT = 17730   # Janus needs to use 17730 up to 17750. Hard-coded for now. may need to make it dynamic if the problem of port conflict is too much
 JANUS_ADMIN_WS_PORT = JANUS_WS_PORT + 1
 
+RECODE_RESOLUTIONS_43 = {
+    'low': (320, 240),
+    'medium': (640, 480),
+    'high': (960, 720),
+}
 
-PI_CAM_RESOLUTIONS = {
-    'low': ((320, 240), (480, 270)),  # resolution for 4:3 and 16:9
-    'medium': ((640, 480), (960, 540)),
-    'high': ((1296, 972), (1640, 922)),
-    'ultra_high': ((1640, 1232), (1920, 1080)),
+RECODE_RESOLUTIONS_169 = {
+    'low': (426, 240),
+    'medium': (854, 480),
+    'high': (1280, 720),
 }
 
 
@@ -257,6 +261,7 @@ class WebcamStreamer:
         self.plugin.post_printer_event_to_server(event_data, attach_snapshot=False, spam_tolerance_seconds=60*30)
 
     def find_streaming_params(self):
+
         ffmpeg_h264_encoder = find_ffmpeg_h264_encoder()
         webcams = []
         for webcam in self.webcams:
@@ -313,6 +318,22 @@ class WebcamStreamer:
 
     def h264_transcode(self, webcam):
 
+        def cap_recode_resolution(original_dimension):
+            max_height = 720 if self.plugin.linked_printer.get('is_pro') else 480
+
+            (img_w, img_h) = original_dimension
+
+            recode_resolution = RECODE_RESOLUTIONS_43
+            if float(img_w) / float(img_h) > 1.5:
+                recode_resolution = RECODE_RESOLUTIONS_169
+
+            max_height = min(recode_resolution[webcam.get('resolution', 'medium')][1], max_height)
+
+            if original_dimension[1] > max_height:
+                return (int(max_height * original_dimension[0] / original_dimension[1]), max_height)
+            else:
+                return original_dimension
+
         try:
             stream_url = webcam_full_url(webcam.get("stream"))
             if not stream_url:
@@ -322,6 +343,7 @@ class WebcamStreamer:
             if not img_w or not img_h:
                 _logger.warn('width and/or height not specified or invalid in streaming parameters. Getting the values from the source.')
                 (img_w, img_h) = get_webcam_resolution(webcam)
+            (img_w, img_h) = cap_recode_resolution((img_w, img_h))
 
             fps = parse_integer_or_none(webcam['streaming_params'].get('recode_fps'))
             if not fps:
