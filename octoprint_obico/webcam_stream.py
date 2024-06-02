@@ -330,7 +330,8 @@ class WebcamStreamer:
             max_height = min(recode_resolution[webcam.get('resolution', 'medium')][1], max_height)
 
             if original_dimension[1] > max_height:
-                return (int(max_height * original_dimension[0] / original_dimension[1]), max_height)
+                new_width = round(max_height * original_dimension[0] / original_dimension[1] / 2.0) * 2
+                return (new_width, max_height)
             else:
                 return original_dimension
 
@@ -348,7 +349,7 @@ class WebcamStreamer:
             fps = parse_integer_or_none(webcam['streaming_params'].get('recode_fps'))
             if not fps:
                 _logger.warn('FPS not specified or invalid in streaming parameters. Getting the values from the source.')
-                fps = webcam['target_fps']
+                fps = int(webcam['target_fps'])
 
             bitrate = bitrate_for_dim(img_w, img_h)
             if not self.plugin.linked_printer.get('is_pro'):
@@ -418,7 +419,7 @@ class WebcamStreamer:
 
             mjpeg_dataport = webcam['runtime']['mjpeg_dataport']
 
-            min_interval_btw_frames = 1.0 / webcam['target_fps']
+            min_interval_btw_frames = 1.0 / float(webcam['target_fps'])
             bandwidth_throttle = 0.004
             if pi_version() == "0":    # If Pi Zero
                 bandwidth_throttle *= 2
