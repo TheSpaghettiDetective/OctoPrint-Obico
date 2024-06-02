@@ -362,7 +362,7 @@ class WebcamStreamer:
             bitrate = bitrate_for_dim(img_w, img_h)
             # A very rough estimate of the bitrate needed for the stream.
             sqrt_fps_diff = abs(fps - 25) ** 0.5
-            bitrate = bitrate * (min(fps, 25.0) + sqrt_fps_diff) / 25.0
+            bitrate = int(bitrate * (min(fps, 25.0) + sqrt_fps_diff) / 25.0)
 
             rtp_port = webcam['runtime']['videoport']
             self.start_ffmpeg(rtp_port, '-re -i {stream_url} -filter:v fps={fps} -b:v {bitrate} -pix_fmt yuv420p -s {img_w}x{img_h} {encoder}'.format(stream_url=stream_url, fps=fps, bitrate=bitrate, img_w=img_w, img_h=img_h, encoder=webcam['streaming_params'].get('h264_encoder')))
