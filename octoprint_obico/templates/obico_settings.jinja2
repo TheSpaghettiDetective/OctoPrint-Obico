@@ -180,7 +180,7 @@
               <div class="obico-text-muted" style="margin-top: 4px;">The real FPS may be lower based on your hardware and bandwidth.</div>
 
               <h4 style="margin-top: 32px">Secondary Webcam</h4>
-              <p style="margin-top: 8px;">You can select up to two webcam streams to be displayed in the Obico app.</p>
+              <p>You can select up to two webcam streams to be displayed in the Obico app.</p>
               <div style="margin-bottom: 12px;" data-bind="visible: secondaryWebcamStreamExists()">
                 <a href="#" class="btn" data-bind="click: removeSecondaryWebcam">Remove Secondary Webcam</a>
               </div>
@@ -190,10 +190,14 @@
 
               <!-- ko if: secondaryWebcamStreamExists() -->
                 <select data-bind="options: settingsViewModel.settings.webcam.webcams(),
+                          optionsCaption: 'Select a webcam',
                           optionsText: 'displayName',
                           optionsValue: 'name',
                           value: secondaryWebcamStream().name">
                 </select>
+                <div data-bind="visible: secondaryWebcamStream().name() === primaryWebcamStream().name()" class="text-error" style="margin-top: 4px;">
+                The secondary webcam cannot be the same as the primary webcam. Please select a different webcam.
+                </div>
 
                 <div style="margin-top: 12px;">Resolution:</div>
                 <select data-bind="value: secondaryWebcamStream().resolution">
