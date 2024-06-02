@@ -100,7 +100,8 @@ def get_webcam_configs(plugin):
     DEFAULT_WEBCAM_CONFIG = {
         'name': 'classic',
         'is_primary_camera': True,
-        'target_fps': 25,
+        'target_fps': 10,
+        'resolution': 'medium',
     }
 
     def webcam_config_dict(webcam):
@@ -117,15 +118,37 @@ def get_webcam_configs(plugin):
 
     octoprint_webcams = octoprint.webcams.get_webcams()
 
-    if len(plugin._settings.get(["webcams"])) == 0:
-        if 'classic' in octoprint_webcams:
-            plugin._settings.set(["webcams"], [DEFAULT_WEBCAM_CONFIG,], force=True) # use 'classic' to be backward compatible
-        elif octoprint_webcams:
-            first_webcam_name = list(octoprint_webcams.keys())[0]
-            DEFAULT_WEBCAM_CONFIG['name'] = first_webcam_name
-            plugin._settings.set(["webcams"], [DEFAULT_WEBCAM_CONFIG,], force=True)
+    def cleaned_webcam_configs():
 
-    configured_webcams = plugin._settings.get(["webcams"])
+        if len(plugin._settings.get(["webcams"])) == 0:
+            if 'classic' in octoprint_webcams:
+                plugin._settings.set(["webcams"], [DEFAULT_WEBCAM_CONFIG,], force=True) # use 'classic' to be backward compatible
+            elif octoprint_webcams:
+                first_webcam_name = list(octoprint_webcams.keys())[0]
+                DEFAULT_WEBCAM_CONFIG['name'] = first_webcam_name
+                plugin._settings.set(["webcams"], [DEFAULT_WEBCAM_CONFIG,], force=True)
+
+        # Make sure no 2 cameras have the same name
+        deduped_webcam_configs_dict = {}
+        for config in plugin._settings.get(["webcams"]):
+            if config['name'] not in deduped_webcam_configs_dict:
+                deduped_webcam_configs_dict[config['name']] = config
+
+        if len(deduped_webcam_configs_dict.values()) < len(plugin._settings.get(["webcams"])):
+            plugin._settings.set(["webcams"], list(deduped_webcam_configs_dict.values()), force=True)
+
+        # Make sure there is one and only one primary camera
+        webcam_configs = plugin._settings.get(["webcams"])
+        primary_cameras = [config for config in webcam_configs if config.get('is_primary_camera', False)]
+        if len(primary_cameras) != 1 and len(webcam_configs) > 0:
+            for config in webcam_configs:
+                config['is_primary_camera'] = False
+            webcam_configs[0]['is_primary_camera'] = True
+            plugin._settings.set(["webcams"], webcam_configs, force=True)
+
+        return plugin._settings.get(["webcams"])
+
+    configured_webcams = cleaned_webcam_configs()
 
     webcam_configs = []
 
