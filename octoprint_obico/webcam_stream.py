@@ -335,6 +335,10 @@ class WebcamStreamer:
             else:
                 return original_dimension
 
+        def cap_recode_fps(original_fps):
+            if not self.plugin.linked_printer.get('is_pro'):
+                fps = min(8, fps) # For some reason, when fps is set to 5, it looks like 2FPS. 8fps looks more like 5
+
         try:
             stream_url = webcam_full_url(webcam.get("stream"))
             if not stream_url:
@@ -350,11 +354,12 @@ class WebcamStreamer:
             if not fps:
                 _logger.warn('FPS not specified or invalid in streaming parameters. Getting the values from the source.')
                 fps = int(webcam['target_fps'])
+            fps = cap_recode_fps(fps)
 
             bitrate = bitrate_for_dim(img_w, img_h)
-            if not self.plugin.linked_printer.get('is_pro'):
-                fps = min(8, fps) # For some reason, when fps is set to 5, it looks like 2FPS. 8fps looks more like 5
-                bitrate = int(bitrate/2)
+            # A very rough estimate of the bitrate needed for the stream.
+            sqrt_fps_diff = abs(fps - 25) ** 0.5
+            bitrate = bitrate * (min(fps, 25.0) + sqrt_fps_diff) / 25.0
 
             rtp_port = webcam['runtime']['videoport']
             self.start_ffmpeg(rtp_port, '-re -i {stream_url} -filter:v fps={fps} -b:v {bitrate} -pix_fmt yuv420p -s {img_w}x{img_h} {encoder}'.format(stream_url=stream_url, fps=fps, bitrate=bitrate, img_w=img_w, img_h=img_h, encoder=webcam['streaming_params'].get('h264_encoder')))
