@@ -60,12 +60,34 @@ $(function () {
                 self.settingsViewModel.settings.plugins.obico.webcams.push(primaryStream);
             }
 
+            if (!primaryStream.resolution) {
+                primaryStream.resolution = ko.observable('medium');
+            }
+
+            if (!primaryStream.target_fps) {
+                primaryStream.target_fps = ko.observable(10);
+            }
+
             return primaryStream;
         });
         self.secondaryWebcamStream = ko.pureComputed(function() {
-            return ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.obico.webcams(), function(stream) {
+            var secondaryStream = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.obico.webcams(), function(stream) {
                 return !(stream.is_primary_camera && stream.is_primary_camera() === true)
-            }) || ko.observable(null);
+            });
+
+            if (!secondaryStream) {
+                return ko.observable(null);
+            }
+
+            if (!secondaryStream.resolution) {
+                secondaryStream.resolution = ko.observable('medium');
+            }
+
+            if (!secondaryStream.target_fps) {
+                secondaryStream.target_fps = ko.observable(5);
+            }
+
+            return secondaryStream;
         });
         self.secondaryWebcamStreamExists = ko.pureComputed(function() {
             var matchingStream = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.obico.webcams(), function(stream) {
@@ -355,7 +377,10 @@ $(function () {
 
         self.addSecondaryWebcam = function () {
             var secondaryStream = {
+                name: ko.observable(null),
                 is_primary_camera: ko.observable(false),
+                resolution: ko.observable('medium'),
+                target_fps: ko.observable(5),
             };
             self.settingsViewModel.settings.plugins.obico.webcams.push(secondaryStream);
         };

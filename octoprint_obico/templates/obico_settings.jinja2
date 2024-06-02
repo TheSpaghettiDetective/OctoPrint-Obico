@@ -113,7 +113,7 @@
                   </input>
                 </label>
                 <div class="radio obico-text-muted">Proudly maintained by <a href="https://www.obico.io/team.html">the Obico team</a>.</div>
-                <div class="radio obico-text-muted">Free for 1 printer. Pro plan starts from $4/month. <a href="https://app.obico.io/ent_pub/pricing/">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
+                <div class="radio obico-text-muted">Free for 1 printer. Pro plan starts from $4/month. <a href="https://app.obico.io/ent_pub/pricing/" target="_blank">Learn more <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
                 <br />
                 <label class="radio">
                   <input
@@ -125,7 +125,7 @@
                     A self-hosted Obico Server.
                   </input>
                 </label>
-                <div class="radio obico-text-muted">Learn more about <a href="https://www.obico.io/docs/server-guides/">hosting your own Obico Server <i class="fa fa-external-link" aria-hidden="true"></i></a>.</div>
+                <div class="radio obico-text-muted">Learn more about <a href="https://www.obico.io/docs/server-guides/" target="_blank">hosting your own Obico Server <i class="fa fa-external-link" aria-hidden="true"></i></a>.</div>
                 <div class="radio">
                   <input
                     type="text"
@@ -156,14 +156,66 @@
                          value: primaryWebcamStream().name">
               </select>
               <div class="obico-text-muted">Primary webcam is the one used for failure detection.</div>
-              <div style="margin-top: 24px;" data-bind="visible: secondaryWebcamStreamExists()">
+              <div style="margin-top: 12px;">Resolution:</div>
+              <select data-bind="value: primaryWebcamStream().resolution">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+              <div data-bind="visible: primaryWebcamStream().resolution() === 'high' && !linkedPrinter.is_pro()" class="text-warning" style="margin-top: 4px;">
+              Your webcam will be streamed at Medium resolution, as Hi-def streaming is a premium feature for Pro accounts. Please consider <a href="https://app.obico.io/ent_pub/pricing/" target="_blank">upgrade to Pro account<i class="fa fa-external-link" aria-hidden="true"></i></a> to support Obico.
+              </div>
+              <div style="margin-top: 12px;">Target FPS:</div>
+              <select data-bind="value: primaryWebcamStream().target_fps">
+                <option value="5">5 FPS</option>
+                <option value="10">10 FPS</option>
+                <option value="15">15 FPS</option>
+                <option value="20">20 FPS</option>
+                <option value="25">25 FPS</option>
+                <option value="30">30 FPS</option>
+              </select>
+              <div data-bind="visible: primaryWebcamStream().target_fps() > 5 && !linkedPrinter.is_pro()" class="text-warning" style="margin-top: 4px;">
+              Your webcam will be streamed at up to 5 FPS, as high-FPS streaming is a premium feature for Pro accounts. Please consider <a href="https://app.obico.io/ent_pub/pricing/" target="_blank">upgrade to Pro account<i class="fa fa-external-link" aria-hidden="true"></i></a> to support Obico.
+              </div>
+              <div class="obico-text-muted" style="margin-top: 4px;">The real FPS may be lower based on your hardware and bandwidth.</div>
+
+              <!-- ko if: secondaryWebcamStreamExists() -->
                 <h4>Secondary Webcam</h4>
                 <select data-bind="options: settingsViewModel.settings.webcam.webcams(),
                           optionsText: 'displayName',
                           optionsValue: 'name',
                           value: secondaryWebcamStream().name">
                 </select>
-              </div>
+
+                <div style="margin-top: 12px;">Resolution:</div>
+                <select data-bind="value: secondaryWebcamStream().resolution">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+                <div data-bind="visible: secondaryWebcamStream().resolution() === 'high' && !linkedPrinter.is_pro()" class="text-warning" style="margin-top: 4px;">
+                Your webcam will be streamed at Medium resolution, as Hi-def streaming is a premium feature for Pro accounts. Please consider <a href="https://app.obico.io/ent_pub/pricing/" target="_blank">upgrade to Pro account<i class="fa fa-external-link" aria-hidden="true"></i></a> to support Obico.
+                </div>
+
+                <div style="margin-top: 12px;">Target FPS:</div>
+                <select data-bind="value: secondaryWebcamStream().target_fps">
+                  <option value="5">5 FPS</option>
+                  <option value="10">10 FPS</option>
+                  <option value="15">15 FPS</option>
+                  <option value="20">20 FPS</option>
+                  <option value="25">25 FPS</option>
+                  <option value="30">30 FPS</option>
+                </select>
+                <div data-bind="visible: secondaryWebcamStream().target_fps() > 10 && primaryWebcamStream().target_fps() > 10" class="text-warning" style="margin-top: 4px;">
+                Warning: High FPS streaming on two webcams may cause excessive CPU usage and hence impact print quality.
+                </div>
+                <div data-bind="visible: secondaryWebcamStream().target_fps() > 5 && !linkedPrinter.is_pro()" class="text-warning" style="margin-top: 4px;">
+                Your webcam will be streamed at up to 5 FPS, as high-FPS streaming is a premium feature for Pro accounts. Please consider <a href="https://app.obico.io/ent_pub/pricing/" target="_blank">upgrade to Pro account<i class="fa fa-external-link" aria-hidden="true"></i></a> to support Obico.
+                </div>
+                <div class="obico-text-muted" style="margin-top: 4px;">The real FPS may be lower based on your hardware and bandwidth.</div>
+
+              <!-- /ko -->
+
               <p style="margin-top: 24px;">You can select up to two webcam streams to be displayed in the Obico app.</p>
               <div data-bind="visible: secondaryWebcamStreamExists()">
                 <a href="#" class="btn" data-bind="click: removeSecondaryWebcam">Remove Secondary Webcam</a>
@@ -171,15 +223,14 @@
               <div data-bind="visible: !secondaryWebcamStreamExists()">
                 <a href="#" class="btn" data-bind="click: addSecondaryWebcam">Configure Secondary Webcam</a>
               </div>
-              <h4 style="margin-top: 24px;">Nozzle Camera</h4>
-              <div>If you have a nozzle camera, you can configure it here. <a href="#">Learn more</a>.</div>
+              <h4 style="margin-top: 24px;">Nozzle Camera  <a href="#">(What is it?)</a></h4>
               <select data-bind="options: nozzleCameraChoices(),
                          optionsCaption: 'I do not have a nozzle camera',
                          optionsText: 'displayName',
                          optionsValue: 'name',
                          value: settingsViewModel.settings.plugins.obico.nozzle_camera">
               </select>
-              <div class="alert alert-warning" role="alert" data-bind="visible: settingsViewModel.settings.plugins.obico.nozzle_camera()">
+              <div data-bind="visible: settingsViewModel.settings.plugins.obico.nozzle_camera()" class="text-warning" style="margin-top: 4px;">
                 The selected webcam will NOT be used for regular failure detection. Instead, a different AI model will be used. Please make sure it is a nozzle camerea otherwise the result will be unpredictable.
               </div>
             </div>
