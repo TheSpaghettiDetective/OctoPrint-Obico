@@ -100,7 +100,6 @@ def get_webcam_configs(plugin):
     DEFAULT_WEBCAM_CONFIG = {
         'name': 'classic',
         'is_primary_camera': True,
-        'is_nozzle_camera': False,
         'target_fps': 25,
     }
 
@@ -441,7 +440,6 @@ class WebcamStreamer:
         return dict(
                 name=webcam['displayName'],
                 is_primary_camera=webcam['is_primary_camera'],
-                is_nozzle_camera=webcam['is_nozzle_camera'],
                 stream_mode=webcam['streaming_params'].get('mode'),
                 stream_id=webcam['runtime'].get('stream_id'),
                 flipV=webcam['flipV'],

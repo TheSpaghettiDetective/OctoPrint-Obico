@@ -47,7 +47,8 @@ class NozzleCam:
 
     def create_nozzlecam_config(self, webcam_configs):
         try:
-            nozzle_cam_config = next((config for config in webcam_configs if config.get('is_nozzle_camera', False)), None)
+            nozzle_camera = self.plugin._settings.get(['nozzle_camera'])
+            nozzle_cam_config = next((item for item in webcam_configs if item['name'] == nozzle_camera), None)
             if nozzle_cam_config:
                 _logger.info(f'Nozzle camera found: {nozzle_cam_config}')
                 self.nozzle_config = nozzle_cam_config

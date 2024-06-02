@@ -56,7 +56,6 @@ $(function () {
                 primaryStream = {
                     name: ko.observable('classic'),
                     is_primary_camera: ko.observable(true),
-                    is_nozzle_camera: ko.observable(false),
                 };
                 self.settingsViewModel.settings.plugins.obico.webcams.push(primaryStream);
             }
@@ -357,7 +356,6 @@ $(function () {
         self.addSecondaryWebcam = function () {
             var secondaryStream = {
                 is_primary_camera: ko.observable(false),
-                is_nozzle_camera: ko.observable(false),
             };
             self.settingsViewModel.settings.plugins.obico.webcams.push(secondaryStream);
         };
