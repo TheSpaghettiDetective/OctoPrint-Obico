@@ -139,7 +139,7 @@
         </div>
       </section>
       <section data-bind="visible: linkedPrinter.id">
-        <h1 class="obico-settings-page__section-title">Webcam Streaming</h1>
+        <h1 class="obico-settings-page__section-title">Webcam</h1>
         <div class="obico-settings-page__section-content">
           <form class="form-horizontal">
             <div class="form-check" style="margin-bottom: 18px;">
@@ -149,32 +149,20 @@
               </label>
             </div>
             <div data-bind="visible: !settingsViewModel.settings.plugins.obico.disable_video_streaming()" class="control-group">
-              <h4>Primary Webcam Stream</h4>
-              <div style="margin-top: -4px" class="obico-text-muted">Primary webcam is the one used for failure detection.</div>
+              <h4>Primary Webcam</h4>
               <select data-bind="options: settingsViewModel.settings.webcam.webcams(),
                          optionsText: 'displayName',
                          optionsValue: 'name',
                          value: primaryWebcamStream().name">
               </select>
-              <div class="form-check" style="margin-top: 8px;">
-                <input id="primary-camera-is-nozzle-camera" class="form-check-input" type="checkbox" data-bind="checked: primaryWebcamStream().is_nozzle_camera" style="margin-top: 0px;">
-                <label class="form-check-label" for="primary-camera-is-nozzle-camera" style="display: inline">
-                  This is a nozzle camera. <a href="#">(What is it?)</a>
-                </label>
-              </div>
+              <div class="obico-text-muted">Primary webcam is the one used for failure detection.</div>
               <div style="margin-top: 24px;" data-bind="visible: secondaryWebcamStreamExists()">
-                <h4>Secondary Webcam Stream</h4>
+                <h4>Secondary Webcam</h4>
                 <select data-bind="options: settingsViewModel.settings.webcam.webcams(),
                           optionsText: 'displayName',
                           optionsValue: 'name',
                           value: secondaryWebcamStream().name">
                 </select>
-                <div class="form-check" style="margin-top: 8px;">
-                  <input id="secondary-camera-is-nozzle-camera" class="form-check-input" type="checkbox" data-bind="checked: secondaryWebcamStream().is_nozzle_camera" style="margin-top: 0px;">
-                  <label class="form-check-label" for="secondary-camera-is-nozzle-camera" style="display: inline">
-                    This is a nozzle camera. <a href="#">(What is it?)</a>
-                  </label>
-                </div>
               </div>
               <p style="margin-top: 24px;">You can select up to two webcam streams to be displayed in the Obico app.</p>
               <div data-bind="visible: secondaryWebcamStreamExists()">
@@ -182,6 +170,17 @@
               </div>
               <div data-bind="visible: !secondaryWebcamStreamExists()">
                 <a href="#" class="btn" data-bind="click: addSecondaryWebcam">Configure Secondary Webcam</a>
+              </div>
+              <h4 style="margin-top: 24px;">Nozzle Camera</h4>
+              <div>If you have a nozzle camera, you can configure it here. <a href="#">Learn more</a>.</div>
+              <select data-bind="options: nozzleCameraChoices(),
+                         optionsCaption: 'I do not have a nozzle camera',
+                         optionsText: 'displayName',
+                         optionsValue: 'name',
+                         value: settingsViewModel.settings.plugins.obico.nozzle_camera">
+              </select>
+              <div class="alert alert-warning" role="alert" data-bind="visible: settingsViewModel.settings.plugins.obico.nozzle_camera()">
+                The selected webcam will NOT be used for regular failure detection. Instead, a different AI model will be used. Please make sure it is a nozzle camerea otherwise the result will be unpredictable.
               </div>
             </div>
           </form>

@@ -74,11 +74,23 @@ $(function () {
             });
             return matchingStream != null;
         });
+        self.nozzleCameraChoices = ko.pureComputed(function() {
+            return self.settingsViewModel.settings.plugins.obico.webcams().map(function(obicoWebcam) {
+                var matchingWebcam = self.settingsViewModel.settings.webcam.webcams().find(function(webcam) {
+                    return webcam.name() === obicoWebcam.name();
+                });
+
+                return {
+                    name: obicoWebcam.name(),
+                    displayName: matchingWebcam ? matchingWebcam.displayName() : 'Unknown'
+                };
+            });
+        });
+
         self.onStartupComplete = function (plugin, data) {
             self.fetchPluginStatus();
             self.serverType(getServerType(self.settingsViewModel.settings.plugins.obico.endpoint_prefix()));
         };
-
         self.onSettingsBeforeSave = function() {
             self.serverType(getServerType(self.settingsViewModel.settings.plugins.obico.endpoint_prefix()));
         }
