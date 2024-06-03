@@ -107,6 +107,7 @@ class ObicoPlugin(
             pi_cam_resolution='medium',
             sentry_opt='out',
             webcams=[],
+            nozzle_camera='',
         )
 
     def on_settings_save(self, data):
