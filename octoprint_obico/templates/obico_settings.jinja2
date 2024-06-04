@@ -219,7 +219,7 @@
                   <option value="30">30 FPS</option>
                 </select>
                 <div data-bind="visible: secondaryWebcamStream().target_fps() > 10 && primaryWebcamStream().target_fps() > 10" class="text-warning" style="margin-top: 4px;">
-                Warning: High FPS streaming on two webcams may cause excessive CPU usage and hence impact print quality.
+                Warning: High FPS streaming on two webcams may <a target="_blank" href="https://obico.io/docs/user-guides/webcam-streaming-excessive-cpu/">cause excessive CPU usage</a> and hence impact print quality.
                 </div>
                 <div data-bind="visible: secondaryWebcamStream().target_fps() > 5 && !linkedPrinter.is_pro()" class="text-warning" style="margin-top: 4px;">
                 Your webcam will be streamed at up to 5 FPS, as high-FPS streaming is a premium feature for Pro accounts. Please consider <a href="https://app.obico.io/ent_pub/pricing/" target="_blank">upgrade to Pro account<i class="fa fa-external-link" aria-hidden="true"></i></a> to support Obico.
