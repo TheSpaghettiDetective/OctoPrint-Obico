@@ -24,7 +24,6 @@ from .janus_config_builder import RUNTIME_JANUS_ETC_DIR
 _logger = logging.getLogger('octoprint.plugins.obico')
 
 JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
-MAX_PAYLOAD_SIZE = 1500  # hardcoded in streaming plugin
 
 
 class JanusConn:
