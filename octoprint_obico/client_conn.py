@@ -9,11 +9,12 @@ import zlib
 import re
 from collections import deque
 
-from .janus import JANUS_SERVER, MAX_PAYLOAD_SIZE
+from .janus import JANUS_SERVER
 
 __python_version__ = 3 if sys.version_info >= (3, 0) else 2
 
 _logger = logging.getLogger('octoprint.plugins.obico')
+MAX_PAYLOAD_SIZE = 1500 # 1500 bytes is the max size of a UDP packet
 
 class ClientConn:
 
@@ -120,7 +121,7 @@ class DataChannelConn(object):
 
     def send(self, payload):
         if len(payload) > MAX_PAYLOAD_SIZE:
-            _logger.error('datachannel payload too big (%s)' % (len(payload), ))
+            _logger.debug('datachannel payload too big (%s)' % (len(payload), ))
             return
 
         with self.sock_lock:
