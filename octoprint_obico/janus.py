@@ -117,18 +117,6 @@ class JanusConn:
     def process_janus_msg(self, ws, raw_msg):
         try:
             msg = json.loads(raw_msg)
-
-            # when plugindata.data.obico is set, this is a incoming message from webrtc data channel
-            # https://github.com/TheSpaghettiDetective/janus-gateway/commit/e0bcc6b40f145ce72e487204354486b2977393ea
-            to_plugin = msg.get('plugindata', {}).get('data', {}).get('thespaghettidetective', {})
-
-            if to_plugin:
-                _logger.debug('Processing WebRTC data channel msg from client:')
-                _logger.debug(msg)
-                # TODO: make data channel work again
-                # self.plugin.client_conn.on_message_to_plugin(to_plugin)
-                return
-
             _logger.debug('Relaying Janus msg')
             _logger.debug(msg)
             self.plugin.send_ws_msg_to_server(dict(janus=raw_msg))
