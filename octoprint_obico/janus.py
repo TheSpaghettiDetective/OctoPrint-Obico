@@ -23,23 +23,16 @@ from .janus_config_builder import RUNTIME_JANUS_ETC_DIR
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
-JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
-
-
 class JanusConn:
 
-    def __init__(self, plugin, janus_port):
+    def __init__(self, plugin, janus_server, janus_port):
         self.plugin = plugin
+        self.janus_server = janus_server
         self.janus_port = janus_port
         self.janus_ws = None
         self.shutting_down = False
 
     def start(self, janus_bin_path, ld_lib_path):
-
-        if os.getenv('JANUS_SERVER', '').strip() != '':
-            _logger.warning('Using an external Janus gateway. Not starting the built-in Janus gateway.')
-            self.start_janus_ws()
-            return
 
         def run_janus_forever():
             try:
@@ -77,7 +70,7 @@ class JanusConn:
 
     def wait_for_janus(self):
         time.sleep(0.2)
-        wait_for_port(JANUS_SERVER, self.janus_port)
+        wait_for_port(self.janus_server, self.janus_port)
 
     def start_janus_ws(self):
 
@@ -85,7 +78,7 @@ class JanusConn:
             _logger.warn('Janus WS connection closed!')
 
         self.janus_ws = WebSocketClient(
-            'ws://{}:{}/'.format(JANUS_SERVER, self.janus_port),
+            'ws://{}:{}/'.format(self.janus_server, self.janus_port),
             on_ws_msg=self.process_janus_msg,
             on_ws_close=on_close,
             subprotocols=['janus-protocol'],
@@ -100,7 +93,7 @@ class JanusConn:
             # Ensure the process is killed before launching a new one
             with open(self.janus_pid_file_path(), 'r') as pid_file:
                 subprocess.run(['kill', pid_file.read()], check=True)
-            wait_for_port_to_close(JANUS_SERVER, self.janus_port)
+            wait_for_port_to_close(self.janus_server, self.janus_port)
         except Exception as e:
             _logger.warning('Failed to shutdown Janus - ' + str(e))
 

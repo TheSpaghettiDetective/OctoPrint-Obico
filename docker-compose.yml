@@ -31,6 +31,7 @@ services:
     environment:
         DEBUG: 'True'
         JANUS_SERVER: 'janus'
+        PRECONFIGURED_WEBCAMS: '{"janus_server": "janus", "webcams": [{"name": "mjpeg", "is_primary_camera": true, "is_nozzle_camera": true, "stream_mode": "h264_transcode", "stream_id": 1, "flipV": true, "flipH": false, "rotation": 270, "streamRatio": "4:3"}, {"name": "mbp", "is_primary_camera": false, "is_nozzle_camera": false, "stream_mode": "mjpeg_webrtc", "stream_id": 3, "flipV": false, "flipH": true, "rotation": 0, "streamRatio": "16:9"}]}"'
     depends_on:
       - janus
     command: bash -c "sleep 11111111111"

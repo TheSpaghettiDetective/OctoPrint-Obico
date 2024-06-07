@@ -39,7 +39,6 @@ from .janus import JanusConn
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
-JANUS_SERVER = os.getenv('JANUS_SERVER', '127.0.0.1')
 FFMPEG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 FFMPEG = os.path.join(FFMPEG_DIR, 'run.sh')
 
@@ -205,6 +204,9 @@ class WebcamStreamer:
 
     def start(self, webcam_configs):
 
+        if self.use_preconfigured_webcams():
+            return
+
         self.shutdown_subprocesses()
         self.close_all_mjpeg_socks()
 
@@ -226,7 +228,7 @@ class WebcamStreamer:
                 self.shutdown()
                 return
 
-            self.janus = JanusConn(self.plugin, JANUS_WS_PORT)
+            self.janus = JanusConn(self.plugin, '127.0.0.1', JANUS_WS_PORT)
             self.janus.start(janus_bin_path, ld_lib_path)
 
             if not self.wait_for_janus():
@@ -382,7 +384,7 @@ class WebcamStreamer:
 
 
     def start_ffmpeg(self, rtp_port, ffmpeg_args, retry_after_quit=False):
-        ffmpeg_cmd = '{ffmpeg} -loglevel error {ffmpeg_args} -an -f rtp rtp://{janus_server}:{rtp_port}?pkt_size=1300'.format(ffmpeg=FFMPEG, ffmpeg_args=ffmpeg_args, janus_server=JANUS_SERVER, rtp_port=rtp_port)
+        ffmpeg_cmd = '{ffmpeg} -loglevel error {ffmpeg_args} -an -f rtp rtp://127.0.0.1:{rtp_port}?pkt_size=1300'.format(ffmpeg=FFMPEG, ffmpeg_args=ffmpeg_args, rtp_port=rtp_port)
 
         _logger.debug('Popen: {}'.format(ffmpeg_cmd))
         FNULL = open(os.devnull, 'w')
@@ -465,9 +467,9 @@ class WebcamStreamer:
                     continue
 
                 encoded = base64.b64encode(jpg)
-                mjpeg_sock.sendto(bytes('\r\n{}:{}\r\n'.format(len(encoded), len(jpg)), 'utf-8'), (JANUS_SERVER, mjpeg_dataport)) # simple header format for client to recognize
+                mjpeg_sock.sendto(bytes('\r\n{}:{}\r\n'.format(len(encoded), len(jpg)), 'utf-8'), ('127.0.0.1', mjpeg_dataport)) # simple header format for client to recognize
                 for chunk in [encoded[i:i+1400] for i in range(0, len(encoded), 1400)]:
-                    mjpeg_sock.sendto(chunk, (JANUS_SERVER, mjpeg_dataport))
+                    mjpeg_sock.sendto(chunk, ('127.0.0.1', mjpeg_dataport))
                     time.sleep(bandwidth_throttle)
 
         mjpeg_loop_thread = Thread(target=mjpeg_loop)
@@ -513,3 +515,17 @@ class WebcamStreamer:
                 rotation=webcam['rotation'],
                 streamRatio=webcam['streamRatio'],
                 )
+
+    def use_preconfigured_webcams(self):
+        if os.getenv('PRECONFIGURED_WEBCAMS', '').strip() != '':
+            _logger.warning('Using an external Janus gateway. Not starting the built-in Janus gateway.')
+            preconfigured = json.loads(os.getenv('PRECONFIGURED_WEBCAMS'))
+            self.normalized_webcams = preconfigured['webcams']
+            self.plugin.octoprint_settings_updater.update_settings()
+            self.plugin.post_update_to_server()
+
+            self.janus = JanusConn(self.plugin, preconfigured['janus_server'], JANUS_WS_PORT)
+            self.janus.start_janus_ws()
+            return True
+
+        return False
