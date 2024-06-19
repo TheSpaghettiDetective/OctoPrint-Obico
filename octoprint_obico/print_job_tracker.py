@@ -133,7 +133,12 @@ class PrintJobTracker:
             if not origin or not path:
                 return None
 
-            return plugin._file_manager._storage_managers.get(origin).get_metadata(path) or {}
+            metadata = plugin._file_manager._storage_managers.get(origin).get_metadata(path) or {}
+            #Keep only base metadata keys (see: https://docs.octoprint.org/en/master/api/datamodel.html#file-information) plus 'obico' key
+            keys_keep = ['obico', 'name', 'display', 'path', 'type', 'typePath', 'hash', 'size', 'date', 'origin', 'refs', 'gcodeAnalysis', 'prints', 'statistics']
+            metadata_keep = {key : value for key, value in metadata.items() if key in keys_keep}
+            return metadata_keep
+
         except Exception as e:
             _logger.exception(e)
             return None
