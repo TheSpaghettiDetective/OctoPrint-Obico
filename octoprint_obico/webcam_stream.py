@@ -166,7 +166,7 @@ def get_webcam_configs(plugin):
                 'level': 'warning',
                 'cause': 'streaming',
                 'title': 'Wrong Webcam Configuration',
-                'text': 'Obico can not find the webcam {}. Skipping it for streaming.'.format(webcam['name']),
+                'text': 'Obico can not find the webcam [{}]. Skipping it for streaming.'.format(webcam['name']),
                 'info_url': '#',
                 'buttons': ['more_info', 'never', 'ok']
             }, plugin)
