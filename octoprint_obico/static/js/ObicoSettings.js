@@ -65,7 +65,7 @@ $(function () {
             }
 
             if (!primaryStream.target_fps) {
-                primaryStream.target_fps = ko.observable(10);
+                primaryStream.target_fps = ko.observable(25);
             }
 
             return primaryStream;
