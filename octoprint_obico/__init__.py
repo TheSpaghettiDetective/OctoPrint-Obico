@@ -452,11 +452,7 @@ class ObicoPlugin(
 
     def post_printer_status_to_client(self):
         status = _print_job_tracker.status(self, status_only=True)
-        # Backward compatibility: mobile apps 1.66 or earlier expects {octoprint_data: ...}
-        status_data = status.get('status', {})
-        status = {'status': status_data, 'octoprint_data': status_data}
-
-        self.client_conn.send_msg_to_client(status)
+        self.client_conn.send_msg_to_client({'status': status.get('status', {})})
 
     def boost_status_update(self):
         self.post_printer_status_to_client()
