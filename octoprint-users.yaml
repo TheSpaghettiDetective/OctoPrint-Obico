@@ -1,10 +1,11 @@
+_version: 2
 octoprint:
   active: true
   apikey: null
   groups:
   - admins
   - users
-  password: 15c6a0cc41783d204fe655a2eb11ab69dc64d186ef65cc631c2d6a15c5671a51e173069efdd2a0b0b2c51bbbce9bfc823a0a85f4b3dc18582a31f3891be392f9
+  password: $argon2id$v=19$m=65536,t=3,p=4$V8o5JwSg9D6HcK4VohTCWA$Vr1cGJU5iob8v4YrUIHSntayvaoIN4hfdyKEByQ/U+w
   permissions: []
   roles:
   - user

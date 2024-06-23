@@ -1,5 +1,3 @@
-accessControl:
-  salt: cFjdkL47gnzJhSxd7PUOfW9mhF2zYNur
 api:
   key: D72ED4FE5E9C48D4AFBEBE8561FA94D6
 devel:
@@ -16,26 +14,61 @@ plugins:
     _config_version: 1
     channels:
       _blog:
-        read_until: 1668080700
+        read_until: 1698671700
       _important:
-        read_until: 1521111600
+        read_until: 1698310200
       _octopi:
-        read_until: 1659616200
+        read_until: 1684929600
       _plugins:
-        read_until: 1664427600
+        read_until: 1701907200
       _releases:
-        read_until: 1666085100
+        read_until: 1696862700
+  classicwebcam:
+    _config_version: 1
+    flipH: true
+    rotate90: true
+    snapshot: http://mjpeg:8080/?action=snapshot
+    stream: http://localhost:8080/?action=stream
   discovery:
     upnpUuid: 6c0a6d28-453f-4a42-836c-40e57dca0385
   errortracking:
     unique_id: a6dd8216-f4eb-4ea1-9d17-9dfa01d2ab4a
   gcodeviewer:
     _config_version: 1
+  multicam:
+    _config_version: 3
+    multicam_profiles:
+    - URL: http://192.168.0.248:8080/?action=stream
+      flipH: null
+      flipV: null
+      isButtonEnabled: 'true'
+      name: Default
+      rotate90: null
+      snapshot: http://192.168.0.248:8080/?action=snapshot
+      streamRatio: '16:9'
+    - URL: http://localhost:8080/?action=stream
+      flipH: false
+      flipV: false
+      isButtonEnabled: true
+      name: Webcam 1
+      rotate90: false
+      snapshot: http://mjpeg:8080/?action=snapshot
+      streamRatio: '16:9'
   obico:
-    auth_token: a4d125f8f1e03b6f52c8
-    endpoint_prefix: http://docker.for.mac.host.internal:3334
+    auth_token: f2c9e57545268582c8de
+    endpoint_prefix: https://app-stg.obico.io
+    nozzle_camera: null
     sentry_opt: in
     tsd_migrated: confirmed
+    webcams:
+    - is_primary_camera: true
+      name: multicam/Default
+      resolution: medium
+      target_fps: '10'
+    - is_primary_camera: false
+      name: multicam/Webcam 1
+      resolution: medium
+      target_fps: '5'
   softwareupdate:
     _config_version: 9
   tracking:
@@ -52,6 +85,9 @@ plugins:
     okWithLinenumber: false
     repetierStyleResends: false
     sendWait: false
+serial:
+  autoconnect: true
+  log: true
 server:
   firstRun: false
   onlineCheck:
@@ -65,16 +101,13 @@ server:
     tracking: null
 temperature:
   profiles:
-    - bed: 100
-      chamber: null
-      extruder: 210
-      name: ABS
-    - bed: 60
-      chamber: null
-      extruder: 180
-      name: PLA
+  - bed: 100
+    chamber: null
+    extruder: 210
+    name: ABS
+  - bed: 60
+    chamber: null
+    extruder: 180
+    name: PLA
 webcam:
   ffmpeg: /usr/bin/avconv
-  snapshot: http://mjpeg:8080/?action=snapshot
-  stream: http://localhost:8080/?action=stream
-  streamRatio: "4:3"
