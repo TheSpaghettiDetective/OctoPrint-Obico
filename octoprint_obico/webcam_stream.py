@@ -107,7 +107,7 @@ def get_webcam_configs(plugin):
     DEFAULT_WEBCAM_CONFIG = {
         'name': 'classic',
         'is_primary_camera': True,
-        'target_fps': 10,
+        'target_fps': 25,
         'resolution': 'medium',
     }
 
