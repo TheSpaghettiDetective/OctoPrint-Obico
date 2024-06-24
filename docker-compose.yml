@@ -30,7 +30,7 @@ services:
      - ./:/app
     environment:
         DEBUG: 'True'
-        PRECONFIGURED_WEBCAMS: '{"janus_server": "janus", "webcams": [{"name": "video", "is_primary_camera": true, "is_nozzle_camera": false, "stream_mode": "h264_transcode", "stream_id": 1, "flipV": true, "flipH": false, "rotation": 270, "streamRatio": "4:3"}, {"name": "nozzle", "is_primary_camera": false, "is_nozzle_camera": true, "stream_mode": "h264_transcode", "stream_id": 3, "flipV": false, "flipH": true, "rotation": 0, "streamRatio": "16:9"}]}'
+        PRECONFIGURED_WEBCAMS: '{"janus_server": "janus", "webcams": [{"displayName": "Default", "flipH": false, "flipV": false, "rotation": 0, "streamRatio": "16:9", "is_nozzle_camera": false, "is_primary_camera": true, "name": "multicam/Default", "streaming_params": {"mode": "h264_transcode"}, "runtime": {"stream_id": 1, "dataport": 17734}}, {"displayName": "Webcam 1", "flipH": false, "flipV": false, "rotation": 0, "streamRatio": "16:9", "is_primary_camera": false, "name": "multicam/Webcam 1", "streaming_params": {"mode": "h264_transcode"}, "runtime": {"stream_id": 3}}]}'
     depends_on:
       - janus
     command: bash -c "sleep 11111111111"
@@ -38,7 +38,7 @@ services:
   janus:
     hostname: janus
     restart: unless-stopped
-    image: thespaghettidetective/janus:ubuntu-1.7
+    image: thespaghettidetective/janus:ubuntu-1.8
     #command: sh -c "/opt/janus/bin/janus --stun-server=stun.l.google.com:19302"
     command: sh -c "/opt/janus/bin/janus"
   mjpeg:

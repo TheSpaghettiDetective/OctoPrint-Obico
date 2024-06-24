@@ -22,8 +22,8 @@ class ClientConn:
         self.seen_refs = deque(maxlen=25)  # contains "last" 25 passthru refs
         self.seen_refs_lock = threading.RLock()
 
-    def open_data_channel(self, port):
-        self.printer_data_channel_conn = DataChannelConn('127.0.0.1', port)
+    def open_data_channel(self, janus_server, port):
+        self.printer_data_channel_conn = DataChannelConn(janus_server, port)
 
     def on_message_to_plugin(self, msg):
         target = getattr(self.plugin, msg.get('target'))

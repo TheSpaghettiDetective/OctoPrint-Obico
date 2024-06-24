@@ -200,60 +200,68 @@ class WebcamStreamer:
         self.janus = None
         self.ffmpeg_proc = None
         self.shutting_down = False
+        self.webcams = []
         self.normalized_webcams = []
 
     def start(self, webcam_configs):
 
-        if self.use_preconfigured_webcams():
-            return
+        janus_server = '127.0.0.1'
 
-        self.shutdown_subprocesses()
-        self.close_all_mjpeg_socks()
+        preconfigured = self.preconfigured_webcams()
+        if preconfigured:
+            self.webcams = preconfigured.get('webcams')
+            janus_server = preconfigured.get('janus_server')
 
-        self.webcams = webcam_configs
-        self.find_streaming_params()
-        self.assign_janus_params()
+        if not self.webcams:
+
+            self.shutdown_subprocesses()
+            self.close_all_mjpeg_socks()
+
+            self.webcams = webcam_configs
+            self.find_streaming_params()
+            self.assign_janus_params()
+
+            try:
+                (janus_bin_path, ld_lib_path) = build_janus_config(self.webcams, self.plugin.auth_token(), JANUS_WS_PORT, JANUS_ADMIN_WS_PORT)
+                if not janus_bin_path:
+                    _logger.error('Janus not found or not configured correctly. Quiting webcam streaming.')
+                    self.send_streaming_failed_event()
+                    self.shutdown()
+                    return
+
+                self.janus = JanusConn(self.plugin, janus_server, JANUS_WS_PORT)
+                self.janus.start(janus_bin_path, ld_lib_path)
+
+                if not self.wait_for_janus():
+                    for webcam in self.webcams:
+                        webcam['error'] = 'Janus failed to start'
+
+                for webcam in self.webcams:
+                    if webcam['streaming_params']['mode'] == 'h264_transcode':
+                        self.h264_transcode(webcam)
+                    elif webcam['streaming_params']['mode'] == 'mjpeg_webrtc':
+                        self.mjpeg_webrtc(webcam)
+                    else:
+                        raise Exception('Unsupported streaming mode: {}'.format(webcam['streaming_params']['mode']))
+
+            except Exception:
+                self.plugin.sentry.captureException()
+                _logger.error('Error. Quitting webcam streaming.', exc_info=True)
+                self.send_streaming_failed_event()
+                self.shutdown()
+                return
 
         # Now we know if we have a data channel, we can tell client_conn to start the data channel
         first_webcam_with_dataport = next((webcam for webcam in self.webcams if webcam.get('runtime', {}).get('dataport')), None)
         if first_webcam_with_dataport:
             first_webcam_with_dataport['runtime']['data_channel_available'] = True
-            self.plugin.client_conn.open_data_channel(first_webcam_with_dataport['runtime']['dataport'])
+            self.plugin.client_conn.open_data_channel(janus_server, first_webcam_with_dataport['runtime']['dataport'])
 
-        try:
-            (janus_bin_path, ld_lib_path) = build_janus_config(self.webcams, self.plugin.auth_token(), JANUS_WS_PORT, JANUS_ADMIN_WS_PORT)
-            if not janus_bin_path:
-                _logger.error('Janus not found or not configured correctly. Quiting webcam streaming.')
-                self.send_streaming_failed_event()
-                self.shutdown()
-                return
+        self.normalized_webcams = [self.normalized_webcam_dict(webcam) for webcam in self.webcams]
+        self.plugin.octoprint_settings_updater.update_settings()
+        self.plugin.post_update_to_server()
 
-            self.janus = JanusConn(self.plugin, '127.0.0.1', JANUS_WS_PORT)
-            self.janus.start(janus_bin_path, ld_lib_path)
-
-            if not self.wait_for_janus():
-                for webcam in self.webcams:
-                    webcam['error'] = 'Janus failed to start'
-
-            for webcam in self.webcams:
-                if webcam['streaming_params']['mode'] == 'h264_transcode':
-                    self.h264_transcode(webcam)
-                elif webcam['streaming_params']['mode'] == 'mjpeg_webrtc':
-                    self.mjpeg_webrtc(webcam)
-                else:
-                    raise Exception('Unsupported streaming mode: {}'.format(webcam['streaming_params']['mode']))
-
-            self.normalized_webcams = [self.normalized_webcam_dict(webcam) for webcam in self.webcams]
-            self.plugin.octoprint_settings_updater.update_settings()
-            self.plugin.post_update_to_server()
-
-            return (self.normalized_webcams, None)  # return value expected for a passthru target
-        except Exception:
-            self.plugin.sentry.captureException()
-            _logger.error('Error. Quitting webcam streaming.', exc_info=True)
-            self.send_streaming_failed_event()
-            self.shutdown()
-            return
+        return (self.normalized_webcams, None)  # return value expected for a passthru target
 
 
     def shutdown(self):
@@ -516,16 +524,14 @@ class WebcamStreamer:
                 streamRatio=webcam['streamRatio'],
                 )
 
-    def use_preconfigured_webcams(self):
+    def preconfigured_webcams(self):
+        preconfigured = None
         if os.getenv('PRECONFIGURED_WEBCAMS', '').strip() != '':
             _logger.warning('Using an external Janus gateway. Not starting the built-in Janus gateway.')
             preconfigured = json.loads(os.getenv('PRECONFIGURED_WEBCAMS'))
-            self.normalized_webcams = preconfigured['webcams']
-            self.plugin.octoprint_settings_updater.update_settings()
-            self.plugin.post_update_to_server()
 
-            self.janus = JanusConn(self.plugin, preconfigured['janus_server'], JANUS_WS_PORT)
-            self.janus.start_janus_ws()
-            return True
+            if preconfigured:
+                self.janus = JanusConn(self.plugin, preconfigured['janus_server'], JANUS_WS_PORT)
+                self.janus.start_janus_ws()
 
-        return False
+        return preconfigured
