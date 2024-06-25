@@ -202,6 +202,7 @@ class WebcamStreamer:
         self.shutting_down = False
         self.webcams = []
         self.normalized_webcams = []
+        self.data_channel_id = None
 
     def start(self, webcam_configs):
 
@@ -255,6 +256,7 @@ class WebcamStreamer:
         first_webcam_with_dataport = next((webcam for webcam in self.webcams if webcam.get('runtime', {}).get('dataport')), None)
         if first_webcam_with_dataport:
             first_webcam_with_dataport['runtime']['data_channel_available'] = True
+            self.data_channel_id = first_webcam_with_dataport['runtime']['stream_id']
             self.plugin.client_conn.open_data_channel(janus_server, first_webcam_with_dataport['runtime']['dataport'])
 
         self.normalized_webcams = [self.normalized_webcam_dict(webcam) for webcam in self.webcams]

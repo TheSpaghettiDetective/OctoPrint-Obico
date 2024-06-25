@@ -84,6 +84,8 @@ class OctoPrintSettingsUpdater:
         )
         if self.plugin.webcam_streamer.normalized_webcams:
             data['webcams'] = self.plugin.webcam_streamer.normalized_webcams
+        if self.plugin.webcam_streamer.data_channel_id:
+            data['data_channel_id'] = self.plugin.webcam_streamer.data_channel_id
         if self.printer_metadata:
             data['printer_metadata'] = self.printer_metadata
 
