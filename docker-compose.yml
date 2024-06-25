@@ -51,9 +51,9 @@ services:
 
   video:
     restart: unless-stopped
-    image: thespaghettidetective/ffmpeg:ubuntu-1.3
+    image: thespaghettidetective/ffmpeg:ubuntu-1.1
     command: bash -c "ffmpeg -f concat -re -i list.txt -c copy -bsf dump_extra -an -f rtp rtp://janus:17732?pkt_size=1300"
   video2:
     restart: unless-stopped
-    image: thespaghettidetective/ffmpeg:ubuntu-1.3
+    image: thespaghettidetective/ffmpeg:ubuntu-1.2
     command: bash -c "ffmpeg -f concat -re -i list2.txt -c copy -bsf dump_extra -an -f rtp rtp://janus:17735?pkt_size=1300"
