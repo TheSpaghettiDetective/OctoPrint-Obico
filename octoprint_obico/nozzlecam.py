@@ -56,7 +56,12 @@ class NozzleCam:
 
             # For Celestrius alpha testers
             printer_id = self.plugin.linked_printer.get('id')
-            ext_info = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, headers=self.plugin.auth_headers()).json().get('ext', {})
+            response = server_request('GET', f'/ent/api/printers/{printer_id}/ext/', self.plugin, timeout=60, headers=self.plugin.auth_headers())
+            if not response.ok:
+                _logger.warning(f'Error response from /ent/api/printers/{printer_id}/ext/: {response.status_code}')
+                return
+
+            ext_info = response.json().get('ext', {})
             _logger.debug('Printer ext info: {}'.format(ext_info))
             nozzle_url = ext_info.get('nozzlecam_url', None)
             if not nozzle_url or len(nozzle_url) == 0:
