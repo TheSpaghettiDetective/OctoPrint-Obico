@@ -4,9 +4,7 @@ import os
 import logging
 import subprocess
 import time
-import sarge
 import sys
-import flask
 import traceback
 from collections import deque
 try:
@@ -18,7 +16,6 @@ try:
 except NameError:
     ModuleNotFoundError = ImportError
 from threading import Thread, RLock
-from urllib.error import URLError, HTTPError
 import requests
 import backoff
 import json
@@ -26,7 +23,6 @@ import socket
 import errno
 import base64
 from textwrap import wrap
-import psutil
 from octoprint.util import to_unicode
 import octoprint
 
