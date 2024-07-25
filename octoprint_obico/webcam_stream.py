@@ -167,7 +167,7 @@ def get_webcam_configs(plugin):
                 'cause': 'streaming',
                 'title': 'Wrong Webcam Configuration',
                 'text': 'Obico can not find the webcam [{}]. Skipping it for streaming.'.format(webcam['name']),
-                'info_url': '#',
+                'info_url': 'https://obico.io/docs/user-guides/multiple-cameras-octoprint/',
                 'buttons': ['more_info', 'never', 'ok']
             }, plugin)
 
@@ -183,7 +183,7 @@ def get_webcam_configs(plugin):
             'cause': 'streaming',
             'title': 'No Webcam Streams',
             'text': 'No properly configured webcam for streaming.',
-            'info_url': '#',
+            'info_url': 'https://obico.io/docs/user-guides/multiple-cameras-octoprint/',
             'buttons': ['more_info', 'never', 'ok']
         }, plugin)
 
