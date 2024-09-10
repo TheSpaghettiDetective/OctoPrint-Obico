@@ -46,7 +46,7 @@ class ErrorStats:
 
         if error_type == 'webcam':
             text = 'Obico plugin failed to connect to the webcam. Please go to "Settings" -> "Webcam & Timelapse" and make sure the stream URL and snapshot URL are set correctly.'
-            info_url = 'https://www.obico.io/docs/user-guides/warnings/webcam-connection-error-popup/'
+            info_url = 'https://www.obico.io/docs/user-guides/webcam-feed-is-not-showing/'
             title = 'Failed to Snapshot Webcam'
             post_to_server = True
 
