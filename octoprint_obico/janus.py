@@ -20,15 +20,26 @@ from .ws import WebSocketClient
 from .lib import alert_queue
 from .janus_config_builder import RUNTIME_JANUS_ETC_DIR
 
-
 _logger = logging.getLogger('octoprint.plugins.obico')
+
+JANUS_WS_PORT = 17730   # Janus needs to use 17730 up to 17750. Hard-coded for now. may need to make it dynamic if the problem of port conflict is too much
+
+def janus_pid_file_path():
+    global JANUS_WS_PORT
+    return '/tmp/obico-janus-{janus_port}.pid'.format(janus_port=JANUS_WS_PORT)
+
+# Make sure the port is available in case there are multiple obico instances running
+for i in range(0, 100):
+    if os.path.exists(janus_pid_file_path()):
+        JANUS_WS_PORT += 20 # 20 is a big-enough gap for all ports needed for 1 octoprint instance.
+
+JANUS_ADMIN_WS_PORT = JANUS_WS_PORT + 1
 
 class JanusConn:
 
-    def __init__(self, plugin, janus_server, janus_port):
+    def __init__(self, plugin, janus_server):
         self.plugin = plugin
         self.janus_server = janus_server
-        self.janus_port = janus_port
         self.janus_ws = None
         self.shutting_down = False
 
@@ -43,7 +54,7 @@ class JanusConn:
                 _logger.debug('Popen: {} {}'.format(env, janus_cmd))
                 janus_proc = subprocess.Popen(janus_cmd.split(), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-                with open(self.janus_pid_file_path(), 'w') as pid_file:
+                with open(janus_pid_file_path(), 'w') as pid_file:
                     pid_file.write(str(janus_proc.pid))
 
                 while True:
@@ -70,7 +81,7 @@ class JanusConn:
 
     def wait_for_janus(self):
         time.sleep(0.2)
-        wait_for_port(self.janus_server, self.janus_port)
+        wait_for_port(self.janus_server, JANUS_WS_PORT)
 
     def start_janus_ws(self):
 
@@ -78,24 +89,26 @@ class JanusConn:
             _logger.warn('Janus WS connection closed!')
 
         self.janus_ws = WebSocketClient(
-            'ws://{}:{}/'.format(self.janus_server, self.janus_port),
+            'ws://{}:{}/'.format(self.janus_server, JANUS_WS_PORT),
             on_ws_msg=self.process_janus_msg,
             on_ws_close=on_close,
             subprotocols=['janus-protocol'],
             waitsecs=30)
 
-    def janus_pid_file_path(self):
-        return '/tmp/obico-janus-{janus_port}.pid'.format(janus_port=self.janus_port)
-
     def kill_janus_if_running(self):
         try:
             # It is possible that orphaned janus process is running (maybe previous python process was killed -9?).
             # Ensure the process is killed before launching a new one
-            with open(self.janus_pid_file_path(), 'r') as pid_file:
+            with open(janus_pid_file_path(), 'r') as pid_file:
                 subprocess.run(['kill', pid_file.read()], check=True)
-            wait_for_port_to_close(self.janus_server, self.janus_port)
+            wait_for_port_to_close(self.janus_server, JANUS_WS_PORT)
         except Exception as e:
             _logger.warning('Failed to shutdown Janus - ' + str(e))
+
+        try:
+            os.remove(janus_pid_file_path())
+        except:
+            pass
 
     def shutdown(self):
         self.shutting_down = True

@@ -34,16 +34,13 @@ from .utils import pi_version, ExpoBackoff, get_image_info, parse_integer_or_non
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 from .janus_config_builder import build_janus_config
-from .janus import JanusConn
+from .janus import JanusConn, JANUS_WS_PORT, JANUS_ADMIN_WS_PORT
 
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
 FFMPEG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'ffmpeg')
 FFMPEG = os.path.join(FFMPEG_DIR, 'run.sh')
-
-JANUS_WS_PORT = 17730   # Janus needs to use 17730 up to 17750. Hard-coded for now. may need to make it dynamic if the problem of port conflict is too much
-JANUS_ADMIN_WS_PORT = JANUS_WS_PORT + 1
 
 RECODE_RESOLUTIONS_43 = {
     'low': (320, 240),
@@ -56,7 +53,6 @@ RECODE_RESOLUTIONS_169 = {
     'medium': (854, 480),
     'high': (1280, 720),
 }
-
 
 def bitrate_for_dim(img_w, img_h):
     dim = img_w * img_h
@@ -230,7 +226,7 @@ class WebcamStreamer:
                     self.shutdown()
                     return
 
-                self.janus = JanusConn(self.plugin, janus_server, JANUS_WS_PORT)
+                self.janus = JanusConn(self.plugin, janus_server)
                 self.janus.start(janus_bin_path, ld_lib_path)
 
                 if not self.wait_for_janus():
@@ -504,6 +500,11 @@ class WebcamStreamer:
                 subprocess.run(['kill', pid_file.read()], check=True)
             except Exception as e:
                 _logger.warning('Failed to shutdown ffmpeg - ' + str(e))
+
+        try:
+            os.remove(self.ffmpeg_pid_file_path(rtc_port))
+        except:
+            pass
 
     def shutdown_subprocesses(self):
         if self.janus:
