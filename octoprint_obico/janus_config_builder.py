@@ -33,7 +33,7 @@ def find_system_janus_paths():
     janus_lib_path = None
 
     try:
-        output = subprocess.check_output(['dpkg', '-L', 'janus'], universal_newlines=True)
+        output = subprocess.check_output(['which', 'janus'], universal_newlines=True)
         paths = output.split('\n')
 
         # janus binary path if only 1 line ends with /bin/janus
