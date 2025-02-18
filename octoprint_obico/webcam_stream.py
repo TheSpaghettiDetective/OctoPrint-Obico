@@ -202,6 +202,10 @@ class WebcamStreamer:
 
     def start(self, webcam_configs):
 
+        if self.plugin._settings.get(["disable_video_streaming"]):
+            _logger.info('Video streaming is disabled. Skipping webcam streaming.')
+            return (webcam_configs, None)
+
         janus_server = '127.0.0.1'
 
         preconfigured = self.preconfigured_webcams()
