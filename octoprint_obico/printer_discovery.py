@@ -9,6 +9,8 @@ from requests.exceptions import HTTPError
 import random
 import string
 import flask
+import octoprint
+import ipaddress
 
 try:
     from secrets import token_hex
@@ -17,7 +19,6 @@ except ImportError:
         letters = string.ascii_letters + string.digits
         return "".join([random.choice(letters) for i in range(n)])
 
-import netaddr.ip
 from octoprint.util.net import sanitize_address
 from octoprint.util.platform import (
     get_os as octoprint_get_os,
@@ -317,8 +318,8 @@ def get_local_ip(plugin):
 def is_local_address(plugin, address):
     try:
         address = sanitize_address(address)
-        ip = netaddr.IPAddress(address)
-        return ip.is_private() or ip.is_loopback()
+        ip = ipaddress.ip_address(address)
+        return ip.is_private or ip.is_loopback
     except Exception as exc:
         _logger.error(
             'could not determine whether {} is local address ({})'.format(
