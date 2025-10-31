@@ -11,7 +11,15 @@ RUN echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-
 
 RUN apt-get update
 
-RUN apt-get install -y netcat
+RUN apt-get install -y netcat pciutils
+
+# Install VA-API drivers for hardware acceleration support (Intel/AMD)
+# Note: These may not work in all container environments, but won't break anything
+RUN apt-get install -y --no-install-recommends \
+    i965-va-driver \
+    libva2 \
+    libva-drm2 \
+    || true
 
 RUN pip3 install ipdb
 

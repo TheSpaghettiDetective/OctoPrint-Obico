@@ -11,8 +11,13 @@ services:
       - "${OP_PYTHON3_PORT-5003}:5000"
     volumes:
      - ./:/app
+    # Optional: Uncomment to enable GPU passthrough for hardware acceleration
+    # devices:
+    #   - /dev/dri:/dev/dri
     environment:
         DEBUG: 'True'
+        # Optional: Set VA-API driver (iHD for modern Intel, i965 for legacy Intel)
+        # LIBVA_DRIVER_NAME: iHD
         PRECONFIGURED_WEBCAMS: '{"janus_server": "janus", "webcams": [{"displayName": "Default", "flipH": false, "flipV": false, "rotation": 0, "streamRatio": "16:9", "is_nozzle_camera": false, "is_primary_camera": true, "name": "multicam/Default", "streaming_params": {"mode": "h264_transcode"}, "runtime": {"stream_id": 1, "dataport": 17734}}, {"displayName": "Webcam 1", "flipH": false, "flipV": false, "rotation": 0, "streamRatio": "16:9", "is_primary_camera": false, "name": "multicam/Webcam 1", "streaming_params": {"mode": "h264_transcode"}, "runtime": {"stream_id": 3}}]}'
     depends_on:
       - janus

@@ -79,22 +79,78 @@ def get_webcam_resolution(webcam_config):
 
 
 def find_ffmpeg_h264_encoder():
+    """
+    Detect available hardware H.264 encoders based on platform.
+    
+    Priority:
+    1. Platform-specific hardware encoders (RPi, Intel, AMD)
+    2. Generic VA-API (if available)
+    3. None (falls back to MJPEG)
+    
+    Returns:
+        str: FFmpeg encoder flags or None
+    """
+    from .hardware_detection import HardwareCapabilities
+    
     test_video = os.path.join(FFMPEG_DIR, 'test-video.mp4')
     FNULL = open(os.devnull, 'w')
-    try:
-        for encoder in ['h264_omx', 'h264_v4l2m2m']:
-            ffmpeg_cmd = '{} -re -i {} -pix_fmt yuv420p -vcodec {} -an -f rtp rtp://127.0.0.1:8014?pkt_size=1300'.format(FFMPEG, test_video, encoder)
-            _logger.debug('Popen: {}'.format(ffmpeg_cmd))
-            ffmpeg_test_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdout=FNULL, stderr=FNULL)
-            if ffmpeg_test_proc.wait() == 0:
-                if encoder == 'h264_omx':
-                    return '-flags:v +global_header -c:v {} -bsf dump_extra'.format(encoder)  # Apparently OMX encoder needs extra param to get the stream to work
+    
+    hw_caps = HardwareCapabilities()
+    platform = hw_caps.detect_platform()
+    
+    # Define encoder configurations per platform
+    ENCODER_CONFIGS = {
+        'rpi': [
+            ('h264_omx', '-flags:v +global_header -c:v h264_omx -bsf dump_extra'),
+            ('h264_v4l2m2m', '-c:v h264_v4l2m2m'),
+        ],
+        'intel': [
+            ('h264_vaapi', '-vaapi_device /dev/dri/renderD128 -vf format=nv12,hwupload -c:v h264_vaapi'),
+            ('h264_qsv', '-init_hw_device qsv=hw -filter_hw_device hw -vf hwupload=extra_hw_frames=64,format=qsv -c:v h264_qsv'),
+        ],
+        'amd': [
+            ('h264_vaapi', '-vaapi_device /dev/dri/renderD128 -vf format=nv12,hwupload -c:v h264_vaapi'),
+        ],
+        'generic': [
+            ('h264_vaapi', '-vaapi_device /dev/dri/renderD128 -vf format=nv12,hwupload -c:v h264_vaapi'),
+        ]
+    }
+    
+    encoders_to_test = ENCODER_CONFIGS.get(platform, [])
+    
+    # Test each encoder
+    for encoder_name, encoder_flags in encoders_to_test:
+        try:
+            _logger.info(f'Testing {encoder_name} encoder for platform: {platform}')
+            
+            # Build test command - use -f null for testing without output file
+            ffmpeg_cmd = f'{FFMPEG} -re -i {test_video} -t 2 {encoder_flags} -an -f null -'
+            
+            _logger.debug(f'Popen: {ffmpeg_cmd}')
+            ffmpeg_test_proc = subprocess.Popen(
+                ffmpeg_cmd.split(' '), 
+                stdout=FNULL, 
+                stderr=subprocess.PIPE
+            )
+            
+            try:
+                returncode = ffmpeg_test_proc.wait(timeout=10)
+                
+                if returncode == 0:
+                    _logger.info(f'Successfully detected {encoder_name} encoder')
+                    return encoder_flags
                 else:
-                    return '-c:v {}'.format(encoder)
-    except Exception as e:
-        _logger.exception('Failed to find ffmpeg h264 encoder. Exception: %s\n%s', e, traceback.format_exc())
-
-    _logger.warn('No ffmpeg found, or ffmpeg does NOT support h264_omx/h264_v4l2m2m encoding.')
+                    stderr = ffmpeg_test_proc.stderr.read().decode('utf-8', errors='ignore')
+                    _logger.debug(f'{encoder_name} test failed with code {returncode}: {stderr[:200]}')
+                    
+            except subprocess.TimeoutExpired:
+                _logger.warning(f'{encoder_name} test timed out')
+                ffmpeg_test_proc.kill()
+                
+        except Exception as e:
+            _logger.debug(f'Failed to test {encoder_name}: {str(e)}')
+    
+    _logger.warn(f'No hardware H.264 encoder found for platform: {platform}. Falling back to MJPEG.')
     return None
 
 

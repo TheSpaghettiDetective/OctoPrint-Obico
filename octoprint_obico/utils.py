@@ -363,7 +363,15 @@ def os_bit():
 
 
 def board_id():
+    """
+    Detect the board/platform identifier.
+    
+    Returns:
+        str: 'rpi', 'intel', 'amd', 'mks', 'nvidia', or 'NA'
+    """
     model_file = "/sys/firmware/devicetree/base/model"
+    
+    # Check ARM boards first
     if os.path.isfile(model_file):
         with open(model_file, 'r') as file:
             data = file.read()
@@ -371,4 +379,15 @@ def board_id():
                 return "rpi"
             elif "makerbase" in data.lower() or "roc-rk3328-cc" in data:
                 return "mks"
+    
+    # Check for x86/x64 GPU
+    try:
+        from .hardware_detection import HardwareCapabilities
+        hw_caps = HardwareCapabilities()
+        gpu_vendor = hw_caps.detect_gpu_vendor()
+        if gpu_vendor:
+            return gpu_vendor
+    except Exception:
+        pass
+    
     return "NA"
