@@ -127,17 +127,25 @@ def find_ffmpeg_h264_encoder():
             # Build test command with proper VA-API setup
             if 'h264_vaapi' in encoder_name:
                 # VA-API needs device specified before input
-                ffmpeg_cmd = f'{FFMPEG} -vaapi_device /dev/dri/renderD128 -re -i {test_video} -t 2 -vf "format=nv12,hwupload" {encoder_flags} -an -f null -'
+                ffmpeg_args = [
+                    FFMPEG, '-vaapi_device', '/dev/dri/renderD128',
+                    '-re', '-i', test_video, '-t', '2',
+                    '-vf', 'format=nv12,hwupload'
+                ] + encoder_flags.split() + ['-an', '-f', 'null', '-']
             elif 'h264_qsv' in encoder_name:
                 # QSV needs hardware device initialization
-                ffmpeg_cmd = f'{FFMPEG} -init_hw_device qsv=hw -filter_hw_device hw -re -i {test_video} -t 2 -vf "hwupload=extra_hw_frames=64,format=qsv" {encoder_flags} -an -f null -'
+                ffmpeg_args = [
+                    FFMPEG, '-init_hw_device', 'qsv=hw', '-filter_hw_device', 'hw',
+                    '-re', '-i', test_video, '-t', '2',
+                    '-vf', 'hwupload=extra_hw_frames=64,format=qsv'
+                ] + encoder_flags.split() + ['-an', '-f', 'null', '-']
             else:
                 # RPi and other encoders
-                ffmpeg_cmd = f'{FFMPEG} -re -i {test_video} -t 2 {encoder_flags} -an -f null -'
+                ffmpeg_args = [FFMPEG, '-re', '-i', test_video, '-t', '2'] + encoder_flags.split() + ['-an', '-f', 'null', '-']
             
-            _logger.debug(f'Popen: {ffmpeg_cmd}')
+            _logger.debug(f'Popen: {" ".join(ffmpeg_args)}')
             ffmpeg_test_proc = subprocess.Popen(
-                ffmpeg_cmd.split(' '), 
+                ffmpeg_args, 
                 stdout=FNULL, 
                 stderr=subprocess.PIPE
             )
