@@ -466,19 +466,32 @@ class WebcamStreamer:
             # Build appropriate filter chain based on encoder type
             if 'h264_vaapi' in encoder:
                 # VA-API needs: scale -> fps -> format -> hwupload -> encode
-                ffmpeg_args = '-vaapi_device /dev/dri/renderD128 -re -i {stream_url} -vf "fps={fps},scale={img_w}:{img_h},format=nv12,hwupload" -b:v {bitrate} {encoder}'.format(
-                    stream_url=stream_url, fps=fps, img_w=img_w, img_h=img_h, bitrate=bitrate, encoder=encoder
-                )
+                filter_chain = f'fps={fps},scale={img_w}:{img_h},format=nv12,hwupload'
+                ffmpeg_args = [
+                    '-vaapi_device', '/dev/dri/renderD128',
+                    '-re', '-i', stream_url,
+                    '-vf', filter_chain,
+                    '-b:v', str(bitrate)
+                ] + encoder.split()
             elif 'h264_qsv' in encoder:
                 # QSV needs: scale -> fps -> hwupload -> encode
-                ffmpeg_args = '-init_hw_device qsv=hw -filter_hw_device hw -re -i {stream_url} -vf "fps={fps},scale={img_w}:{img_h},hwupload=extra_hw_frames=64,format=qsv" -b:v {bitrate} {encoder}'.format(
-                    stream_url=stream_url, fps=fps, img_w=img_w, img_h=img_h, bitrate=bitrate, encoder=encoder
-                )
+                filter_chain = f'fps={fps},scale={img_w}:{img_h},hwupload=extra_hw_frames=64,format=qsv'
+                ffmpeg_args = [
+                    '-init_hw_device', 'qsv=hw',
+                    '-filter_hw_device', 'hw',
+                    '-re', '-i', stream_url,
+                    '-vf', filter_chain,
+                    '-b:v', str(bitrate)
+                ] + encoder.split()
             else:
                 # RPi encoders and fallback: standard pipeline
-                ffmpeg_args = '-re -i {stream_url} -filter:v fps={fps} -b:v {bitrate} -pix_fmt yuv420p -s {img_w}x{img_h} {encoder}'.format(
-                    stream_url=stream_url, fps=fps, bitrate=bitrate, img_w=img_w, img_h=img_h, encoder=encoder
-                )
+                ffmpeg_args = [
+                    '-re', '-i', stream_url,
+                    '-filter:v', f'fps={fps}',
+                    '-b:v', str(bitrate),
+                    '-pix_fmt', 'yuv420p',
+                    '-s', f'{img_w}x{img_h}'
+                ] + encoder.split()
             
             self.start_ffmpeg(rtp_port, ffmpeg_args)
         except Exception:
@@ -487,11 +500,12 @@ class WebcamStreamer:
 
     @backoff.on_exception(backoff.expo, Exception, base=3, jitter=None, max_tries=5) # webcam-streamer may start after ffmpeg. We should retry in this case
     def start_ffmpeg(self, rtp_port, ffmpeg_args, retry_after_quit=False):
-        ffmpeg_cmd = '{ffmpeg} -loglevel error {ffmpeg_args} -an -f rtp rtp://127.0.0.1:{rtp_port}?pkt_size=1300'.format(ffmpeg=FFMPEG, ffmpeg_args=ffmpeg_args, rtp_port=rtp_port)
+        # Build full command as list
+        ffmpeg_cmd = [FFMPEG, '-loglevel', 'error'] + ffmpeg_args + ['-an', '-f', 'rtp', f'rtp://127.0.0.1:{rtp_port}?pkt_size=1300']
 
-        _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+        _logger.debug('Popen: {}'.format(' '.join(ffmpeg_cmd)))
         FNULL = open(os.devnull, 'w')
-        ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+        ffmpeg_proc = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
 
         self.ffmpeg_out_rtp_ports.add(str(rtp_port))
 
