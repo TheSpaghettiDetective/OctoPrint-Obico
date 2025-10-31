@@ -99,20 +99,21 @@ def find_ffmpeg_h264_encoder():
     platform = hw_caps.detect_platform()
     
     # Define encoder configurations per platform
+    # Note: VA-API encoders return just the encoder name, filter chain is built dynamically
     ENCODER_CONFIGS = {
         'rpi': [
             ('h264_omx', '-flags:v +global_header -c:v h264_omx -bsf dump_extra'),
             ('h264_v4l2m2m', '-c:v h264_v4l2m2m'),
         ],
         'intel': [
-            ('h264_vaapi', '-vaapi_device /dev/dri/renderD128 -vf format=nv12,hwupload -c:v h264_vaapi'),
-            ('h264_qsv', '-init_hw_device qsv=hw -filter_hw_device hw -vf hwupload=extra_hw_frames=64,format=qsv -c:v h264_qsv'),
+            ('h264_vaapi', '-c:v h264_vaapi'),
+            ('h264_qsv', '-c:v h264_qsv'),
         ],
         'amd': [
-            ('h264_vaapi', '-vaapi_device /dev/dri/renderD128 -vf format=nv12,hwupload -c:v h264_vaapi'),
+            ('h264_vaapi', '-c:v h264_vaapi'),
         ],
         'generic': [
-            ('h264_vaapi', '-vaapi_device /dev/dri/renderD128 -vf format=nv12,hwupload -c:v h264_vaapi'),
+            ('h264_vaapi', '-c:v h264_vaapi'),
         ]
     }
     
@@ -444,7 +445,26 @@ class WebcamStreamer:
             bitrate = int(bitrate * (min(fps, 25.0) + sqrt_fps_diff) / 25.0)
 
             rtp_port = webcam['runtime']['videoport']
-            self.start_ffmpeg(rtp_port, '-re -i {stream_url} -filter:v fps={fps} -b:v {bitrate} -pix_fmt yuv420p -s {img_w}x{img_h} {encoder}'.format(stream_url=stream_url, fps=fps, bitrate=bitrate, img_w=img_w, img_h=img_h, encoder=webcam['streaming_params'].get('h264_encoder')))
+            encoder = webcam['streaming_params'].get('h264_encoder')
+            
+            # Build appropriate filter chain based on encoder type
+            if 'h264_vaapi' in encoder:
+                # VA-API needs: scale -> fps -> format -> hwupload -> encode
+                ffmpeg_args = '-vaapi_device /dev/dri/renderD128 -re -i {stream_url} -vf "fps={fps},scale={img_w}:{img_h},format=nv12,hwupload" -b:v {bitrate} {encoder}'.format(
+                    stream_url=stream_url, fps=fps, img_w=img_w, img_h=img_h, bitrate=bitrate, encoder=encoder
+                )
+            elif 'h264_qsv' in encoder:
+                # QSV needs: scale -> fps -> hwupload -> encode
+                ffmpeg_args = '-init_hw_device qsv=hw -filter_hw_device hw -re -i {stream_url} -vf "fps={fps},scale={img_w}:{img_h},hwupload=extra_hw_frames=64,format=qsv" -b:v {bitrate} {encoder}'.format(
+                    stream_url=stream_url, fps=fps, img_w=img_w, img_h=img_h, bitrate=bitrate, encoder=encoder
+                )
+            else:
+                # RPi encoders and fallback: standard pipeline
+                ffmpeg_args = '-re -i {stream_url} -filter:v fps={fps} -b:v {bitrate} -pix_fmt yuv420p -s {img_w}x{img_h} {encoder}'.format(
+                    stream_url=stream_url, fps=fps, bitrate=bitrate, img_w=img_w, img_h=img_h, encoder=encoder
+                )
+            
+            self.start_ffmpeg(rtp_port, ffmpeg_args)
         except Exception:
             self.plugin.sentry.captureException()
 
