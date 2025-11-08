@@ -96,6 +96,13 @@ class PrintJobTracker:
         data['status']['_ts'] = int(time.time())
         data['status']['currentLayerHeight'] = self.current_layer_height # use camel-case to be consistent with the existing convention
 
+        # Backfill progress.filamentUsed from job.filament.tool0.length for new OctoPrint versions
+        progress = (data.get('status') or {}).get('progress') or {}
+        if progress and 'filamentUsed' not in progress:
+            filament_length = ((((data.get('status') or {}).get('job') or {}).get('filament') or {}).get('tool0') or {}).get('length')
+            if filament_length is not None:
+                progress['filamentUsed'] = filament_length
+
         if status_only:
             if self._file_metadata_cache:
                 data['status']['file_metadata'] = self._file_metadata_cache

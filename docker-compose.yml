@@ -1,23 +1,6 @@
 version: '3.7'
 
 services:
-  op_python2:
-    hostname: octoprint_python2
-    restart: unless-stopped
-    build:
-        context: .
-        dockerfile: Dockerfile.python2
-    ports:
-      - "${OP_PYTHON2_PORT-5002}:5000"
-    volumes:
-     - ./:/app
-    environment:
-        DEBUG: 'True'
-        JANUS_SERVER: 'janus'
-    depends_on:
-      - janus
-    command: bash -c "sleep 11111111111"
-
   op:
     hostname: octoprint
     restart: unless-stopped
