@@ -114,6 +114,8 @@ class PrintJobTracker:
         if octo_settings:
             data['settings'] = octo_settings
 
+        data['status']['display_status'] = {'message': plugin.display_status}
+
         return data
 
     def increment_layer_height(self, val):

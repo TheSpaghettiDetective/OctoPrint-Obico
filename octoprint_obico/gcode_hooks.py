@@ -49,6 +49,10 @@ class GCodeHooks:
         return line
 
     def sent_gcode(self, comm_instance, phase, cmd, cmd_type, gcode, subcode=None, tags=None, *args, **kwargs):
+        if gcode == "M117":
+            self.plugin.display_status = cmd[5:].strip()
+            run_in_thread(self.plugin.post_update_to_server)
+
         if cmd:
             self.passthru_terminal_feed(cmd)
 
