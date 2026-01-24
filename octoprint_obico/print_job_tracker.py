@@ -96,6 +96,8 @@ class PrintJobTracker:
         data['status']['_ts'] = int(time.time())
         data['status']['currentLayerHeight'] = self.current_layer_height # use camel-case to be consistent with the existing convention
 
+        data['status']['display_status'] = {'message': plugin.display_status}
+
         # Backfill progress.filamentUsed from job.filament.tool0.length for new OctoPrint versions
         progress = (data.get('status') or {}).get('progress') or {}
         if progress and 'filamentUsed' not in progress:
@@ -113,8 +115,6 @@ class PrintJobTracker:
         octo_settings = plugin.octoprint_settings_updater.as_dict()
         if octo_settings:
             data['settings'] = octo_settings
-
-        data['status']['display_status'] = {'message': plugin.display_status}
 
         return data
 
