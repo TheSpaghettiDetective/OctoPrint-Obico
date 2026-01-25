@@ -90,6 +90,7 @@ class ObicoPlugin(
         self.file_operations = FileOperations(self)
         self.nozzlecam = NozzleCam(self)
         self.webcam_streamer = WebcamStreamer(self)
+        self.display_status = None
 
 
     # ~~ Custom event registration
