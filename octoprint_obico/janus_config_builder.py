@@ -16,9 +16,52 @@ distro_id = distro.id()
 if distro_id == 'raspbian' and pi_version(): # On some Raspbian/RPi OS versions, distro.id() returns 'debian'. On others, it returns 'raspbian'.
     distro_id = 'debian'
 
-PRECOMPILED_DIR = '{root_dir}/precomplied/{board_id}.{os_id}.{os_version}.{os_bit}'.format(root_dir=JANUS_ROOT_DIR, board_id=board_id(), os_id=distro_id, os_version=distro.major_version(), os_bit=os_bit())
-
 _logger = logging.getLogger('obico.janus_config_builder')
+
+
+def find_precompiled_dir():
+    precomplied_root = os.path.join(JANUS_ROOT_DIR, 'precomplied')
+    requested_variant = '{board_id}.{os_id}.{os_version}.{os_bit}'.format(
+        board_id=board_id(), os_id=distro_id, os_version=distro.major_version(), os_bit=os_bit())
+    exact_dir = os.path.join(precomplied_root, requested_variant)
+
+    if os.path.isdir(exact_dir):
+        return exact_dir, requested_variant, requested_variant
+
+    try:
+        current_version = int(distro.major_version())
+    except (ValueError, TypeError):
+        return exact_dir, requested_variant, None
+
+    if not os.path.isdir(precomplied_root):
+        return exact_dir, requested_variant, None
+
+    pattern = re.compile(r'^' + re.escape('{}.{}.'.format(board_id(), distro_id)) + r'(\d+)' + re.escape('.' + os_bit()) + r'$')
+    older_or_eq = []
+    newer = []
+    for entry in os.listdir(precomplied_root):
+        m = pattern.match(entry)
+        if m:
+            ver = int(m.group(1))
+            if ver <= current_version:
+                older_or_eq.append((ver, entry))
+            else:
+                newer.append((ver, entry))
+
+    if older_or_eq:
+        older_or_eq.sort(reverse=True)
+        chosen_variant = older_or_eq[0][1]
+    elif newer:
+        newer.sort()
+        chosen_variant = newer[0][1]
+    else:
+        return exact_dir, requested_variant, None
+
+    _logger.warning('No exact precompiled match for %s; falling back to %s', requested_variant, chosen_variant)
+    return os.path.join(precomplied_root, chosen_variant), requested_variant, chosen_variant
+
+
+PRECOMPILED_DIR, REQUESTED_PRECOMPILED_VARIANT, CHOSEN_PRECOMPILED_VARIANT = find_precompiled_dir()
 
 def janus_jcfg_folders_section(lib_dir):
     return """
@@ -255,6 +298,14 @@ certificates: {{
 def build_janus_config(webcams, printer_auth_token, ws_port, admin_ws_port):
     if not os.path.exists(RUNTIME_JANUS_ETC_DIR):
         os.makedirs(RUNTIME_JANUS_ETC_DIR)
+
+    if CHOSEN_PRECOMPILED_VARIANT and CHOSEN_PRECOMPILED_VARIANT != REQUESTED_PRECOMPILED_VARIANT:
+        try:
+            import sentry_sdk
+            sentry_sdk.set_tag('janus_requested_variant', REQUESTED_PRECOMPILED_VARIANT)
+            sentry_sdk.set_tag('janus_precompiled_variant', CHOSEN_PRECOMPILED_VARIANT)
+        except Exception:
+            pass
 
     (janus_bin_path, ld_lib_path) = build_janus_jcfg(printer_auth_token)
     _logger.info('janus_bin_path: {janus_bin_path} - ld_lib_path: {ld_lib_path}'.format(janus_bin_path=janus_bin_path, ld_lib_path=ld_lib_path))
