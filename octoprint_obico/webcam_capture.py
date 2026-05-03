@@ -148,7 +148,7 @@ class JpegPoster:
 
                 if viewing_boost:
                     self.need_viewing_boost.clear()
-                    repeats = 3 if self.plugin.is_pro_user() else 1 # Pro users get better viewing boost
+                    repeats = 3 if self.plugin.is_pro_user() else 1 # AI Premium users get better viewing boost
                     for _ in range(repeats):
                         self.post_pic_to_server(viewing_boost=True)
                     continue
