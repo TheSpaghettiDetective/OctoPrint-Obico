@@ -41,6 +41,7 @@ from .gcode_preprocessor import GcodePreProcessorWrapper
 from .file_operations import FileOperations
 from .webcam_stream import WebcamStreamer, get_webcam_configs
 from .redaction import redact_sensitive_data, redact_text
+from .janus_config_builder import turn_credential_expiry_warning, TURN_DOCS_URL
 
 import octoprint.plugin
 
@@ -282,6 +283,8 @@ class ObicoPlugin(
         message_to_server_thread.daemon = True
         message_to_server_thread.start()
 
+        run_in_thread(self.turn_credential_expiry_loop)
+
         while True:
             try:
                 interval_in_seconds = POST_STATUS_INTERVAL_SECONDS
@@ -446,6 +449,21 @@ class ObicoPlugin(
                 self.boost_status_update()
         except:
             self.sentry.captureException()
+
+    def turn_credential_expiry_loop(self):
+        warned = set()
+        while self.shutting_down is False:
+            try:
+                warning = turn_credential_expiry_warning(self.linked_printer.get('turn'), 'Obico for OctoPrint')
+                if warning:
+                    (title, text) = warning
+                    _logger.warning(text)
+                    if title not in warned:
+                        warned.add(title)
+                        self.post_printer_event_to_server(dict(event_title=title, event_text=text, event_class='WARNING', info_url=TURN_DOCS_URL))
+            except Exception:
+                self.sentry.captureException()
+            time.sleep(3600)
 
     def status_update_to_client_loop(self):
         while self.shutting_down is False:
