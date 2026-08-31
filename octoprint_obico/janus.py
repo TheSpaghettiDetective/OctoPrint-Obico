@@ -8,6 +8,7 @@ import backoff
 import json
 import socket
 import psutil
+import uuid
 from octoprint.util import to_unicode
 
 try:
@@ -16,10 +17,11 @@ except ImportError:
     import Queue as queue
 
 from .utils import ExpoBackoff, pi_version, is_port_open, wait_for_port, wait_for_port_to_close, run_in_thread
-from .ws import WebSocketClient
+from .ws import WebSocketClient, WebSocketConnectionException
 from .lib import alert_queue
-from .janus_config_builder import RUNTIME_JANUS_ETC_DIR
+from .janus_config_builder import JANUS_ADMIN_SECRET, RUNTIME_JANUS_ETC_DIR
 from .redaction import redact_sensitive_data, redact_text
+from .webrtc_diagnostics import extract_janus_diagnostic_stats
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
@@ -42,6 +44,8 @@ class JanusConn:
         self.plugin = plugin
         self.janus_server = janus_server
         self.janus_ws = None
+        self.janus_admin_ws = None
+        self.janus_admin_requests = {}
         self.shutting_down = False
 
     def start(self, janus_bin_path, ld_lib_path):
@@ -72,6 +76,7 @@ class JanusConn:
         run_in_thread(run_janus_forever)
         self.wait_for_janus()
         self.start_janus_ws()
+        self.start_janus_admin_diagnostics()
 
     def connected(self):
         return self.janus_ws and self.janus_ws.connected()
@@ -96,6 +101,68 @@ class JanusConn:
             subprotocols=['janus-protocol'],
             waitsecs=30)
 
+    def send_janus_admin_request(self, request, **context):
+        if not self.janus_admin_ws or not self.janus_admin_ws.connected():
+            return
+
+        transaction = uuid.uuid4().hex
+        self.janus_admin_requests[transaction] = (request, context)
+        msg = dict(janus=request, transaction=transaction, admin_secret=JANUS_ADMIN_SECRET)
+        msg.update(context)
+        self.janus_admin_ws.send(json.dumps(msg))
+
+    def process_janus_admin_msg(self, ws, raw_msg):
+        try:
+            msg = json.loads(raw_msg)
+            request_info = self.janus_admin_requests.pop(msg.get('transaction', ''), None)
+            if not request_info:
+                return
+
+            request, context = request_info
+            if msg.get('janus') == 'error':
+                _logger.debug('Janus diagnostic Admin API error for %s: %s', request, redact_sensitive_data(msg.get('error')))
+                return
+
+            if request == 'list_sessions':
+                for session_id in msg.get('sessions', []):
+                    self.send_janus_admin_request('list_handles', session_id=session_id)
+            elif request == 'list_handles':
+                session_id = context.get('session_id')
+                for handle_id in msg.get('handles', []):
+                    self.send_janus_admin_request('handle_info', session_id=session_id, handle_id=handle_id)
+            elif request == 'handle_info':
+                stats = extract_janus_diagnostic_stats(msg.get('info', {}))
+                if stats:
+                    _logger.debug(
+                        'Janus WebRTC diagnostic stats [session:%s handle:%s]: %s',
+                        context.get('session_id'),
+                        context.get('handle_id'),
+                        json.dumps(stats, sort_keys=True, separators=(',', ':')),
+                    )
+        except Exception:
+            self.plugin.sentry.captureException()
+
+    def start_janus_admin_diagnostics(self):
+        try:
+            self.janus_admin_ws = WebSocketClient(
+                'ws://{}:{}/'.format(self.janus_server, JANUS_ADMIN_WS_PORT),
+                on_ws_msg=self.process_janus_admin_msg,
+                subprotocols=['janus-admin-protocol'],
+                waitsecs=5,
+            )
+        except WebSocketConnectionException as ex:
+            _logger.warning('Janus diagnostic Admin API is unavailable: %s', redact_text(ex))
+            return
+
+        admin_ws = self.janus_admin_ws
+
+        def poll_janus_stats():
+            while not self.shutting_down and admin_ws.connected():
+                self.send_janus_admin_request('list_sessions')
+                time.sleep(5)
+
+        run_in_thread(poll_janus_stats)
+
     def kill_janus_if_running(self):
         try:
             # It is possible that orphaned janus process is running (maybe previous python process was killed -9?).
@@ -117,7 +184,11 @@ class JanusConn:
         if self.janus_ws is not None:
             self.janus_ws.close()
 
+        if self.janus_admin_ws is not None:
+            self.janus_admin_ws.close()
+
         self.janus_ws = None
+        self.janus_admin_ws = None
 
         self.kill_janus_if_running()
 

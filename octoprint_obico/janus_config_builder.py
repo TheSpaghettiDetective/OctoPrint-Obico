@@ -18,6 +18,8 @@ if distro_id == 'raspbian' and pi_version(): # On some Raspbian/RPi OS versions,
 
 _logger = logging.getLogger('obico.janus_config_builder')
 
+JANUS_ADMIN_SECRET = "janusoverlord"
+
 
 def find_precompiled_dir():
     precomplied_root = os.path.join(JANUS_ROOT_DIR, 'precomplied')
@@ -125,7 +127,7 @@ general: {
         f.write(folder_section)
 
         f.write("""
-        admin_secret = "janusoverlord"  # String that all Janus requests must contain
+        admin_secret = "{admin_secret}"  # String that all Janus requests must contain
 }}
 nat: {{
         turn_server = "turn.obico.io"
@@ -133,7 +135,7 @@ nat: {{
         turn_type = "tcp"
         turn_user = "{auth_token}"
         turn_pwd = "{auth_token}"
-""".format(auth_token=auth_token))
+""".format(auth_token=auth_token, admin_secret=JANUS_ADMIN_SECRET))
 
         f.write("""
         ice_ignore_list = "vmnet"
@@ -275,10 +277,9 @@ general: {{
 # Admin API messaging. Notice that by default the Admin API support via
 # WebSockets is disabled.
 admin: {{
-	admin_ws = false					# Whether to enable the Admin API WebSockets API
+	admin_ws = true					# Diagnostic build: poll media stats locally
 	admin_ws_port = {admin_ws_port}		# Admin API WebSockets server port, if enabled
-	#admin_ws_interface = "eth0"		# Whether we should bind this server to a specific interface only
-	#admin_ws_ip = "192.168.0.1"		# Whether we should bind this server to a specific IP address only
+	admin_ws_ip = "127.0.0.1"			# Keep the Admin API local to the OctoPrint host
 	admin_wss = false					# Whether to enable the Admin API secure WebSockets
 	#admin_wss_port = 7989				# Admin API WebSockets server secure port, if enabled
 	#admin_wss_interface = "eth0"		# Whether we should bind this server to a specific interface only

@@ -35,6 +35,7 @@ from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 from .janus_config_builder import build_janus_config
 from .janus import JanusConn, JANUS_WS_PORT, JANUS_ADMIN_WS_PORT
+from .webrtc_diagnostics import interval_bitrate_kbps
 
 
 _logger = logging.getLogger('octoprint.plugins.obico')
@@ -440,6 +441,14 @@ class WebcamStreamer:
             def drain_progress():
                 progress = {}
                 last_log_at = 0
+                last_total_size = None
+                last_total_size_at = None
+                try:
+                    ffmpeg_process = psutil.Process(proc.pid)
+                    ffmpeg_process.cpu_percent(interval=None)
+                except (psutil.Error, OSError):
+                    ffmpeg_process = None
+                psutil.cpu_percent(interval=None)
                 while True:
                     line = to_unicode(proc.stdout.readline(), errors='replace')
                     if not line:
@@ -454,20 +463,51 @@ class WebcamStreamer:
 
                     now = time.monotonic()
                     if value == 'end' or now - last_log_at >= 5:
+                        total_size = progress.get('total_size')
+                        interval_rtp_kbps = None
+                        if last_total_size is not None and last_total_size_at is not None:
+                            interval_rtp_kbps = interval_bitrate_kbps(
+                                total_size,
+                                last_total_size,
+                                now - last_total_size_at,
+                            )
+
+                        try:
+                            ffmpeg_cpu_percent = ffmpeg_process.cpu_percent(interval=None) if ffmpeg_process else None
+                            ffmpeg_rss_mb = ffmpeg_process.memory_info().rss / 1024.0 / 1024.0 if ffmpeg_process else None
+                        except (psutil.Error, OSError):
+                            ffmpeg_cpu_percent = None
+                            ffmpeg_rss_mb = None
+
                         _logger.debug(
-                            'FFmpeg progress [rtp:%s]: frame=%s fps=%s bitrate=%s '
-                            'out_time=%s dup_frames=%s drop_frames=%s speed=%s state=%s',
+                            'FFmpeg progress [rtp:%s]: frame=%s fps=%s bitrate=%s encoder_q=%s '
+                            'interval_rtp_kbps=%s total_size_bytes=%s out_time=%s '
+                            'dup_frames=%s drop_frames=%s speed=%s ffmpeg_cpu_percent=%s '
+                            'ffmpeg_rss_mb=%s host_cpu_percent=%s host_load_1m=%s state=%s',
                             rtp_port,
                             progress.get('frame', 'n/a'),
                             progress.get('fps', 'n/a'),
                             progress.get('bitrate', 'n/a'),
+                            progress.get('stream_0_0_q', 'n/a'),
+                            '{:.1f}'.format(interval_rtp_kbps) if interval_rtp_kbps is not None else 'n/a',
+                            total_size or 'n/a',
                             progress.get('out_time', 'n/a'),
                             progress.get('dup_frames', 'n/a'),
                             progress.get('drop_frames', 'n/a'),
                             progress.get('speed', 'n/a'),
+                            '{:.1f}'.format(ffmpeg_cpu_percent) if ffmpeg_cpu_percent is not None else 'n/a',
+                            '{:.1f}'.format(ffmpeg_rss_mb) if ffmpeg_rss_mb is not None else 'n/a',
+                            '{:.1f}'.format(psutil.cpu_percent(interval=None)),
+                            '{:.2f}'.format(os.getloadavg()[0]),
                             value,
                         )
                         last_log_at = now
+                        try:
+                            last_total_size = int(total_size)
+                            last_total_size_at = now
+                        except (TypeError, ValueError):
+                            last_total_size = None
+                            last_total_size_at = None
                     progress = {}
 
             stderr_thread = Thread(target=drain_stderr)
