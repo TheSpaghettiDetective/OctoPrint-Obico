@@ -6,6 +6,7 @@ import os
 from octoprint.filemanager.analysis import QueueEntry
 
 from .utils import server_request, get_file_metadata
+from .redaction import redacted_traceback
 _logger = logging.getLogger('octoprint.plugins.obico')
 
 
@@ -143,6 +144,6 @@ class PrintJobTracker:
                 return None
 
             return plugin._file_manager._storage_managers.get(origin).get_metadata(path) or {}
-        except Exception as e:
-            _logger.exception(e)
+        except Exception:
+            _logger.error('Failed to get file metadata:\n%s', redacted_traceback())
             return None

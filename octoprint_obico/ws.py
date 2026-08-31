@@ -2,6 +2,8 @@
 
 import time
 import websocket
+
+from .redaction import redact_text, redact_url
 import logging
 import threading
 import inspect
@@ -18,7 +20,7 @@ class WebSocketClient:
         self._mutex = threading.RLock()
 
         def on_error(ws, error):
-            _logger.warning('Server WS ERROR: {}'.format(error))
+            _logger.warning('Server WS ERROR: {}'.format(redact_text(error)))
 
             def run(*args):
                 self.close()
@@ -31,7 +33,7 @@ class WebSocketClient:
                 on_ws_msg(ws, msg)
 
         def on_close(ws, close_status_code, close_msg):
-            _logger.warning('WS Closed - {} - {}'.format(close_status_code, close_msg))
+            _logger.warning('WS Closed - {} - {}'.format(close_status_code, redact_text(close_msg)))
             if on_ws_close:
                 on_ws_close(ws, close_status_code=close_status_code)
 
@@ -46,7 +48,7 @@ class WebSocketClient:
             threading.Thread(target=run).start()
 
 
-        _logger.debug('Connecting to websocket: {}'.format(url))
+        _logger.debug('Connecting to websocket: {}'.format(redact_url(url)))
         header = ["authorization: bearer " + token] if token else None
         self.ws = websocket.WebSocketApp(
             url,

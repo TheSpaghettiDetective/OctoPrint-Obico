@@ -29,6 +29,7 @@ from .plugin_apis import verify_code
 from .utils import (
     server_request, OctoPrintSettingsUpdater,
     raise_for_status)
+from .redaction import REDACTED, redact_sensitive_data, redact_text
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
@@ -84,7 +85,7 @@ class PrinterDiscovery(object):
             octopi_version=read('/etc/octopi_version')[:253],
             plugin_version=self.plugin._plugin_version,
             agent='Obico for OctoPrint',
-        )
+)
 
         if not host_or_ip:
             _logger.info('printer_discovery could not find out local ip')
@@ -181,7 +182,7 @@ class PrinterDiscovery(object):
 
     def _process_message(self, msg):
         # Stops after first verify attempt
-        _logger.info('printer_discovery got incoming msg: {}'.format(msg))
+        _logger.info('printer_discovery got incoming msg: {}'.format(redact_sensitive_data(msg)))
 
         if msg['type'] == 'verify_code':
             # if any token is set, let's stop
@@ -197,7 +198,7 @@ class PrinterDiscovery(object):
                 _logger.error('printer_discovery got unmatching secret')
                 self.plugin.sentry.captureMessage(
                     'printer_discovery got unmatching secret',
-                    extra={'secret': self.device_secret, 'msg': msg}
+                    extra={'secret': REDACTED, 'msg': redact_sensitive_data(msg)}
                 )
                 self.stop()
                 return
@@ -323,7 +324,7 @@ def is_local_address(plugin, address):
     except Exception as exc:
         _logger.error(
             'could not determine whether {} is local address ({})'.format(
-                address, exc)
+                redact_text(address), redact_text(exc))
         )
         plugin.sentry.captureException()
         return False

@@ -1,5 +1,6 @@
 import logging
 import time
+from octoprint_obico.redaction import redact_sensitive_data, redacted_traceback
 from octoprint_obico.utils import server_request
 from octoprint_obico.webcam_capture import capture_jpeg
 
@@ -22,7 +23,7 @@ class NozzleCam:
                 try:
                     self.send_nozzlecam_jpeg(capture_jpeg(self.nozzle_config, use_nozzle_config=True))
                 except Exception:
-                    _logger.error('Failed to capture and send nozzle cam jpeg', exc_info=True)
+                    _logger.error('Failed to capture and send nozzle cam jpeg:\n%s', redacted_traceback())
             else:
                 self.notify_server_nozzlecam_complete() # edge case of single layer print - no 2nd layer to stop snapshots
                 return
@@ -43,14 +44,14 @@ class NozzleCam:
             server_request('POST', '/ent/api/nozzle_cam/first_layer_done/', self.plugin, timeout=60, data=data, headers=self.plugin.auth_headers())
             _logger.debug('server notified 1st layer is done')
         except Exception:
-            _logger.error('Failed to notify 1st layer completed', exc_info=True)
+            _logger.error('Failed to notify 1st layer completed:\n%s', redacted_traceback())
 
     def create_nozzlecam_config(self, webcam_configs):
         try:
             nozzle_camera = self.plugin._settings.get(['nozzle_camera'])
             nozzle_cam_config = next((item for item in webcam_configs if item['name'] == nozzle_camera), None)
             if nozzle_cam_config:
-                _logger.info(f'Nozzle camera found: {nozzle_cam_config}')
+                _logger.info('Nozzle camera found: {}'.format(redact_sensitive_data(nozzle_cam_config)))
                 self.nozzle_config = nozzle_cam_config
                 return
 
@@ -62,7 +63,7 @@ class NozzleCam:
                 return
 
             ext_info = response.json().get('ext', {})
-            _logger.debug('Printer ext info: {}'.format(ext_info))
+            _logger.debug('Printer ext info: {}'.format(redact_sensitive_data(ext_info)))
             nozzle_url = ext_info.get('nozzlecam_url', None)
             if not nozzle_url or len(nozzle_url) == 0:
                 _logger.warning('No nozzlecam config found')
@@ -72,5 +73,5 @@ class NozzleCam:
                     'snapshot': nozzle_url,
                 }
         except Exception:
-            _logger.error('Failed to build nozzle config', exc_info=True)
+            _logger.error('Failed to build nozzle config:\n%s', redacted_traceback())
             return

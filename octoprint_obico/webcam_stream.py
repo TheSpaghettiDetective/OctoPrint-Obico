@@ -7,7 +7,6 @@ import time
 import sarge
 import sys
 import flask
-import traceback
 from collections import deque
 try:
     import queue
@@ -31,6 +30,7 @@ from octoprint.util import to_unicode
 import octoprint
 
 from .utils import pi_version, ExpoBackoff, get_image_info, parse_integer_or_none
+from .redaction import redact_text, redacted_traceback
 from .lib import alert_queue
 from .webcam_capture import capture_jpeg, webcam_full_url
 from .janus_config_builder import build_janus_config
@@ -73,7 +73,7 @@ def get_webcam_resolution(webcam_config):
         (_, img_w, img_h) = get_image_info(capture_jpeg(webcam_config, force_stream_url=True))
         _logger.debug(f'Detected webcam resolution - w:{img_w} / h:{img_h}')
     except Exception:
-        _logger.exception('Failed to connect to webcam to retrieve resolution. Using default.')
+        _logger.error('Failed to connect to webcam to retrieve resolution. Using default.\n%s', redacted_traceback())
 
     return (img_w, img_h)
 
@@ -84,15 +84,15 @@ def find_ffmpeg_h264_encoder():
     try:
         for encoder in ['h264_omx', 'h264_v4l2m2m']:
             ffmpeg_cmd = '{} -re -i {} -pix_fmt yuv420p -vcodec {} -an -f rtp rtp://127.0.0.1:8014?pkt_size=1300'.format(FFMPEG, test_video, encoder)
-            _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+            _logger.debug('Popen: {}'.format(redact_text(ffmpeg_cmd)))
             ffmpeg_test_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdout=FNULL, stderr=FNULL)
             if ffmpeg_test_proc.wait() == 0:
                 if encoder == 'h264_omx':
                     return '-flags:v +global_header -c:v {} -bsf dump_extra'.format(encoder)  # Apparently OMX encoder needs extra param to get the stream to work
                 else:
                     return '-c:v {}'.format(encoder)
-    except Exception as e:
-        _logger.exception('Failed to find ffmpeg h264 encoder. Exception: %s\n%s', e, traceback.format_exc())
+    except Exception:
+        _logger.error('Failed to find ffmpeg h264 encoder.\n%s', redacted_traceback())
 
     _logger.warn('No ffmpeg found, or ffmpeg does NOT support h264_omx/h264_v4l2m2m encoding.')
     return None
@@ -247,7 +247,7 @@ class WebcamStreamer:
 
             except Exception:
                 self.plugin.sentry.captureException()
-                _logger.error('Error. Quitting webcam streaming.', exc_info=True)
+                _logger.error('Error. Quitting webcam streaming.\n%s', redacted_traceback())
                 self.send_streaming_failed_event()
                 self.shutdown()
                 return
@@ -397,10 +397,9 @@ class WebcamStreamer:
     def start_ffmpeg(self, rtp_port, ffmpeg_args, retry_after_quit=False):
         ffmpeg_cmd = '{ffmpeg} -loglevel error {ffmpeg_args} -an -f rtp rtp://127.0.0.1:{rtp_port}?pkt_size=1300'.format(ffmpeg=FFMPEG, ffmpeg_args=ffmpeg_args, rtp_port=rtp_port)
 
-        _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+        _logger.debug('Popen: {}'.format(redact_text(ffmpeg_cmd)))
         FNULL = open(os.devnull, 'w')
         ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
-
         self.ffmpeg_out_rtp_ports.add(str(rtp_port))
 
         with open(self.ffmpeg_pid_file_path(rtp_port), 'w') as pid_file:
@@ -410,7 +409,7 @@ class WebcamStreamer:
             returncode = ffmpeg_proc.wait(timeout=10) # If ffmpeg fails, it usually does so without 10s
             (stdoutdata, stderrdata) = ffmpeg_proc.communicate()
             msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
-            _logger.error(msg)
+            _logger.error(redact_text(msg))
             raise Exception('ffmpeg failed! Exit code: {}'.format(returncode))
         except subprocess.TimeoutExpired:
            pass
@@ -427,12 +426,12 @@ class WebcamStreamer:
 
                     returncode = ffmpeg_proc.wait()
                     msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
-                    _logger.debug(msg)
+                    _logger.debug(redact_text(msg))
 
                     if retry_after_quit:
                         ffmpeg_backoff.more('ffmpeg exited un-expectedly. Exit code: {}'.format(returncode))
                         ring_buffer = deque(maxlen=50)
-                        _logger.debug('Popen: {}'.format(ffmpeg_cmd))
+                        _logger.debug('Popen: {}'.format(redact_text(ffmpeg_cmd)))
                         ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
                     else:
                         self.plugin.sentry.captureMessage('ffmpeg exited un-expectedly. Exit code: {}'.format(returncode))
@@ -472,7 +471,7 @@ class WebcamStreamer:
                 try:
                     jpg = capture_jpeg(webcam)
                 except Exception as e:
-                    _logger.warning('Failed to capture jpeg - ' + str(e))
+                    _logger.warning('Failed to capture jpeg - ' + redact_text(e))
 
                 if not jpg:
                     continue
@@ -503,7 +502,7 @@ class WebcamStreamer:
             try:
                 subprocess.run(['kill', pid_file.read()], check=True)
             except Exception as e:
-                _logger.warning('Failed to shutdown ffmpeg - ' + str(e))
+                _logger.warning('Failed to shutdown ffmpeg - ' + redact_text(e))
 
         try:
             os.remove(self.ffmpeg_pid_file_path(rtc_port))

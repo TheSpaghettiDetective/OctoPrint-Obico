@@ -1,5 +1,6 @@
 import threading
 import logging
+from .redaction import redact_sensitive_data
 import re
 
 _logger = logging.getLogger('octoprint.plugins.obico')
@@ -24,14 +25,14 @@ class PauseResumeGCodeSequence:
 
     def script_hook(self, comm, script_type, script_name, *args, **kwargs):
         if script_type == "gcode" and script_name == "afterPrintPaused":
-            _logger.debug('afterPrintPaused hook called. Returning scripts %s' % self.pause_scripts)
+            _logger.debug('afterPrintPaused hook called. Returning scripts %s' % redact_sensitive_data(self.pause_scripts))
 
             pause_scripts = self.pause_scripts
             self.pause_scripts = []
             return None, pause_scripts
 
         if script_type == "gcode" and script_name == "beforePrintResumed":
-            _logger.debug('beforePrintResumed hook called. Returning scripts %s' % self.resume_scripts)
+            _logger.debug('beforePrintResumed hook called. Returning scripts %s' % redact_sensitive_data(self.resume_scripts))
 
             resume_scripts = self.resume_scripts
             self.resume_scripts = []
@@ -119,5 +120,5 @@ class PauseResumeGCodeSequence:
                     self.resume_scripts.insert(0, 'M190 S%d' % (target_temp))
 
         _logger.debug('prepare_to_pause called.')
-        _logger.debug('pause_scripts: {}' % self.pause_scripts)
-        _logger.debug('resume_scripts: {}' % self.resume_scripts)
+        _logger.debug('pause_scripts: {}' % redact_sensitive_data(self.pause_scripts))
+        _logger.debug('resume_scripts: {}' % redact_sensitive_data(self.resume_scripts))

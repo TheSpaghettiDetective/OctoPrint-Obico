@@ -21,7 +21,7 @@ import octoprint
 import requests
 
 from .lib.error_stats import error_stats
-from .lib import curlify
+from .redaction import format_http_request, redact_text, redacted_traceback
 
 PRINTER_SETTINGS_UPDATE_INTERVAL = 60*30.0  # Update printer settings at max 30 minutes interval, as they are relatively static.
 
@@ -41,14 +41,14 @@ class ExpoBackoff:
     def more(self, e):
         self.attempts += 1
         if self.max_attempts > 0 and self.attempts > self.max_attempts:
-            _logger.error('Giving up after %d attempts on error: %s' % (self.attempts, e))
+            _logger.error('Giving up after %d attempts on error: %s' % (self.attempts, redact_text(e)))
             raise e
         else:
             delay = 2 ** (self.attempts-3)
             if delay > self.max_seconds:
                 delay = self.max_seconds
             delay *= 0.5 + random.random()
-            _logger.error('Attempt %d - backing off %f seconds: %s' % (self.attempts, delay, e))
+            _logger.error('Attempt %d - backing off %f seconds: %s' % (self.attempts, delay, redact_text(e)))
 
             time.sleep(delay)
 
@@ -152,7 +152,7 @@ class SentryWrapper:
                 sentry_sdk.set_tag(k, v)
 
     def captureException(self, *args, **kwargs):
-        _logger.exception("Exception")
+        _logger.error("Exception:\n%s", redacted_traceback())
         if self.enabled():
             sentry_sdk.capture_exception(*args, **kwargs)
 
@@ -259,7 +259,7 @@ def get_image_info(data):
 
 
 def is_port_open(host, port):
-    _logger.debug(f'Testing TCP port {port} on {host}')
+    _logger.debug('Testing TCP port {} on {}'.format(port, redact_text(host)))
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
         return sock.connect_ex((host, port)) == 0
 
@@ -289,7 +289,7 @@ def server_request(method, uri, plugin, timeout=30, raise_exception=False, skip_
         resp = requests.request(method, endpoint, timeout=timeout, **kwargs)
 
         if not skip_debug_logging:
-            _logger.debug(curlify.to_curl(resp.request))
+            _logger.debug(format_http_request(resp.request))
 
         if not resp.ok and not resp.status_code == 401:
             error_stats.add_connection_error('server', plugin)
@@ -297,7 +297,7 @@ def server_request(method, uri, plugin, timeout=30, raise_exception=False, skip_
         return resp
     except Exception:
         error_stats.add_connection_error('server', plugin)
-        _logger.exception("{}: {}".format(method, endpoint))
+        _logger.error("{}: {}\n{}".format(method, redact_text(endpoint), redacted_traceback()))
         if raise_exception:
             raise
 

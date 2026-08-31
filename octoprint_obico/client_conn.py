@@ -8,6 +8,7 @@ import sys
 import zlib
 import re
 from collections import deque
+from .redaction import redact_text
 
 __python_version__ = 3 if sys.version_info >= (3, 0) else 2
 
@@ -127,16 +128,16 @@ class DataChannelConn(object):
                 try:
                     self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 except OSError as ex:
-                    _logger.error('could not open udp socket (%s)' % ex)
+                    _logger.error('could not open udp socket (%s)' % redact_text(ex))
 
             if self.sock is not None:
                 try:
                     self.sock.sendto(payload, (self.addr, self.port))
                 except socket.error as ex:
                     _logger.error(
-                        'could not send to janus datachannel (%s)' % ex)
+                        'could not send to janus datachannel (%s)' % redact_text(ex))
                 except OSError as ex:
-                    _logger.error('udp socket might be closed (%s)' % ex)
+                    _logger.error('udp socket might be closed (%s)' % redact_text(ex))
                     self.sock = None
 
     def close(self):

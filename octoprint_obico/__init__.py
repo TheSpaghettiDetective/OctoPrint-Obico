@@ -40,6 +40,7 @@ from .gcode_hooks import GCodeHooks
 from .gcode_preprocessor import GcodePreProcessorWrapper
 from .file_operations import FileOperations
 from .webcam_stream import WebcamStreamer, get_webcam_configs
+from .redaction import redact_sensitive_data, redact_text
 
 import octoprint.plugin
 
@@ -250,8 +251,8 @@ class ObicoPlugin(
         self.linked_printer = self.wait_for_auth_token().get('printer', DEFAULT_LINKED_PRINTER)
 
         self.sentry.init_context()
-        _logger.info('Linked printer: {}'.format(self.linked_printer))
-        _logger.debug('Plugin settings: {}'.format(self._settings.get_all_data()))
+        _logger.info('Linked printer: {}'.format(redact_sensitive_data(self.linked_printer)))
+        _logger.debug('Plugin settings: {}'.format(redact_sensitive_data(self._settings.get_all_data())))
 
         # Notify plugin UI about the server connection status change
         self._plugin_manager.send_plugin_message(self._identifier, {'plugin_updated': True})
@@ -341,7 +342,7 @@ class ObicoPlugin(
                     raw = bson.dumps(data)
                     _logger.debug("Sending binary ({} bytes) to server".format(len(raw)))
                 else:
-                    _logger.debug("Sending to server: \n{}".format(data))
+                    _logger.debug("Sending to server: \n{}".format(redact_sensitive_data(data)))
                     if __python_version__ == 3:
                         raw = json.dumps(data, default=str)
                     else:
@@ -349,7 +350,7 @@ class ObicoPlugin(
                 self.ss.send(raw, as_binary=as_binary)
                 server_ws_backoff.reset()
             except WebSocketConnectionException as e:
-                _logger.warning(e)
+                _logger.warning(redact_text(e))
                 error_stats.add_connection_error('server', self)
                 if self.ss:
                     self.ss.close()
@@ -381,7 +382,7 @@ class ObicoPlugin(
             # (w/o patching ws lib)
             try:
                 msg = json.loads(raw_data)
-                _logger.debug('Received: ' + raw_data)
+                _logger.debug('Received: {}'.format(redact_sensitive_data(msg)))
             except ValueError:
                 msg = bson.loads(raw_data)
                 _logger.debug(
@@ -477,7 +478,7 @@ class ObicoPlugin(
             try:
                 files = {'snapshot': capture_jpeg(self.primary_webcam_config)}
             except Exception as e:
-                _logger.warning('Failed to capture jpeg - ' + str(e))
+                _logger.warning('Failed to capture jpeg - ' + redact_text(e))
                 pass
         resp = server_request('POST', '/api/v1/octo/printer_events/', self, timeout=60, files=files, data=event_data, headers=self.auth_headers())
 

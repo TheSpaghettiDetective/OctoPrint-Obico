@@ -29,6 +29,7 @@ import backoff
 
 from .lib.error_stats import error_stats
 from .utils import server_request
+from .redaction import redact_text
 
 
 POST_PIC_INTERVAL_SECONDS = 10.0
@@ -131,7 +132,7 @@ class JpegPoster:
             files = {'pic': capture_jpeg(self.plugin.primary_webcam_config)}
         except Exception as e:
             error_stats.add_connection_error('webcam', self.plugin)
-            _logger.warning('Failed to capture jpeg - ' + str(e))
+            _logger.warning('Failed to capture jpeg - ' + redact_text(e))
             return
 
         data = {'viewing_boost': 'true'} if viewing_boost else {}

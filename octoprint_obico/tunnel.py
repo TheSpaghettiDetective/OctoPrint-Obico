@@ -11,6 +11,8 @@ try:
 except ImportError:
     from urlparse import urljoin
 
+from .redaction import redact_url
+
 from .ws import WebSocketClient
 
 WRITE_MODE = 'w' if sys.version_info[0] < 3 else 'wb'
@@ -44,7 +46,7 @@ class LocalTunnel(object):
 
         url = urljoin(self.base_url, path)
 
-        _logger.debug('Tunneling "{}"'.format(url))
+        _logger.debug('Tunneling "{}"'.format(redact_url(url)))
         try:
             resp = getattr(self.request_session, method)(
                 url,
@@ -137,7 +139,7 @@ class LocalTunnel(object):
 
         url = urljoin(self.base_url, path)
 
-        _logger.debug('Tunneling (v2) "{}"'.format(url))
+        _logger.debug('Tunneling (v2) "{}"'.format(redact_url(url)))
         try:
             resp = getattr(requests, method)(
                 url,

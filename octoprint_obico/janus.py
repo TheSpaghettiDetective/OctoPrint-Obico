@@ -19,6 +19,7 @@ from .utils import ExpoBackoff, pi_version, is_port_open, wait_for_port, wait_fo
 from .ws import WebSocketClient
 from .lib import alert_queue
 from .janus_config_builder import RUNTIME_JANUS_ETC_DIR
+from .redaction import redact_sensitive_data, redact_text
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 
@@ -51,7 +52,7 @@ class JanusConn:
                 env = {}
                 if ld_lib_path:
                     env={'LD_LIBRARY_PATH': ld_lib_path + ':' + os.environ.get('LD_LIBRARY_PATH', '')}
-                _logger.debug('Popen: {} {}'.format(env, janus_cmd))
+                _logger.debug('Popen: {} {}'.format(redact_sensitive_data(env), redact_text(janus_cmd)))
                 janus_proc = subprocess.Popen(janus_cmd.split(), env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
                 with open(janus_pid_file_path(), 'w') as pid_file:
@@ -60,7 +61,7 @@ class JanusConn:
                 while True:
                     line = to_unicode(janus_proc.stdout.readline(), errors='replace')
                     if line:
-                        _logger.debug('JANUS: ' + line.rstrip())
+                        _logger.debug('JANUS: ' + redact_text(line.rstrip()))
                     else:  # line == None means the process quits
                         _logger.warn('Janus quit with exit code {}'.format(janus_proc.wait()))
                         return
@@ -103,7 +104,7 @@ class JanusConn:
                 subprocess.run(['kill', pid_file.read()], check=True)
             wait_for_port_to_close(self.janus_server, JANUS_WS_PORT)
         except Exception as e:
-            _logger.warning('Failed to shutdown Janus - ' + str(e))
+            _logger.warning('Failed to shutdown Janus - ' + redact_text(e))
 
         try:
             os.remove(janus_pid_file_path())
@@ -124,7 +125,7 @@ class JanusConn:
         try:
             msg = json.loads(raw_msg)
             _logger.debug('Relaying Janus msg')
-            _logger.debug(msg)
+            _logger.debug(redact_sensitive_data(msg))
             self.plugin.send_ws_msg_to_server(dict(janus=raw_msg))
         except:
             self.plugin.sentry.captureException()

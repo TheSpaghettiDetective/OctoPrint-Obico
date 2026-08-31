@@ -8,6 +8,7 @@ from octoprint.filemanager.util import AbstractFileWrapper
 import io
 
 from .utils import server_request, get_file_metadata
+from .redaction import redact_sensitive_data
 
 _logger = logging.getLogger('octoprint.plugins.obico')
 UPLOAD_FOLDER = 'ObicoUpload'
@@ -39,7 +40,7 @@ class FileDownloader:
     def download(self, g_code_file):
         try:
             _logger.warning(
-                'Received download command for {} '.format(g_code_file))
+                'Received download command for {} '.format(redact_sensitive_data(g_code_file)))
 
             if self.plugin._printer.get_current_data().get('state', {}).get('text') != 'Operational':
                 raise Exception('Printer busy!')
