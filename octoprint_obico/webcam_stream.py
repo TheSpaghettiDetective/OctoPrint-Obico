@@ -374,6 +374,7 @@ class WebcamStreamer:
             if not img_w or not img_h:
                 _logger.warn('width and/or height not specified or invalid in streaming parameters. Getting the values from the source.')
                 (img_w, img_h) = get_webcam_resolution(webcam)
+            source_width, source_height = img_w, img_h
             (img_w, img_h) = cap_recode_resolution((img_w, img_h))
 
             fps = parse_integer_or_none(webcam['streaming_params'].get('recode_fps'))
@@ -388,6 +389,19 @@ class WebcamStreamer:
             bitrate = int(bitrate * (min(fps, 25.0) + sqrt_fps_diff) / 25.0)
 
             rtp_port = webcam['runtime']['videoport']
+            _logger.debug(
+                'FFmpeg diagnostic configuration [rtp:%s]: camera=%s encoder=%s '
+                'source=%sx%s output=%sx%s requested_fps=%s requested_bitrate_bps=%s',
+                rtp_port,
+                redact_text(webcam.get('name', '<unknown>')),
+                redact_text(webcam['streaming_params'].get('h264_encoder')),
+                source_width,
+                source_height,
+                img_w,
+                img_h,
+                fps,
+                bitrate,
+            )
             self.start_ffmpeg(rtp_port, '-re -i {stream_url} -filter:v fps={fps} -b:v {bitrate} -pix_fmt yuv420p -s {img_w}x{img_h} {encoder}'.format(stream_url=stream_url, fps=fps, bitrate=bitrate, img_w=img_w, img_h=img_h, encoder=webcam['streaming_params'].get('h264_encoder')))
         except Exception:
             self.plugin.sentry.captureException()
@@ -395,51 +409,117 @@ class WebcamStreamer:
 
     @backoff.on_exception(backoff.expo, Exception, base=3, jitter=None, max_tries=5) # webcam-streamer may start after ffmpeg. We should retry in this case
     def start_ffmpeg(self, rtp_port, ffmpeg_args, retry_after_quit=False):
-        ffmpeg_cmd = '{ffmpeg} -loglevel error {ffmpeg_args} -an -f rtp rtp://127.0.0.1:{rtp_port}?pkt_size=1300'.format(ffmpeg=FFMPEG, ffmpeg_args=ffmpeg_args, rtp_port=rtp_port)
+        ffmpeg_cmd = '{ffmpeg} -hide_banner -loglevel warning -nostats -progress pipe:1 {ffmpeg_args} -an -f rtp rtp://127.0.0.1:{rtp_port}?pkt_size=1300'.format(ffmpeg=FFMPEG, ffmpeg_args=ffmpeg_args, rtp_port=rtp_port)
 
-        _logger.debug('Popen: {}'.format(redact_text(ffmpeg_cmd)))
-        FNULL = open(os.devnull, 'w')
-        ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
+        _logger.info('Obico WebRTC diagnostic FFmpeg logging is active [rtp:%s].', rtp_port)
+        _logger.debug('Popen: %s', redact_text(ffmpeg_cmd))
+
+        def start_process():
+            proc = subprocess.Popen(
+                ffmpeg_cmd.split(' '),
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+
+            with open(self.ffmpeg_pid_file_path(rtp_port), 'w') as pid_file:
+                pid_file.write(str(proc.pid))
+
+            stderr_ring_buffer = deque(maxlen=50)
+
+            def drain_stderr():
+                # FFmpeg can block if stderr is not continuously drained.
+                while True:
+                    line = to_unicode(proc.stderr.readline(), errors='replace')
+                    if not line:
+                        return
+                    line = redact_text(line.rstrip())
+                    stderr_ring_buffer.append(line)
+                    _logger.debug('FFmpeg stderr [rtp:%s]: %s', rtp_port, line)
+
+            def drain_progress():
+                progress = {}
+                last_log_at = 0
+                while True:
+                    line = to_unicode(proc.stdout.readline(), errors='replace')
+                    if not line:
+                        return
+                    line = line.strip()
+                    if '=' not in line:
+                        continue
+                    key, value = line.split('=', 1)
+                    progress[key] = value
+                    if key != 'progress':
+                        continue
+
+                    now = time.monotonic()
+                    if value == 'end' or now - last_log_at >= 5:
+                        _logger.debug(
+                            'FFmpeg progress [rtp:%s]: frame=%s fps=%s bitrate=%s '
+                            'out_time=%s dup_frames=%s drop_frames=%s speed=%s state=%s',
+                            rtp_port,
+                            progress.get('frame', 'n/a'),
+                            progress.get('fps', 'n/a'),
+                            progress.get('bitrate', 'n/a'),
+                            progress.get('out_time', 'n/a'),
+                            progress.get('dup_frames', 'n/a'),
+                            progress.get('drop_frames', 'n/a'),
+                            progress.get('speed', 'n/a'),
+                            value,
+                        )
+                        last_log_at = now
+                    progress = {}
+
+            stderr_thread = Thread(target=drain_stderr)
+            stderr_thread.daemon = True
+            stderr_thread.start()
+
+            progress_thread = Thread(target=drain_progress)
+            progress_thread.daemon = True
+            progress_thread.start()
+
+            return proc, stderr_ring_buffer, stderr_thread, progress_thread
+
+        ffmpeg_proc, ring_buffer, stderr_thread, progress_thread = start_process()
+
         self.ffmpeg_out_rtp_ports.add(str(rtp_port))
-
-        with open(self.ffmpeg_pid_file_path(rtp_port), 'w') as pid_file:
-            pid_file.write(str(ffmpeg_proc.pid))
 
         try:
             returncode = ffmpeg_proc.wait(timeout=10) # If ffmpeg fails, it usually does so without 10s
-            (stdoutdata, stderrdata) = ffmpeg_proc.communicate()
-            msg = 'STDOUT:\n{}\nSTDERR:\n{}\n'.format(stdoutdata, stderrdata)
-            _logger.error(redact_text(msg))
+            stderr_thread.join(timeout=1)
+            progress_thread.join(timeout=1)
+            _logger.error('FFmpeg exited during startup [rtp:%s]. STDERR:\n%s', rtp_port, '\n'.join(ring_buffer))
             raise Exception('ffmpeg failed! Exit code: {}'.format(returncode))
         except subprocess.TimeoutExpired:
            pass
 
-        def monitor_ffmpeg_process(ffmpeg_proc, retry_after_quit=False):
-            # It seems important to drain the stderr output of ffmpeg, otherwise the whole process will get clogged
-            ring_buffer = deque(maxlen=50)
+        def monitor_ffmpeg_process(ffmpeg_proc, ring_buffer, stderr_thread, progress_thread, retry_after_quit=False):
             ffmpeg_backoff = ExpoBackoff(3)
             while True:
-                line = to_unicode(ffmpeg_proc.stderr.readline(), errors='replace')
-                if not line:  # line == None means the process quits
-                    if self.shutting_down:
-                        return
+                returncode = ffmpeg_proc.wait()
+                stderr_thread.join(timeout=1)
+                progress_thread.join(timeout=1)
 
-                    returncode = ffmpeg_proc.wait()
-                    msg = 'STDERR:\n{}\n'.format('\n'.join(ring_buffer))
-                    _logger.debug(redact_text(msg))
+                if self.shutting_down:
+                    return
 
-                    if retry_after_quit:
-                        ffmpeg_backoff.more('ffmpeg exited un-expectedly. Exit code: {}'.format(returncode))
-                        ring_buffer = deque(maxlen=50)
-                        _logger.debug('Popen: {}'.format(redact_text(ffmpeg_cmd)))
-                        ffmpeg_proc = subprocess.Popen(ffmpeg_cmd.split(' '), stdin=subprocess.PIPE, stdout=FNULL, stderr=subprocess.PIPE)
-                    else:
-                        self.plugin.sentry.captureMessage('ffmpeg exited un-expectedly. Exit code: {}'.format(returncode))
-                        return
+                _logger.debug('FFmpeg exited [rtp:%s] with code %s. Last STDERR:\n%s', rtp_port, returncode, '\n'.join(ring_buffer))
+
+                if retry_after_quit:
+                    ffmpeg_backoff.more('ffmpeg exited un-expectedly. Exit code: {}'.format(returncode))
+                    _logger.debug('Popen: %s', redact_text(ffmpeg_cmd))
+                    ffmpeg_proc, ring_buffer, stderr_thread, progress_thread = start_process()
                 else:
-                    ring_buffer.append(line)
+                    self.plugin.sentry.captureMessage('ffmpeg exited un-expectedly. Exit code: {}'.format(returncode))
+                    return
 
-        ffmpeg_thread = Thread(target=monitor_ffmpeg_process, kwargs=dict(ffmpeg_proc=ffmpeg_proc, retry_after_quit=retry_after_quit))
+        ffmpeg_thread = Thread(target=monitor_ffmpeg_process, kwargs=dict(
+            ffmpeg_proc=ffmpeg_proc,
+            ring_buffer=ring_buffer,
+            stderr_thread=stderr_thread,
+            progress_thread=progress_thread,
+            retry_after_quit=retry_after_quit,
+        ))
         ffmpeg_thread.daemon = True
         ffmpeg_thread.start()
 
