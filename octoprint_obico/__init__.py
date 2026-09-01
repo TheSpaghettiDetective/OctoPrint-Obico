@@ -224,7 +224,7 @@ class ObicoPlugin(
         # TODO: remove once all TSD users have migrated
         migrate_tsd_settings(self)
 
-        self.octoprint_port = port if port else self._settings.getInt(["server", "port"])
+        self.octoprint_port = port if port else self._settings.global_get_int(["server", "port"])
 
     def on_after_startup(self):
         if self.bailed_because_tsd_plugin_running:
@@ -532,6 +532,12 @@ class ObicoPlugin(
     def grab_discovery_secret(self):
         if self.discovery:
             return self.discovery.id_for_secret()
+
+    def is_template_autoescaped(self):
+        # OctoPrint 2.1.0 enforces autoescaping globally. Opting in early silences the
+        # deprecation warning in 2.0.x. Safe here: obico_discovery.jinja2 holds the only
+        # templated value, and it is a hex secret.
+        return True
 
     def is_blueprint_protected(self):
         # !! HEADSUP bluprint endpoints does not require authentication
