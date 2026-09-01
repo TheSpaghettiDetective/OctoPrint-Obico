@@ -546,8 +546,8 @@ class ObicoPlugin(
     def is_pro_user(self):
         return self.linked_printer.get('is_pro')
 
-# If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
-# ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
+# If you want your plugin to be registered within OctoPrint under a different name than what you defined in
+# pyproject.toml, you may define that here. Same goes for the other metadata derived from pyproject.toml that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
 __plugin_name__ = "Obico for OctoPrint"
 __plugin_author__ = "The Obico team"

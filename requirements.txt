@@ -3,7 +3,7 @@
 #
 #    pip install -e .
 #
-# works as expected. Requirements can be found in setup.py.
+# works as expected. Requirements can be found in pyproject.toml.
 ###
 
 .

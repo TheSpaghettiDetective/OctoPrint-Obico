@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "OctoPrint-Obico"
+version = "2.6.2"
+description = "Securely monitor and control your OctoPrint-connected printer from anywhere for free with Obico. Get unlimited live webcam streaming, full OctoPrint remote access, printer status notifications, and a free companion mobile app for iOS and Android. The best part? AI-powered failure detection watches your prints so you don’t have to."
+authors = [{name = "The Obico team", email = "admin@obico.io"}]
+license = {text = "AGPLv3"}
+dependencies = [
+    "OctoPrint>=1.5.0",
+    "backoff>=1.4.3",
+    "sentry-sdk>=1.5.12",
+    "bson>=0.5.10",
+    "distro>=1.6.0",
+]
+
+[project.urls]
+Homepage = "https://www.obico.io/"
+
+# This is how OctoPrint discovers the plugin. Without it the plugin installs
+# successfully and is then completely invisible to OctoPrint.
+[project.entry-points."octoprint.plugin"]
+obico = "octoprint_obico"
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+include = ["octoprint_obico*"]
+
+# static/, templates/ and bin/ are required at runtime; octoprint_setuptools
+# used to collect these for us.
+[tool.setuptools.package-data]
+octoprint_obico = [
+    "static/**/*",
+    "templates/**/*",
+    "translations/**/*",
+    "bin/**/*",
+]
