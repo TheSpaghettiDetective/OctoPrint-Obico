@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "OctoPrint-Obico"
-version = "2.6.2"
+version = "2.7.0"
 description = "Securely monitor and control your OctoPrint-connected printer from anywhere for free with Obico. Get unlimited live webcam streaming, full OctoPrint remote access, printer status notifications, and a free companion mobile app for iOS and Android. The best part? AI-powered failure detection watches your prints so you don’t have to."
 authors = [{name = "The Obico team", email = "admin@obico.io"}]
 license = {text = "AGPLv3"}
