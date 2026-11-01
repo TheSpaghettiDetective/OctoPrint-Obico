@@ -335,8 +335,11 @@ class ObicoPlugin(
 
                 error_stats.attempt('server')
 
-                if not self.ss or not self.ss.connected():
-                    self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=on_server_ws_close, on_ws_open=on_server_ws_open)
+                # on_server_ws_close() runs on the websocket thread and sets self.ss to None at any moment.
+                # Read self.ss once so the check and the send below act on the same client.
+                ss = self.ss
+                if not ss or not ss.connected():
+                    ss = self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=on_server_ws_close, on_ws_open=on_server_ws_open)
 
                 if as_binary:
                     raw = bson.dumps(data)
@@ -347,19 +350,21 @@ class ObicoPlugin(
                         raw = json.dumps(data, default=str)
                     else:
                         raw = json.dumps(data, encoding='iso-8859-1', default=str)
-                self.ss.send(raw, as_binary=as_binary)
+                ss.send(raw, as_binary=as_binary)
                 server_ws_backoff.reset()
             except WebSocketConnectionException as e:
                 _logger.warning(redact_text(e))
                 error_stats.add_connection_error('server', self)
-                if self.ss:
-                    self.ss.close()
+                ss = self.ss
+                if ss:
+                    ss.close()
                 server_ws_backoff.more(e)
             except Exception as e:
                 self.sentry.captureException()
                 error_stats.add_connection_error('server', self)
-                if self.ss:
-                    self.ss.close()
+                ss = self.ss
+                if ss:
+                    ss.close()
                 server_ws_backoff.more(e)
 
     def post_update_to_server(self, data=None):
