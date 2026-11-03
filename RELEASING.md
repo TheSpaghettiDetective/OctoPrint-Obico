@@ -10,8 +10,8 @@ artifact upload.
 1. Choose the versions for the release commands:
 
    ```bash
-   previous_release_version=2.6.2
-   release_version=2.7.0
+   previous_release_version=2.7.0
+   release_version=2.7.1
    ```
 
 2. Start from `dev` and update the remote references:
