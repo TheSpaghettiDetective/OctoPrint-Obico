@@ -19,7 +19,8 @@ try:
 except ImportError:
     import Queue as queue
 
-from .ws import WebSocketClient, WebSocketConnectionException
+from .ws import (WebSocketClient, WebSocketConnectionException,
+                 SERVER_WS_PING_INTERVAL_SECONDS, SERVER_WS_PING_TIMEOUT_SECONDS)
 from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
@@ -339,7 +340,9 @@ class ObicoPlugin(
                 # Read self.ss once so the check and the send below act on the same client.
                 ss = self.ss
                 if not ss or not ss.connected():
-                    ss = self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=on_server_ws_close, on_ws_open=on_server_ws_open)
+                    ss = self.ss = WebSocketClient(self.canonical_ws_prefix() + "/ws/dev/", token=self.auth_token(), on_ws_msg=self.process_server_msg, on_ws_close=on_server_ws_close, on_ws_open=on_server_ws_open,
+                                                   ping_interval=SERVER_WS_PING_INTERVAL_SECONDS,
+                                                   ping_timeout=SERVER_WS_PING_TIMEOUT_SECONDS)
 
                 if as_binary:
                     raw = bson.dumps(data)

@@ -16,6 +16,10 @@ dependencies = [
     "distro>=1.6.0",
 ]
 
+# Test-only. Not installed on printers: `pip install -e ".[test]"` to run the suite.
+[project.optional-dependencies]
+test = ["websockets>=10.0"]
+
 [project.urls]
 Homepage = "https://www.obico.io/"
 
