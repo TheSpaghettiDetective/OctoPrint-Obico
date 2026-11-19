@@ -1,5 +1,6 @@
 import time
 import logging
+import hashlib
 import platform
 import uuid
 import io
@@ -85,6 +86,8 @@ class PrinterDiscovery(object):
             octopi_version=read('/etc/octopi_version')[:253],
             plugin_version=self.plugin._plugin_version,
             agent='Obico for OctoPrint',
+            # Lets the server tell this device apart from others that announce its device_id
+            device_secret_hash=hashlib.sha256(self.device_secret.encode()).hexdigest(),
 )
 
         if not host_or_ip:
