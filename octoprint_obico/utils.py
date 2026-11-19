@@ -1,6 +1,7 @@
 # coding=utf-8
 import time
 import random
+import hashlib
 import logging
 import sentry_sdk
 from sentry_sdk.integrations.threading import ThreadingIntegration
@@ -356,6 +357,25 @@ def get_file_metadata(file_manager, target_path, location):
         return file_manager.get_metadata(path=target_path, destination=location) # Compatibility with OctoPrint 1.9.x and earlier.
     except Exception:
         return file_manager.get_metadata(path=target_path, location=location)
+
+
+def get_file_hash(file_manager, target_path, location):
+    """
+    Return the SHA1 hex digest of a file's contents, the value OctoPrint 1.x stored as metadata['hash'].
+    The plugin sends it to the server as agent_signature ('md5:<hash>', the prefix is historical).
+
+    OctoPrint 2.0.0 stopped computing and storing this hash, so for files in local storage it is
+    computed from the file on disk. This gives the same value on 1.x and 2.x, so signatures the
+    server stored before an OctoPrint upgrade still match.
+    """
+    if location == 'local':
+        file_hash = hashlib.sha1()
+        with open(file_manager.path_on_disk(location, target_path), 'rb') as f:
+            for chunk in iter(lambda: f.read(65536), b''):
+                file_hash.update(chunk)
+        return file_hash.hexdigest()
+
+    return (get_file_metadata(file_manager, target_path, location) or {}).get('hash')
 
 
 def os_bit():

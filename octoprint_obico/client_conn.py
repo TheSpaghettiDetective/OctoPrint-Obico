@@ -1,4 +1,5 @@
 import bson
+import inspect
 import logging
 import json
 import socket
@@ -46,7 +47,10 @@ class ClientConn:
 
         error = None
         try:
-            ret = func(*(self.extract_args(msg)), **(self.extract_kwargs(msg)))
+            args, kwargs = self.extract_args(msg), self.extract_kwargs(msg)
+            if msg['func'] == 'connect' and msg.get('target') == '_printer':
+                args, kwargs = self.adapt_printer_connect_args(func, args, kwargs)
+            ret = func(*args, **kwargs)
         except Exception as e:
             error = str(e)
             self.plugin.sentry.captureException()
@@ -97,6 +101,24 @@ class ClientConn:
                     arg[axis] = -arg[axis]
 
         return args
+
+    def adapt_printer_connect_args(self, connect_func, args, kwargs):
+        # The Obico web app sends connect as positional (port, baudrate[, profile]), the OctoPrint 1.x
+        # signature of Printer.connect(). OctoPrint 2.0.0 changed it to connect(connector, parameters, profile),
+        # so translate an old-style call into the new one, as OctoPrint 2.0's own pre-2.0 REST API does.
+        if not args or 'connector' not in inspect.signature(connect_func).parameters:
+            return args, kwargs
+
+        port = args[0]
+        baudrate = args[1] if len(args) > 1 else None
+        profile = args[2] if len(args) > 2 else kwargs.pop('profile', None)
+
+        parameters = {'port': port}
+        if baudrate is not None:
+            # The web app sends '' for "Auto"; 0 is what OctoPrint's serial connector treats as auto.
+            parameters['baudrate'] = int(baudrate) if baudrate != '' else 0
+
+        return [], dict(kwargs, connector='serial', parameters=parameters, profile=profile)
 
     def extract_kwargs(self, msg):
         kwargs = msg.get("kwargs", {})
