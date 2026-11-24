@@ -223,7 +223,7 @@ class WebcamStreamer:
             self.assign_janus_params()
 
             try:
-                (janus_bin_path, ld_lib_path) = build_janus_config(self.webcams, self.plugin.auth_token(), JANUS_WS_PORT, JANUS_ADMIN_WS_PORT)
+                (janus_bin_path, ld_lib_path) = build_janus_config(self.webcams, self.plugin.linked_printer.get('relay'), JANUS_WS_PORT, JANUS_ADMIN_WS_PORT)
                 if not janus_bin_path:
                     _logger.error('Janus not found or not configured correctly. Quiting webcam streaming.')
                     self.send_streaming_failed_event()
@@ -265,6 +265,14 @@ class WebcamStreamer:
 
         return (self.normalized_webcams, None)  # return value expected for a passthru target
 
+
+    def restart_for_new_relay(self, webcam_configs):
+        # Janus reads its relay credential only at startup. Webcams that
+        # another program streams (preconfigured) have their own Janus.
+        if self.preconfigured_webcams():
+            return
+        self.webcams = []
+        return self.start(webcam_configs)
 
     def shutdown(self):
         self.shutting_down = True

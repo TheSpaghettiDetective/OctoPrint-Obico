@@ -25,7 +25,7 @@ from .pause_resume_sequence import PauseResumeGCodeSequence
 from .utils import (
     ExpoBackoff, SentryWrapper, pi_version,
     OctoPrintSettingsUpdater, run_in_thread,
-    server_request, migrate_tsd_settings,)
+    server_request, raise_for_status, migrate_tsd_settings,)
 from .lib.error_stats import error_stats
 from .lib import alert_queue
 from .print_job_tracker import PrintJobTracker
@@ -41,6 +41,7 @@ from .gcode_hooks import GCodeHooks
 from .gcode_preprocessor import GcodePreProcessorWrapper
 from .file_operations import FileOperations
 from .webcam_stream import WebcamStreamer, get_webcam_configs
+from .janus_config_builder import relay_renewal_due
 from .redaction import redact_sensitive_data, redact_text
 
 import octoprint.plugin
@@ -50,6 +51,7 @@ __python_version__ = 3 if sys.version_info >= (3, 0) else 2
 _logger = logging.getLogger('octoprint.plugins.obico')
 
 POST_STATUS_INTERVAL_SECONDS = 50.0
+RELAY_RENEWAL_RETRY_SECONDS = 3600
 
 DEFAULT_LINKED_PRINTER = {'is_pro': False}
 
@@ -84,6 +86,7 @@ class ObicoPlugin(
         self.jpeg_poster = JpegPoster(self)
         self.file_downloader = FileDownloader(self, _print_job_tracker)
         self.linked_printer = DEFAULT_LINKED_PRINTER
+        self.relay_renewal_tried_ts = 0
         self.local_tunnel = None
         self.client_conn = ClientConn(self)
         self.discovery = None
@@ -292,10 +295,28 @@ class ObicoPlugin(
                 if self.status_posted_to_server_ts < time.time() - interval_in_seconds:
                     self.post_update_to_server()
 
+                self.renew_relay_if_due()
+
             except Exception as e:
                 self.sentry.captureException()
 
             time.sleep(1)
+
+    def renew_relay_if_due(self):
+        # Janus reads its relay credential only at startup, and the credential
+        # from the server expires. A day before it does, fetch the printer again
+        # and restart video with the fresh one. A failed try is reported by the
+        # caller and tried again an hour later.
+        if not relay_renewal_due(self.linked_printer.get('relay'), time.time()):
+            return
+        if time.time() - self.relay_renewal_tried_ts < RELAY_RENEWAL_RETRY_SECONDS:
+            return
+        self.relay_renewal_tried_ts = time.time()
+
+        resp = server_request('GET', '/api/v1/octo/printer/', self, raise_exception=True, headers=self.auth_headers())
+        raise_for_status(resp)
+        self.linked_printer = resp.json()['printer']
+        run_in_thread(self.webcam_streamer.restart_for_new_relay, get_webcam_configs(self))
 
     def message_to_server_loop(self):
 
