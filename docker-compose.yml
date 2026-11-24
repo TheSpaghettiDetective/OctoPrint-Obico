@@ -1,29 +1,32 @@
 version: '3.7'
 
+# A test printer made of the same parts as a real one:
+# - op: OctoPrint with this plugin (mounted from this checkout) and the
+#   virtual printer. The plugin starts its own Janus and ffmpeg inside this
+#   container, as it does on a real printer.
+# - mjpeg: the camera, an MJPEG stream like crowsnest or mjpg-streamer on a
+#   real printer. Point OctoPrint's webcam at http://mjpeg:8080/?action=stream
+#   (snapshot http://mjpeg:8080/?action=snapshot).
 services:
   op:
     hostname: octoprint
     restart: unless-stopped
     build:
         context: .
-        dockerfile: Dockerfile.python3
+        dockerfile: Dockerfile.debian12
     ports:
       - "${OP_PYTHON3_PORT-5003}:5000"
     volumes:
      - ./:/app
     environment:
         DEBUG: 'True'
-        PRECONFIGURED_WEBCAMS: '{"janus_server": "janus", "webcams": [{"displayName": "Default", "flipH": false, "flipV": false, "rotation": 0, "streamRatio": "16:9", "is_nozzle_camera": false, "is_primary_camera": true, "name": "multicam/Default", "streaming_params": {"mode": "h264_transcode"}, "runtime": {"stream_id": 1, "dataport": 17734}}, {"displayName": "Webcam 1", "flipH": false, "flipV": false, "rotation": 0, "streamRatio": "16:9", "is_primary_camera": false, "name": "multicam/Webcam 1", "streaming_params": {"mode": "h264_transcode"}, "runtime": {"stream_id": 3}}]}'
     depends_on:
-      - janus
-    command: bash -c "sleep 11111111111"
+      - mjpeg
+    # Re-register the mounted checkout so OctoPrint reports its real version,
+    # then run OctoPrint. To debug by hand instead, override the command with
+    # `sleep infinity` and run `docker compose exec op ./start.sh`.
+    command: bash -c "pip install -q --no-deps --no-build-isolation -e . && exec ./start.sh"
 
-  janus:
-    hostname: janus
-    restart: unless-stopped
-    image: thespaghettidetective/janus:ubuntu-1.8
-    #command: sh -c "/opt/janus/bin/janus --stun-server=stun.l.google.com:19302"
-    command: sh -c "/opt/janus/bin/janus"
   mjpeg:
     hostname: mjpeg
     restart: unless-stopped
@@ -31,12 +34,3 @@ services:
     ports:
       - "${MJPEG_PORT-8080}:8080"
     command: sh -c "/mjpg-streamer/mjpg_streamer -o '/mjpg-streamer/output_http.so -w /mjpg-streamer/www' -i '/mjpg-streamer/input_file.so -f /mjpg-streamer/jpgs -e -d 1'"
-
-  video:
-    restart: unless-stopped
-    image: thespaghettidetective/ffmpeg:ubuntu-1.1
-    command: bash -c "ffmpeg -f concat -re -i list.txt -c copy -bsf dump_extra -an -f rtp rtp://janus:17732?pkt_size=1300"
-  video2:
-    restart: unless-stopped
-    image: thespaghettidetective/ffmpeg:ubuntu-1.2
-    command: bash -c "ffmpeg -f concat -re -i list2.txt -c copy -bsf dump_extra -an -f rtp rtp://janus:17735?pkt_size=1300"

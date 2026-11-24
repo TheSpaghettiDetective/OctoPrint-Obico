@@ -1,0 +1,18 @@
+# A test printer that runs the way a real one does on a Debian 12 board that
+# is not a Raspberry Pi: OctoPrint with this plugin, and Janus and ffmpeg from
+# Debian's own packages. The plugin finds the system Janus (dpkg -L janus),
+# writes its config, starts it and restarts it, exactly as on a real printer.
+# (On a Raspberry Pi the plugin uses its precompiled Janus instead; the plugin
+# picks that only on real Pi hardware.)
+FROM python:3.11-bookworm
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends janus ffmpeg netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
+# The OctoPrint release most printers run today.
+RUN pip install --no-cache-dir "OctoPrint==1.11.8" ipdb
+
+COPY . /app
+WORKDIR /app
+RUN pip install --no-cache-dir -e .
